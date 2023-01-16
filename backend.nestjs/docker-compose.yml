@@ -6,13 +6,30 @@ services:
   postgres:
     image: postgres:13.5
     restart: always
+    container_name: postgres.db
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - '5432:5432'
+      - 5432:5432
+    networks:
+      - backend
+
+  nestjs:
+    build: .
+    restart: always
+    container_name: nestjs.back
+    depends_on:
+      - postgres
+    ports:
+      - 3001:3001
+    networks:
+      - backend
 
 volumes:
   postgres:
+
+networks:
+  backend:
