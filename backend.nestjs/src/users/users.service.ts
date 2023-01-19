@@ -18,7 +18,7 @@ export class UsersService {
 
 
   findOne(id: number) {
-	return "This actions finds a user";
+	return this.prismaService.user.findUnique({where: {id}});
   }
 
   findOneById(id: number) {
@@ -29,7 +29,7 @@ export class UsersService {
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+	return this.prismaService.user.update({where: {id}, data: updateUserDto});
   }
 
   remove(id: number) {
