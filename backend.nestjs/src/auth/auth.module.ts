@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from 'nestjs-prisma';
 import { UsersModule } from 'src/users/users.module';
 import { AuthController } from './auth.controller';
@@ -7,7 +8,11 @@ import { GoogleStrategy } from './utils/GoogleStrategy';
 import { SessionSerializer } from './utils/Serializer';
 
 @Module({
-	imports: [PrismaModule, UsersModule],
+	imports: [
+		PrismaModule,
+		UsersModule,
+		PassportModule.register({ session: true}),
+	],
 	controllers: [AuthController],
 	providers: [
 		GoogleStrategy,
