@@ -7,14 +7,14 @@ export class AuthService {
 	constructor(private readonly userService: UsersService) {}
 
 	async validateUser(details: CreateUserDto) {
-		const user = await this.userService.findOneByEmail(details.email);
+		const user = await this.userService.findOneUserByEmail(details.email);
 		if (user)
 			return user;
 		return await this.userService.create(details);
 	}
 
 	async findUser(id: number) {
-		const user = await this.userService.findOneById(id);
+		const user = await this.userService.findOneUserById(id);
 		return user;
 	}
 }

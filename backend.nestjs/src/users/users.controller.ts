@@ -15,14 +15,14 @@ export class UsersController {
   @UseGuards(AuthenticatedGuard)
   @ApiOkResponse({ type: UserEntity, isArray: true })
   findAll() {
-    return this.usersService.findAll();
+    return this.usersService.findAllUsers();
   }
 
   @Get(':id')
   @UseGuards(AuthenticatedGuard)
   @ApiOkResponse({ type: UserEntity })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    const user = await this.usersService.findOne(id);
+    const user = await this.usersService.findOneUser(id);
 	if (!user)
 		throw new NotFoundException(`User with id ${id} does not exist.`);
 	return user;
@@ -33,7 +33,7 @@ export class UsersController {
   @UseGuards(ManageGuard)
   @ApiOkResponse({ type: UserEntity })
   update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')
@@ -41,6 +41,23 @@ export class UsersController {
   @UseGuards(ManageGuard)
   @ApiOkResponse({ type: UserEntity })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.remove(id);
+    return this.usersService.removeUser(id);
+  }
+
+  @Get(':id/friends')
+  @UseGuards(AuthenticatedGuard)
+  async getFriends(@Param('id', ParseIntPipe) id: number) {
+	return this.usersService.findUserFriends(id);
+  }
+
+  @Patch(':id/friends/:friendId')
+  @UseGuards(AuthenticatedGuard)
+  @UseGuards(ManageGuard)
+  addFriend(@Param('id', ParseIntPipe) id: number, @Param('friendId') friendId: number) {
+	return this.usersService.addUserFriend(id, friendId);
+  }
+  @Delete(':id/friends/:friendId')
+  deleteFriend(@Param('id', ParseIntPipe) id: number, @Param('friendId') friendId: number) {
+	return this.usersService.removeUserFriend(id, friendId);
   }
 }
