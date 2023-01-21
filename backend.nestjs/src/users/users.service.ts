@@ -16,7 +16,6 @@ export class UsersService {
 	return  this.prismaService.user.findMany();
   }
 
-
   findOne(id: number) {
 	return this.prismaService.user.findUnique({where: {id}});
   }
@@ -24,6 +23,7 @@ export class UsersService {
   findOneById(id: number) {
 	return this.prismaService.user.findUnique({where: {id}});
   }
+
   findOneByEmail(email: string) {
 	return this.prismaService.user.findUnique({where: {email}});
   }
@@ -33,6 +33,6 @@ export class UsersService {
   }
 
   remove(id: number) {
-	this.prismaService.user.delete({where: {id}});
+	return this.prismaService.user.delete({where: {id}});
   }
 }

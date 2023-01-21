@@ -10,5 +10,8 @@ export class UserEntity implements User {
 	email: string;
 
 	@ApiProperty()
-	displayName: string;
+	name: string;
+
+	@ApiProperty()
+	friends: number[];
 }
