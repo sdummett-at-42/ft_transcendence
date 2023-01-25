@@ -13,5 +13,20 @@ export class UserEntity implements User {
 	name: string;
 
 	@ApiProperty()
-	friends: number[];
+	friends: User[];
+
+	@ApiProperty()
+	profilePicture: string;
+
+	@ApiProperty()
+	elo: number;
+
+	@ApiProperty()
+	eloHistory: number[];
+
+	@ApiProperty()
+	createdAt: Date;
+
+	@ApiProperty()
+	updatedAt: Date;
 }

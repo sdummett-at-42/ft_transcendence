@@ -15,8 +15,8 @@ model User {
 	email				String				@unique
 	name				String				@unique
 	profilePicture		String
-	sendedRequests		FriendshipRequest[]	@relation("sender")
-	receivedRequests	FriendshipRequest[]	@relation("receiver")
+	sendedRequests		FriendRequest[]		@relation("sender")
+	receivedRequests	FriendRequest[]		@relation("receiver")
 	matchLost			Match[]				@relation("looser")
 	matchWon			Match[]				@relation("winner")
 	elo					Int					@default(1000)
@@ -34,16 +34,18 @@ model	Friend {
 	friendId			Int
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
+
 	@@unique([userId, friendId])
 }
 
-model FriendshipRequest {
+model FriendRequest {
 	sender				User				@relation("sender", fields: [senderId], references: [id])
 	senderId			Int
 	receiver			User				@relation("receiver", fields: [receiverId], references: [id])
 	receiverId			Int
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
+
 	@@unique([senderId, receiverId])
 }
 
