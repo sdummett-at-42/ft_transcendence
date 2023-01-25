@@ -11,8 +11,50 @@ datasource db {
 }
 
 model User {
-	id			Int			@id @default(autoincrement())
-	email		String		@unique
-	name		String		@unique
-	friends		Int[]
+	id					Int					@id @default(autoincrement())
+	email				String				@unique
+	name				String				@unique
+	profilePicture		String
+	sendedRequests		FriendshipRequest[]	@relation("sender")
+	receivedRequests	FriendshipRequest[]	@relation("receiver")
+	matchLost			Match[]				@relation("looser")
+	matchWon			Match[]				@relation("winner")
+	elo					Int					@default(1000)
+	eloHistory			Int[]				@default([1000])
+	friendedBy			Friend[]
+	friends				Friend[]			@relation("friends")
+	createdAt			DateTime			@default(now())
+	updatedAt			DateTime			@default(now())
+}
+
+model	Friend {
+	user				User				@relation("friends",fields: [userId], references: [id])
+	userId				Int
+	friend				User				@relation(fields: [friendId], references: [id])
+	friendId			Int
+	createdAt			DateTime			@default(now())
+	updatedAt			DateTime			@default(now())
+	@@unique([userId, friendId])
+}
+
+model FriendshipRequest {
+	sender				User				@relation("sender", fields: [senderId], references: [id])
+	senderId			Int
+	receiver			User				@relation("receiver", fields: [receiverId], references: [id])
+	receiverId			Int
+	createdAt			DateTime			@default(now())
+	updatedAt			DateTime			@default(now())
+	@@unique([senderId, receiverId])
+}
+
+model Match {
+	id					Int					@id @default(autoincrement())
+	winner				User				@relation("winner", fields: [winnerId], references: [id])
+	winnerId			Int
+	looser				User				@relation("looser", fields: [looserId], references: [id])
+	looserId			Int
+	winnerScore			Int
+	looserScore			Int
+	createdAt			DateTime			@default(now())
+	updatedAt			DateTime			@default(now())
 }
