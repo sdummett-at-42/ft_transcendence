@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -94,7 +94,7 @@ export class UsersService {
 
 	sendFriendRequest(id: number, friendId: number) {
 		if (+id === +friendId) 
-			throw new HttpException('You cannot send a friend request to yourself', 400);
+			throw new HttpException('You cannot send a friend request to yourself', HttpStatus.BAD_REQUEST);
 
 		const friend = this.prisma.friend.findUnique({
 			where: {
@@ -106,7 +106,7 @@ export class UsersService {
 		})
 
 		if (friend)
-		throw new HttpException('You are already friends with this user', 400);
+		throw new HttpException('You are already friends with this user', HttpStatus.BAD_REQUEST);
 
 		const friendRequest = this.prisma.friendRequest.findUnique({
 			where: {
@@ -117,7 +117,7 @@ export class UsersService {
 			}
 		})
 		if (friendRequest)
-		throw new HttpException('You already sent a friend request to this user', 400);
+		throw new HttpException('You already sent a friend request to this user', HttpStatus.BAD_REQUEST);
 
 		return this.prisma.friendRequest.upsert({
 			where: {
@@ -186,7 +186,7 @@ export class UsersService {
 			}
 		})
 		if (!friendRequest)
-			throw new HttpException('You do not have a friend request from this user', 400);
+			throw new HttpException('You do not have a friend request from this user', HttpStatus.BAD_REQUEST);
 
 		// Delete the friendship request
 		await this.prisma.friendRequest.delete({
@@ -247,7 +247,7 @@ export class UsersService {
 			}
 		})
 		if (!friendRequest)
-			throw new HttpException('You do not have a friend request from this user', 400);
+			throw new HttpException('You do not have a friend request from this user', HttpStatus.BAD_REQUEST);
 
 		return this.prisma.friendRequest.delete({
 			where: {
@@ -279,7 +279,7 @@ export class UsersService {
 			}
 		})
 		if (!friend)
-			throw new HttpException('You are not friends with this user', 400);
+			throw new HttpException('You are not friends with this user', HttpStatus.BAD_REQUEST);
 
 		this.prisma.friend.delete({
 			where: {

@@ -17,6 +17,7 @@ import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
 import { ManageGuard } from './manage.guard';
 import { AuthenticatedGuard } from 'src/auth/utils/authenticated.guard';
+import { ContentTypeGuard } from './content-type.guard';
 
 @Controller('users')
 @ApiTags('users')
@@ -43,6 +44,7 @@ export class UsersController {
 	@Patch(':id')
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
+	@UseGuards(ContentTypeGuard)
 	@ApiOkResponse({ type: UserEntity })
 	update(
 		@Param('id', ParseIntPipe) id: number,
@@ -54,6 +56,7 @@ export class UsersController {
 	@Delete(':id')
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
+	@UseGuards(ContentTypeGuard)
 	@ApiOkResponse({ type: UserEntity })
 	remove(@Param('id', ParseIntPipe) id: number) {
 		return this.users.removeUser(id);
@@ -69,6 +72,7 @@ export class UsersController {
 	@Delete(':id/friends')
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
+	@UseGuards(ContentTypeGuard)
 	@ApiOkResponse({ type: UserEntity })
 	async removeFriend(
 		@Param('id', ParseIntPipe) id: number,
@@ -81,6 +85,7 @@ export class UsersController {
 	@Post(':id/friends/requests')
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
+	@UseGuards(ContentTypeGuard)
 	@ApiCreatedResponse({ type: UserEntity })
 	async sendFriendRequest(
 		@Param('id', ParseIntPipe) id: number,
@@ -92,6 +97,7 @@ export class UsersController {
 	@Patch(':id/friends/requests')
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
+	@UseGuards(ContentTypeGuard)
 	@ApiOkResponse({ type: UserEntity })
 	async acceptFriendRequest(
 		@Param('id', ParseIntPipe) id: number,
@@ -103,6 +109,7 @@ export class UsersController {
 	@Delete(':id/friends/requests')
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
+	@UseGuards(ContentTypeGuard)
 	@ApiOkResponse({ type: UserEntity })
 	async declineFriendRequest(
 		@Param('id', ParseIntPipe) id: number,
