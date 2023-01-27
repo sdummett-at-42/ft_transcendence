@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -31,8 +31,8 @@ export class UsersService {
 		});
 	}
 
-	findOneUserById(id: number) {
-		return this.prisma.user.findUnique({
+	async findOneUserById(id: number) {
+		const user = await this.prisma.user.findUnique({
 			where: { id },
 			select: {
 				id: true,
@@ -41,6 +41,9 @@ export class UsersService {
 				elo: true,
 			}
 		});
+		if (!user)
+			throw new HttpException('User not found', 404);
+		return user;
 	}
 
 	findOneUserByEmail(email: string) {
@@ -90,6 +93,32 @@ export class UsersService {
 	}
 
 	sendFriendRequest(id: number, friendId: number) {
+		if (+id === +friendId) 
+			throw new HttpException('You cannot send a friend request to yourself', 400);
+
+		const friend = this.prisma.friend.findUnique({
+			where: {
+				userId_friendId: {
+					userId: +id,
+					friendId: +friendId
+				}
+			}
+		})
+
+		if (friend)
+		throw new HttpException('You are already friends with this user', 400);
+
+		const friendRequest = this.prisma.friendRequest.findUnique({
+			where: {
+				senderId_receiverId: {
+					senderId: +id,
+					receiverId: +friendId
+				}
+			}
+		})
+		if (friendRequest)
+		throw new HttpException('You already sent a friend request to this user', 400);
+
 		return this.prisma.friendRequest.upsert({
 			where: {
 				senderId_receiverId: {
@@ -148,6 +177,17 @@ export class UsersService {
 	}
 
 	async acceptFriendRequest(id: number, friendId: number) {
+		const friendRequest = await this.prisma.friendRequest.findUnique({
+			where: {
+				senderId_receiverId: {
+					senderId: +friendId,
+					receiverId: +id
+				}
+			}
+		})
+		if (!friendRequest)
+			throw new HttpException('You do not have a friend request from this user', 400);
+
 		// Delete the friendship request
 		await this.prisma.friendRequest.delete({
 			where: {
@@ -171,6 +211,7 @@ export class UsersService {
 				friend: { connect: { id: +id } },
 			}
 		})
+
 		return this.prisma.friend.upsert({
 			where: {
 				userId_friendId: {
@@ -197,6 +238,17 @@ export class UsersService {
 	}
 
 	declineFriendRequest(id: number, friendId: number) {
+		const friendRequest = this.prisma.friendRequest.findUnique({
+			where: {
+				senderId_receiverId: {
+					senderId: +friendId,
+					receiverId: +id
+				}
+			}
+		})
+		if (!friendRequest)
+			throw new HttpException('You do not have a friend request from this user', 400);
+
 		return this.prisma.friendRequest.delete({
 			where: {
 				senderId_receiverId: {
@@ -218,7 +270,17 @@ export class UsersService {
 	}
 
 	async removeFriend(id: number, friendId: number) {
-		console.log("Type of friendId: ", typeof friendId);
+		const friend = await this.prisma.friend.findUnique({
+			where: {
+				userId_friendId: {
+					userId: +id,
+					friendId: +friendId
+				}
+			}
+		})
+		if (!friend)
+			throw new HttpException('You are not friends with this user', 400);
+
 		this.prisma.friend.delete({
 			where: {
 				userId_friendId: {
