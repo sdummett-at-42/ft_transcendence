@@ -53,7 +53,7 @@ export class ImagesService {
 			data: { name }
 		});
 	}
-	
+
 	removeImage(ownerId: number) {
 		return this.prisma.image.delete({ where: { ownerId }});
 	}
