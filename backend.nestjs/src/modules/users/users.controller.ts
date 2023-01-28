@@ -8,6 +8,7 @@ import {
 	ParseIntPipe,
 	NotFoundException,
 	UseGuards,
+	Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -28,6 +29,14 @@ export class UsersController {
 	findAll() {
 		return this.users.findAllUsers();
 	}
+
+	@Get('me')
+	@UseGuards(AuthenticatedGuard)
+	@ApiOkResponse({ type: UserEntity })
+	findMe(@Request() req) {
+		return this.users.findOneUserById(req.user.id);
+	}
+
 
 	@Get(':id')
 	@UseGuards(AuthenticatedGuard)

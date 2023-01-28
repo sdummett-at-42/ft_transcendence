@@ -1,17 +1,29 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { randomBytes } from 'crypto';
+import { ImagesService } from '../images/images.service';
 
 @Injectable()
 export class UsersService {
 
-	constructor(private readonly prisma: PrismaService) { }
+	constructor(private readonly prisma: PrismaService, private readonly images: ImagesService) { }
 
-	create(createUserDto: CreateUserDto) {
-		return this.prisma.user.create({
-			data: createUserDto,
+	async create(email: string) {
+		const user = await this.prisma.user.create({
+			data: {
+				email,
+				name: await this.generateUsername(),
+			}
+		});
+
+		const defaultImage = await this.images.findOneImage(0);
+		await this.images.create(defaultImage.data, defaultImage.mimetype, user.name, user.id);
+		return this.prisma.user.update({
+			where: { id: user.id },
+			data: {
+				profilePicture: `http://localhost:3001/images/${user.id}`,
+			},
 			select: {
 				id: true,
 				name: true,
