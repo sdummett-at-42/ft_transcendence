@@ -2,9 +2,9 @@ import { Controller, Delete, Get, Patch, ParseIntPipe, Param, Res, UploadedFile,
 import { ImagesService } from "./images.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UseInterceptors } from "@nestjs/common";
-import { AuthenticatedGuard } from "src/auth/utils/authenticated.guard";
-import { ManageGuard } from "src/users/manage.guard";
-import { BodySizeGuard } from "src/users/body-size.guard";
+import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
+import { ManageGuard } from "src/shared/manage.guard";
+import { BodySizeGuard } from "src/shared/body-size.guard";
 
 @Controller('images')
 export class ImagesController {

@@ -1,11 +1,11 @@
 import { Controller, Get, UseGuards, Param, ParseIntPipe, Post, Patch, Delete, Body } from "@nestjs/common";
-import { AuthenticatedGuard } from "src/auth/utils/authenticated.guard";
-import { ManageGuard } from "src/users/manage.guard";
-import { ContentTypeGuard } from "src/users/content-type.guard";
+import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
+import { ManageGuard } from "src/shared/manage.guard";
+import { ContentTypeGuard } from "src/shared/content-type.guard";
 import { FriendsService } from "./friends.service";
 import { FriendRequestService } from "./friend-request.service";
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { UserEntity }from "src/users/entities/user.entity";
+import { UserEntity }from "src/modules/users/entities/user.entity";
 
 @Controller('users/:id/friends')
 export class FriendsController {

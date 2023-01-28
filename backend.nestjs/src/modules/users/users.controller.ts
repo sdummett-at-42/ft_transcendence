@@ -13,9 +13,9 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
-import { ManageGuard } from './manage.guard';
-import { AuthenticatedGuard } from 'src/auth/utils/authenticated.guard';
-import { ContentTypeGuard } from './content-type.guard';
+import { ManageGuard } from '../../shared/manage.guard';
+import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
+import { ContentTypeGuard } from '../../shared/content-type.guard';
 
 @Controller('users')
 @ApiTags('users')

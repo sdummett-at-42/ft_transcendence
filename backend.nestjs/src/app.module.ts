@@ -3,10 +3,10 @@ import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from 'nestjs-prisma';
 import { Passport } from 'passport';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { FriendsModule } from './friends/friends.module';
-import { ImagesModule } from './images/images.module';
-import { UsersModule } from './users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { FriendsModule } from './modules/friends/friends.module';
+import { ImagesModule } from './modules/images/images.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [

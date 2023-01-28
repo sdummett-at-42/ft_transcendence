@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -73,6 +74,18 @@ export class UsersService {
 				elo: true,
 			}
 		});
+	}
+
+	async generateUsername(){
+		let buffer = randomBytes(10);
+		let name = 'player-' + buffer.toString('hex');
+		let user = await this.prisma.user.findUnique({ where: { name } });
+		while (user) {
+			console.log('user already exists');
+			name = 'player-' + buffer.toString('hex');
+			user = await this.prisma.user.findUnique({ where: { name } });
+		}
+		return name;
 	}
 }
 
