@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Upload</title>
+</head>
+
+<body>
+	<form method="patch" enctype="multipart/form-data">
+		<input type="file" id="image-input" name="file">
+		<button type="submit" id="upload-button">Upload</button>
+	</form>
+	<script>
+		const form = document.querySelector('form');
+		form.addEventListener('submit', (event) => {
+			event.preventDefault();
+
+			const input = document.querySelector('#image-input');
+			const file = input.files[0];
+			const formData = new FormData();
+			formData.append('file', file);
+
+			const xhr = new XMLHttpRequest();
+			xhr.open('PATCH', 'http://localhost:3001/api/images/2', true);
+			xhr.onload = () => {
+				if (xhr.status === 200) {
+					console.log('Image uploaded successfully!');
+				} else {
+					console.error('Failed to upload image.');
+				}
+			};
+			xhr.send(formData);
+		});
+	</script>
+
+</html>

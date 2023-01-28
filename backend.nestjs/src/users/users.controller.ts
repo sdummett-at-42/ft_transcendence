@@ -1,6 +1,7 @@
 import {
 	Controller,
 	Get,
+	Res,
 	Post,
 	Body,
 	Patch,
@@ -8,7 +9,6 @@ import {
 	Delete,
 	ParseIntPipe,
 	NotFoundException,
-	Session,
 	UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';

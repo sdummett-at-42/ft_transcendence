@@ -14,7 +14,8 @@ model User {
 	id					Int					@id @default(autoincrement())
 	email				String				@unique
 	name				String				@unique
-	profilePicture		String
+	profilePicture		String?
+	image				Image?				@relation("profilePicture")
 	sendedRequests		FriendRequest[]		@relation("sender")
 	receivedRequests	FriendRequest[]		@relation("receiver")
 	matchLost			Match[]				@relation("looser")
@@ -57,6 +58,16 @@ model Match {
 	looserId			Int
 	winnerScore			Int
 	looserScore			Int
+	createdAt			DateTime			@default(now())
+	updatedAt			DateTime			@default(now())
+}
+
+model Image {
+	name				String
+	mimetype			String
+	data				String
+	owner				User?				@relation("profilePicture", fields: [ownerId], references: [id])
+	ownerId				Int					@unique
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
 }
