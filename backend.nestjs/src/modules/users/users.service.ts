@@ -76,7 +76,8 @@ export class UsersService {
 		});
 	}
 
-	removeUser(id: number) {
+	async removeUser(id: number) {
+		await this.images.removeImage(id);
 		return this.prisma.user.delete({
 			where: { id },
 			select: {
