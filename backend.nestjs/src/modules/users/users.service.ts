@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -81,7 +81,6 @@ export class UsersService {
 		let name = 'player-' + buffer.toString('hex');
 		let user = await this.prisma.user.findUnique({ where: { name } });
 		while (user) {
-			console.log('user already exists');
 			name = 'player-' + buffer.toString('hex');
 			user = await this.prisma.user.findUnique({ where: { name } });
 		}

@@ -7,7 +7,6 @@ export class AuthController {
 	@Get("google/login")
 	@UseGuards(GoogleAuthGuard)
 	handleLogin() {
-		console.log("handleLogin");
 		return {msg: 'Google authentication'};
 	}
 

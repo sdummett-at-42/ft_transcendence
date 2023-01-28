@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { PrismaService } from "nestjs-prisma";
 
 
@@ -17,8 +17,11 @@ export class ImagesService {
 		});
 	}
 
-	findOneImage(ownerId: number) {
-		return this.prisma.image.findUnique({ where: { ownerId }});
+	async findOneImage(ownerId: number) {
+		const image = await this.prisma.image.findUnique({ where: { ownerId }});
+		if (!image)
+			throw new HttpException('Image not found', HttpStatus.NOT_FOUND);
+		return image;
 	}
 
 	findAllImages() {

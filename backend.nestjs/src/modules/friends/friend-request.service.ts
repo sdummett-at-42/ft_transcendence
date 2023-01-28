@@ -6,16 +6,16 @@ import { FriendsService } from "./friends.service";
 export class FriendRequestService {
 	constructor(private readonly prisma: PrismaService, private readonly friends: FriendsService) { }
 
-	sendFriendRequest(id: number, friendId: number) {
+	async sendFriendRequest(id: number, friendId: number) {
 		if (+id === +friendId)
 			throw new HttpException('You cannot send a friend request to yourself', HttpStatus.BAD_REQUEST);
 
-		const friend = this.friends.findOneFriend(id, friendId);
+		const friend = await this.friends.findOneFriend(id, friendId);
 
 		if (friend)
 			throw new HttpException('You are already friends with this user', HttpStatus.BAD_REQUEST);
 
-		const friendRequest = this.prisma.friendRequest.findUnique({
+		const friendRequest = await this.prisma.friendRequest.findUnique({
 			where: {
 				senderId_receiverId: {
 					senderId: +id,
@@ -122,8 +122,8 @@ export class FriendRequestService {
 		return this.friends.addFriend(id, friendId);
 	}
 
-	declineFriendRequest(id: number, friendId: number) {
-		const friendRequest = this.prisma.friendRequest.findUnique({
+	async declineFriendRequest(id: number, friendId: number) {
+		const friendRequest = await this.prisma.friendRequest.findUnique({
 			where: {
 				senderId_receiverId: {
 					senderId: +friendId,
