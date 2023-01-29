@@ -5,36 +5,55 @@ import * as passport from 'passport';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
+import * as connectRedis from 'connect-redis';
+import * as Redis from 'redis';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe({whitelist: true}));
+	// Session
+	const RedisStore = connectRedis(session);
+	const redisClient = Redis.createClient({
+		url: process.env.REDIS_URL,
+		legacyMode: true,
+	});
+	redisClient.connect();
+	redisClient.on('error', (err) => {
+		console.log('Redis error: ', err);
+	});
+	redisClient.on('connect', () => {
+		console.log('Redis connected');
+	});
 
-  const { httpAdapter } = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter)); // to test
+	app.use(
+		session({
+			store: new RedisStore({ client: redisClient }),
+			secret: process.env.SESSION_SECRET,
+			saveUninitialized: false,
+			resave: false,
+			cookie: {
+				maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+			}
+		}));
 
-  const config = new DocumentBuilder()
-	.setTitle("ft_transcendence")
-	.setDescription("The ft_transcendence API description")
-	.setVersion("0.1")
-	.build();
+	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api", app, document);
+	const { httpAdapter } = app.get(HttpAdapterHost);
+	app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter)); // to test
 
-  app.setGlobalPrefix("api");
-  app.use(session({
-	secret: process.env.SESSION_SECRET,
-	saveUninitialized: false,
-	resave: false,
-	cookie: {
-		maxAge: 3600000,
-	}
-  }));
-  app.use(passport.initialize());
-  app.use(passport.session());
-  console.log("Listening on port: " + process.env.APP_PORT);
-  await app.listen(process.env.APP_PORT);
+	const config = new DocumentBuilder()
+		.setTitle("ft_transcendence")
+		.setDescription("The ft_transcendence API description")
+		.setVersion("0.1")
+		.build();
+
+	const document = SwaggerModule.createDocument(app, config);
+	SwaggerModule.setup("api", app, document);
+
+	app.setGlobalPrefix("api");
+	app.use(passport.initialize());
+	app.use(passport.session());
+	console.log("Listening on port: " + process.env.APP_PORT);
+	await app.listen(process.env.APP_PORT);
 }
 bootstrap();
