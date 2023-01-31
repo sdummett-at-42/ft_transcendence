@@ -9,6 +9,9 @@ import {
 	NotFoundException,
 	UseGuards,
 	Request,
+	Post,
+	HttpException,
+	HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -37,6 +40,18 @@ export class UsersController {
 		return this.users.findOneUserById(req.user.id);
 	}
 
+	@Post('me/logout')
+	@UseGuards(AuthenticatedGuard)
+	@ApiOkResponse({ type: UserEntity })
+	logout(@Request() req) {
+		req.logout((err) => {
+			if (err) {
+			  console.error(err);
+			  throw new HttpException('Error logging out', HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			return 'Successfully logged out';
+		});
+	}
 
 	@Get(':id')
 	@UseGuards(AuthenticatedGuard)
