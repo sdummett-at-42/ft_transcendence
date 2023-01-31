@@ -7,14 +7,16 @@ import { ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import * as connectRedis from 'connect-redis';
 import * as Redis from 'redis';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+	const configService = app.get(ConfigService);
 
 	// Session
 	const RedisStore = connectRedis(session);
 	const redisClient = Redis.createClient({
-		url: process.env.REDIS_URL,
+		url: configService.get('REDIS_URL'),
 		legacyMode: true,
 	});
 	redisClient.connect();
@@ -28,7 +30,7 @@ async function bootstrap() {
 	app.use(
 		session({
 			store: new RedisStore({ client: redisClient }),
-			secret: process.env.SESSION_SECRET,
+			secret: configService.get('SESSION_SECRET'),
 			saveUninitialized: false,
 			resave: false,
 			cookie: {
@@ -53,7 +55,7 @@ async function bootstrap() {
 	app.setGlobalPrefix("api");
 	app.use(passport.initialize());
 	app.use(passport.session());
-	console.log("Listening on port: " + process.env.APP_PORT);
-	await app.listen(process.env.APP_PORT);
+
+	await app.listen(configService.get('APP_PORT'));
 }
 bootstrap();
