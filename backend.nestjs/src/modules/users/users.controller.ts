@@ -53,6 +53,16 @@ export class UsersController {
 		});
 	}
 
+	@Post('me/delete')
+	@UseGuards(AuthenticatedGuard)
+	@ApiOkResponse({ type: UserEntity })
+	async deleteMe(@Request() req) {
+		const user = await this.users.removeUser(req.user.id);
+		req.logout((err) => {
+			return user;
+		});
+	}
+
 	@Get(':id')
 	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity })
