@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Patch, ParseIntPipe, Param, Res, UploadedFile, UseGuards } from "@nestjs/common";
+import { Controller, Delete, Get, Patch, ParseIntPipe, Param, Res, UploadedFile, UseGuards, BadRequestException } from "@nestjs/common";
 import { ImagesService } from "./images.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UseInterceptors } from "@nestjs/common";
@@ -29,6 +29,17 @@ export class ImagesController {
 	async updateImage(@UploadedFile() file: any, @Param('id', ParseIntPipe) id: number) {
 		const{ buffer } = file;
 		const imageBase64 = buffer.toString('base64');
+		if (file.mimetype !== 'image/png' && file.mimetype !== 'image/jpeg')
+			throw new BadRequestException('Invalid file type');
+
+		const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+		const jpegSignature = [0xFF, 0xD8, 0xFF];
+		const fileSignature = imageBase64.substring(0, 24).split(',').map((s) => parseInt(s, 16));
+		if (file.mimetype === 'image/png' && !fileSignature.every((v, i) => v === pngSignature[i]))
+			throw new BadRequestException('Invalid file type');
+		if (file.mimetype === 'image/jpeg' && !fileSignature.every((v, i) => v === jpegSignature[i]))
+			throw new BadRequestException('Invalid file type');
+
 		return this.images.updateImage(imageBase64, file.mimetype, id);
 	}
 
