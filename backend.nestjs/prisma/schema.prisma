@@ -24,6 +24,11 @@ model User {
 	eloHistory			Int[]				@default([1000])
 	friendedBy			Friend[]
 	friends				Friend[]			@relation("friends")
+	owner				Channel[]			@relation("owner")
+	member				Channel[]			@relation("users")
+	admin				Channel[]			@relation("admins")
+	muted				Channel[]			@relation("mutedUsers")
+	banned				Channel[]			@relation("bannedUsers")
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
 }
@@ -71,3 +76,18 @@ model Image {
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
 }
+
+model Channel {
+	id					Int					@id @default(autoincrement())
+	owner				User				@relation("owner", fields: [ownerId], references: [id])
+	ownerId				Int
+	users				User[]				@relation("users")
+	admins				User[]				@relation("admins")
+	mutedUsers			User[]				@relation("mutedUsers")
+	bannedUsers			User[]				@relation("bannedUsers")
+	public				Boolean				@default(false)
+	password			String?
+	createdAt			DateTime			@default(now())
+	updatedAt			DateTime			@default(now())
+}
+
