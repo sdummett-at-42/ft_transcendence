@@ -6,31 +6,20 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from 'nestjs-prisma';
 import * as connectRedis from 'connect-redis';
-import * as Redis from 'redis';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from './modules/redis/redis.service';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-	const configService = app.get(ConfigService);
+	const config = app.get(ConfigService);
 
 	// Session
 	const RedisStore = connectRedis(session);
-	const redisClient = Redis.createClient({
-		url: configService.get('REDIS_URL'),
-		legacyMode: true,
-	});
-	redisClient.connect();
-	redisClient.on('error', (err) => {
-		console.log('Redis error: ', err);
-	});
-	redisClient.on('connect', () => {
-		console.log('Redis connected');
-	});
-
+	const redis = app.get(RedisService);
 	app.use(
 		session({
-			store: new RedisStore({ client: redisClient }),
-			secret: configService.get('SESSION_SECRET'),
+			store: new RedisStore({ client: redis.getClient() }),
+			secret: config.get('SESSION_SECRET'),
 			saveUninitialized: false,
 			resave: false,
 			cookie: {
@@ -43,19 +32,19 @@ async function bootstrap() {
 	const { httpAdapter } = app.get(HttpAdapterHost);
 	app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter)); // to test
 
-	const config = new DocumentBuilder()
+	const swaggerConfig = new DocumentBuilder()
 		.setTitle("ft_transcendence")
 		.setDescription("The ft_transcendence API description")
 		.setVersion("0.1")
 		.build();
 
-	const document = SwaggerModule.createDocument(app, config);
+	const document = SwaggerModule.createDocument(app, swaggerConfig);
 	SwaggerModule.setup("api", app, document);
 
-	app.setGlobalPrefix("api");
+	// app.setGlobalPrefix("api");
 	app.use(passport.initialize());
 	app.use(passport.session());
 
-	await app.listen(configService.get('APP_PORT'));
+	await app.listen(config.get('APP_PORT'));
 }
 bootstrap();

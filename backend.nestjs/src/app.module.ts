@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { FriendsModule } from './modules/friends/friends.module';
 import { ImagesModule } from './modules/images/images.module';
+import { RedisModule } from './modules/redis/redis.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { UsersModule } from './modules/users/users.module';
 		}),
 		AuthModule,
 		PrismaModule,
+		RedisModule,
 		UsersModule,
 		ImagesModule,
 		FriendsModule,
