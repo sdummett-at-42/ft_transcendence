@@ -1,24 +1,28 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "nestjs-prisma";
 import { HttpException } from "@nestjs/common";
+import { CreateChannelDto, UpdateChannelDto } from "./channel.dto";
 
 @Injectable()
 export class ChannelsService {
 	constructor(private readonly prisma: PrismaService) { }
 
-	async createChannel(name: string, ownerId: number, isPublic: boolean, password?: string) {
+	async createChannel(ownerId: number, dto: CreateChannelDto) {
 		const channel = await this.prisma.channel.findUnique({
-			where: { name },
+			where: { name : dto.name },
 			select: {
 				id: true,
 			}
 		});
 		if (channel)
 			throw new HttpException('Channel name already taken', 409);
+		const hasPassword = dto.password ? true : false;
 		return this.prisma.channel.create({
 			data: {
-				name,
-				isPublic,
+				name: dto.name,
+				isPublic: dto.isPublic,
+				password: dto.password,
+				hasPassword,
 				owner: {
 					connect: {
 						id: ownerId,
@@ -60,7 +64,6 @@ export class ChannelsService {
 	}
 
 	async findOneChannelById(id: number) {
-		// check if channel exists
 		const channel = await this.prisma.channel.findUnique({
 			where: { id },
 			select: {
@@ -68,6 +71,7 @@ export class ChannelsService {
 				name: true,
 				isPublic: true,
 				hasPassword: true,
+				owner: true,
 			}
 		});
 		if (!channel)
@@ -75,21 +79,9 @@ export class ChannelsService {
 		return channel;
 	}
 
-	async updateChannelName(id: number, name: string) {
+	async findOnePublicChannelById(id: number) {
 		const channel = await this.prisma.channel.findUnique({
-			where: { name },
-			select: {
-				id: true,
-			}
-		});
-		if (channel && channel.id !== id)
-			throw new HttpException('Channel name already taken', 409);
-
-		const updatedChannel = this.prisma.channel.update({
 			where: { id },
-			data: {
-				name,
-			},
 			select: {
 				id: true,
 				name: true,
@@ -97,35 +89,25 @@ export class ChannelsService {
 				hasPassword: true,
 			}
 		});
-		if (!updatedChannel)
+		if (!channel || !channel.isPublic)
 			throw new HttpException('Channel not found', 404);
-		return updatedChannel;
+		return channel;
 	}
 
-	async updateChannelPassword(id: number, password: string) {
+	async updateChannel(id: number, dto: UpdateChannelDto) {
+		if (dto.name) {
+			const channel = await this.prisma.channel.findUnique({
+				where: { name: dto.name },
+				select: {
+					id: true,
+				}
+			});
+			if (channel && channel.id !== id)
+				throw new HttpException('Channel name already taken', 409);
+		}
 		const updatedChannel = await this.prisma.channel.update({
 			where: { id },
-			data: {
-				password,
-			},
-			select: {
-				id: true,
-				name: true,
-				isPublic: true,
-				hasPassword: true,
-			}
-		});
-		if (!updatedChannel)
-			throw new HttpException('Channel not found', 404);
-		return updatedChannel;
-	}
-
-	async updateChannelIsPublic(id: number, isPublic: boolean) {
-		const updatedChannel = await this.prisma.channel.update({
-			where: { id },
-			data: {
-				isPublic,
-			},
+			data: dto ,
 			select: {
 				id: true,
 				name: true,

@@ -24,11 +24,11 @@ model User {
 	eloHistory			Int[]				@default([1000])
 	friendedBy			Friend[]
 	friends				Friend[]			@relation("friends")
-	owner				Channel[]			@relation("owner")
-	member				Channel[]			@relation("users")
-	admin				Channel[]			@relation("admins")
-	muted				Channel[]			@relation("mutedUsers")
-	banned				Channel[]			@relation("bannedUsers")
+	channelOwner		Channel[]			@relation("owner")
+	channelMember		Channel[]			@relation("users")
+	channelAdmin		Channel[]			@relation("admins")
+	channelMuted		Channel[]			@relation("mutedUsers")
+	channelBanned		Channel[]			@relation("bannedUsers")
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
 }
@@ -84,8 +84,8 @@ model Channel {
 	ownerId				Int
 	users				User[]				@relation("users")
 	admins				User[]				@relation("admins")
-	mutedUsers			User[]				@relation("mutedUsers")
-	bannedUsers			User[]				@relation("bannedUsers")
+	muted				User[]				@relation("mutedUsers")
+	banned				User[]				@relation("bannedUsers")
 	isPublic			Boolean				@default(false)
 	password			String?
 	hasPassword			Boolean				@default(false)
