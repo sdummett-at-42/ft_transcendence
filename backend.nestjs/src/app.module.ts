@@ -6,6 +6,7 @@ import * as  Joi from 'joi';
 import { PrismaModule } from 'nestjs-prisma';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { ChannelsModule } from './modules/channels/channels.module';
 import { FriendsModule } from './modules/friends/friends.module';
 import { ImagesModule } from './modules/images/images.module';
 import { RedisModule } from './modules/redis/redis.module';
@@ -31,6 +32,7 @@ import { UsersModule } from './modules/users/users.module';
 		UsersModule,
 		ImagesModule,
 		FriendsModule,
+		ChannelsModule,
 		PassportModule.register({ session: true }),
 		ThrottlerModule.forRootAsync({
 			imports: [ConfigModule],
