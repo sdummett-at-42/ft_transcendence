@@ -12,18 +12,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	constructor(private readonly chat: ChatService) { }
 
 	async afterInit(server: Server) {
-		console.log("[ ChatGateway ] => afterInit");
+		await this.chat.afterInit();
 	}
 
 	async handleConnection(@ConnectedSocket() socket) {
-		console.log("[ ChatGateway ] => handleConnection");
 		this.chat.handleConnection(socket);
 	}
 
-	async handleDisconnect(@ConnectedSocket() client) {
-		console.log("[ ChatGateway ] => handleDisconnect");
-		console.log("disconnecting: ", client.id);
-		console.log("handleDisconnect");
+	async handleDisconnect(@ConnectedSocket() socket) {
+		console.log("disconnecting: ", socket.id);
+		this.chat.handleDisconnect(socket);
 	}
 
 	@SubscribeMessage('message')
