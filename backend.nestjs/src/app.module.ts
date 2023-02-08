@@ -11,6 +11,7 @@ import { FriendsModule } from './modules/friends/friends.module';
 import { ImagesModule } from './modules/images/images.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { UsersModule } from './modules/users/users.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
 	imports: [
@@ -33,6 +34,7 @@ import { UsersModule } from './modules/users/users.module';
 		ImagesModule,
 		FriendsModule,
 		ChannelsModule,
+		ChatModule,
 		PassportModule.register({ session: true }),
 		ThrottlerModule.forRootAsync({
 			imports: [ConfigModule],
