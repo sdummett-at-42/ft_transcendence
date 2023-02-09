@@ -12,8 +12,7 @@ export class ChatService {
 	}
 
 	async afterInit() {
-		console.log("[ ChatService ] => afterInit");
-		const keys = this.redis.keys('socket:*', (error, keys) => {
+		this.redis.keys('socket:*', (error, keys) => {
 			if (error)
 				console.log("redis error: ", error);
 			else {
@@ -31,8 +30,7 @@ export class ChatService {
 	}
 
 	handleConnection(socket) {
-		console.log("[ ChatService ] => handleConnection");
-		const redisKey = `sess:${socket.handshake.headers.cookie.slice(16).split(".")[0]}`;
+		const redisKey = `sess:${socket.handshake.headers.cookie.slice(16).split(".")[0]}`; // BUG: if user is not logged in
 		this.redis.get(redisKey, (error, session) => {
 			if (error) {
 				console.log("redis.get error: ", error);
@@ -54,124 +52,113 @@ export class ChatService {
 	}
 
 	handleDisconnect(@ConnectedSocket() socket) {
-		console.log("[ ChatService ] => handleDisconnect");
 		this.redis.del(`socket:${socket.id}`);
 		console.log(`Removed socket:${socket.id} from redis`);
 	}
-	async createChannel(socket, dto: CreateChannelDto) {
-		console.log("[ ChatService ] => createChannel");
 
+	createRoom(socket, roomName: string) {
+		const roomExists = this.redis.hexists(`room:${roomName}`, "owner", (error, response) => {
+			if (response === 1) {
+				console.log(`redis: Room ${roomName} already exists`);
+				socket.emit("roomExists");
+			} else {
+				console.log(`redis: Room ${roomName} does not exist`);
+				this.createRoomInRedis(socket, roomName);
+				socket.join(roomName);
+				socket.emit("roomCreated");
+			}
+		});
+	}
+
+	async createRoomInRedis(socket, roomName: string) {
 		this.redis.multi()
-			.hset(`channel:${dto.name}`, "owner", socket.id)
-			.hset(`channel:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic))
-			.hset(`channel:${dto.name}`, "logged", JSON.stringify([]))
-			.hset(`channel:${dto.name}`, "banned", JSON.stringify([]))
-			.hset(`channel:${dto.name}`, "muted", JSON.stringify([]))
-			.hset(`channel:${dto.name}`, "admins", JSON.stringify([]))
-			.hset(`channel:${dto.name}`, "messages", JSON.stringify([]))
-			.sadd('channels', dto.name)
-			.exec((err, results) => {
-				if (err) {
-					console.error(err);
-				} else {
-					console.log(`Created channel ${dto.name}`);
-					socket.emit('channelCreated', dto.name);
-					socket.broadcast.emit('channelListUpdated');
-				}
+			.hset(`room:${roomName}`, "owner", socket.id)
+			.hset(`room:${roomName}`, "isPublic", JSON.stringify(true))
+			.hset(`room:${roomName}`, "logged", JSON.stringify([]))
+			.hset(`room:${roomName}`, "banned", JSON.stringify([]))
+			.hset(`room:${roomName}`, "muted", JSON.stringify([]))
+			.hset(`room:${roomName}`, "admins", JSON.stringify([]))
+			.hset(`room:${roomName}`, "messages", JSON.stringify([]))
+			.exec((error, response) => {
+				console.log(`redis: Created room:${roomName}`);
 			});
 	}
 
-	async joinChannel(socket, channelName: string) {
-		console.log("[ ChatService ] => joinChannel");
-
-		this.redis.get(`socket:${socket.id}`, (error, userid) => {
-			if (error) {
-				console.log("redis.get error: ", error);
-				socket.disconnect(true);
+	async joinRoom(socket, roomName: string, server) {
+		const roomExists = this.redis.hexists(`room:${roomName}`, "owner", (error, response) => {
+			if (response === 1) {
+				socket.join(roomName);
+				socket.emit("roomJoined");
+				server.to(roomName).emit("userJoined", socket.id);
 			} else {
-				if (userid === null) {
-					console.log("User not found");
-					socket.disconnect(true);
-				}
-				else {
-					console.log("User found");
-					console.log("user_id", userid)
-					this.redis.hget(`channel:${channelName}`, "logged", (error, logged) => {
-						if (error) {
-							console.log("redis.hget error: ", error);
-							socket.disconnect(true);
-						} else {
-							if (logged === null) {
-								console.log("Channel not found");
-								socket.disconnect(true);
-							}
-							else {
-								console.log("Channel found");
-								logged = JSON.parse(logged);
-								if (logged.includes(userid)) {
-									console.log("User already logged in");
-									socket.disconnect(true);
-								}
-								else {
-									logged.push(userid);
-									this.redis.hset(`channel:${channelName}`, "logged", JSON.stringify(logged));
-									console.log(`User ${userid} logged in channel ${channelName}`);
-									socket.join(channelName);
-									socket.emit('channelJoined', channelName);
-									socket.broadcast.emit('channelListUpdated');
-								}
-							}
-						}
-					});
-				}
+				console.log(`redis: Room ${roomName} does not exist`);
+				socket.emit("roomDoesNotExist");
 			}
 		});
 	}
 
-	async leaveChannel(socket, channelName: string) {
-		console.log("[ ChatService ] => leaveChannel");
+	async leaveRoom(socket, roomName: string, server) {
+		socket.leave(roomName);
+		socket.emit("roomLeft");
+		server.to(roomName).emit("userLeft", socket.id);
+	}
 
-		this.redis.get(`socket:${socket.id}`, (error, userid) => {
-			if (error) {
-				console.log("redis.get error: ", error);
-				socket.disconnect(true);
+	async messageRoom(socket, data, server) {
+		const { roomName, message } = data;
+		server.to(roomName).emit("messageReceived", message);
+	}
+
+	checkIfRoomExists(roomName: string) {
+		const roomExists = this.redis.hexists(`room:${roomName}`, "owner", (error, response) => {
+			if (response === 1) {
+				console.log(`redis: Room ${roomName} exists`);
+				return true;
 			} else {
-				if (userid === null) {
-					console.log("User not found");
-					socket.disconnect(true);
-				}
-				else {
-					console.log("User found");
-					console.log("user_id", userid)
-					this.redis.hget(`channel:${channelName}`, "logged", (error, logged) => {
-						if (error) {
-							console.log("redis.hget error: ", error);
-							socket.disconnect(true);
-						} else {
-							if (logged === null) {
-								console.log("Channel not found");
-								socket.disconnect(true);
-							}
-							else {
-								console.log("Channel found");
-								logged = JSON.parse(logged);
-								if (!logged.includes(userid)) {
-									console.log("User not logged in");
-									socket.disconnect(true);
-								}
-								else {
-									logged.splice(logged.indexOf(userid), 1);
-									this.redis.hset(`channel:${channelName}`, "logged", JSON.stringify(logged));
-									console.log(`User ${userid} logged out from channel ${channelName}`);
-									socket.leave(channelName);
-									socket.emit('channelLeft', channelName);
-									socket.broadcast.emit('channelListUpdated');
-								}
-							}
-						}
-					});
-				}
+				console.log(`redis: Room ${roomName} does not exist`);
+				return false;
 			}
 		});
 	}
+
+	checkIfUserIsBanned(socket, roomName: string) {
+		this.redis.hget(`room:${roomName}`, "banned", (error, response) => {
+			const banned = JSON.parse(response);
+			if (banned.includes(socket.id))
+				return true;
+			else
+				return false;
+		});
+	}
+
+	checkIfUserIsMuted(socket, roomName: string) {
+		this.redis.hget(`room:${roomName}`, "muted", (error, response) => {
+			const muted = JSON.parse(response);
+			if (muted.includes(socket.id))
+				return true;
+			else
+				return false;
+		});
+	}
+
+	checkIfUserIsAdmin(socket, roomName: string) {
+		this.redis.hget(`room:${roomName}`, "admins", (error, response) => {
+			const admins = JSON.parse(response);
+			if (admins.includes(socket.id))
+				return true;
+			else
+				return false;
+		});
+	}
+
+	checkIfUserIsOwner(socket, roomName: string) {
+		this.redis.hget(`room:${roomName}`, "owner", (error, response) => {
+			if (response === socket.id)
+				return true;
+			else
+				return false;
+		});
+	}
+
+
+
 }

@@ -21,22 +21,26 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	async handleDisconnect(@ConnectedSocket() socket) {
-		console.log("disconnecting: ", socket.id);
 		this.chat.handleDisconnect(socket);
 	}
 
-	@SubscribeMessage('createChannel')
-	handleCreateChannel(@ConnectedSocket() socket, @MessageBody() messageBody: CreateChannelDto) {
-		this.chat.createChannel(socket, messageBody);
+	@SubscribeMessage("createRoom")
+	handleCreateRoom(@ConnectedSocket() socket, @MessageBody() room) {
+		this.chat.createRoom(socket, room);
 	}
 
-	@SubscribeMessage('joinChannel')
-	handleJoinChannel(@ConnectedSocket() socket, @MessageBody() messageBody) {
-		this.chat.joinChannel(socket, messageBody);
+	@SubscribeMessage("joinRoom")
+	handleJoinRoom(@ConnectedSocket() socket, @MessageBody() room) {
+		this.chat.joinRoom(socket, room, this.server);
 	}
 
-	@SubscribeMessage('leaveChannel')
-	handleLeaveChannel(@ConnectedSocket() socket, @MessageBody() messageBody) {
-		this.chat.leaveChannel(socket, messageBody);
+	@SubscribeMessage("leaveRoom")
+	handleLeaveRoom(@ConnectedSocket() socket, @MessageBody() room) {
+		this.chat.leaveRoom(socket, room, this.server);
+	}
+
+	@SubscribeMessage("messageRoom")
+	handleMessageRoom(@ConnectedSocket() socket, @MessageBody() message) {
+		this.chat.messageRoom(socket, message, this.server);
 	}
 }
