@@ -2,6 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 // import { WsException } from '@nestjs/websockets';
 import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { CreateChannelDto } from '../channels/channel.dto';
 import { ChatService } from './chat.service';
 
 @WebSocketGateway()
@@ -24,10 +25,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.handleDisconnect(socket);
 	}
 
-	@SubscribeMessage('message')
-	handleMessage(@ConnectedSocket() socket, @MessageBody() messageBody: string) {
-		console .log("[ ChatGateway ] => handleMessage");
-		console.log("Event on message: ", messageBody);
-		return 'Hello world!';
+	@SubscribeMessage('createChannel')
+	handleCreateChannel(@ConnectedSocket() socket, @MessageBody() messageBody: CreateChannelDto) {
+		this.chat.createChannel(socket, messageBody);
 	}
 }

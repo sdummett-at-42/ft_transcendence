@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
+import { CreateChannelDto } from '../channels/channel.dto';
 
 @Injectable()
 export class ChatService {
@@ -56,5 +57,27 @@ export class ChatService {
 		console.log("[ ChatService ] => handleDisconnect");
 		this.redis.del(`socket:${socket.id}`);
 		console.log(`Removed socket:${socket.id} from redis`);
+	}
+	async createChannel(socket, dto: CreateChannelDto) {
+		console.log("[ ChatService ] => createChannel");
+
+		this.redis.multi()
+			// .hset(`channel:${name}`, "owner", userid)
+			.hset(`channel:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic))
+			.hset(`channel:${dto.name}`, "logged", JSON.stringify([]))
+			.hset(`channel:${dto.name}`, "banned", JSON.stringify([]))
+			.hset(`channel:${dto.name}`, "muted", JSON.stringify([]))
+			.hset(`channel:${dto.name}`, "admins", JSON.stringify([]))
+			.hset(`channel:${dto.name}`, "messages", JSON.stringify([]))
+			.sadd('channels', dto.name)
+			.exec((err, results) => {
+				if (err) {
+					console.error(err);
+				} else {
+					console.log(`Created channel ${dto.name}`);
+					socket.emit('channelCreated', dto.name);
+					socket.broadcast.emit('channelListUpdated');
+				}
+			});
 	}
 }
