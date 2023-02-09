@@ -22,6 +22,10 @@
 	  socket.on("channelJoined", function() {
 		console.log("Channel joined");
 	  });
+
+	  socket.on("channelLeft", function() {
+		console.log("Channel left");
+	  });
     </script>
   </head>
   <body>

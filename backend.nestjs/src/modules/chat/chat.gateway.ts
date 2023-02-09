@@ -34,4 +34,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	handleJoinChannel(@ConnectedSocket() socket, @MessageBody() messageBody) {
 		this.chat.joinChannel(socket, messageBody);
 	}
+
+	@SubscribeMessage('leaveChannel')
+	handleLeaveChannel(@ConnectedSocket() socket, @MessageBody() messageBody) {
+		this.chat.leaveChannel(socket, messageBody);
+	}
 }

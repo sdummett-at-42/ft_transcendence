@@ -127,4 +127,51 @@ export class ChatService {
 			}
 		});
 	}
+
+	async leaveChannel(socket, channelName: string) {
+		console.log("[ ChatService ] => leaveChannel");
+
+		this.redis.get(`socket:${socket.id}`, (error, userid) => {
+			if (error) {
+				console.log("redis.get error: ", error);
+				socket.disconnect(true);
+			} else {
+				if (userid === null) {
+					console.log("User not found");
+					socket.disconnect(true);
+				}
+				else {
+					console.log("User found");
+					console.log("user_id", userid)
+					this.redis.hget(`channel:${channelName}`, "logged", (error, logged) => {
+						if (error) {
+							console.log("redis.hget error: ", error);
+							socket.disconnect(true);
+						} else {
+							if (logged === null) {
+								console.log("Channel not found");
+								socket.disconnect(true);
+							}
+							else {
+								console.log("Channel found");
+								logged = JSON.parse(logged);
+								if (!logged.includes(userid)) {
+									console.log("User not logged in");
+									socket.disconnect(true);
+								}
+								else {
+									logged.splice(logged.indexOf(userid), 1);
+									this.redis.hset(`channel:${channelName}`, "logged", JSON.stringify(logged));
+									console.log(`User ${userid} logged out from channel ${channelName}`);
+									socket.leave(channelName);
+									socket.emit('channelLeft', channelName);
+									socket.broadcast.emit('channelListUpdated');
+								}
+							}
+						}
+					});
+				}
+			}
+		});
+	}
 }
