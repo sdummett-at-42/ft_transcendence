@@ -27,7 +27,6 @@ model User {
 	channelOwner		Channel[]			@relation("owner")
 	channelMember		Channel[]			@relation("users")
 	channelAdmin		Channel[]			@relation("admins")
-	channelMuted		Channel[]			@relation("mutedUsers")
 	channelBanned		Channel[]			@relation("bannedUsers")
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
@@ -84,7 +83,6 @@ model Channel {
 	ownerId				Int
 	users				User[]				@relation("users")
 	admins				User[]				@relation("admins")
-	muted				User[]				@relation("mutedUsers")
 	banned				User[]				@relation("bannedUsers")
 	isPublic			Boolean				@default(false)
 	password			String?
