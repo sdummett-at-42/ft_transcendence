@@ -29,4 +29,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	handleCreateChannel(@ConnectedSocket() socket, @MessageBody() messageBody: CreateChannelDto) {
 		this.chat.createChannel(socket, messageBody);
 	}
+
+	@SubscribeMessage('joinChannel')
+	handleJoinChannel(@ConnectedSocket() socket, @MessageBody() messageBody) {
+		this.chat.joinChannel(socket, messageBody);
+	}
 }
