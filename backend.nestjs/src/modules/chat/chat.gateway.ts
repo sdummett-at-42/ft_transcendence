@@ -1,9 +1,8 @@
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-// import { WsException } from '@nestjs/websockets';
 import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { CreateChannelDto } from '../channels/channel.dto';
 import { ChatService } from './chat.service';
+import { CreateRoomSchema } from './chat.dto';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -17,30 +16,43 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	async handleConnection(@ConnectedSocket() socket) {
-		this.chat.handleConnection(socket);
+		// this.chat.handleConnection(socket);
 	}
 
 	async handleDisconnect(@ConnectedSocket() socket) {
 		this.chat.handleDisconnect(socket);
 	}
 
-	@SubscribeMessage("createRoom")
-	handleCreateRoom(@ConnectedSocket() socket, @MessageBody() room) {
-		this.chat.createRoom(socket, room);
+	@SubscribeMessage("create")
+	async onCreateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
+		const { error } = CreateRoomSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit('error', {message: error});
+			return;
+		}
+		this.chat.createRoom(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("joinRoom")
-	handleJoinRoom(@ConnectedSocket() socket, @MessageBody() room) {
-		this.chat.joinRoom(socket, room, this.server);
+	@SubscribeMessage("join")
+	onJoinRoom(@ConnectedSocket() socket, @MessageBody() dto) {
+		this.chat.joinRoom(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("leaveRoom")
-	handleLeaveRoom(@ConnectedSocket() socket, @MessageBody() room) {
-		this.chat.leaveRoom(socket, room, this.server);
+	@SubscribeMessage("leave")
+	onLeaveRoom(@ConnectedSocket() socket, @MessageBody() dto) {
+		this.chat.leaveRoom(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("messageRoom")
-	handleMessageRoom(@ConnectedSocket() socket, @MessageBody() message) {
-		this.chat.messageRoom(socket, message, this.server);
+	// @SubscribeMessage("messageRoom")
+	// onMessageRoom(@ConnectedSocket() socket, @MessageBody() dto) {
+	// 	this.chat.messageRoom(socket, dto, this.server);
+	// }
+
+	@SubscribeMessage("server")
+	getSocketsInRoom(@MessageBody() room) {
+		console.log(this.server.sockets.adapter.rooms[room]
+			? Object.values(this.server.sockets.adapter.rooms[room].sockets)
+			: []);
 	}
 }

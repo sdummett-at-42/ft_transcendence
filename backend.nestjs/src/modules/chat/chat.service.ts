@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
 import { CreateChannelDto } from '../channels/channel.dto';
+import { CreateRoomDto, CreateRoomSchema } from './chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -56,15 +57,16 @@ export class ChatService {
 		console.log(`Removed socket:${socket.id} from redis`);
 	}
 
-	createRoom(socket, roomName: string) {
-		const roomExists = this.redis.hexists(`room:${roomName}`, "owner", (error, response) => {
+	createRoom(socket, dto: CreateRoomDto, server) {
+		console.log({dto});
+		this.redis.hexists(`room:${dto.name}`, "owner", (error, response) => {
 			if (response === 1) {
-				console.log(`redis: Room ${roomName} already exists`);
+				console.log(`redis: Room ${dto.name} already exists`);
 				socket.emit("roomExists");
 			} else {
-				console.log(`redis: Room ${roomName} does not exist`);
-				this.createRoomInRedis(socket, roomName);
-				socket.join(roomName);
+				console.log(`redis: Room ${dto.name} does not exist`);
+				this.createRoomInRedis(socket, dto.name);
+				socket.join(dto.name);
 				socket.emit("roomCreated");
 			}
 		});
