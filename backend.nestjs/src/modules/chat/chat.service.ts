@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateChannelDto } from '../channels/channel.dto';
-import { CreateRoomDto, LeaveRoomDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto } from './chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -180,16 +179,71 @@ export class ChatService {
 		});
 	}
 
-	async joinRoom(socket, name: string, server) {
-		const roomExists = this.redis.hexists(`room:${name}`, "owner", (error, response) => {
-			if (response === 1) {
-				socket.join(name);
-				socket.emit("roomJoined");
-				server.to(name).emit("userJoined", socket.id);
-			} else {
-				console.log(`redis: Room ${name} does not exist`);
-				socket.emit("roomDoesNotExist");
-			}
+	async joinRoom(socket, dto: JoinRoomDto , server) {
+		if (await this.checkIfRoomExists(dto.name) == false) {
+			console.log(`Room ${dto.name} does not exist`);
+			socket.emit("failure", "Room does not exist");
+			return;
+		}
+
+		if (await this.checkIfUserIsBanned(socket.id, dto.name) == true) {
+			console.log(`User ${socket.id} is banned from room ${dto.name}`);
+			socket.emit("failure", "You are banned from this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(socket.id, dto.name) == true) {
+			console.log(`User ${socket.id} is already logged in room ${dto.name}`);
+			socket.emit("failure", "You are already logged in this room");
+			return;
+		}
+
+		if (await this.checkIfRoomIsFull(dto.name) == true) {
+			console.log(`Room ${dto.name} is full`);
+			socket.emit("failure", "Room is full");
+			return;
+		}
+
+		console.log(`User ${socket.id} is joining room ${dto.name}...`);
+		await this.joinRoomInRedis(socket, dto.name);
+		socket.join(dto.name);
+		socket.emit("roomJoined", dto.name);
+		server.to(dto.name).emit("userJoined", socket.id);
+	}
+
+	async checkIfRoomIsFull(name: string) : Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "logged", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				let logged = JSON.parse(response);
+				if (logged.length >= 10) {
+					resolve(true);
+					return;
+				}
+				resolve(false);
+			});
+		});
+	}
+
+	async joinRoomInRedis(socket, name: string) : Promise<void> {
+		return new Promise((resolve) => {
+			this.redis.hget(`room:${name}`, "logged", (error, response) => {
+				if (error) {
+					console.error(error);
+					resolve();
+					return;
+				}
+				let logged = JSON.parse(response);
+				logged.push(socket.id);
+				console.log({loggedAfterJoiner: logged});
+				this.redis.hset(`room:${name}`, "logged", JSON.stringify(logged), () => {
+					resolve();
+				});
+			});
 		});
 	}
 
