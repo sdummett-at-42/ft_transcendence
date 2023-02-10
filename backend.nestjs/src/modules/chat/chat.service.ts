@@ -62,13 +62,12 @@ export class ChatService {
 		if (await this.checkIfRoomExists(dto.name) == true) {
 			console.log(`Room ${dto.name} already exists`);
 			socket.emit("failure", "Room already exists");
+			return;
 		}
-		else {
-			console.log(`Room ${dto.name} does not exist, creating...`);
-			this.createRoomInRedis(socket, dto);
-			socket.join(dto.name);
-			socket.emit("roomCreated");
-		}
+		console.log(`Room ${dto.name} does not exist, creating...`);
+		this.createRoomInRedis(socket, dto);
+		socket.join(dto.name);
+		socket.emit("roomCreated");
 
 		console.log(await this.checkIfUserIsLogged(socket.id, dto.name));
 		console.log(await this.checkIfUserIsLogged("abcdef", dto.name));
@@ -116,6 +115,47 @@ export class ChatService {
 		})
 	}
 
+	async leaveRoom(socket, dto: LeaveRoomDto, server) {
+		if (await this.checkIfRoomExists(dto.name) == false) {
+			console.log(`Room ${dto.name} does not exist`);
+			socket.emit("failure", "Room does not exist");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
+			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+			socket.emit("failure", "You are not logged in this room");
+			return;
+		}
+		console.log(`User ${socket.id} is logged in room ${dto.name}, leaving...`);
+		this.leaveRoomInRedis(socket, dto);
+		socket.leave(dto.name);
+		socket.emit("roomLeft");
+		server.to(dto.name).emit("userLeft", socket.id);
+	}
+
+	async leaveRoomInRedis(socket, dto: LeaveRoomDto) {
+		this.redis.hget(`room:${dto.name}`, "logged", (error, response) => {
+			if (error) {
+				console.error(error);
+				return;
+			}
+			let logged = JSON.parse(response);
+			logged = logged.filter((id) => id !== socket.id);
+			this.redis.hset(`room:${dto.name}`, "logged", JSON.stringify(logged));
+		});
+
+		if (await this.checkIfRoomIsEmpty(dto.name) == true) {
+			// Delete the room if it is empty
+			// this.deleteRoomInRedis(dto.name);
+		}
+		else if (await this.checkIfUserIsOwner(socket.id, dto.name) == true) {
+			// Change the owner if the user leaving is the owner
+			// this.changeRoomOwnerInRedis(dto.name);
+		}
+	}
+
+
 	async joinRoom(socket, name: string, server) {
 		const roomExists = this.redis.hexists(`room:${name}`, "owner", (error, response) => {
 			if (response === 1) {
@@ -127,12 +167,6 @@ export class ChatService {
 				socket.emit("roomDoesNotExist");
 			}
 		});
-	}
-
-	async leaveRoom(socket, name: string, server) {
-		socket.leave(name);
-		socket.emit("roomLeft");
-		server.to(name).emit("userLeft", socket.id);
 	}
 
 	async messageRoom(socket, data, server) {
@@ -233,6 +267,23 @@ export class ChatService {
 				}
 				const banned = JSON.parse(response);
 				if (banned.includes(id))
+					resolve(true);
+				else
+					resolve(false);
+			});
+		});
+	}
+
+	checkIfRoomIsEmpty(name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "logged", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const logged = JSON.parse(response);
+				if (logged.length === 0)
 					resolve(true);
 				else
 					resolve(false);
