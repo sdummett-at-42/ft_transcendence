@@ -57,23 +57,21 @@ export class ChatService {
 		console.log(`Removed socket:${socket.id} from redis`);
 	}
 
-	createRoom(socket, dto: CreateRoomDto, server) {
+	async createRoom(socket, dto: CreateRoomDto, server) {
 
-		this.redis.exists(`room:${dto.name}`, (error, response) => {
-			if (error) {
-				console.error(error);
-				return;
-			}
-			if (response === 1) {
-				console.log(`Room ${dto.name} already exists`);
-				socket.emit("failure", "Room already exists");
-			} else {
-				console.log(`Room ${dto.name} does not exist, creating...`);
-				this.createRoomInRedis(socket, dto);
-				socket.join(dto.name);
-				socket.emit("roomCreated");
-			}
-		});
+		if (await this.checkIfRoomExists(dto.name) == true) {
+			console.log(`Room ${dto.name} already exists`);
+			socket.emit("failure", "Room already exists");
+		}
+		else {
+			console.log(`Room ${dto.name} does not exist, creating...`);
+			this.createRoomInRedis(socket, dto);
+			socket.join(dto.name);
+			socket.emit("roomCreated");
+		}
+
+		console.log(await this.checkIfUserIsLogged(socket.id, dto.name));
+		console.log(await this.checkIfUserIsLogged("abcdef", dto.name));
 	}
 
 	async createRoomInRedis(socket, dto: CreateRoomDto) {
@@ -108,91 +106,137 @@ export class ChatService {
 				console.log(`redis: Created room:${dto.name}`);
 			});
 
-			// Print the newly created room for debug purpose
-			this.redis.hgetall(`room:${dto.name}`, (error, response) =>{
-				if (error) {
-					console.error(error);
-					return;
-				}
-				console.log(response);
-			})
+		// Print the newly created room for debug purpose
+		this.redis.hgetall(`room:${dto.name}`, (error, response) => {
+			if (error) {
+				console.error(error);
+				return;
+			}
+			console.log(response);
+		})
 	}
 
-	async joinRoom(socket, roomName: string, server) {
-		const roomExists = this.redis.hexists(`room:${roomName}`, "owner", (error, response) => {
+	async joinRoom(socket, name: string, server) {
+		const roomExists = this.redis.hexists(`room:${name}`, "owner", (error, response) => {
 			if (response === 1) {
-				socket.join(roomName);
+				socket.join(name);
 				socket.emit("roomJoined");
-				server.to(roomName).emit("userJoined", socket.id);
+				server.to(name).emit("userJoined", socket.id);
 			} else {
-				console.log(`redis: Room ${roomName} does not exist`);
+				console.log(`redis: Room ${name} does not exist`);
 				socket.emit("roomDoesNotExist");
 			}
 		});
 	}
 
-	async leaveRoom(socket, roomName: string, server) {
-		socket.leave(roomName);
+	async leaveRoom(socket, name: string, server) {
+		socket.leave(name);
 		socket.emit("roomLeft");
-		server.to(roomName).emit("userLeft", socket.id);
+		server.to(name).emit("userLeft", socket.id);
 	}
 
 	async messageRoom(socket, data, server) {
-		const { roomName, message } = data;
-		server.to(roomName).emit("messageReceived", message);
+		const { name, message } = data;
+		server.to(name).emit("messageReceived", message);
 	}
 
-	checkIfRoomExists(roomName: string) {
-		const roomExists = this.redis.hexists(`room:${roomName}`, "owner", (error, response) => {
-			if (response === 1) {
-				console.log(`redis: Room ${roomName} exists`);
-				return true;
-			} else {
-				console.log(`redis: Room ${roomName} does not exist`);
-				return false;
-			}
+	checkIfRoomExists(name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.exists(`room:${name}`, (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				resolve(response);
+			});
 		});
 	}
 
-	checkIfUserIsBanned(socket, roomName: string) {
-		this.redis.hget(`room:${roomName}`, "banned", (error, response) => {
-			const banned = JSON.parse(response);
-			if (banned.includes(socket.id))
-				return true;
-			else
-				return false;
+	checkIfUserIsLogged(id, name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "logged", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const logged = JSON.parse(response);
+				console.log(logged);
+				console.log(id);
+				if (logged.includes(id))
+					resolve(true);
+				else
+					resolve(false);
+			});
 		});
 	}
 
-	checkIfUserIsMuted(socket, roomName: string) {
-		this.redis.hget(`room:${roomName}`, "muted", (error, response) => {
-			const muted = JSON.parse(response);
-			if (muted.includes(socket.id))
-				return true;
-			else
-				return false;
+	checkIfUserIsOwner(id, name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "owner", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const owner = JSON.parse(response);
+				if (owner === id)
+					resolve(true);
+				else
+					resolve(false);
+			});
 		});
 	}
 
-	checkIfUserIsAdmin(socket, roomName: string) {
-		this.redis.hget(`room:${roomName}`, "admins", (error, response) => {
-			const admins = JSON.parse(response);
-			if (admins.includes(socket.id))
-				return true;
-			else
-				return false;
+	checkIfUserIsAdmin(id, name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "admins", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const admins = JSON.parse(response);
+				if (admins.includes(id))
+					resolve(true);
+				else
+					resolve(false);
+			});
 		});
 	}
 
-	checkIfUserIsOwner(socket, roomName: string) {
-		this.redis.hget(`room:${roomName}`, "owner", (error, response) => {
-			if (response === socket.id)
-				return true;
-			else
-				return false;
+	checkIfUserIsMuted(id, name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "muted", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const muted = JSON.parse(response);
+				if (muted.includes(id))
+					resolve(true);
+				else
+					resolve(false);
+			});
 		});
 	}
 
-
-
+	checkIfUserIsBanned(id, name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "banned", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const banned = JSON.parse(response);
+				if (banned.includes(id))
+					resolve(true);
+				else
+					resolve(false);
+			});
+		});
+	}
 }
