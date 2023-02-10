@@ -128,33 +128,57 @@ export class ChatService {
 			return;
 		}
 		console.log(`User ${socket.id} is logged in room ${dto.name}, leaving...`);
-		this.leaveRoomInRedis(socket, dto);
+		await this.leaveRoomInRedis(socket, dto);
+
+		if (await this.checkIfRoomIsEmpty(dto.name) == true) {
+			console.log("Room is empty, deleting it...");
+			this.deleteRoomInRedis(dto.name);
+		}
+		else if (await this.checkIfUserIsOwner(socket.id, dto.name) == true)
+			this.changeRoomOwnerInRedis(dto.name);
 		socket.leave(dto.name);
 		socket.emit("roomLeft");
 		server.to(dto.name).emit("userLeft", socket.id);
 	}
 
-	async leaveRoomInRedis(socket, dto: LeaveRoomDto) {
-		this.redis.hget(`room:${dto.name}`, "logged", (error, response) => {
+	async leaveRoomInRedis(socket, dto: LeaveRoomDto) : Promise<void> {
+		return new Promise((resolve) => {
+			this.redis.hget(`room:${dto.name}`, "logged", (error, response) => {
+				if (error) {
+					console.error(error);
+					resolve();
+					return;
+				}
+				let logged = JSON.parse(response);
+				logged = logged.filter((id) => id !== socket.id);
+				console.log({loggedAfterRemoverLeaver: logged});
+				this.redis.hset(`room:${dto.name}`, "logged", JSON.stringify(logged), () => {
+					resolve();
+				});
+			});
+		});
+	}
+
+	deleteRoomInRedis(name: string) {
+		this.redis.del(`room:${name}`, (error, response) => {
+			if (error) {
+				console.error(error);
+				return;
+			}
+			console.log(`redis: Deleted room:${name}`);
+		});
+	}
+
+	changeRoomOwnerInRedis(name: string) {
+		this.redis.hget(`room:${name}`, "logged", (error, response) => {
 			if (error) {
 				console.error(error);
 				return;
 			}
 			let logged = JSON.parse(response);
-			logged = logged.filter((id) => id !== socket.id);
-			this.redis.hset(`room:${dto.name}`, "logged", JSON.stringify(logged));
+			this.redis.hset(`room:${name}`, "owner", JSON.stringify(logged[0]));
 		});
-
-		if (await this.checkIfRoomIsEmpty(dto.name) == true) {
-			// Delete the room if it is empty
-			// this.deleteRoomInRedis(dto.name);
-		}
-		else if (await this.checkIfUserIsOwner(socket.id, dto.name) == true) {
-			// Change the owner if the user leaving is the owner
-			// this.changeRoomOwnerInRedis(dto.name);
-		}
 	}
-
 
 	async joinRoom(socket, name: string, server) {
 		const roomExists = this.redis.hexists(`room:${name}`, "owner", (error, response) => {
@@ -283,6 +307,7 @@ export class ChatService {
 					return;
 				}
 				const logged = JSON.parse(response);
+				console.log({ logged });
 				if (logged.length === 0)
 					resolve(true);
 				else
