@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
 import { CreateChannelDto } from '../channels/channel.dto';
-import { CreateRoomDto, CreateRoomSchema } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto } from './chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -58,32 +58,64 @@ export class ChatService {
 	}
 
 	createRoom(socket, dto: CreateRoomDto, server) {
-		console.log({dto});
-		this.redis.hexists(`room:${dto.name}`, "owner", (error, response) => {
+
+		this.redis.exists(`room:${dto.name}`, (error, response) => {
+			if (error) {
+				console.error(error);
+				return;
+			}
 			if (response === 1) {
-				console.log(`redis: Room ${dto.name} already exists`);
-				socket.emit("roomExists");
+				console.log(`Room ${dto.name} already exists`);
+				socket.emit("failure", "Room already exists");
 			} else {
-				console.log(`redis: Room ${dto.name} does not exist`);
-				this.createRoomInRedis(socket, dto.name);
+				console.log(`Room ${dto.name} does not exist, creating...`);
+				this.createRoomInRedis(socket, dto);
 				socket.join(dto.name);
 				socket.emit("roomCreated");
 			}
 		});
 	}
 
-	async createRoomInRedis(socket, roomName: string) {
+	async createRoomInRedis(socket, dto: CreateRoomDto) {
+		let { password } = dto;
+		let hasPassword;
+		if (!password) {
+			password = ""
+			hasPassword = false;
+		}
+		else {
+			hasPassword = true;
+		}
 		this.redis.multi()
-			.hset(`room:${roomName}`, "owner", socket.id)
-			.hset(`room:${roomName}`, "isPublic", JSON.stringify(true))
-			.hset(`room:${roomName}`, "logged", JSON.stringify([]))
-			.hset(`room:${roomName}`, "banned", JSON.stringify([]))
-			.hset(`room:${roomName}`, "muted", JSON.stringify([]))
-			.hset(`room:${roomName}`, "admins", JSON.stringify([]))
-			.hset(`room:${roomName}`, "messages", JSON.stringify([]))
+			.hset(`room:${dto.name}`, "owner", JSON.stringify(socket.id))
+			.hset(`room:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic))
+			.hset(`room:${dto.name}`, "logged", JSON.stringify([socket.id]))
+			.hset(`room:${dto.name}`, "banned", JSON.stringify([]))
+			.hset(`room:${dto.name}`, "muted", JSON.stringify([]))
+			.hset(`room:${dto.name}`, "admins", JSON.stringify([socket.id]))
+			.hset(`room:${dto.name}`, "password", JSON.stringify(password))
+			.hset(`room:${dto.name}`, "hasPassword", JSON.stringify(hasPassword))
+			.hset(`room:${dto.name}`, "messages", JSON.stringify([{
+				userId: -1,
+				timestamp: "0",
+				message: `Welcome to your channel ${dto.name}.`,
+			}]))
 			.exec((error, response) => {
-				console.log(`redis: Created room:${roomName}`);
+				if (error) {
+					console.error(error)
+					return;
+				}
+				console.log(`redis: Created room:${dto.name}`);
 			});
+
+			// Print the newly created room for debug purpose
+			this.redis.hgetall(`room:${dto.name}`, (error, response) =>{
+				if (error) {
+					console.error(error);
+					return;
+				}
+				console.log(response);
+			})
 	}
 
 	async joinRoom(socket, roomName: string, server) {

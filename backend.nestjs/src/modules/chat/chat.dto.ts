@@ -11,3 +11,11 @@ export const CreateRoomSchema = Joi.object({
 	isPublic: Joi.boolean().required(),
 	password: Joi.string().min(1).max(32).optional(),
 });
+
+export class LeaveRoomDto {
+	name: string;
+}
+
+export const LeaveRoomSchema = Joi.object({
+	name: Joi.string().min(1).max(32).required(),
+});
