@@ -49,3 +49,13 @@ export const MuteUserSchema = Joi.object({
 	name: Joi.string().min(1).max(32).required(),
 	userId: Joi.number().required(),
 });
+
+export class InviteUserDto {
+	name: string;
+	userId: number;
+}
+
+export const InviteUserSchema = Joi.object({
+	name: Joi.string().min(1).max(32).required(),
+	userId: Joi.number().required(),
+});

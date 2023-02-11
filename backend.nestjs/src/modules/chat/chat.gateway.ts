@@ -2,7 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema,  BanUserSchema } from './chat.dto';
+import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema } from './chat.dto';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -28,7 +28,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = CreateRoomSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', {message: error});
+			socket.emit('error', { message: error });
 			return;
 		}
 		this.chat.createRoom(socket, dto, this.server);
@@ -39,7 +39,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = JoinRoomSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', {message: error});
+			socket.emit('error', { message: error });
 			return;
 		}
 		this.chat.joinRoom(socket, dto, this.server);
@@ -50,7 +50,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = LeaveRoomSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', {message: error});
+			socket.emit('error', { message: error });
 			return;
 		}
 		this.chat.leaveRoom(socket, dto, this.server);
@@ -61,7 +61,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = BanUserSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', {message: error});
+			socket.emit('error', { message: error });
 			return;
 		}
 		this.chat.banUser(socket, dto, this.server);
@@ -69,13 +69,24 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage("mute")
 	onMuteUser(@ConnectedSocket() socket, @MessageBody() dto) {
-		const { error } = BanUserSchema.validate(dto);
+		const { error } = MuteUserSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', {message: error});
+			socket.emit('error', { message: error });
 			return;
 		}
 		this.chat.muteUser(socket, dto, this.server);
+	}
+
+	@SubscribeMessage("invite")
+	onInviteUser(@ConnectedSocket() socket, @MessageBody() dto) {
+		const { error } = InviteUserSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit('error', { message: error });
+			return;
+		}
+		this.chat.inviteUser(socket, dto, this.server);
 	}
 
 	// @SubscribeMessage("messageRoom")

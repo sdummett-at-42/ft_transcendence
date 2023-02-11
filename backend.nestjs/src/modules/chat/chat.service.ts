@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto } from './chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -359,6 +359,60 @@ export class ChatService {
 				let muted = JSON.parse(response);
 				muted.push(id);
 				this.redis.hset(`room:${name}`, "muted", JSON.stringify(muted), () => {
+					resolve();
+				});
+			});
+		});
+	}
+
+
+	async inviteUser(socket, dto: InviteUserDto, server) {
+		if (await this.checkIfRoomExists(dto.name) == false) {
+			console.log(`Room ${dto.name} does not exist`);
+			socket.emit("failure", "Room does not exist");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
+			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+			socket.emit("failure", "You are not logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(dto.userId, dto.name) == true) {
+			console.log(`User ${dto.userId} is already logged in room ${dto.name}`);
+			socket.emit("failure", "User is already logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsInvited(dto.userId, dto.name) == true) {
+			console.log(`User ${dto.userId} is already invited in room ${dto.name}`);
+			socket.emit("failure", "User is already invited in this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsBanned(dto.userId, dto.name) == true) {
+			console.log(`User ${dto.userId} is banned from room ${dto.name}`);
+			socket.emit("failure", "User is banned from this room");
+			return;
+		}
+
+		console.log(`User ${socket.id} is inviting user ${dto.userId} to room ${dto.name}...`);
+		await this.inviteUserInRedis(dto.userId, dto.name);
+		server.to(dto.name).emit("userInvited", dto.userId);
+	}
+
+	async inviteUserInRedis(id, name: string): Promise<void> {
+		return new Promise((resolve) => {
+			this.redis.hget(`room:${name}`, "invited", (error, response) => {
+				if (error) {
+					console.error(error);
+					resolve();
+					return;
+				}
+				let invited = JSON.parse(response);
+				invited.push(id);
+				this.redis.hset(`room:${name}`, "invited", JSON.stringify(invited), () => {
 					resolve();
 				});
 			});
