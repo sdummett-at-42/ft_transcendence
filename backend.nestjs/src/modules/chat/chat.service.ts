@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto } from './chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -259,6 +259,59 @@ export class ChatService {
 		});
 	}
 
+	async banUser(socket, dto: BanUserDto, server) {
+		if (await this.checkIfRoomExists(dto.name) == false) {
+			console.log(`Room ${dto.name} does not exist`);
+			socket.emit("failure", "Room does not exist");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
+			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+			socket.emit("failure", "You are not logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(dto.userId, dto.name) == false) {
+			console.log(`User ${dto.userId} is not logged in room ${dto.name}`);
+			socket.emit("failure", "User is not logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserHasPrivilegesToBan(socket.id, dto.userId, dto.name) == false) {
+			console.log(`User ${socket.id} does not have right privileges to ban user ${dto.userId} in room ${dto.name}`);
+			socket.emit("failure", "You do not have the right privileges to ban");
+			return;
+		}
+
+		if (await this.checkIfUserIsBanned(dto.userId, dto.name) == true) {
+			console.log(`User ${dto.userId} is already banned from room ${dto.name}`);
+			socket.emit("failure", "User is already banned from this room");
+			return;
+		}
+
+		console.log(`User ${socket.id} is banning user ${dto.userId} from room ${dto.name}...`);
+		await this.banUserInRedis(dto.userId, dto.name);
+		server.to(dto.name).emit("userBanned", dto.userId);
+	}
+
+	async banUserInRedis(id, name: string): Promise<void> {
+		return new Promise((resolve) => {
+			this.redis.hget(`room:${name}`, "banned", (error, response) => {
+				if (error) {
+					console.error(error);
+					resolve();
+					return;
+				}
+				let banned = JSON.parse(response);
+				banned.push(id);
+				this.redis.hset(`room:${name}`, "banned", JSON.stringify(banned), () => {
+					resolve();
+				});
+			});
+		});
+	}
+
 	removeInvitation(id, name: string) {
 		this.redis.hget(`room:${name}`, "invited", (error, response) => {
 			if (error) {
@@ -390,6 +443,19 @@ export class ChatService {
 				else
 					resolve(false);
 			});
+		});
+	}
+
+	checkIfUserHasPrivilegesToBan(bannerId, bannedId, name: string) {
+		return new Promise(async (resolve, reject) => {
+			if (await this.checkIfUserIsOwner(bannedId, name) == true)
+				resolve(false);
+			else if (await this.checkIfUserIsOwner(bannerId, name) == true)
+				resolve(true);
+			else if (await this.checkIfUserIsAdmin(bannerId, name) == true &&
+				await this.checkIfUserIsAdmin(bannedId, name) == false)
+				resolve(true);
+			resolve(false);
 		});
 	}
 

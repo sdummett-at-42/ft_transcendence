@@ -2,7 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema } from './chat.dto';
+import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema,  BanUserSchema } from './chat.dto';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -54,6 +54,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			return;
 		}
 		this.chat.leaveRoom(socket, dto, this.server);
+	}
+
+	@SubscribeMessage("ban")
+	onBanUser(@ConnectedSocket() socket, @MessageBody() dto) {
+		const { error } = BanUserSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit('error', {message: error});
+			return;
+		}
+		this.chat.banUser(socket, dto, this.server);
 	}
 
 	// @SubscribeMessage("messageRoom")
