@@ -63,7 +63,6 @@ export class ChatService {
 		const userId = await this.getUserId(socket);
 		socket.data.userId = userId;
 		console.log({ socketData: socket.data });
-		// Need to remove the statement below since we are using socket.data to store userId
 		console.log(`Adding socket for user ${userId}`);
 		this.redis.hset(`user:${userId}`, socket.id, '1'); 
 		console.log(`Added socket:${socket.id} to redis`);
@@ -93,23 +92,12 @@ export class ChatService {
 	}
 
 	handleDisconnect(@ConnectedSocket() socket) {
-		const redisKey = `sess:${socket.handshake.headers.cookie.slice(16).split(".")[0]}`; // BUG: if user is not logged in
-		this.redis.get(redisKey, (error, session) => {
+		console.log(`Socket ${socket.id} disconnected`);
+		this.redis.hdel(`user:${socket.data.userId}`, socket.id, (error, response) => {
 			if (error) {
-				console.log("redis.get error: ", error);
-				socket.disconnect(true);
+				console.log("redis.hdel error: ", error);
 			} else {
-				if (session === null) {
-					console.log("Session not found");
-					socket.disconnect(true);
-				}
-				else {
-					console.log("Session found");
-					const userId = JSON.parse(session).passport.user.id;
-					console.log(`Removing socket for user ${userId}`);
-					this.redis.hdel(`user:${userId}`, socket.id);
-					console.log(`Removed socket:${socket.id} from redis`);
-				}
+				console.log(`redis.hdel: Deleted ${response} keys`);
 			}
 		});
 	}
