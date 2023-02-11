@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto } from './chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -312,6 +312,59 @@ export class ChatService {
 		});
 	}
 
+	async unbanUser(socket, dto: UnbanUserDto, server) {
+		if (await this.checkIfRoomExists(dto.name) == false) {
+			console.log(`Room ${dto.name} does not exist`);
+			socket.emit("failure", "Room does not exist");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
+			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+			socket.emit("failure", "You are not logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(dto.userId, dto.name) == false) {
+			console.log(`User ${dto.userId} is not logged in room ${dto.name}`);
+			socket.emit("failure", "User is not logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserHasPrivileges(socket.id, dto.userId, dto.name) == false) {
+			console.log(`User ${socket.id} does not have right privileges to unban user ${dto.userId} in room ${dto.name}`);
+			socket.emit("failure", "You do not have the right privileges to unban");
+			return;
+		}
+
+		if (await this.checkIfUserIsBanned(dto.userId, dto.name) == false) {
+			console.log(`User ${dto.userId} is not banned from room ${dto.name}`);
+			socket.emit("failure", "User is not banned from this room");
+			return;
+		}
+
+		console.log(`User ${socket.id} is unbanning user ${dto.userId} from room ${dto.name}...`);
+		await this.unbanUserInRedis(dto.userId, dto.name);
+		server.to(dto.name).emit("userUnbanned", dto.userId);
+	}
+
+	async unbanUserInRedis(id, name: string): Promise<void> {
+		return new Promise((resolve) => {
+			this.redis.hget(`room:${name}`, "banned", (error, response) => {
+				if (error) {
+					console.error(error);
+					resolve();
+					return;
+				}
+				let banned = JSON.parse(response);
+				banned = banned.filter((x) => x != id);
+				this.redis.hset(`room:${name}`, "banned", JSON.stringify(banned), () => {
+					resolve();
+				});
+			});
+		});
+	}
+
 	async muteUser(socket, dto: MuteUserDto, server) {
 		if (await this.checkIfRoomExists(dto.name) == false) {
 			console.log(`Room ${dto.name} does not exist`);
@@ -364,7 +417,6 @@ export class ChatService {
 			});
 		});
 	}
-
 
 	async inviteUser(socket, dto: InviteUserDto, server) {
 		if (await this.checkIfRoomExists(dto.name) == false) {

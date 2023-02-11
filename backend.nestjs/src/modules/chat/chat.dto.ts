@@ -40,6 +40,16 @@ export const BanUserSchema = Joi.object({
 	userId: Joi.number().required(),
 });
 
+export class UnbanUserDto {
+	name: string;
+	userId: number;
+}
+
+export const UnbanUserSchema = Joi.object({
+	name: Joi.string().min(1).max(32).required(),
+	userId: Joi.number().required(),
+});
+
 export class MuteUserDto {
 	name: string;
 	userId: number;

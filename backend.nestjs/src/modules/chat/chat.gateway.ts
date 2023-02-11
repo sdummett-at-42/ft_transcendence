@@ -2,7 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema } from './chat.dto';
+import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema } from './chat.dto';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -65,6 +65,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			return;
 		}
 		this.chat.banUser(socket, dto, this.server);
+	}
+
+	@SubscribeMessage("unban")
+	onUnbanUser(@ConnectedSocket() socket, @MessageBody() dto) {
+		const { error } = UnbanUserSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit('error', { message: error });
+			return;
+		}
+		this.chat.unbanUser(socket, dto, this.server);
 	}
 
 	@SubscribeMessage("mute")
