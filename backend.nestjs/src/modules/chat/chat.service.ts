@@ -74,14 +74,9 @@ export class ChatService {
 
 	async createRoomInRedis(socket, dto: CreateRoomDto) {
 		let { password } = dto;
-		let hasPassword;
-		if (!password) {
+		if (!password)
 			password = ""
-			hasPassword = false;
-		}
-		else {
-			hasPassword = true;
-		}
+
 		this.redis.multi()
 			.hset(`room:${dto.name}`, "owner", JSON.stringify(socket.id))
 			.hset(`room:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic))
@@ -89,8 +84,8 @@ export class ChatService {
 			.hset(`room:${dto.name}`, "banned", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "muted", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "admins", JSON.stringify([socket.id]))
+			.hset(`room:${dto.name}`, "invited", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "password", JSON.stringify(password))
-			.hset(`room:${dto.name}`, "hasPassword", JSON.stringify(hasPassword))
 			.hset(`room:${dto.name}`, "messages", JSON.stringify([{
 				userId: -1,
 				timestamp: "0",
@@ -140,7 +135,7 @@ export class ChatService {
 		server.to(dto.name).emit("userLeft", socket.id);
 	}
 
-	async leaveRoomInRedis(socket, dto: LeaveRoomDto) : Promise<void> {
+	async leaveRoomInRedis(socket, dto: LeaveRoomDto): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${dto.name}`, "logged", (error, response) => {
 				if (error) {
@@ -150,7 +145,7 @@ export class ChatService {
 				}
 				let logged = JSON.parse(response);
 				logged = logged.filter((id) => id !== socket.id);
-				console.log({loggedAfterRemoverLeaver: logged});
+				console.log({ loggedAfterRemoverLeaver: logged });
 				this.redis.hset(`room:${dto.name}`, "logged", JSON.stringify(logged), () => {
 					resolve();
 				});
@@ -179,11 +174,20 @@ export class ChatService {
 		});
 	}
 
-	async joinRoom(socket, dto: JoinRoomDto , server) {
+	async joinRoom(socket, dto: JoinRoomDto, server) {
 		if (await this.checkIfRoomExists(dto.name) == false) {
 			console.log(`Room ${dto.name} does not exist`);
 			socket.emit("failure", "Room does not exist");
 			return;
+		}
+		else if (await this.checkIfRoomIsPublic(dto.name) == false) {
+			if (await this.checkIfUserIsInvited(socket.id, dto.name) == false) {
+				console.log(`User ${socket.id} is not invited to room ${dto.name}`);
+				socket.emit("failure", "You are not invited to this room");
+				return;
+			}
+			else
+				this.removeInvitation(socket.id, dto.name);
 		}
 
 		if (await this.checkIfUserIsBanned(socket.id, dto.name) == true) {
@@ -204,6 +208,14 @@ export class ChatService {
 			return;
 		}
 
+		if (await this.checkIfRoomIsProtected(dto.name) == true) {
+			if (await this.checkIfPasswordIsCorrect(dto.name, dto.password) == false) {
+				console.log(`Password for room ${dto.name} is incorrect`);
+				socket.emit("failure", "Password is incorrect");
+				return;
+			}
+		}
+
 		console.log(`User ${socket.id} is joining room ${dto.name}...`);
 		await this.joinRoomInRedis(socket, dto.name);
 		socket.join(dto.name);
@@ -211,7 +223,7 @@ export class ChatService {
 		server.to(dto.name).emit("userJoined", socket.id);
 	}
 
-	async checkIfRoomIsFull(name: string) : Promise<boolean> {
+	async checkIfRoomIsFull(name: string): Promise<boolean> {
 		return new Promise((resolve, reject) => {
 			this.redis.hget(`room:${name}`, "logged", (error, response) => {
 				if (error) {
@@ -229,7 +241,7 @@ export class ChatService {
 		});
 	}
 
-	async joinRoomInRedis(socket, name: string) : Promise<void> {
+	async joinRoomInRedis(socket, name: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${name}`, "logged", (error, response) => {
 				if (error) {
@@ -239,11 +251,23 @@ export class ChatService {
 				}
 				let logged = JSON.parse(response);
 				logged.push(socket.id);
-				console.log({loggedAfterJoiner: logged});
+				console.log({ loggedAfterJoiner: logged });
 				this.redis.hset(`room:${name}`, "logged", JSON.stringify(logged), () => {
 					resolve();
 				});
 			});
+		});
+	}
+
+	removeInvitation(id, name: string) {
+		this.redis.hget(`room:${name}`, "invited", (error, response) => {
+			if (error) {
+				console.error(error);
+				return;
+			}
+			let invited = JSON.parse(response);
+			invited = invited.filter((userId) => userId !== id);
+			this.redis.hset(`room:${name}`, "invited", JSON.stringify(invited));
 		});
 	}
 
@@ -352,6 +376,40 @@ export class ChatService {
 		});
 	}
 
+	checkIfUserIsInvited(id, name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "invited", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const invited = JSON.parse(response);
+				if (invited.includes(id))
+					resolve(true);
+				else
+					resolve(false);
+			});
+		});
+	}
+
+	checkIfRoomIsProtected(name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "password", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const password = JSON.parse(response);
+				if (password === "")
+					resolve(false);
+				else
+					resolve(true);
+			});
+		});
+	}
+
 	checkIfRoomIsEmpty(name: string) {
 		return new Promise((resolve, reject) => {
 			this.redis.hget(`room:${name}`, "logged", (error, response) => {
@@ -363,6 +421,40 @@ export class ChatService {
 				const logged = JSON.parse(response);
 				console.log({ logged });
 				if (logged.length === 0)
+					resolve(true);
+				else
+					resolve(false);
+			});
+		});
+	}
+
+	checkIfRoomIsPublic(name: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "isPublic", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const isPublic = JSON.parse(response);
+				if (isPublic)
+					resolve(true);
+				else
+					resolve(false);
+			});
+		});
+	}
+
+	checkIfPasswordIsCorrect(name: string, password: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "password", (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				const roomPassword = JSON.parse(response);
+				if (roomPassword === password)
 					resolve(true);
 				else
 					resolve(false);
