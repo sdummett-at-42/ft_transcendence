@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto } from './chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -411,6 +411,60 @@ export class ChatService {
 				}
 				let muted = JSON.parse(response);
 				muted.push(id);
+				this.redis.hset(`room:${name}`, "muted", JSON.stringify(muted), () => {
+					resolve();
+				});
+			});
+		});
+	}
+
+
+	async unmuteUser(socket, dto: UnmuteUserDto, server) {
+		if (await this.checkIfRoomExists(dto.name) == false) {
+			console.log(`Room ${dto.name} does not exist`);
+			socket.emit("failure", "Room does not exist");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
+			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+			socket.emit("failure", "You are not logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(dto.userId, dto.name) == false) {
+			console.log(`User ${dto.userId} is not logged in room ${dto.name}`);
+			socket.emit("failure", "User is not logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserHasPrivileges(socket.id, dto.userId, dto.name) == false) {
+			console.log(`User ${socket.id} does not have right privileges to unmute user ${dto.userId} in room ${dto.name}`);
+			socket.emit("failure", "You do not have the right privileges to unmute");
+			return;
+		}
+
+		if (await this.checkIfUserIsMuted(dto.userId, dto.name) == false) {
+			console.log(`User ${dto.userId} is not muted in room ${dto.name}`);
+			socket.emit("failure", "User is not muted in this room");
+			return;
+		}
+
+		console.log(`User ${socket.id} is unmuting user ${dto.userId} in room ${dto.name}...`);
+		await this.unmuteUserInRedis(dto.userId, dto.name);
+		server.to(dto.name).emit("userUnmuted", dto.userId);
+	}
+
+	async unmuteUserInRedis(id, name: string): Promise<void> {
+		return new Promise((resolve) => {
+			this.redis.hget(`room:${name}`, "muted", (error, response) => {
+				if (error) {
+					console.error(error);
+					resolve();
+					return;
+				}
+				let muted = JSON.parse(response);
+				muted = muted.filter((x) => x != id);
 				this.redis.hset(`room:${name}`, "muted", JSON.stringify(muted), () => {
 					resolve();
 				});

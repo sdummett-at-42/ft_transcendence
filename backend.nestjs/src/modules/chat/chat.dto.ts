@@ -60,6 +60,16 @@ export const MuteUserSchema = Joi.object({
 	userId: Joi.number().required(),
 });
 
+export class UnmuteUserDto {
+	name: string;
+	userId: number;
+}
+
+export const UnmuteUserSchema = Joi.object({
+	name: Joi.string().min(1).max(32).required(),
+	userId: Joi.number().required(),
+})
+
 export class InviteUserDto {
 	name: string;
 	userId: number;
