@@ -759,4 +759,20 @@ export class ChatService {
 			});
 		});
 	}
+
+	checkIfUserExists(id: string) {
+		return new Promise((resolve, reject) => {
+			this.redis.exists(`user:${id}`, (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				if (response === 1)
+					resolve(true);
+				else
+					resolve(false);
+			});
+		});
+	}
 }
