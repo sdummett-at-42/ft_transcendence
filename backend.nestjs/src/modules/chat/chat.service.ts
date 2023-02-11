@@ -27,6 +27,36 @@ export class ChatService {
 				}
 			}
 		});
+		this.redis.keys('room:*', (error, keys) => {
+			if (error)
+				console.log("redis error: ", error);
+			else {
+				if (keys.length > 0) {
+					this.redis.del(keys, (error, response) => {
+						if (error) {
+							console.log("redis.del error: ", error);
+						} else {
+							console.log(`redis.del: Deleting ${response} keys`);
+						}
+					});
+				}
+			}
+		});
+		this.redis.keys('user:*', (error, keys) => {
+			if (error)
+				console.log("redis error: ", error);
+			else {
+				if (keys.length > 0) {
+					this.redis.del(keys, (error, response) => {
+						if (error) {
+							console.log("redis.del error: ", error);
+						} else {
+							console.log(`redis.del: Deleting ${response} keys`);
+						}
+					});
+				}
+			}
+		});
 	}
 
 	handleConnection(socket) {
