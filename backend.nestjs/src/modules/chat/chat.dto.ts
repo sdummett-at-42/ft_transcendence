@@ -53,11 +53,13 @@ export const UnbanUserSchema = Joi.object({
 export class MuteUserDto {
 	name: string;
 	userId: number;
+	timeout: number;
 }
 
 export const MuteUserSchema = Joi.object({
 	name: Joi.string().min(1).max(32).required(),
 	userId: Joi.number().required(),
+	timeout: Joi.number().min(30).max(1260).required(),
 });
 
 export class UnmuteUserDto {

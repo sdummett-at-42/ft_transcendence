@@ -415,6 +415,7 @@ export class ChatService {
 		}
 
 		console.log(`User ${socket.id} is muting user ${dto.userId} in room ${dto.name}...`);
+		// ADD: the mute timeout should be added here
 		await this.muteUserInRedis(dto.userId, dto.name);
 		server.to(dto.name).emit("userMuted", dto.userId);
 	}
