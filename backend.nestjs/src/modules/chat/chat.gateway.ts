@@ -16,7 +16,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	}
 
 	async handleConnection(@ConnectedSocket() socket) {
-		// this.chat.handleConnection(socket);
+		this.chat.handleConnection(socket);
 	}
 
 	async handleDisconnect(@ConnectedSocket() socket) {

@@ -42,8 +42,9 @@ export class ChatService {
 				}
 				else {
 					console.log("Session found");
-					console.log("user_id", JSON.parse(session).passport.user.id)
-					this.redis.set(`socket:${socket.id}`, JSON.parse(session).passport.user.id)
+					const userId = JSON.parse(session).passport.user.id;
+					console.log(`Adding socket for user ${userId}`);
+					this.redis.hset(`user:${userId}`, socket.id, '1');
 					console.log(`Added socket:${socket.id} to redis`);
 					socket.emit("connected");
 				}
@@ -52,8 +53,25 @@ export class ChatService {
 	}
 
 	handleDisconnect(@ConnectedSocket() socket) {
-		this.redis.del(`socket:${socket.id}`);
-		console.log(`Removed socket:${socket.id} from redis`);
+		const redisKey = `sess:${socket.handshake.headers.cookie.slice(16).split(".")[0]}`; // BUG: if user is not logged in
+		this.redis.get(redisKey, (error, session) => {
+			if (error) {
+				console.log("redis.get error: ", error);
+				socket.disconnect(true);
+			} else {
+				if (session === null) {
+					console.log("Session not found");
+					socket.disconnect(true);
+				}
+				else {
+					console.log("Session found");
+					const userId = JSON.parse(session).passport.user.id;
+					console.log(`Removing socket for user ${userId}`);
+					this.redis.hdel(`user:${userId}`, socket.id);
+					console.log(`Removed socket:${socket.id} from redis`);
+				}
+			}
+		});
 	}
 
 	async createRoom(socket, dto: CreateRoomDto, server) {
