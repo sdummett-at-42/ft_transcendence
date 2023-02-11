@@ -39,3 +39,13 @@ export const BanUserSchema = Joi.object({
 	name: Joi.string().min(1).max(32).required(),
 	userId: Joi.number().required(),
 });
+
+export class MuteUserDto {
+	name: string;
+	userId: number;
+}
+
+export const MuteUserSchema = Joi.object({
+	name: Joi.string().min(1).max(32).required(),
+	userId: Joi.number().required(),
+});
