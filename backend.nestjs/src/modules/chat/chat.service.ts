@@ -185,6 +185,9 @@ export class ChatService {
 		console.log(`User ${socket.id} is logged in room ${dto.name}, leaving...`);
 		await this.leaveRoomInRedis(socket, dto);
 
+		if (await this.getUserRoomNb(socket.id) == 0)
+			this.redis.del(`user-rooms:${socket.id}`);
+
 		if (await this.checkIfRoomIsEmpty(dto.name) == true) {
 			console.log("Room is empty, deleting it...");
 			this.deleteRoomInRedis(dto.name);
@@ -194,6 +197,19 @@ export class ChatService {
 		socket.leave(dto.name);
 		socket.emit("roomLeft");
 		server.to(dto.name).emit("userLeft", socket.id);
+	}
+
+	async getUserRoomNb(userId: number) {
+		return new Promise((resolve, reject) => {
+			this.redis.hlen(`user-rooms:${userId}`, (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				resolve(response);
+			});
+		})
 	}
 
 	async leaveRoomInRedis(socket, dto: LeaveRoomDto): Promise<void> {
@@ -207,9 +223,9 @@ export class ChatService {
 				let logged = JSON.parse(response);
 				logged = logged.filter((id) => id !== socket.id);
 				console.log({ loggedAfterRemoverLeaver: logged });
-				this.redis.hset(`room:${dto.name}`, "logged", JSON.stringify(logged), () => {
-					resolve();
-				});
+				this.redis.hset(`room:${dto.name}`, "logged", JSON.stringify(logged));
+				this.redis.hdel(`user-rooms:${socket.id}`, dto.name);
+				resolve()
 			});
 		});
 	}
@@ -313,9 +329,9 @@ export class ChatService {
 				let logged = JSON.parse(response);
 				logged.push(socket.id);
 				console.log({ loggedAfterJoiner: logged });
-				this.redis.hset(`room:${name}`, "logged", JSON.stringify(logged), () => {
-					resolve();
-				});
+				this.redis.hset(`room:${name}`, "logged", JSON.stringify(logged));
+				this.redis.hset(`user-rooms:${socket.id}`, name, '1');
+				resolve();
 			});
 		});
 	}
