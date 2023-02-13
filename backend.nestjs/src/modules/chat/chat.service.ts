@@ -91,7 +91,7 @@ export class ChatService {
 		});
 	}
 
-	handleDisconnect(@ConnectedSocket() socket) {
+	async handleDisconnect(@ConnectedSocket() socket) {
 		console.log(`Socket ${socket.id} disconnected`);
 		this.redis.hdel(`user:${socket.data.userId}`, socket.id, (error, response) => {
 			if (error) {
@@ -99,6 +99,21 @@ export class ChatService {
 			} else {
 				console.log(`redis.hdel: Deleted ${response} keys`);
 			}
+		});
+		if (await this.getUserSocketsNb(socket.data.userId) == 0)
+			this.redis.del(`user:${socket.data.userId}`);
+	}
+
+	getUserSocketsNb(userId: number) {
+		return new Promise((resolve, reject) => {
+			this.redis.hlen(`user:${userId}`, (error, response) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				resolve(response);
+			});
 		});
 	}
 
@@ -464,7 +479,6 @@ export class ChatService {
 			});
 		});
 	}
-
 
 	async unmuteUser(socket, dto: UnmuteUserDto, server) {
 		if (await this.checkIfRoomExists(dto.name) == false) {
