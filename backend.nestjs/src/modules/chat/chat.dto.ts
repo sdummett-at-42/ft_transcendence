@@ -81,3 +81,13 @@ export const InviteUserSchema = Joi.object({
 	name: Joi.string().min(1).max(32).required(),
 	userId: Joi.number().required(),
 });
+
+export class SendMessageDto {
+	name: string;
+	message: string;
+}
+
+export const SendMessageSchema = Joi.object({
+	name: Joi.string().min(1).max(32).required(),
+	message: Joi.string().min(1).max(150).required(),
+});

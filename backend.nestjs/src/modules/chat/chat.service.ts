@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto } from './chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -132,11 +132,6 @@ export class ChatService {
 			.hset(`room:${dto.name}`, "admins", JSON.stringify([socket.id]))
 			.hset(`room:${dto.name}`, "invited", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "password", JSON.stringify(password))
-			.hset(`room:${dto.name}`, "messages", JSON.stringify([{
-				userId: -1,
-				timestamp: "0",
-				message: `Welcome to your channel ${dto.name}.`,
-			}]))
 			.exec((error, response) => {
 				if (error) {
 					console.error(error)
@@ -144,6 +139,8 @@ export class ChatService {
 				}
 				console.log(`redis: Created room:${dto.name}`);
 			});
+
+		this.redis.zadd(`room-message:${dto.name}`, Date.now(), JSON.stringify({ userId: -1, message: `Welcome to your channel ${dto.name}.`}));
 
 		// Print the newly created room for debug purpose
 		this.redis.hgetall(`room:${dto.name}`, (error, response) => {
@@ -584,9 +581,52 @@ export class ChatService {
 		});
 	}
 
-	async messageRoom(socket, data, server) {
-		const { name, message } = data;
-		server.to(name).emit("messageReceived", message);
+	async sendMessage(socket, dto: SendMessageDto, server) {
+		if (await this.checkIfRoomExists(dto.name) == false) {
+			console.log(`Room ${dto.name} does not exist`);
+			socket.emit("failure", "Room does not exist");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == false) {
+			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+			socket.emit("failure", "You are not logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsBanned(socket.data.userId, dto.name) == true) {
+			console.log(`User ${socket.data.userId} is banned from room ${dto.name}`);
+			socket.emit("failure", "User is banned from this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsMuted(socket.data.userId, dto.name) == true) {
+			console.log(`User ${socket.data.userId} is already muted in room ${dto.name}`);
+			socket.emit("failure", "User is already muted in this room");
+			return;
+		}
+
+		console.log(`User ${socket.id} is sending a message to room ${dto.name}`);
+		const currentTimestamp = Date.now()
+		await this.sendMessageInRedis(dto.name, socket.data.userId, currentTimestamp, dto.message);
+		server.to(dto.name).emit("receive", {
+			userId: socket.data.userId,
+			timestamp: new Date(currentTimestamp).toISOString(),
+			message: dto.message,
+		})
+		socket.emit("sended");
+	}
+
+	async sendMessageInRedis(name, userId, timestamp, message) : Promise<void> {
+		return new Promise((resolve) => {
+			this.redis.zadd(`room-message:${name}`, Date.now(), JSON.stringify({
+				userId,
+				timestamp,
+				message,
+			}), () => {
+				resolve();
+			});
+		});
 	}
 
 	checkIfRoomExists(name: string) {
