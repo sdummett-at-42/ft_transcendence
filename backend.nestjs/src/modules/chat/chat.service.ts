@@ -64,7 +64,7 @@ export class ChatService {
 		socket.data.userId = userId;
 		console.log({ socketData: socket.data });
 		console.log(`Adding socket for user ${userId}`);
-		this.redis.hset(`user:${userId}`, socket.id, '1'); 
+		this.redis.hset(`user:${userId}`, socket.id, '1');
 		console.log(`Added socket:${socket.id} to redis`);
 		socket.emit("connected");
 	}
@@ -140,7 +140,10 @@ export class ChatService {
 				console.log(`redis: Created room:${dto.name}`);
 			});
 
-		this.redis.zadd(`room-message:${dto.name}`, Date.now(), JSON.stringify({ userId: -1, message: `Welcome to your channel ${dto.name}.`}));
+		this.redis.multi()
+			.zadd(`room-message:${dto.name}`, Date.now(), JSON.stringify({ userId: -1, message: `Welcome to your channel ${dto.name}.` }))
+			.expire(`room-message:${dto.name}`, 2 * 24 * 60 * 60)
+			.exec();
 
 		// Print the newly created room for debug purpose
 		this.redis.hgetall(`room:${dto.name}`, (error, response) => {
@@ -617,15 +620,16 @@ export class ChatService {
 		socket.emit("sended");
 	}
 
-	async sendMessageInRedis(name, userId, timestamp, message) : Promise<void> {
+	async sendMessageInRedis(name, userId, timestamp, message): Promise<void> {
 		return new Promise((resolve) => {
-			this.redis.zadd(`room-message:${name}`, Date.now(), JSON.stringify({
-				userId,
-				timestamp,
-				message,
-			}), () => {
-				resolve();
-			});
+			this.redis.multi()
+				.zadd(`room-message:${name}`, Date.now(), JSON.stringify({
+					userId,
+					timestamp,
+					message,
+				})).exec(() => {
+					resolve();
+				});
 		});
 	}
 
