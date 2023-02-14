@@ -302,7 +302,6 @@ export class ChatService {
 						console.error(error);
 						return;
 					}
-					// add logged[0] to admin
 					let admins = JSON.parse(response);
 					console.log({ adminsBefore: admins})
 					admins.push(logged[0]);
@@ -444,9 +443,14 @@ export class ChatService {
 				}
 				let banned = JSON.parse(response);
 				banned.push(userId);
-				this.redis.hset(`room:${name}`, "banned", JSON.stringify(banned), () => {
-					resolve();
+				this.redis.hset(`room:${name}`, "banned", JSON.stringify(banned));
+				this.redis.hget(`room:${name}`, "logged", (error, response) => {
+					let logged = JSON.parse(response);
+					logged = logged.filter((x) => x != userId);
+					this.redis.hset(`room:${name}`, "logged", JSON.stringify(logged));
+					this.redis.hdel(`user-rooms:${userId}`, name);
 				});
+				resolve();
 			});
 		});
 	}

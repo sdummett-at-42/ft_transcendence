@@ -10,6 +10,12 @@
 		socket.on("disconnect", function () {
 			console.log("Disconnected from the server");
 		});
+		socket.on("receive", function (data) {
+			console.log(data);
+		});
+		socket.on("userBanned", function (data) {
+			console.log(`User ${data} banned`);
+		});
 		socket.on("createRoom", function () {
 			console.log("Room created");
 		});
