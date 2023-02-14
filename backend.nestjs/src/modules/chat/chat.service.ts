@@ -42,7 +42,37 @@ export class ChatService {
 				}
 			}
 		});
+		this.redis.keys('room-messages:*', (error, keys) => {
+			if (error)
+				console.log("redis error: ", error);
+			else {
+				if (keys.length > 0) {
+					this.redis.del(keys, (error, response) => {
+						if (error) {
+							console.log("redis.del error: ", error);
+						} else {
+							console.log(`redis.del: Deleting ${response} keys`);
+						}
+					});
+				}
+			}
+		});
 		this.redis.keys('user-sockets:*', (error, keys) => {
+			if (error)
+				console.log("redis error: ", error);
+			else {
+				if (keys.length > 0) {
+					this.redis.del(keys, (error, response) => {
+						if (error) {
+							console.log("redis.del error: ", error);
+						} else {
+							console.log(`redis.del: Deleting ${response} keys`);
+						}
+					});
+				}
+			}
+		});
+		this.redis.keys('user-rooms:*', (error, keys) => {
 			if (error)
 				console.log("redis error: ", error);
 			else {
@@ -120,23 +150,23 @@ export class ChatService {
 			return;
 		}
 		console.log(`Room ${dto.name} does not exist, creating...`);
-		this.createRoomInRedis(socket, dto);
+		this.createRoomInRedis(socket.data.userId, dto);
 		socket.join(dto.name);
 		socket.emit("roomCreated");
 	}
 
-	async createRoomInRedis(socket, dto: CreateRoomDto) {
+	async createRoomInRedis(userId, dto: CreateRoomDto) {
 		let { password } = dto;
 		if (!password)
 			password = ""
 
 		this.redis.multi()
-			.hset(`room:${dto.name}`, "owner", JSON.stringify(socket.data.userId))
+			.hset(`room:${dto.name}`, "owner", JSON.stringify(userId))
 			.hset(`room:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic))
-			.hset(`room:${dto.name}`, "logged", JSON.stringify([socket.data.userId]))
+			.hset(`room:${dto.name}`, "logged", JSON.stringify([userId]))
 			.hset(`room:${dto.name}`, "banned", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "muted", JSON.stringify([]))
-			.hset(`room:${dto.name}`, "admins", JSON.stringify([socket.data.userId]))
+			.hset(`room:${dto.name}`, "admins", JSON.stringify([userId]))
 			.hset(`room:${dto.name}`, "invited", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "password", JSON.stringify(password))
 			.exec((error, response) => {
@@ -146,6 +176,8 @@ export class ChatService {
 				}
 				console.log(`redis: Created room:${dto.name}`);
 			});
+
+		this.redis.hset(`user-rooms:${userId}`, dto.name, '1');
 
 		this.redis.multi()
 			.zadd(`room-messages:${dto.name}`, Date.now(), JSON.stringify({ userId: -1, message: `Welcome to your channel ${dto.name}.` }))
@@ -175,7 +207,7 @@ export class ChatService {
 			return;
 		}
 		console.log(`User ${socket.data.userId} is logged in room ${dto.name}, leaving...`);
-		await this.leaveRoomInRedis(socket, dto);
+		await this.leaveRoomInRedis(socket.data.userId, dto);
 
 		if (await this.getUserRoomNb(socket.data.userId) == 0)
 			this.redis.del(`user-rooms:${socket.data.userId}`);
@@ -213,7 +245,7 @@ export class ChatService {
 					return;
 				}
 				let logged = JSON.parse(response);
-				logged = logged.filter((id) => id !== userId);
+				logged = logged.filter((x) => x !== userId);
 				console.log({ loggedAfterRemoverLeaver: logged });
 				this.redis.hset(`room:${dto.name}`, "logged", JSON.stringify(logged));
 				this.redis.hdel(`user-rooms:${userId}`, dto.name);
@@ -267,7 +299,7 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserIsLogged(socket.dta.userId, dto.name) == true) {
+		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == true) {
 			console.log(`User ${socket.data.userId} is already logged in room ${dto.name}`);
 			socket.emit("failure", "You are already logged in this room");
 			return;
@@ -288,7 +320,7 @@ export class ChatService {
 		}
 
 		console.log(`User ${socket.data.userId} is joining room ${dto.name}...`);
-		await this.joinRoomInRedis(socket, dto.name);
+		await this.joinRoomInRedis(socket.data.userId, dto.name);
 		socket.join(dto.name);
 		socket.emit("roomJoined", dto.name);
 		server.to(dto.name).emit("userJoined", socket.data.userId);
@@ -322,7 +354,6 @@ export class ChatService {
 				}
 				let logged = JSON.parse(response);
 				logged.push(userId);
-				console.log({ loggedAfterJoiner: logged });
 				this.redis.hset(`room:${name}`, "logged", JSON.stringify(logged));
 				this.redis.hset(`user-rooms:${userId}`, name, '1');
 				resolve();
@@ -366,7 +397,7 @@ export class ChatService {
 		server.to(dto.name).emit("userBanned", dto.userId);
 	}
 
-	async banUserInRedis(id, name: string): Promise<void> {
+	async banUserInRedis(userId, name: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${name}`, "banned", (error, response) => {
 				if (error) {
@@ -375,7 +406,7 @@ export class ChatService {
 					return;
 				}
 				let banned = JSON.parse(response);
-				banned.push(id);
+				banned.push(userId);
 				this.redis.hset(`room:${name}`, "banned", JSON.stringify(banned), () => {
 					resolve();
 				});
@@ -419,7 +450,7 @@ export class ChatService {
 		server.to(dto.name).emit("userUnbanned", dto.userId);
 	}
 
-	async unbanUserInRedis(id, name: string): Promise<void> {
+	async unbanUserInRedis(userId, name: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${name}`, "banned", (error, response) => {
 				if (error) {
@@ -428,7 +459,7 @@ export class ChatService {
 					return;
 				}
 				let banned = JSON.parse(response);
-				banned = banned.filter((x) => x != id);
+				banned = banned.filter((x) => x != userId);
 				this.redis.hset(`room:${name}`, "banned", JSON.stringify(banned), () => {
 					resolve();
 				});
@@ -473,7 +504,7 @@ export class ChatService {
 		server.to(dto.name).emit("userMuted", dto.userId);
 	}
 
-	async muteUserInRedis(id, name: string): Promise<void> {
+	async muteUserInRedis(userId, name: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${name}`, "muted", (error, response) => {
 				if (error) {
@@ -482,7 +513,7 @@ export class ChatService {
 					return;
 				}
 				let muted = JSON.parse(response);
-				muted.push(id);
+				muted.push(userId);
 				this.redis.hset(`room:${name}`, "muted", JSON.stringify(muted), () => {
 					resolve();
 				});
@@ -526,7 +557,7 @@ export class ChatService {
 		server.to(dto.name).emit("userUnmuted", dto.userId);
 	}
 
-	async unmuteUserInRedis(id, name: string): Promise<void> {
+	async unmuteUserInRedis(userId, name: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${name}`, "muted", (error, response) => {
 				if (error) {
@@ -535,7 +566,7 @@ export class ChatService {
 					return;
 				}
 				let muted = JSON.parse(response);
-				muted = muted.filter((x) => x != id);
+				muted = muted.filter((x) => x != userId);
 				this.redis.hset(`room:${name}`, "muted", JSON.stringify(muted), () => {
 					resolve();
 				});
@@ -579,7 +610,7 @@ export class ChatService {
 		server.to(dto.name).emit("userInvited", dto.userId);
 	}
 
-	async inviteUserInRedis(id, name: string): Promise<void> {
+	async inviteUserInRedis(userId, name: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${name}`, "invited", (error, response) => {
 				if (error) {
@@ -588,7 +619,7 @@ export class ChatService {
 					return;
 				}
 				let invited = JSON.parse(response);
-				invited.push(id);
+				invited.push(userId);
 				this.redis.hset(`room:${name}`, "invited", JSON.stringify(invited), () => {
 					resolve();
 				});
@@ -596,7 +627,7 @@ export class ChatService {
 		});
 	}
 
-	removeInvitation(idToRm, name: string) : Promise<void> {
+	removeInvitation(userId, name: string): Promise<void> {
 		return new Promise((resolve, reject) => {
 			this.redis.hget(`room:${name}`, "invited", (error, response) => {
 				if (error) {
@@ -604,7 +635,7 @@ export class ChatService {
 					return;
 				}
 				let invited = JSON.parse(response);
-				invited = invited.filter((userId) => userId !== idToRm);
+				invited = invited.filter((x) => x !== userId);
 				this.redis.hset(`room:${name}`, "invited", JSON.stringify(invited));
 				resolve();
 			})
