@@ -131,12 +131,12 @@ export class ChatService {
 			password = ""
 
 		this.redis.multi()
-			.hset(`room:${dto.name}`, "owner", JSON.stringify(socket.id))
+			.hset(`room:${dto.name}`, "owner", JSON.stringify(socket.data.userId))
 			.hset(`room:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic))
-			.hset(`room:${dto.name}`, "logged", JSON.stringify([socket.id]))
+			.hset(`room:${dto.name}`, "logged", JSON.stringify([socket.data.userId]))
 			.hset(`room:${dto.name}`, "banned", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "muted", JSON.stringify([]))
-			.hset(`room:${dto.name}`, "admins", JSON.stringify([socket.id]))
+			.hset(`room:${dto.name}`, "admins", JSON.stringify([socket.data.userId]))
 			.hset(`room:${dto.name}`, "invited", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "password", JSON.stringify(password))
 			.exec((error, response) => {
@@ -169,26 +169,26 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
-			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} is not logged in room ${dto.name}`);
 			socket.emit("failure", "You are not logged in this room");
 			return;
 		}
-		console.log(`User ${socket.id} is logged in room ${dto.name}, leaving...`);
+		console.log(`User ${socket.data.userId} is logged in room ${dto.name}, leaving...`);
 		await this.leaveRoomInRedis(socket, dto);
 
-		if (await this.getUserRoomNb(socket.id) == 0)
-			this.redis.del(`user-rooms:${socket.id}`);
+		if (await this.getUserRoomNb(socket.data.userId) == 0)
+			this.redis.del(`user-rooms:${socket.data.userId}`);
 
 		if (await this.checkIfRoomIsEmpty(dto.name) == true) {
 			console.log("Room is empty, deleting it...");
 			this.deleteRoomInRedis(dto.name);
 		}
-		else if (await this.checkIfUserIsOwner(socket.id, dto.name) == true)
+		else if (await this.checkIfUserIsOwner(socket.data.userId, dto.name) == true)
 			this.changeRoomOwnerInRedis(dto.name);
 		socket.leave(dto.name);
 		socket.emit("roomLeft");
-		server.to(dto.name).emit("userLeft", socket.id);
+		server.to(dto.name).emit("userLeft", socket.data.userId);
 	}
 
 	async getUserRoomNb(userId: number) {
@@ -204,7 +204,7 @@ export class ChatService {
 		})
 	}
 
-	async leaveRoomInRedis(socket, dto: LeaveRoomDto): Promise<void> {
+	async leaveRoomInRedis(userId, dto: LeaveRoomDto): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${dto.name}`, "logged", (error, response) => {
 				if (error) {
@@ -213,10 +213,10 @@ export class ChatService {
 					return;
 				}
 				let logged = JSON.parse(response);
-				logged = logged.filter((id) => id !== socket.id);
+				logged = logged.filter((id) => id !== userId);
 				console.log({ loggedAfterRemoverLeaver: logged });
 				this.redis.hset(`room:${dto.name}`, "logged", JSON.stringify(logged));
-				this.redis.hdel(`user-rooms:${socket.id}`, dto.name);
+				this.redis.hdel(`user-rooms:${userId}`, dto.name);
 				resolve()
 			});
 		});
@@ -232,6 +232,8 @@ export class ChatService {
 		});
 	}
 
+	// This function need to be improved, next owner should be the first in admin list
+	// or the first user in the logged list
 	changeRoomOwnerInRedis(name: string) {
 		this.redis.hget(`room:${name}`, "logged", (error, response) => {
 			if (error) {
@@ -250,23 +252,23 @@ export class ChatService {
 			return;
 		}
 		else if (await this.checkIfRoomIsPublic(dto.name) == false) {
-			if (await this.checkIfUserIsInvited(socket.id, dto.name) == false) {
-				console.log(`User ${socket.id} is not invited to room ${dto.name}`);
+			if (await this.checkIfUserIsInvited(socket.data.userId, dto.name) == false) {
+				console.log(`User ${socket.data.userId} is not invited to room ${dto.name}`);
 				socket.emit("failure", "You are not invited to this room");
 				return;
 			}
 			else
-				this.removeInvitation(socket.id, dto.name);
+				this.removeInvitation(socket.data.userId, dto.name);
 		}
 
-		if (await this.checkIfUserIsBanned(socket.id, dto.name) == true) {
-			console.log(`User ${socket.id} is banned from room ${dto.name}`);
+		if (await this.checkIfUserIsBanned(socket.data.userId, dto.name) == true) {
+			console.log(`User ${socket.data.userId} is banned from room ${dto.name}`);
 			socket.emit("failure", "You are banned from this room");
 			return;
 		}
 
-		if (await this.checkIfUserIsLogged(socket.id, dto.name) == true) {
-			console.log(`User ${socket.id} is already logged in room ${dto.name}`);
+		if (await this.checkIfUserIsLogged(socket.dta.userId, dto.name) == true) {
+			console.log(`User ${socket.data.userId} is already logged in room ${dto.name}`);
 			socket.emit("failure", "You are already logged in this room");
 			return;
 		}
@@ -285,11 +287,11 @@ export class ChatService {
 			}
 		}
 
-		console.log(`User ${socket.id} is joining room ${dto.name}...`);
+		console.log(`User ${socket.data.userId} is joining room ${dto.name}...`);
 		await this.joinRoomInRedis(socket, dto.name);
 		socket.join(dto.name);
 		socket.emit("roomJoined", dto.name);
-		server.to(dto.name).emit("userJoined", socket.id);
+		server.to(dto.name).emit("userJoined", socket.data.userId);
 	}
 
 	async checkIfRoomIsFull(name: string): Promise<boolean> {
@@ -310,7 +312,7 @@ export class ChatService {
 		});
 	}
 
-	async joinRoomInRedis(socket, name: string): Promise<void> {
+	async joinRoomInRedis(userId, name: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${name}`, "logged", (error, response) => {
 				if (error) {
@@ -319,10 +321,10 @@ export class ChatService {
 					return;
 				}
 				let logged = JSON.parse(response);
-				logged.push(socket.id);
+				logged.push(userId);
 				console.log({ loggedAfterJoiner: logged });
 				this.redis.hset(`room:${name}`, "logged", JSON.stringify(logged));
-				this.redis.hset(`user-rooms:${socket.id}`, name, '1');
+				this.redis.hset(`user-rooms:${userId}`, name, '1');
 				resolve();
 			});
 		});
@@ -335,8 +337,8 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
-			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} is not logged in room ${dto.name}`);
 			socket.emit("failure", "You are not logged in this room");
 			return;
 		}
@@ -347,8 +349,8 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserHasPrivileges(socket.id, dto.userId, dto.name) == false) {
-			console.log(`User ${socket.id} does not have right privileges to ban user ${dto.userId} in room ${dto.name}`);
+		if (await this.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} does not have right privileges to ban user ${dto.userId} in room ${dto.name}`);
 			socket.emit("failure", "You do not have the right privileges to ban");
 			return;
 		}
@@ -359,7 +361,7 @@ export class ChatService {
 			return;
 		}
 
-		console.log(`User ${socket.id} is banning user ${dto.userId} from room ${dto.name}...`);
+		console.log(`User ${socket.data.userId} is banning user ${dto.userId} from room ${dto.name}...`);
 		await this.banUserInRedis(dto.userId, dto.name);
 		server.to(dto.name).emit("userBanned", dto.userId);
 	}
@@ -388,8 +390,8 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
-			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} is not logged in room ${dto.name}`);
 			socket.emit("failure", "You are not logged in this room");
 			return;
 		}
@@ -400,8 +402,8 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserHasPrivileges(socket.id, dto.userId, dto.name) == false) {
-			console.log(`User ${socket.id} does not have right privileges to unban user ${dto.userId} in room ${dto.name}`);
+		if (await this.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} does not have right privileges to unban user ${dto.userId} in room ${dto.name}`);
 			socket.emit("failure", "You do not have the right privileges to unban");
 			return;
 		}
@@ -412,7 +414,7 @@ export class ChatService {
 			return;
 		}
 
-		console.log(`User ${socket.id} is unbanning user ${dto.userId} from room ${dto.name}...`);
+		console.log(`User ${socket.data.userId} is unbanning user ${dto.userId} from room ${dto.name}...`);
 		await this.unbanUserInRedis(dto.userId, dto.name);
 		server.to(dto.name).emit("userUnbanned", dto.userId);
 	}
@@ -441,8 +443,8 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
-			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} is not logged in room ${dto.name}`);
 			socket.emit("failure", "You are not logged in this room");
 			return;
 		}
@@ -453,8 +455,8 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserHasPrivileges(socket.id, dto.userId, dto.name) == false) {
-			console.log(`User ${socket.id} does not have right privileges to mute user ${dto.userId} in room ${dto.name}`);
+		if (await this.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} does not have right privileges to mute user ${dto.userId} in room ${dto.name}`);
 			socket.emit("failure", "You do not have the right privileges to mute");
 			return;
 		}
@@ -465,7 +467,7 @@ export class ChatService {
 			return;
 		}
 
-		console.log(`User ${socket.id} is muting user ${dto.userId} in room ${dto.name}...`);
+		console.log(`User ${socket.data.userId} is muting user ${dto.userId} in room ${dto.name}...`);
 		// ADD: the mute timeout should be added here
 		await this.muteUserInRedis(dto.userId, dto.name);
 		server.to(dto.name).emit("userMuted", dto.userId);
@@ -495,8 +497,8 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
-			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} is not logged in room ${dto.name}`);
 			socket.emit("failure", "You are not logged in this room");
 			return;
 		}
@@ -507,8 +509,8 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserHasPrivileges(socket.id, dto.userId, dto.name) == false) {
-			console.log(`User ${socket.id} does not have right privileges to unmute user ${dto.userId} in room ${dto.name}`);
+		if (await this.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} does not have right privileges to unmute user ${dto.userId} in room ${dto.name}`);
 			socket.emit("failure", "You do not have the right privileges to unmute");
 			return;
 		}
@@ -519,7 +521,7 @@ export class ChatService {
 			return;
 		}
 
-		console.log(`User ${socket.id} is unmuting user ${dto.userId} in room ${dto.name}...`);
+		console.log(`User ${socket.data.userId} is unmuting user ${dto.userId} in room ${dto.name}...`);
 		await this.unmuteUserInRedis(dto.userId, dto.name);
 		server.to(dto.name).emit("userUnmuted", dto.userId);
 	}
@@ -548,8 +550,8 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserIsLogged(socket.id, dto.name) == false) {
-			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} is not logged in room ${dto.name}`);
 			socket.emit("failure", "You are not logged in this room");
 			return;
 		}
@@ -572,7 +574,7 @@ export class ChatService {
 			return;
 		}
 
-		console.log(`User ${socket.id} is inviting user ${dto.userId} to room ${dto.name}...`);
+		console.log(`User ${socket.data.userId} is inviting user ${dto.userId} to room ${dto.name}...`);
 		await this.inviteUserInRedis(dto.userId, dto.name);
 		server.to(dto.name).emit("userInvited", dto.userId);
 	}
@@ -594,15 +596,18 @@ export class ChatService {
 		});
 	}
 
-	removeInvitation(id, name: string) {
-		this.redis.hget(`room:${name}`, "invited", (error, response) => {
-			if (error) {
-				console.error(error);
-				return;
-			}
-			let invited = JSON.parse(response);
-			invited = invited.filter((userId) => userId !== id);
-			this.redis.hset(`room:${name}`, "invited", JSON.stringify(invited));
+	removeInvitation(idToRm, name: string) : Promise<void> {
+		return new Promise((resolve, reject) => {
+			this.redis.hget(`room:${name}`, "invited", (error, response) => {
+				if (error) {
+					console.error(error);
+					return;
+				}
+				let invited = JSON.parse(response);
+				invited = invited.filter((userId) => userId !== idToRm);
+				this.redis.hset(`room:${name}`, "invited", JSON.stringify(invited));
+				resolve();
+			})
 		});
 	}
 
@@ -614,7 +619,7 @@ export class ChatService {
 		}
 
 		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == false) {
-			console.log(`User ${socket.id} is not logged in room ${dto.name}`);
+			console.log(`User ${socket.data.userId} is not logged in room ${dto.name}`);
 			socket.emit("failure", "You are not logged in this room");
 			return;
 		}
@@ -631,7 +636,7 @@ export class ChatService {
 			return;
 		}
 
-		console.log(`User ${socket.id} is sending a message to room ${dto.name}`);
+		console.log(`User ${socket.data.userId} is sending a message to room ${dto.name}`);
 		const currentTimestamp = Date.now()
 		await this.sendMessageInRedis(dto.name, socket.data.userId, currentTimestamp, dto.message);
 		server.to(dto.name).emit("receive", {
@@ -668,7 +673,7 @@ export class ChatService {
 		});
 	}
 
-	checkIfUserIsLogged(id, name: string) {
+	checkIfUserIsLogged(userId, name: string) {
 		return new Promise((resolve, reject) => {
 			this.redis.hget(`room:${name}`, "logged", (error, response) => {
 				if (error) {
@@ -677,9 +682,7 @@ export class ChatService {
 					return;
 				}
 				const logged = JSON.parse(response);
-				console.log(logged);
-				console.log(id);
-				if (logged.includes(id))
+				if (logged.includes(userId))
 					resolve(true);
 				else
 					resolve(false);
@@ -687,7 +690,7 @@ export class ChatService {
 		});
 	}
 
-	checkIfUserIsOwner(id, name: string) {
+	checkIfUserIsOwner(userId, name: string) {
 		return new Promise((resolve, reject) => {
 			this.redis.hget(`room:${name}`, "owner", (error, response) => {
 				if (error) {
@@ -696,7 +699,7 @@ export class ChatService {
 					return;
 				}
 				const owner = JSON.parse(response);
-				if (owner === id)
+				if (owner === userId)
 					resolve(true);
 				else
 					resolve(false);
@@ -704,7 +707,7 @@ export class ChatService {
 		});
 	}
 
-	checkIfUserIsAdmin(id, name: string) {
+	checkIfUserIsAdmin(userId, name: string) {
 		return new Promise((resolve, reject) => {
 			this.redis.hget(`room:${name}`, "admins", (error, response) => {
 				if (error) {
@@ -713,7 +716,7 @@ export class ChatService {
 					return;
 				}
 				const admins = JSON.parse(response);
-				if (admins.includes(id))
+				if (admins.includes(userId))
 					resolve(true);
 				else
 					resolve(false);
@@ -721,7 +724,7 @@ export class ChatService {
 		});
 	}
 
-	checkIfUserIsMuted(id, name: string) {
+	checkIfUserIsMuted(userId, name: string) {
 		return new Promise((resolve, reject) => {
 			this.redis.hget(`room:${name}`, "muted", (error, response) => {
 				if (error) {
@@ -730,7 +733,7 @@ export class ChatService {
 					return;
 				}
 				const muted = JSON.parse(response);
-				if (muted.includes(id))
+				if (muted.includes(userId))
 					resolve(true);
 				else
 					resolve(false);
@@ -738,7 +741,7 @@ export class ChatService {
 		});
 	}
 
-	checkIfUserIsBanned(id, name: string) {
+	checkIfUserIsBanned(userId, name: string) {
 		return new Promise((resolve, reject) => {
 			this.redis.hget(`room:${name}`, "banned", (error, response) => {
 				if (error) {
@@ -747,7 +750,7 @@ export class ChatService {
 					return;
 				}
 				const banned = JSON.parse(response);
-				if (banned.includes(id))
+				if (banned.includes(userId))
 					resolve(true);
 				else
 					resolve(false);
@@ -755,7 +758,7 @@ export class ChatService {
 		});
 	}
 
-	checkIfUserIsInvited(id, name: string) {
+	checkIfUserIsInvited(userId, name: string) {
 		return new Promise((resolve, reject) => {
 			this.redis.hget(`room:${name}`, "invited", (error, response) => {
 				if (error) {
@@ -764,7 +767,7 @@ export class ChatService {
 					return;
 				}
 				const invited = JSON.parse(response);
-				if (invited.includes(id))
+				if (invited.includes(userId))
 					resolve(true);
 				else
 					resolve(false);
@@ -854,9 +857,9 @@ export class ChatService {
 		});
 	}
 
-	checkIfUserExists(id: string) {
+	checkIfUserExists(userId: string) {
 		return new Promise((resolve, reject) => {
-			this.redis.exists(`user:${id}`, (error, response) => {
+			this.redis.exists(`user:${userId}`, (error, response) => {
 				if (error) {
 					console.error(error);
 					reject(error);
