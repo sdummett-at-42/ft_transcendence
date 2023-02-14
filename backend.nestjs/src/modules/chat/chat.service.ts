@@ -216,11 +216,31 @@ export class ChatService {
 			console.log("Room is empty, deleting it...");
 			this.deleteRoomInRedis(dto.name);
 		}
-		else if (await this.checkIfUserIsOwner(socket.data.userId, dto.name) == true)
-			this.changeRoomOwnerInRedis(dto.name);
+		else{
+			if (await this.checkIfUserIsOwner(socket.data.userId, dto.name) == true)
+				this.changeRoomOwnerInRedis(dto.name);
+			if (await this.checkIfUserIsAdmin(socket.data.userId, dto.name) == true)
+				this.removeUserFromAdminsInRedis(socket.data.userId, dto.name);
+		}
 		socket.leave(dto.name);
 		socket.emit("roomLeft");
 		server.to(dto.name).emit("userLeft", socket.data.userId);
+	}
+
+	async removeUserFromAdminsInRedis(userId, roomName) : Promise<void> {
+		return new Promise((resolve) => {
+			this.redis.hget(`room:${roomName}`, "admins", (error, response) => {
+				if (error) {
+					console.error(error);
+					resolve();
+					return;
+				}
+				let admins = JSON.parse(response);
+				admins = admins.filter((x) => x !== userId);
+				this.redis.hset(`room:${roomName}`, "admins", JSON.stringify(admins));
+				resolve();
+			});
+		});
 	}
 
 	async getUserRoomNb(userId: number) {
