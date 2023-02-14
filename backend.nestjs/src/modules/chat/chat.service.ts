@@ -61,31 +61,26 @@ export class ChatService {
 
 	async handleConnection(socket) {
 		const userId = await this.getUserId(socket);
+		if (userId === null) {
+			console.log("User not logged in");
+			socket.emit("failure", "User not logged in");
+			return;
+		}
+		console.log(`Adding new socket in the socket list for user:${userId}`);
 		socket.data.userId = userId;
-		console.log({ socketData: socket.data });
-		console.log(`Adding socket for user ${userId}`);
 		this.redis.hset(`user:${userId}`, socket.id, '1');
-		console.log(`Added socket:${socket.id} to redis`);
 		socket.emit("connected");
 	}
 
 	getUserId(socket) {
 		return new Promise((resolve, reject) => {
-			const redisKey = `sess:${socket.handshake.headers.cookie.slice(16).split(".")[0]}`; // BUG: if user is not logged in
+			const redisKey = `sess:${socket.handshake.headers.cookie.slice(16).split(".")[0]}`;
 			this.redis.get(redisKey, (error, session) => {
-				if (error) {
-					console.log("redis.get error: ", error);
-					reject(error);
-				} else {
-					if (session === null) {
-						console.log("Session not found");
-						reject("Session not found");
-					}
-					else {
-						console.log("Session found");
-						const userId = JSON.parse(session).passport.user.id;
-						resolve(userId);
-					}
+				if (session === null)
+					resolve(session);
+				else {
+					const userId = JSON.parse(session).passport.user.id;
+					resolve(userId);
 				}
 			});
 		});
