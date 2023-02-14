@@ -42,7 +42,7 @@ export class ChatService {
 				}
 			}
 		});
-		this.redis.keys('user:*', (error, keys) => {
+		this.redis.keys('user-sockets:*', (error, keys) => {
 			if (error)
 				console.log("redis error: ", error);
 			else {
@@ -68,7 +68,7 @@ export class ChatService {
 		}
 		console.log(`Adding new socket in the socket list for user:${userId}`);
 		socket.data.userId = userId;
-		this.redis.hset(`user:${userId}`, socket.id, '1');
+		this.redis.hset(`user-sockets:${userId}`, socket.id, '1');
 		socket.emit("connected");
 	}
 
@@ -88,7 +88,7 @@ export class ChatService {
 
 	async handleDisconnect(@ConnectedSocket() socket) {
 		console.log(`Socket ${socket.id} disconnected`);
-		this.redis.hdel(`user:${socket.data.userId}`, socket.id, (error, response) => {
+		this.redis.hdel(`user-sockets:${socket.data.userId}`, socket.id, (error, response) => {
 			if (error) {
 				console.log("redis.hdel error: ", error);
 			} else {
@@ -101,7 +101,7 @@ export class ChatService {
 
 	getUserSocketsNb(userId: number) {
 		return new Promise((resolve, reject) => {
-			this.redis.hlen(`user:${userId}`, (error, response) => {
+			this.redis.hlen(`user-sockets:${userId}`, (error, response) => {
 				if (error) {
 					console.error(error);
 					reject(error);
@@ -123,9 +123,6 @@ export class ChatService {
 		this.createRoomInRedis(socket, dto);
 		socket.join(dto.name);
 		socket.emit("roomCreated");
-
-		console.log(await this.checkIfUserIsLogged(socket.id, dto.name));
-		console.log(await this.checkIfUserIsLogged("abcdef", dto.name));
 	}
 
 	async createRoomInRedis(socket, dto: CreateRoomDto) {
@@ -151,8 +148,8 @@ export class ChatService {
 			});
 
 		this.redis.multi()
-			.zadd(`room-message:${dto.name}`, Date.now(), JSON.stringify({ userId: -1, message: `Welcome to your channel ${dto.name}.` }))
-			.expire(`room-message:${dto.name}`, 2 * 24 * 60 * 60)
+			.zadd(`room-messages:${dto.name}`, Date.now(), JSON.stringify({ userId: -1, message: `Welcome to your channel ${dto.name}.` }))
+			.expire(`room-messages:${dto.name}`, 2 * 24 * 60 * 60)
 			.exec();
 
 		// Print the newly created room for debug purpose
@@ -648,7 +645,7 @@ export class ChatService {
 	async sendMessageInRedis(name, userId, timestamp, message): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.multi()
-				.zadd(`room-message:${name}`, Date.now(), JSON.stringify({
+				.zadd(`room-messages:${name}`, Date.now(), JSON.stringify({
 					userId,
 					timestamp,
 					message,

@@ -122,11 +122,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.sendMessage(socket, dto, this.server);
 	}
 
-	// @SubscribeMessage("messageRoom")
-	// onMessageRoom(@ConnectedSocket() socket, @MessageBody() dto) {
-	// 	this.chat.messageRoom(socket, dto, this.server);
-	// }
-
 	@SubscribeMessage("server")
 	getSocketsInRoom(@MessageBody() room) {
 		console.log(this.server.sockets.adapter.rooms[room]
