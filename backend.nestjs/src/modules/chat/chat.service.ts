@@ -468,12 +468,6 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.checkIfUserIsLogged(dto.userId, dto.name) == false) {
-			console.log(`User ${dto.userId} is not logged in room ${dto.name}`);
-			socket.emit("failure", "User is not logged in this room");
-			return;
-		}
-
 		if (await this.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.name) == false) {
 			console.log(`User ${socket.data.userId} does not have right privileges to unban user ${dto.userId} in room ${dto.name}`);
 			socket.emit("failure", "You do not have the right privileges to unban");
