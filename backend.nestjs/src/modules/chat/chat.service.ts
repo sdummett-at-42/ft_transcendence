@@ -218,9 +218,9 @@ export class ChatService {
 		}
 		else{
 			if (await this.checkIfUserIsOwner(socket.data.userId, dto.name) == true)
-				this.changeRoomOwnerInRedis(dto.name);
+				await this.changeRoomOwnerInRedis(dto.name);
 			if (await this.checkIfUserIsAdmin(socket.data.userId, dto.name) == true)
-				this.removeUserFromAdminsInRedis(socket.data.userId, dto.name);
+				await this.removeUserFromAdminsInRedis(socket.data.userId, dto.name);
 		}
 		socket.leave(dto.name);
 		socket.emit("roomLeft");
@@ -236,7 +236,9 @@ export class ChatService {
 					return;
 				}
 				let admins = JSON.parse(response);
+				console.log({ adminsRmBefore: admins})
 				admins = admins.filter((x) => x !== userId);
+				console.log({ adminsRmAfter: admins})
 				this.redis.hset(`room:${roomName}`, "admins", JSON.stringify(admins));
 				resolve();
 			});
@@ -286,14 +288,29 @@ export class ChatService {
 
 	// This function need to be improved, next owner should be the first in admin list
 	// or the first user in the logged list
-	changeRoomOwnerInRedis(name: string) {
-		this.redis.hget(`room:${name}`, "logged", (error, response) => {
-			if (error) {
-				console.error(error);
-				return;
-			}
-			let logged = JSON.parse(response);
-			this.redis.hset(`room:${name}`, "owner", JSON.stringify(logged[0]));
+	async changeRoomOwnerInRedis(name: string) : Promise<void> {
+		return new Promise((resolve) => {
+			this.redis.hget(`room:${name}`, "logged", (error, response) => {
+				if (error) {
+					console.error(error);
+					return;
+				}
+				let logged = JSON.parse(response);
+				this.redis.hset(`room:${name}`, "owner", JSON.stringify(logged[0]));
+				this.redis.hget(`room:${name}`, "admins", (error, response) => {
+					if (error) {
+						console.error(error);
+						return;
+					}
+					// add logged[0] to admin
+					let admins = JSON.parse(response);
+					console.log({ adminsBefore: admins})
+					admins.push(logged[0]);
+					console.log({ adminsAfter: admins})
+					this.redis.hset(`room:${name}`, "admins", JSON.stringify(admins));
+					resolve();
+				});
+			});
 		});
 	}
 
