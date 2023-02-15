@@ -87,6 +87,21 @@ export class ChatService {
 				}
 			}
 		});
+		this.redis.keys('room-muted:*', (error, keys) => {
+			if (error)
+				console.log("redis error: ", error);
+			else {
+				if (keys.length > 0) {
+					this.redis.del(keys, (error, response) => {
+						if (error) {
+							console.log("redis.del error: ", error);
+						} else {
+							console.log(`redis.del: Deleting ${response} keys`);
+						}
+					});
+				}
+			}
+		});
 	}
 
 	async handleConnection(socket) {
@@ -165,7 +180,6 @@ export class ChatService {
 			.hset(`room:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic))
 			.hset(`room:${dto.name}`, "logged", JSON.stringify([userId]))
 			.hset(`room:${dto.name}`, "banned", JSON.stringify([]))
-			.hset(`room:${dto.name}`, "muted", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "admins", JSON.stringify([userId]))
 			.hset(`room:${dto.name}`, "invited", JSON.stringify([]))
 			.hset(`room:${dto.name}`, "password", JSON.stringify(password))
@@ -216,7 +230,7 @@ export class ChatService {
 			console.log("Room is empty, deleting it...");
 			this.deleteRoomInRedis(dto.name);
 		}
-		else{
+		else {
 			if (await this.checkIfUserIsOwner(socket.data.userId, dto.name) == true)
 				await this.changeRoomOwnerInRedis(dto.name);
 			if (await this.checkIfUserIsAdmin(socket.data.userId, dto.name) == true)
@@ -227,7 +241,7 @@ export class ChatService {
 		server.to(dto.name).emit("userLeft", socket.data.userId);
 	}
 
-	async removeUserFromAdminsInRedis(userId, roomName) : Promise<void> {
+	async removeUserFromAdminsInRedis(userId, roomName): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${roomName}`, "admins", (error, response) => {
 				if (error) {
@@ -236,9 +250,9 @@ export class ChatService {
 					return;
 				}
 				let admins = JSON.parse(response);
-				console.log({ adminsRmBefore: admins})
+				console.log({ adminsRmBefore: admins })
 				admins = admins.filter((x) => x !== userId);
-				console.log({ adminsRmAfter: admins})
+				console.log({ adminsRmAfter: admins })
 				this.redis.hset(`room:${roomName}`, "admins", JSON.stringify(admins));
 				resolve();
 			});
@@ -288,7 +302,7 @@ export class ChatService {
 
 	// This function need to be improved, next owner should be the first in admin list
 	// or the first user in the logged list
-	async changeRoomOwnerInRedis(name: string) : Promise<void> {
+	async changeRoomOwnerInRedis(name: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.redis.hget(`room:${name}`, "logged", (error, response) => {
 				if (error) {
@@ -303,9 +317,9 @@ export class ChatService {
 						return;
 					}
 					let admins = JSON.parse(response);
-					console.log({ adminsBefore: admins})
+					console.log({ adminsBefore: admins })
 					admins.push(logged[0]);
-					console.log({ adminsAfter: admins})
+					console.log({ adminsAfter: admins })
 					this.redis.hset(`room:${name}`, "admins", JSON.stringify(admins));
 					resolve();
 				});
@@ -534,25 +548,17 @@ export class ChatService {
 		}
 
 		console.log(`User ${socket.data.userId} is muting user ${dto.userId} in room ${dto.name}...`);
-		// ADD: the mute timeout should be added here
-		await this.muteUserInRedis(dto.userId, dto.name);
+		await this.muteUserInRedis(dto.userId, dto.name, dto.timeout);
 		server.to(dto.name).emit("userMuted", dto.userId);
 	}
 
-	async muteUserInRedis(userId, name: string): Promise<void> {
+	async muteUserInRedis(userId, name: string, timeout): Promise<void> {
 		return new Promise((resolve) => {
-			this.redis.hget(`room:${name}`, "muted", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve();
-					return;
-				}
-				let muted = JSON.parse(response);
-				muted.push(userId);
-				this.redis.hset(`room:${name}`, "muted", JSON.stringify(muted), () => {
-					resolve();
-				});
-			});
+			this.redis.multi()
+				.set(`room-muted:${name}:${userId}`, 'true')
+				.expire(`room-muted:${name}:${userId}`, timeout)
+				.exec();
+			resolve();
 		});
 	}
 
@@ -594,18 +600,8 @@ export class ChatService {
 
 	async unmuteUserInRedis(userId, name: string): Promise<void> {
 		return new Promise((resolve) => {
-			this.redis.hget(`room:${name}`, "muted", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve();
-					return;
-				}
-				let muted = JSON.parse(response);
-				muted = muted.filter((x) => x != userId);
-				this.redis.hset(`room:${name}`, "muted", JSON.stringify(muted), () => {
-					resolve();
-				});
-			});
+			this.redis.del(`room-muted:${name}:${userId}`)
+			resolve();
 		});
 	}
 
@@ -697,8 +693,8 @@ export class ChatService {
 		}
 
 		if (await this.checkIfUserIsMuted(socket.data.userId, dto.name) == true) {
-			console.log(`User ${socket.data.userId} is already muted in room ${dto.name}`);
-			socket.emit("failure", "User is already muted in this room");
+			console.log(`User ${socket.data.userId} is muted in room ${dto.name}`);
+			socket.emit("failure", "You are muted in this room");
 			return;
 		}
 
@@ -792,17 +788,16 @@ export class ChatService {
 
 	checkIfUserIsMuted(userId, name: string) {
 		return new Promise((resolve, reject) => {
-			this.redis.hget(`room:${name}`, "muted", (error, response) => {
+			this.redis.get(`room-muted:${name}:${userId}`, (error, response) => {
 				if (error) {
 					console.error(error);
 					reject(error);
 					return;
 				}
-				const muted = JSON.parse(response);
-				if (muted.includes(userId))
-					resolve(true);
-				else
+				if (response === null)
 					resolve(false);
+				else
+					resolve(true);
 			});
 		});
 	}
