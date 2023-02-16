@@ -342,8 +342,6 @@ export class ChatService {
 				socket.emit("failure", "You are not invited to this room");
 				return;
 			}
-			else
-				this.removeInvitation(socket.data.userId, dto.name);
 		}
 
 		if (await this.checkIfUserIsBanned(socket.data.userId, dto.name) == true) {
@@ -372,6 +370,7 @@ export class ChatService {
 			}
 		}
 
+		this.removeInvitation(socket.data.userId, dto.name);
 		console.log(`User ${socket.data.userId} is joining room ${dto.name}...`);
 		await this.joinRoomInRedis(socket.data.userId, dto.name);
 		socket.join(dto.name);
