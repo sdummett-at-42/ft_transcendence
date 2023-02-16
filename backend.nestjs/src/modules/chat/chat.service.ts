@@ -109,6 +109,7 @@ export class ChatService {
 		if (userId === null) {
 			console.log("User not logged in");
 			socket.emit("failure", "User not logged in");
+			socket.disconnect()
 			return;
 		}
 		console.log(`Adding new socket in the socket list for user:${userId}`);
@@ -119,6 +120,8 @@ export class ChatService {
 
 	getUserId(socket) {
 		return new Promise((resolve, reject) => {
+			if (socket.handshake.headers.cookie === undefined)
+				resolve(null);
 			const redisKey = `sess:${socket.handshake.headers.cookie.slice(16).split(".")[0]}`;
 			this.redis.get(redisKey, (error, session) => {
 				if (session === null)
