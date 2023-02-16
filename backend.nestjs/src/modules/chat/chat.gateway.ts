@@ -2,7 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema } from './chat.dto';
+import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema } from './chat.dto';
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -120,6 +120,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			return;
 		}
 		this.chat.sendMessage(socket, dto, this.server);
+	}
+
+	@SubscribeMessage("update")
+	onUpdateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
+		const { error } = UpdateRoomSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit('error', { message: error });
+			return;
+		}
+		this.chat.updateRoom(socket, dto, this.server);
 	}
 
 	@SubscribeMessage("server")

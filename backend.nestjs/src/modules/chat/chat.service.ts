@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto } from './chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -721,6 +721,40 @@ export class ChatService {
 				})).exec(() => {
 					resolve();
 				});
+		});
+	}
+
+	async updateRoom(socket, dto: UpdateRoomDto, server) {
+		if (await this.checkIfRoomExists(dto.name) == false) {
+			console.log(`Room ${dto.name} does not exist`);
+			socket.emit("failure", "Room does not exist");
+			return;
+		}
+
+		if (await this.checkIfUserIsLogged(socket.data.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} is not logged in room ${dto.name}`);
+			socket.emit("failure", "You are not logged in this room");
+			return;
+		}
+
+		if (await this.checkIfUserIsAdmin(socket.data.userId, dto.name) == false) {
+			console.log(`User ${socket.data.userId} is not admin of room ${dto.name}`);
+			socket.emit("failure", "You are not admin of this room");
+			return;
+		}
+
+		console.log(`User ${socket.data.userId} is updating room ${dto.name}`);
+		await this.updateRoomInRedis(dto);
+		server.to(dto.name).emit("roomUpdated", dto);
+	}
+
+	async updateRoomInRedis(dto: UpdateRoomDto): Promise<void> {
+		return new Promise((resolve) => {
+			if (dto.password != undefined)
+				this.redis.hset(`room:${dto.name}`, "password", JSON.stringify(dto.password));
+			if (dto.isPublic != undefined)
+				this.redis.hset(`room:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic));
+			resolve()
 		});
 	}
 

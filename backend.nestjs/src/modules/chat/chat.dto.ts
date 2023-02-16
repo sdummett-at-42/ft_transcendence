@@ -91,3 +91,15 @@ export const SendMessageSchema = Joi.object({
 	name: Joi.string().min(1).max(32).required(),
 	message: Joi.string().min(1).max(150).required(),
 });
+
+export class UpdateRoomDto {
+	name: string;
+	isPublic?: boolean;
+	password?: string;
+}
+
+export const UpdateRoomSchema = Joi.object({
+	name: Joi.string().min(1).max(32).required(),
+	isPublic: Joi.boolean().optional(),
+	password: Joi.string().min(0).max(32).optional(),
+});
