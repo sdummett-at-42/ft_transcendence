@@ -20,11 +20,12 @@ import { UserEntity } from './entities/user.entity';
 import { ManageGuard } from '../../shared/manage.guard';
 import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
 import { ContentTypeGuard } from '../../shared/content-type.guard';
+import { ChatGateway } from '../chat/chat.gateway';
 
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
-	constructor(private readonly users: UsersService) { }
+	constructor(private readonly users: UsersService, private readonly chat: ChatGateway) { }
 
 	@Get()
 	@UseGuards(AuthenticatedGuard)
@@ -44,6 +45,7 @@ export class UsersController {
 	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity })
 	logout(@Request() req) {
+		this.chat.onLogoutViaController(req.user.id);
 		req.logout((err) => {
 			if (err) {
 			  console.error(err);
@@ -58,6 +60,7 @@ export class UsersController {
 	@ApiOkResponse({ type: UserEntity })
 	async deleteMe(@Request() req) {
 		const user = await this.users.removeUser(req.user.id);
+		this.chat.onLogoutViaController(req.user.id);
 		req.logout((err) => {
 			return user;
 		});

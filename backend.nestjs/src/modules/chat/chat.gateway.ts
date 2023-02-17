@@ -3,7 +3,9 @@ import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema } from './chat.dto';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
@@ -21,6 +23,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	async handleDisconnect(@ConnectedSocket() socket) {
 		this.chat.handleDisconnect(socket);
+	}
+
+	@SubscribeMessage('logout')
+	async onLogout(@ConnectedSocket() socket) {
+		this.chat.logout(socket.data.userId, this.server);
+	}
+
+	async onLogoutViaController(userId: number) {
+		this.chat.logout(userId, this.server);
 	}
 
 	@SubscribeMessage("create")

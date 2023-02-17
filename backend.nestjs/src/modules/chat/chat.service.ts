@@ -160,6 +160,27 @@ export class ChatService {
 		});
 	}
 
+	async logout(userId: number, server) {
+		console.log(`User ${userId} logging out`);
+		const socketIds = await this.getSocketsIds(userId);
+		console.log({ socketIds });
+		for (const socketId of socketIds)
+			server.in(socketId).disconnectSockets();
+	}
+
+	async getSocketsIds(userId: number) : Promise<string[]> {
+		return new Promise((resolve, reject) => {
+			this.redis.hkeys(`user-sockets:${userId}`, (error, keys) => {
+				if (error) {
+					console.error(error);
+					reject(error);
+					return;
+				}
+				resolve(keys);
+			});
+		});
+	}
+
 	async createRoom(socket, dto: CreateRoomDto, server) {
 
 		if (await this.checkIfRoomExists(dto.name) == true) {

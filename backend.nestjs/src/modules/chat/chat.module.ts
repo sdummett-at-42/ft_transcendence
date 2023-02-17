@@ -8,6 +8,6 @@ import { FileController } from "./file.controller";
 	imports: [RedisModule],
 	controllers: [FileController],
 	providers: [ChatService, ChatGateway],
-	exports: [ChatService],
+	exports: [ChatService, ChatGateway],
 })
 export class ChatModule {}
