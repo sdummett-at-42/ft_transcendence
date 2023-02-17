@@ -115,7 +115,25 @@ export class ChatService {
 		console.log(`Adding new socket in the socket list for user:${userId}`);
 		socket.data.userId = userId;
 		this.redis.hset(`user-sockets:${userId}`, socket.id, '1');
+		const rooms = await this.getUserRooms(userId);
+		for (const room of rooms) {
+			console.log(`Joining room ${room}`);
+			socket.join(room);
+		}
 		socket.emit("connected");
+	}
+
+	async getUserRooms(userId) : Promise<string[]> {
+		return new Promise((resolve, reject) => {
+			this.redis.hkeys(`user-rooms:${userId}`, (error, rooms) => {
+				if (error) {
+					console.log("redis.smembers error: ", error);
+					resolve([]);
+				} else {
+					resolve(rooms);
+				}
+			});
+		});
 	}
 
 	getUserId(socket) {
@@ -394,8 +412,11 @@ export class ChatService {
 		this.removeInvitation(socket.data.userId, dto.name);
 		console.log(`User ${socket.data.userId} is joining room ${dto.name}...`);
 		await this.joinRoomInRedis(socket.data.userId, dto.name);
-		socket.join(dto.name);
-		socket.emit("roomJoined", dto.name);
+		const socketIds = await this.getSocketsIds(socket.data.userId);
+		socketIds.forEach((socketId) => {
+			server.in(socketId).socketsJoin(dto.name);
+			server.to(socketId).emit("roomJoined", dto.name);
+		});
 		server.to(dto.name).emit("userJoined", socket.data.userId);
 	}
 
