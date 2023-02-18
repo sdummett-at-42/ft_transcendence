@@ -12,10 +12,11 @@ import {
 	Post,
 	HttpException,
 	HttpStatus,
+	HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
 import { ManageGuard } from '../../shared/manage.guard';
 import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
@@ -28,6 +29,7 @@ export class UsersController {
 	constructor(private readonly users: UsersService, private readonly chat: ChatGateway) { }
 
 	@Get()
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity, isArray: true })
 	findAll() {
@@ -35,6 +37,7 @@ export class UsersController {
 	}
 
 	@Get('me')
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity })
 	findMe(@Request() req) {
@@ -42,8 +45,9 @@ export class UsersController {
 	}
 
 	@Post('me/logout')
+	@HttpCode(201)
 	@UseGuards(AuthenticatedGuard)
-	@ApiOkResponse({ type: UserEntity })
+	@ApiCreatedResponse({ type: UserEntity })
 	logout(@Request() req) {
 		this.chat.onLogoutViaController(req.user.id);
 		const user = req.user;
@@ -56,9 +60,10 @@ export class UsersController {
 		return user;
 	}
 
-	@Post('me/delete')
+	@Delete('me/delete')
+	@HttpCode(204)
 	@UseGuards(AuthenticatedGuard)
-	@ApiOkResponse({ type: UserEntity })
+	@ApiNoContentResponse({ type: UserEntity })
 	async deleteMe(@Request() req) {
 		const user = await this.users.removeUser(req.user.id);
 		this.chat.onLogoutViaController(req.user.id);
@@ -68,6 +73,7 @@ export class UsersController {
 	}
 
 	@Get(':id')
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity })
 	async findOne(@Param('id', ParseIntPipe) id: number) {
@@ -78,6 +84,7 @@ export class UsersController {
 	}
 
 	@Patch(':id')
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
 	@UseGuards(ContentTypeGuard)
@@ -90,10 +97,11 @@ export class UsersController {
 	}
 
 	@Delete(':id')
+	@HttpCode(204)
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
 	@UseGuards(ContentTypeGuard)
-	@ApiOkResponse({ type: UserEntity })
+	@ApiNoContentResponse({ type: UserEntity })
 	remove(@Param('id', ParseIntPipe) id: number) {
 		return this.users.removeUser(id);
 	}

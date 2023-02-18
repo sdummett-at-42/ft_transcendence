@@ -1,9 +1,9 @@
-import { Controller, Get, UseGuards, Req, ParseIntPipe, Post, Patch, Delete, Body } from "@nestjs/common";
+import { Controller, Get, UseGuards, Req, ParseIntPipe, Post, Patch, Delete, Body, HttpCode } from "@nestjs/common";
 import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
 import { ContentTypeGuard } from "src/shared/content-type.guard";
 import { FriendsService } from "./friends.service";
 import { FriendRequestService } from "./friend-request.service";
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from "src/modules/users/entities/user.entity";
 
 @ApiTags('friends')
@@ -12,6 +12,7 @@ export class FriendsController {
 	constructor(private readonly friends: FriendsService, private readonly friendRequest: FriendRequestService) { }
 
 	@Get()
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity, isArray: true })
 	async getFriends(@Req() request) {
@@ -19,9 +20,10 @@ export class FriendsController {
 	}
 
 	@Delete()
+	@HttpCode(204)
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ContentTypeGuard)
-	@ApiOkResponse({ type: UserEntity })
+	@ApiNoContentResponse({ type: UserEntity })
 	async removeFriend(
 		@Req() request,
 		@Body('friendId') friendId: number,
@@ -30,6 +32,7 @@ export class FriendsController {
 	}
 
 	@Post('requests')
+	@HttpCode(201)
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ContentTypeGuard)
 	@ApiCreatedResponse({ type: UserEntity })
@@ -41,6 +44,7 @@ export class FriendsController {
 	}
 
 	@Patch('requests')
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ContentTypeGuard)
 	@ApiOkResponse({ type: UserEntity })
@@ -52,9 +56,10 @@ export class FriendsController {
 	}
 
 	@Delete('requests')
+	@HttpCode(204)
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ContentTypeGuard)
-	@ApiOkResponse({ type: UserEntity })
+	@ApiNoContentResponse({ type: UserEntity })
 	async declineFriendRequest(
 		@Req() request ,
 		@Body('friendId') friendId: number,
@@ -63,6 +68,7 @@ export class FriendsController {
 	}
 
 	@Get('requests/sended')
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity, isArray: true })
 	async getFriendRequests(@Req() request ) {
@@ -70,6 +76,7 @@ export class FriendsController {
 	}
 
 	@Get('requests/received')
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity, isArray: true })
 	async getReceivedFriendRequests(@Req() request ) {
