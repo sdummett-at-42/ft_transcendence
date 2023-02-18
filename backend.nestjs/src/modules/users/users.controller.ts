@@ -46,13 +46,14 @@ export class UsersController {
 	@ApiOkResponse({ type: UserEntity })
 	logout(@Request() req) {
 		this.chat.onLogoutViaController(req.user.id);
+		const user = req.user;
 		req.logout((err) => {
 			if (err) {
 			  console.error(err);
 			  throw new HttpException('Error logging out', HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-			return 'Successfully logged out';
 		});
+		return user;
 	}
 
 	@Post('me/delete')
