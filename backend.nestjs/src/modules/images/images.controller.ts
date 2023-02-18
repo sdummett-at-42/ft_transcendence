@@ -5,7 +5,9 @@ import { UseInterceptors } from "@nestjs/common";
 import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
 import { ManageGuard } from "src/shared/manage.guard";
 import { BodySizeGuard } from "src/shared/body-size.guard";
+import { ApiTags } from "@nestjs/swagger";
 
+@ApiTags('images')
 @Controller('images')
 export class ImagesController {
 	constructor(private readonly images: ImagesService) { }

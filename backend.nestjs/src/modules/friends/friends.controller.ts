@@ -6,6 +6,7 @@ import { FriendRequestService } from "./friend-request.service";
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from "src/modules/users/entities/user.entity";
 
+@ApiTags('friends')
 @Controller('friends')
 export class FriendsController {
 	constructor(private readonly friends: FriendsService, private readonly friendRequest: FriendRequestService) { }
