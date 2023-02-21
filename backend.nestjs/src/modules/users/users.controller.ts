@@ -94,14 +94,4 @@ export class UsersController {
 	) {
 		return this.users.updateUser(id, updateUserDto);
 	}
-
-	@Delete(':id')
-	@HttpCode(204)
-	@UseGuards(AuthenticatedGuard)
-	@UseGuards(ManageGuard)
-	@UseGuards(ContentTypeGuard)
-	@ApiNoContentResponse({ type: UserEntity, description: 'Deletes a user by id' })
-	remove(@Param('id', ParseIntPipe) id: number) {
-		return this.users.removeUser(id);
-	}
 }
