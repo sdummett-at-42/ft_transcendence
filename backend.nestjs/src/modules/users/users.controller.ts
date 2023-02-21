@@ -82,19 +82,15 @@ export class UsersController {
 		return user;
 	}
 
-	@Patch(':id')
+	@Patch('me')
 	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ContentTypeGuard)
 	@ApiOkResponse({ type: UserEntity, description: 'Updates a user by id' })
-	@ApiUnauthorizedResponse({ description: 'You are not authorized to update this user.' })
 	update(
-		@Param('id', ParseIntPipe) id: number,
 		@Body() updateUserDto: UpdateUserDto,
 		@Req() request,
 	) {
-		if (request.user.id != id)
-			throw new HttpException('You are not authorized to update this user.', HttpStatus.UNAUTHORIZED);
-		return this.users.updateUser(id, updateUserDto);
+		return this.users.updateUser(request.user.id, updateUserDto);
 	}
 }
