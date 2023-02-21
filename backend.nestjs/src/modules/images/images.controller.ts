@@ -5,7 +5,8 @@ import { UseInterceptors } from "@nestjs/common";
 import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
 import { ManageGuard } from "src/shared/manage.guard";
 import { BodySizeGuard } from "src/shared/body-size.guard";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiNoContentResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { HttpCode } from "@nestjs/common";
 
 @ApiTags('images')
 @Controller('images')
@@ -13,7 +14,9 @@ export class ImagesController {
 	constructor(private readonly images: ImagesService) { }
 
 	@Get(':id')
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
+	@ApiOkResponse({ description: 'Returns the image' })
 	async getImage(@Res() res, @Param('id', ParseIntPipe) id: number) {
 		const image = await this.images.findOneImage(id);
 		res.set({
@@ -24,10 +27,12 @@ export class ImagesController {
 	}
 
 	@Patch(':id')
+	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
 	@UseGuards(BodySizeGuard)
 	@UseInterceptors(FileInterceptor('file'))
+	@ApiOkResponse({ description: 'Updates the image' })
 	async updateImage(@UploadedFile() file: any, @Param('id', ParseIntPipe) id: number) {
 		const{ buffer } = file;
 		const imageBase64 = buffer.toString('base64');
@@ -46,8 +51,10 @@ export class ImagesController {
 	}
 
 	@Delete(':id')
+	@HttpCode(204)
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
+	@ApiNoContentResponse({ description: 'Deletes the image' })
 	async deleteImage(@Param('id', ParseIntPipe) id: number) {
 		return this.images.updateImageToDefault(id);
 	}
