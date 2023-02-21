@@ -8,13 +8,13 @@ import { ApiBadRequestResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOk
 import { HttpCode } from "@nestjs/common";
 
 @ApiTags('images')
+@UseGuards(AuthenticatedGuard)
 @Controller('images')
 export class ImagesController {
 	constructor(private readonly images: ImagesService) { }
 
 	@Get(':id')
 	@HttpCode(200)
-	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ description: 'Returns the image' })
 	@ApiNotFoundResponse({ description: 'Image not found' })
 	async getImage(@Res() res, @Param('id', ParseIntPipe) id: number) {
@@ -28,7 +28,6 @@ export class ImagesController {
 
 	@Patch(':id')
 	@HttpCode(200)
-	@UseGuards(AuthenticatedGuard)
 	@UseGuards(BodySizeGuard)
 	@UseInterceptors(FileInterceptor('file'))
 	@ApiOkResponse({ description: 'Updates the image' })
@@ -55,7 +54,6 @@ export class ImagesController {
 
 	@Delete(':id')
 	@HttpCode(204)
-	@UseGuards(AuthenticatedGuard)
 	@ApiNoContentResponse({ description: 'Deletes the image' })
 	@ApiUnauthorizedResponse({ description: 'You are not authorized to delete this image' })
 	async deleteImage(@Param('id', ParseIntPipe) id: number, @Req() request) {

@@ -8,12 +8,12 @@ import { UserEntity } from "src/modules/users/entities/user.entity";
 
 @ApiTags('friends')
 @Controller('friends')
+@UseGuards(AuthenticatedGuard)
 export class FriendsController {
 	constructor(private readonly friends: FriendsService, private readonly friendRequest: FriendRequestService) { }
 
 	@Get()
 	@HttpCode(200)
-	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity, isArray: true, description: 'Returns all friends' })
 	async getFriends(@Req() request) {
 		return this.friends.findAllFriends(request.user.id);
@@ -21,7 +21,6 @@ export class FriendsController {
 
 	@Delete()
 	@HttpCode(204)
-	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ContentTypeGuard)
 	@ApiNoContentResponse({ type: UserEntity, description: 'Removes a friend' })
 	async removeFriend(
@@ -33,7 +32,6 @@ export class FriendsController {
 
 	@Post('requests')
 	@HttpCode(201)
-	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ContentTypeGuard)
 	@ApiCreatedResponse({ type: UserEntity, description: 'Sends a friend request' })
 	async sendFriendRequest(
@@ -45,7 +43,6 @@ export class FriendsController {
 
 	@Patch('requests')
 	@HttpCode(200)
-	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ContentTypeGuard)
 	@ApiOkResponse({ type: UserEntity, description: 'Accepts a friend request' })
 	async acceptFriendRequest(
@@ -57,7 +54,6 @@ export class FriendsController {
 
 	@Delete('requests')
 	@HttpCode(204)
-	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ContentTypeGuard)
 	@ApiNoContentResponse({ type: UserEntity, description: 'Declines a friend request' })
 	async declineFriendRequest(
@@ -69,7 +65,6 @@ export class FriendsController {
 
 	@Get('requests/sended')
 	@HttpCode(200)
-	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity, isArray: true, description: 'Returns all sended friend requests' })
 	async getFriendRequests(@Req() request ) {
 		return this.friendRequest.getSendedFriendRequests(request.user.id);
@@ -77,7 +72,6 @@ export class FriendsController {
 
 	@Get('requests/received')
 	@HttpCode(200)
-	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ type: UserEntity, isArray: true, description: 'Returns all received friend requests' })
 	async getReceivedFriendRequests(@Req() request ) {
 		return this.friendRequest.getReceivedFriendRequests(request.user.id);
