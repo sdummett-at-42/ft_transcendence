@@ -1,11 +1,10 @@
-import { Controller, Delete, Get, Patch, ParseIntPipe, Param, Res, UploadedFile, UseGuards, BadRequestException } from "@nestjs/common";
+import { Controller, Delete, Get, Patch, ParseIntPipe, Param, Res, Req, UploadedFile, UseGuards, BadRequestException, HttpException, HttpStatus } from "@nestjs/common";
 import { ImagesService } from "./images.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UseInterceptors } from "@nestjs/common";
 import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
-import { ManageGuard } from "src/shared/manage.guard";
 import { BodySizeGuard } from "src/shared/body-size.guard";
-import { ApiBadRequestResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { HttpCode } from "@nestjs/common";
 
 @ApiTags('images')
@@ -30,12 +29,14 @@ export class ImagesController {
 	@Patch(':id')
 	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
-	@UseGuards(ManageGuard)
 	@UseGuards(BodySizeGuard)
 	@UseInterceptors(FileInterceptor('file'))
 	@ApiOkResponse({ description: 'Updates the image' })
 	@ApiBadRequestResponse({ description: 'Invalid file type' })
-	async updateImage(@UploadedFile() file: any, @Param('id', ParseIntPipe) id: number) {
+	@ApiUnauthorizedResponse({ description: 'You are not authorized to update this image' })
+	async updateImage(@UploadedFile() file: any, @Param('id', ParseIntPipe) id: number, @Req() request) {
+		if (request.user.id != id)
+			throw new HttpException('You are not authorized to update this image', HttpStatus.UNAUTHORIZED);
 		const{ buffer } = file;
 		const imageBase64 = buffer.toString('base64');
 		if (file.mimetype !== 'image/png' && file.mimetype !== 'image/jpeg')
@@ -55,9 +56,11 @@ export class ImagesController {
 	@Delete(':id')
 	@HttpCode(204)
 	@UseGuards(AuthenticatedGuard)
-	@UseGuards(ManageGuard)
 	@ApiNoContentResponse({ description: 'Deletes the image' })
-	async deleteImage(@Param('id', ParseIntPipe) id: number) {
+	@ApiUnauthorizedResponse({ description: 'You are not authorized to delete this image' })
+	async deleteImage(@Param('id', ParseIntPipe) id: number, @Req() request) {
+		if (request.user.id != id)
+			throw new HttpException('You are not authorized to delete this image', HttpStatus.UNAUTHORIZED);
 		return this.images.updateImageToDefault(id);
 	}
 

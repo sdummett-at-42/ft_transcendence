@@ -10,15 +10,15 @@ import {
 	UseGuards,
 	Request,
 	Post,
+	Req,
 	HttpException,
 	HttpStatus,
 	HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
-import { ManageGuard } from '../../shared/manage.guard';
 import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
 import { ContentTypeGuard } from '../../shared/content-type.guard';
 import { ChatGateway } from '../chat/chat.gateway';
@@ -85,13 +85,16 @@ export class UsersController {
 	@Patch(':id')
 	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
-	@UseGuards(ManageGuard)
 	@UseGuards(ContentTypeGuard)
 	@ApiOkResponse({ type: UserEntity, description: 'Updates a user by id' })
+	@ApiUnauthorizedResponse({ description: 'You are not authorized to update this user.' })
 	update(
 		@Param('id', ParseIntPipe) id: number,
 		@Body() updateUserDto: UpdateUserDto,
+		@Req() request,
 	) {
+		if (request.user.id != id)
+			throw new HttpException('You are not authorized to update this user.', HttpStatus.UNAUTHORIZED);
 		return this.users.updateUser(id, updateUserDto);
 	}
 }
