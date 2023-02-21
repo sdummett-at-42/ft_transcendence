@@ -5,9 +5,9 @@ export class BodySizeGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean {
 		console.log("BodySizeGuard")
         const request = context.switchToHttp().getRequest();
-        const limit = 2048000; // 2MB
+		const limit = 204800; // 200kb
         if (request.headers['content-length'] > limit) {
-			throw new HttpException('Request body too large', HttpStatus.PAYLOAD_TOO_LARGE);
+			throw new HttpException('Request body too large. Maximum size is 2kb', HttpStatus.PAYLOAD_TOO_LARGE);
 
         }
         return true;

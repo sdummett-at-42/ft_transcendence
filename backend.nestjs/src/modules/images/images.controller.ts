@@ -4,7 +4,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { UseInterceptors } from "@nestjs/common";
 import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
 import { BodySizeGuard } from "src/shared/body-size.guard";
-import { ApiBadRequestResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiPayloadTooLargeResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { HttpCode } from "@nestjs/common";
 
 @ApiTags('images')
@@ -30,8 +30,9 @@ export class ImagesController {
 	@HttpCode(200)
 	@UseGuards(BodySizeGuard)
 	@UseInterceptors(FileInterceptor('file'))
-	@ApiOkResponse({ description: 'Updates the image' })
-	@ApiBadRequestResponse({ description: 'Invalid file type' })
+	@ApiOkResponse({ description: 'Updates the image.' })
+	@ApiPayloadTooLargeResponse({ description: 'The file is too large. The maximum file size is 2KB' })
+	@ApiBadRequestResponse({ description: 'Invalid file type. It must be a PNG or JPEG file.' })
 	@ApiUnauthorizedResponse({ description: 'You are not authorized to update this image' })
 	async updateImage(@UploadedFile() file: any, @Param('id', ParseIntPipe) id: number, @Req() request) {
 		if (request.user.id != id)
