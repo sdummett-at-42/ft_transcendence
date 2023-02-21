@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
 import { ManageGuard } from '../../shared/manage.guard';
 import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
@@ -31,7 +31,7 @@ export class UsersController {
 	@Get()
 	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
-	@ApiOkResponse({ type: UserEntity, isArray: true })
+	@ApiOkResponse({ type: UserEntity, isArray: true, description: 'Returns all users' })
 	findAll() {
 		return this.users.findAllUsers();
 	}
@@ -39,7 +39,7 @@ export class UsersController {
 	@Get('me')
 	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
-	@ApiOkResponse({ type: UserEntity })
+	@ApiOkResponse({ type: UserEntity, description: 'Returns the current user' })
 	findMe(@Request() req) {
 		return this.users.findOneUserById(req.user.id);
 	}
@@ -47,15 +47,13 @@ export class UsersController {
 	@Post('me/logout')
 	@HttpCode(201)
 	@UseGuards(AuthenticatedGuard)
-	@ApiCreatedResponse({ type: UserEntity })
+	@ApiCreatedResponse({ type: UserEntity, description: 'Logs out the current user' })
 	logout(@Request() req) {
 		this.chat.onLogoutViaController(req.user.id);
 		const user = req.user;
 		req.logout((err) => {
-			if (err) {
+			if (err)
 			  console.error(err);
-			  throw new HttpException('Error logging out', HttpStatus.INTERNAL_SERVER_ERROR);
-			}
 		});
 		return user;
 	}
@@ -63,7 +61,7 @@ export class UsersController {
 	@Delete('me/delete')
 	@HttpCode(204)
 	@UseGuards(AuthenticatedGuard)
-	@ApiNoContentResponse({ type: UserEntity })
+	@ApiNoContentResponse({ type: UserEntity, description: 'Deletes the current user' })
 	async deleteMe(@Request() req) {
 		const user = await this.users.removeUser(req.user.id);
 		this.chat.onLogoutViaController(req.user.id);
@@ -75,7 +73,8 @@ export class UsersController {
 	@Get(':id')
 	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
-	@ApiOkResponse({ type: UserEntity })
+	@ApiOkResponse({ type: UserEntity, description: 'Returns a user by id' })
+	@ApiNotFoundResponse({ description: 'User not found' })
 	async findOne(@Param('id', ParseIntPipe) id: number) {
 		const user = await this.users.findOneUserById(id);
 		if (!user)
@@ -88,7 +87,7 @@ export class UsersController {
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
 	@UseGuards(ContentTypeGuard)
-	@ApiOkResponse({ type: UserEntity })
+	@ApiOkResponse({ type: UserEntity, description: 'Updates a user by id' })
 	update(
 		@Param('id', ParseIntPipe) id: number,
 		@Body() updateUserDto: UpdateUserDto,
@@ -101,7 +100,7 @@ export class UsersController {
 	@UseGuards(AuthenticatedGuard)
 	@UseGuards(ManageGuard)
 	@UseGuards(ContentTypeGuard)
-	@ApiNoContentResponse({ type: UserEntity })
+	@ApiNoContentResponse({ type: UserEntity, description: 'Deletes a user by id' })
 	remove(@Param('id', ParseIntPipe) id: number) {
 		return this.users.removeUser(id);
 	}

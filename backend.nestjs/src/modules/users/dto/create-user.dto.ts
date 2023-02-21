@@ -9,6 +9,7 @@ export class CreateUserDto {
 	@MaxLength(15)
 	name: string;
 
+	@ApiProperty()
 	profilePicture: string;
 
 }
