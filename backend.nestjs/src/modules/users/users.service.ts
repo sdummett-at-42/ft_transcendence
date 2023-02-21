@@ -35,6 +35,9 @@ export class UsersService {
 
 	findAllUsers() {
 		return this.prisma.user.findMany({
+			where: {
+				id: { not: 0 }
+			},
 			select: {
 				id: true,
 				name: true,
@@ -54,7 +57,7 @@ export class UsersService {
 				elo: true,
 			}
 		});
-		if (!user)
+		if (!user || user.id === 0)
 			throw new HttpException('User not found', 404);
 		return user;
 	}
