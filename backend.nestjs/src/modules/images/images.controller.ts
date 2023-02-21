@@ -5,7 +5,7 @@ import { UseInterceptors } from "@nestjs/common";
 import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
 import { ManageGuard } from "src/shared/manage.guard";
 import { BodySizeGuard } from "src/shared/body-size.guard";
-import { ApiNoContentResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { HttpCode } from "@nestjs/common";
 
 @ApiTags('images')
@@ -17,6 +17,7 @@ export class ImagesController {
 	@HttpCode(200)
 	@UseGuards(AuthenticatedGuard)
 	@ApiOkResponse({ description: 'Returns the image' })
+	@ApiNotFoundResponse({ description: 'Image not found' })
 	async getImage(@Res() res, @Param('id', ParseIntPipe) id: number) {
 		const image = await this.images.findOneImage(id);
 		res.set({
@@ -33,6 +34,7 @@ export class ImagesController {
 	@UseGuards(BodySizeGuard)
 	@UseInterceptors(FileInterceptor('file'))
 	@ApiOkResponse({ description: 'Updates the image' })
+	@ApiBadRequestResponse({ description: 'Invalid file type' })
 	async updateImage(@UploadedFile() file: any, @Param('id', ParseIntPipe) id: number) {
 		const{ buffer } = file;
 		const imageBase64 = buffer.toString('base64');
