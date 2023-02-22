@@ -16,7 +16,7 @@ services:
       - backend
 
   nestjs:
-    build: .
+    build: ./backend.nestjs
     restart: always
     container_name: nestjs.back
     depends_on:
