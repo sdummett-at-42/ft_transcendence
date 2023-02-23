@@ -9,6 +9,6 @@ RUN npm install
 ADD . /app
 
 RUN npx prisma generate
-# same as npx prisma generate --schema=./prisma/schema.prisma
 
-CMD ["npm", "run", "start:dev"]
+# Run prisma migrate and seed, then start the application
+CMD npx prisma migrate dev && npx prisma db seed && npm run start:dev
