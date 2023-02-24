@@ -2,7 +2,7 @@ version: '3.8'
 services:
 
   postgres:
-    image: postgres:13.5
+    image: postgres:15.2-alpine3.17
     restart: always
     container_name: postgres.db
     environment:
@@ -43,7 +43,7 @@ services:
       - backend
 
   redis:
-    image: redis:7.0.8-alpine
+    image: redis:7.0.8-alpine3.17
     restart: always
     container_name: redis.cache
     ports:
