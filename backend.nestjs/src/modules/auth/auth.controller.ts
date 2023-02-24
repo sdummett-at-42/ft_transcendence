@@ -1,21 +1,20 @@
 import { Controller, Get, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { GoogleAuthGuard } from "./utils/google-auth.guard";
+import { FortyTwoAuthGuard } from "./utils/fortytwo-auth.guard";
 
 ApiTags('auth')
 @Controller("auth")
 export class AuthController {
-	
-	@Get("google/login")
-	@UseGuards(GoogleAuthGuard)
-	handleLogin() {
-		return {msg: 'Google authentication'};
+
+	@Get('42/login')
+	@UseGuards(FortyTwoAuthGuard)
+	handle42Login() {
+		return { msg: '42 oauth'};
 	}
 
-	// api/auth/google/redirect
-	@Get("google/redirect")
-	@UseGuards(GoogleAuthGuard)
-	handleRedirect() {
-		return {msg: "OK"};
+	@Get('42/callback')
+	@UseGuards(FortyTwoAuthGuard)
+	fortytwoCallback() {
+		return {msg: "Logged successfully."};
 	}
 }

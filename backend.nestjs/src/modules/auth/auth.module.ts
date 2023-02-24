@@ -4,7 +4,7 @@ import { PrismaModule } from 'nestjs-prisma';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { GoogleStrategy } from './utils/google.strategy';
+import { FortyTwoStrategy } from './utils/fortytwo.strategy';
 import { SessionSerializer } from './utils/Serializer';
 
 @Module({
@@ -15,7 +15,7 @@ import { SessionSerializer } from './utils/Serializer';
 	],
 	controllers: [AuthController],
 	providers: [
-		GoogleStrategy,
+		FortyTwoStrategy,
 		SessionSerializer,
 		{
 			provide: "AUTH_SERVICE",

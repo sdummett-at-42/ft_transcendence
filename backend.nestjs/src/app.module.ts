@@ -24,8 +24,9 @@ import { ChatModule } from './modules/chat/chat.module';
 				THROTTLER_TTL: Joi.number().required(),
 				THROTTLER_LIMIT: Joi.number().required(),
 				REDIS_URL: Joi.string().required(),
-				GOOGLE_CLIENT_ID: Joi.string().required(),
-				GOOGLE_CLIENT_SECRET: Joi.string().required(),
+				FORTYTWO_CLIENT_ID: Joi.string().required(),
+				FORTYTWO_CLIENT_SECRET: Joi.string().required(),
+				FORTYTWO_CALLBACK_URL: Joi.string().required(),
 			})
 		}),
 		AuthModule,
