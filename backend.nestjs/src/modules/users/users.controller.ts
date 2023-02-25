@@ -22,6 +22,7 @@ import { UserEntity } from './entities/user.entity';
 import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
 import { ContentTypeGuard } from '../../shared/content-type.guard';
 import { ChatGateway } from '../chat/chat.gateway';
+import { UserMeEntity } from './entities/userme.entity';
 
 @Controller('users')
 @UseGuards(AuthenticatedGuard)
@@ -38,9 +39,9 @@ export class UsersController {
 
 	@Get('me')
 	@HttpCode(200)
-	@ApiOkResponse({ type: UserEntity, description: 'Returns the current user' })
+	@ApiOkResponse({ type: UserMeEntity, description: 'Returns the current user' })
 	findMe(@Request() req) {
-		return this.users.findOneUserById(req.user.id);
+		return this.users.findOneUserByIdWithEmail(req.user.id);
 	}
 
 	@Post('me/logout')
