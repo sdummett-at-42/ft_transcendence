@@ -48,3 +48,39 @@ FORTYTWO_CALLBACK_URL=http://localhost:3001/auth/42/callback
 ```
 
 Please make sure to replace the values with your own values.
+
+## Websocket Documentation
+
+I'm having hard time implementing websockets documentation into swagger.  
+For now I will describe the current state of the ws implementation here.  
+For each event I explain its purpose, the expected received data and the returned data.  
+
+### Chat using rooms
+
+| Event name   | Received data  | Returned data | Description |
+|--------------|-----------|------------|---|
+| logout       | none      | none        | Disconnect all the connected sockets of a user. |
+| create       | `{ roomName: string, isPublic: boolean, password?: string }` | | Create a room that can be private/public and/or password protected or not |
+| join         | `{ roomName: string, password?: string}` | | Attempt to join a room | 
+| leave        | `{ roomName: string }` | | Leave a room, if the leaver is the owner then a new owner is set. If no more user is in the room then the room is destroyed |
+| ban*         | `{ roomName: string, userId: number }` | | Ban a user from a room. Its has no limit on the time. The user will not be able to join the room even if invited.  |
+| unban*       | `{ roomName: string, userId: number }` | | Unban a user. |
+| mute*        | `{ roomName: string, userId: number }` | | Mute a user. |
+| unmute*      | `{ roomName: string, userId: number }` | | Unmute a user. |
+| invite       | `{ roomNamae: string, userId: number }` | | Invite a user in a room. |
+| send         | `{ roomName: string, message string }` | | Send a message in a room. |
+| update**       | `{ roomName: string, isPublic?: boolean, password?: string }` | | Change the visibility and/or the password of the room |
+
+The `roomName` must be between **1** and **32** characters.  
+The `timeout` must be between **30**secs to **1260**secs (21mins).  
+The `message` must be between **1** to **150** characters.  
+
+\* The user must have *owner* or *admin* privileges.  
+** The user must be the *owner* of the room.  
+
+The returned data isn't well defined yet. (TODO)  
+Must implement "kick" event. Same as ban but it's not permanent(TODO)  
+Must implement "block" event. A user can avoid receiving message from a specific user. Should we implement it on the frontend? (TODO)  
+Must implement "grant" event. A privileged user giving privileges to another (TODO)  
+  
+Ps: Chat between two users isn't implemented yet.  
