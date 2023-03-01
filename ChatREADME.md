@@ -8,17 +8,17 @@ This table describe the events that can be received by the server associated wit
  
 | Events received by the server | Events sended by the server |
 | ----------------------------- | --------------------------- |
-| `createRoom` | `roomCreated` `roomNotCreated` |
-| `updateRoom` | `roomUpdated`, `roomNotUpdated` |
-| `joinRoom`   | `roomJoined` `roomNotJoined` |
-| `leaveRoom`  | `roomLeft` `roomNotLeft` |
-| `banUser`    | `userBanned` `userNotBanned` |
-| `unbanUser`  | `userUnbanned` `userNotUnbanned` |
-| `muteUser`   | `userMuted` `userNotMuted` |
-| `unmuteUser` | `userUnmuted` `userNotUnMuted` |
-| `inviteUser` | `userInvited` `userNotInvited` |
-| `sendMsg`    | `msgSended` `msgNotSended` |
-| `logout`     |  |
+| [`createRoom`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#createroom) | [`roomCreated`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#roomCreated) [`roomNotCreated`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#roomNotCreated) |
+| [`updateRoom`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#updateRoom) | [`roomUpdated`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#roomUpdated), [`roomNotUpdated`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#roomNotUpdated) |
+| [`joinRoom`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#joinRoom)   | [`roomJoined`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#roomJoined) [`roomNotJoined`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#roomNotJoined) |
+| [`leaveRoom`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#leaveRoom)  | [`roomLeft`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#roomLeft) [`roomNotLeft`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#roomNotLeft) |
+| [`banUser`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#banUser)    | [`userBanned`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userBanned) [`userNotBanned`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userNotBanned) |
+| [`unbanUser`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#unbanUser)  | [`userUnbanned`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userUnbanned) [`userNotUnbanned`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userNotUnbanned) |
+| [`muteUser`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#muteUser)   | [`userMuted`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userMuted) [`userNotMuted`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userNotMuted) |
+| [`unmuteUser`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#unmuteUser) | [`userUnmuted`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userUnmuted) [`userNotUnMuted`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userNotUnmuted) |
+| [`inviteUser`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#inviteUser) | [`userInvited`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userInvited) [`userNotInvited`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userNotInvited) |
+| [`sendMsg`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#sendMsg)    | [`msgSended`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#msgSended) [`msgNotSended`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#msgNotSended) |
+| [`logout`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#logout)     |  |
 
 ### Event reference
 
