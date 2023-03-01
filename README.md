@@ -23,8 +23,9 @@ This file should be kept secret and not shared publicly. The contents of the .en
 # Database connection informations
 POSTGRES_USER=my_super_user
 POSTGRES_PASSWORD=my_super_secret_password
+POSTGRES_PORT=5432
 POSTGRES_DB=your_awesome_database_name
-DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}
 
 # The session secret used to encrypt the user session data
 SESSION_SECRET=your_omega_session_secret
