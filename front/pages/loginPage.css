@@ -43,6 +43,11 @@ body {
     transition: opacity 0ms, transform 200ms cubic-bezier(.90, .06, .15, .90);
 }
 
+.card:hover > .card-content .invert-effect {
+    transition: filter 200ms;
+    filter: invert(0%);
+}
+
 .card:before {
       background: linear-gradient(
       130deg, 
@@ -79,6 +84,10 @@ body {
     width: calc(100% - 10vmin);
     z-index: 2;
 }
+
+.invert-effect {
+    filter: invert(100%)
+}
   
 .card-title,
 .card-subtitle {
@@ -89,7 +98,7 @@ body {
   
 .card-title {
     text-align: center;
-    font-size: 6vmin;
+    font-size: 5vmin;
 }
   
 .card-subtitle {
@@ -114,6 +123,11 @@ body {
     display: flex;
     width: 100%;
     border: 1px solid var(--border-color);
+}
+
+.button:hover {
+    transition: background-color 300ms;
+    background-color: rgb(50, 50, 50);
 }
 
 .button > .button-content {
