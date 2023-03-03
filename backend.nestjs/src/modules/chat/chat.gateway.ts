@@ -40,7 +40,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = CreateRoomSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.createRoom(socket, dto, this.server);
@@ -51,7 +51,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = JoinRoomSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.joinRoom(socket, dto, this.server);
@@ -62,7 +62,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = LeaveRoomSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.leaveRoom(socket, dto, this.server);
@@ -73,7 +73,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = BanUserSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.banUser(socket, dto, this.server);
@@ -84,7 +84,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = UnbanUserSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.unbanUser(socket, dto, this.server);
@@ -95,7 +95,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = MuteUserSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.muteUser(socket, dto, this.server);
@@ -106,7 +106,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = UnmuteUserSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.unmuteUser(socket, dto, this.server);
@@ -117,7 +117,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = InviteUserSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.inviteUser(socket, dto, this.server);
@@ -128,7 +128,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = SendMessageSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.sendMessage(socket, dto, this.server);
@@ -139,7 +139,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		const { error } = UpdateRoomSchema.validate(dto);
 		if (error) {
 			console.log(error.message);
-			socket.emit('error', { message: error });
+			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
 		this.chat.updateRoom(socket, dto, this.server);

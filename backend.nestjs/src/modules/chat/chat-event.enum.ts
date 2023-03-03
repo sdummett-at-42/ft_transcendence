@@ -30,4 +30,5 @@ export enum Event {
 	msgSended = "msgSended",
 	msgNotSended = "msgNotSended",
 	logout = "logout",
+	dataError = "dataError",
 }
