@@ -31,4 +31,6 @@ export enum Event {
 	msgNotSended = "msgNotSended",
 	logout = "logout",
 	dataError = "dataError",
+	connected = "connected",
+	notConnected = "notConnected",
 }

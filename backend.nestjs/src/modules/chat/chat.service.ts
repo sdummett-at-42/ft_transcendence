@@ -22,7 +22,7 @@ export class ChatService {
 		const userId = await this.redis.getUserId(socket);
 		if (userId === null) {
 			console.log("User not logged in");
-			socket.emit("failure", "User not logged in");
+			socket.emit(Event.notConnected, { message: `User isnt logged.` });
 			socket.disconnect()
 			return;
 		}
@@ -34,7 +34,7 @@ export class ChatService {
 			console.log(`Joining room ${room}`);
 			socket.join(room);
 		}
-		socket.emit("connected");
+		socket.emit(Event.connected, { message: `User ${socket.data.userId} successfully connected through websocket.` });
 	}
 
 	async handleDisconnect(@ConnectedSocket() socket) {
