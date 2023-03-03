@@ -19,6 +19,7 @@ This table describe the events that can be received by the server associated wit
 | [`inviteUser`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#inviteUser) | [`userInvited`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userInvited) [`userNotInvited`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userNotInvited) |
 | [`sendMsg`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#sendMsg)    | [`msgSended`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#msgSended) [`msgNotSended`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#msgNotSended) |
 | [`logout`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#logout)     |  |
+|  | [`connected`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#connected) [`notConnected`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#notConnected) |
 |  | [`dataError`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#dataError) |
 
 ### Event reference
@@ -137,6 +138,18 @@ Send a message in a room.
 #### msgNotSended
 #### logout
 Disconnect all the connected sockets of a user.
+
+#### connected
+```typescript
+{ message: string }
+````
+The user socket is successfully connected.
+
+#### notConnected
+```typescript
+{ message: string}
+```
+The socket has been disconnected for some reason.
 
 #### dataError
 ```typescript
