@@ -19,12 +19,13 @@ This table describe the events that can be received by the server associated wit
 | [`inviteUser`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#inviteUser) | [`userInvited`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userInvited) [`userNotInvited`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#userNotInvited) |
 | [`sendMsg`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#sendMsg)    | [`msgSended`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#msgSended) [`msgNotSended`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#msgNotSended) |
 | [`logout`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#logout)     |  |
+|  | [`dataError`](https://github.com/sdummett/ft_transcendence/blob/sdummett/ChatREADME.md#dataError) |
 
 ### Event reference
 
 #### createRoom
 ```typescript
-{ roomName: string, isPublic: boolean, password?: string )
+{ roomName: string, isPublic: boolean, password?: string }
 ```
 Create a room that can be either private/public and/or password protected or not.
 
@@ -136,6 +137,12 @@ Send a message in a room.
 #### msgNotSended
 #### logout
 Disconnect all the connected sockets of a user.
+
+#### dataError
+```typescript
+{ message: string }
+```
+The returned message explain why the validation of the data has failed.
 
 ## Side notes
 
