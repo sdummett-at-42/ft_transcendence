@@ -215,30 +215,30 @@ export class RedisService {
 			password = ""
 
 		this.client.multi()
-			.hset(`room:${dto.name}`, "owner", JSON.stringify(userId))
-			.hset(`room:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic))
-			.hset(`room:${dto.name}`, "logged", JSON.stringify([userId]))
-			.hset(`room:${dto.name}`, "banned", JSON.stringify([]))
-			.hset(`room:${dto.name}`, "admins", JSON.stringify([userId]))
-			.hset(`room:${dto.name}`, "invited", JSON.stringify([]))
-			.hset(`room:${dto.name}`, "password", JSON.stringify(password))
+			.hset(`room:${dto.roomName}`, "owner", JSON.stringify(userId))
+			.hset(`room:${dto.roomName}`, "isPublic", JSON.stringify(dto.isPublic))
+			.hset(`room:${dto.roomName}`, "logged", JSON.stringify([userId]))
+			.hset(`room:${dto.roomName}`, "banned", JSON.stringify([]))
+			.hset(`room:${dto.roomName}`, "admins", JSON.stringify([userId]))
+			.hset(`room:${dto.roomName}`, "invited", JSON.stringify([]))
+			.hset(`room:${dto.roomName}`, "password", JSON.stringify(password))
 			.exec((error, response) => {
 				if (error) {
 					console.error(error)
 					return;
 				}
-				console.log(`redis: Created room:${dto.name}`);
+				console.log(`redis: Created room:${dto.roomName}`);
 			});
 
-		this.client.hset(`user-rooms:${userId}`, dto.name, '1');
+		this.client.hset(`user-rooms:${userId}`, dto.roomName, '1');
 
 		this.client.multi()
-			.zadd(`room-messages:${dto.name}`, Date.now(), JSON.stringify({ userId: -1, message: `Welcome to your channel ${dto.name}.` }))
-			.expire(`room-messages:${dto.name}`, 2 * 24 * 60 * 60)
+			.zadd(`room-messages:${dto.roomName}`, Date.now(), JSON.stringify({ userId: -1, message: `Welcome to your channel ${dto.roomName}.` }))
+			.expire(`room-messages:${dto.roomName}`, 2 * 24 * 60 * 60)
 			.exec();
 
 		// Print the newly created room for debug purpose
-		this.client.hgetall(`room:${dto.name}`, (error, response) => {
+		this.client.hgetall(`room:${dto.roomName}`, (error, response) => {
 			if (error) {
 				console.error(error);
 				return;
@@ -280,7 +280,7 @@ export class RedisService {
 
 	async leaveRoom(userId, dto: LeaveRoomDto): Promise<void> {
 		return new Promise((resolve) => {
-			this.client.hget(`room:${dto.name}`, "logged", (error, response) => {
+			this.client.hget(`room:${dto.roomName}`, "logged", (error, response) => {
 				if (error) {
 					console.error(error);
 					resolve();
@@ -289,8 +289,8 @@ export class RedisService {
 				let logged = JSON.parse(response);
 				logged = logged.filter((x) => x !== userId);
 				console.log({ loggedAfterRemoverLeaver: logged });
-				this.client.hset(`room:${dto.name}`, "logged", JSON.stringify(logged));
-				this.client.hdel(`user-rooms:${userId}`, dto.name);
+				this.client.hset(`room:${dto.roomName}`, "logged", JSON.stringify(logged));
+				this.client.hdel(`user-rooms:${userId}`, dto.roomName);
 				resolve()
 			});
 		});
@@ -472,9 +472,9 @@ export class RedisService {
 	async updateRoom(dto: UpdateRoomDto): Promise<void> {
 		return new Promise((resolve) => {
 			if (dto.password != undefined)
-				this.client.hset(`room:${dto.name}`, "password", JSON.stringify(dto.password));
+				this.client.hset(`room:${dto.roomName}`, "password", JSON.stringify(dto.password));
 			if (dto.isPublic != undefined)
-				this.client.hset(`room:${dto.name}`, "isPublic", JSON.stringify(dto.isPublic));
+				this.client.hset(`room:${dto.roomName}`, "isPublic", JSON.stringify(dto.isPublic));
 			resolve()
 		});
 	}

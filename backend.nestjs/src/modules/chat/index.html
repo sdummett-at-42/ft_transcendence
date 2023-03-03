@@ -10,45 +10,82 @@
 		socket.on("disconnect", function () {
 			console.log("Disconnected from the server");
 		});
-		socket.on("receive", function (data) {
-			console.log(data);
-		});
-		socket.on("userBanned", function (data) {
-			console.log(`User ${data} banned`);
-		});
-		socket.on("createRoom", function () {
-			console.log("Room created");
-		});
-		socket.on("joinRoom", function () {
-			console.log("Room joined");
-		});
-		socket.on("leaveRoom", function () {
-			console.log("Room left");
-		});
-		socket.on("messageToRoom", function (data) {
-			console.log("Message to room:", data);
-		});
-		socket.on("roomExists", function () {
-			console.log("Room exists");
-		});
-		socket.on("roomCreated", function () {
-			console.log("Room created");
-		});
-		socket.on("roomJoined", function () {
-			console.log("Room joined");
-		});
-		socket.on("roomLeft", function () {
-			console.log("Room left");
-		});
-		socket.on("userJoined", function (data) {
-			console.log(`User ${data} joined the room`);
-		});
-		socket.on("userLeft", function (data) {
-			console.log(`User ${data} left the room`);
-		});
-		socket.on("messageReceived", function (data) {
-			console.log("Message received:", data);
-		});
+
+		socket.on("roomCreated", function(payload) {
+			console.log({ roomCreated: payload })
+		})
+		socket.on("roomNotCreated", function(payload) {
+			console.log({ roomNotCreated: payload })
+		})
+		socket.on("roomUpdated", function(payload) {
+			console.log({ roomUpdated: payload })
+		})
+		socket.on("roomNotUpdated", function(payload) {
+			console.log({ roomNotUpdated: payload })
+		})
+		socket.on("roomJoined", function(payload) {
+			console.log({ roomJoined: payload })
+		})
+		socket.on("roomNotJoined", function(payload) {
+			console.log({ roomNotJoined: payload })
+		})
+		socket.on("roomLeft", function(payload) {
+			console.log({ roomLeft: payload })
+		})
+		socket.on("roomNotLeft", function(payload) {
+			console.log({ roomNotLeft: payload })
+		})
+		socket.on("userBanned", function(payload) {
+			console.log({ userBanned: payload })
+		})
+		socket.on("userNotBanned", function(payload) {
+			console.log({ userNotBanned: payload })
+		})
+		socket.on("userUnbanned", function(payload) {
+			console.log({ userUnbanned: payload })
+		})
+		socket.on("userNotUnbanned", function(payload) {
+			console.log({ userNotUnbanned: payload })
+		})
+		socket.on("userMuted", function(payload) {
+			console.log({ userMuted: payload })
+		})
+		socket.on("userNotMuted", function(payload) {
+			console.log({ userNotMuted: payload })
+		})
+		socket.on("userUnmuted", function(payload) {
+			console.log({ userUnmuted: payload })
+		})
+		socket.on("userNotUnmuted", function(payload) {
+			console.log({ userNotUnmuted: payload })
+		})
+		socket.on("userInvited", function(payload) {
+			console.log({ userInvited: payload })
+		})
+		socket.on("userNotInvited", function(payload) {
+			console.log({ userNotInvited: payload })
+		})
+		socket.on("msgSended", function(payload) {
+			console.log({ msgSended: payload })
+		})
+		socket.on("msgNotSended", function(payload) {
+			console.log({ msgNotSended: payload })
+		})
+		socket.on("dataError", function(payload) {
+			console.log({ dataError: payload })
+		})
+		socket.on("connected", function(payload) {
+			console.log({ connected: payload })
+		})
+		socket.on("notConnected", function(payload) {
+			console.log({ notConnected: payload })
+		})
+		socket.on("userJoined", function(payload) {
+			console.log({ userJoined: payload })
+		})
+		socket.on("userLeft", function(payload) {
+			console.log({ userLeft: payload })
+		})
 	</script>
 </head>
 

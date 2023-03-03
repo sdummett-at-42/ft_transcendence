@@ -33,4 +33,6 @@ export enum Event {
 	dataError = "dataError",
 	connected = "connected",
 	notConnected = "notConnected",
+	userJoined = "userJoined",
+	userLeft = "userLeft",
 }
