@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import * as Redis from 'redis';
 import { ConfigService } from '@nestjs/config';
 import { CreateRoomDto, UpdateRoomDto, LeaveRoomDto } from '../chat/chat.dto';
+import * as argon2 from 'argon2';
+
 @Injectable()
 export class RedisService {
 	private readonly client;
@@ -211,8 +213,10 @@ export class RedisService {
 
 	async createRoom(userId, dto: CreateRoomDto) {
 		let { password } = dto;
-		if (!password)
+		if (!password || password === "")
 			password = ""
+		else
+			password = await argon2.hash(password);
 
 		this.client.multi()
 			.hset(`room:${dto.roomName}`, "owner", JSON.stringify(userId))
@@ -470,9 +474,12 @@ export class RedisService {
 	}
 
 	async updateRoom(dto: UpdateRoomDto): Promise<void> {
-		return new Promise((resolve) => {
-			if (dto.password != undefined)
-				this.client.hset(`room:${dto.roomName}`, "password", JSON.stringify(dto.password));
+		return new Promise(async (resolve) => {
+			let { password } = dto;
+			if (password != undefined && password != "")
+				password = await argon2.hash(password);
+			if (password != undefined)
+				this.client.hset(`room:${dto.roomName}`, "password", JSON.stringify(password));
 			if (dto.isPublic != undefined)
 				this.client.hset(`room:${dto.roomName}`, "isPublic", JSON.stringify(dto.isPublic));
 			resolve()
@@ -660,14 +667,18 @@ export class RedisService {
 
 	async checkIfPasswordIsCorrect(name: string, password: string) {
 		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "password", (error, response) => {
+			this.client.hget(`room:${name}`, "password", async (error, response) => {
 				if (error) {
 					console.error(error);
 					reject(error);
 					return;
 				}
 				const roomPassword = JSON.parse(response);
-				if (roomPassword === password)
+				if (password == undefined && roomPassword === "")
+					resolve(true);
+				else if (password != undefined && password === "" && roomPassword === "")
+					resolve(true);
+				else if (password != undefined && await argon2.verify(roomPassword, password) === true)
 					resolve(true);
 				else
 					resolve(false);
