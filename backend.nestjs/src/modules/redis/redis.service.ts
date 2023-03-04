@@ -221,7 +221,7 @@ export class RedisService {
 		this.client.multi()
 			.hset(`room:${dto.roomName}`, "owner", JSON.stringify(userId))
 			.hset(`room:${dto.roomName}`, "isPublic", JSON.stringify(dto.isPublic))
-			.hset(`room:${dto.roomName}`, "logged", JSON.stringify([userId]))
+			.hset(`room:${dto.roomName}`, "members", JSON.stringify([userId]))
 			.hset(`room:${dto.roomName}`, "banned", JSON.stringify([]))
 			.hset(`room:${dto.roomName}`, "admins", JSON.stringify([userId]))
 			.hset(`room:${dto.roomName}`, "invited", JSON.stringify([]))
@@ -284,16 +284,16 @@ export class RedisService {
 
 	async leaveRoom(userId, dto: LeaveRoomDto): Promise<void> {
 		return new Promise((resolve) => {
-			this.client.hget(`room:${dto.roomName}`, "logged", (error, response) => {
+			this.client.hget(`room:${dto.roomName}`, "members", (error, response) => {
 				if (error) {
 					console.error(error);
 					resolve();
 					return;
 				}
-				let logged = JSON.parse(response);
-				logged = logged.filter((x) => x !== userId);
-				console.log({ loggedAfterRemoverLeaver: logged });
-				this.client.hset(`room:${dto.roomName}`, "logged", JSON.stringify(logged));
+				let members = JSON.parse(response);
+				members = members.filter((x) => x !== userId);
+				console.log({ memberAfterRemoverLeaver: members });
+				this.client.hset(`room:${dto.roomName}`, "members", JSON.stringify(members));
 				this.client.hdel(`user-rooms:${userId}`, dto.roomName);
 				resolve()
 			});
@@ -317,24 +317,24 @@ export class RedisService {
 				this.client.hset(`room:${name}`, "owner", JSON.stringify(admins[0]));
 				resolve();
 			}
-			let logged = await this.getLoggedUsers(name);
-			if (logged.length != 0) {
-				this.client.hset(`room:${name}`, "owner", JSON.stringify(logged[0]));
+			let members = await this.getMembers(name);
+			if (members.length != 0) {
+				this.client.hset(`room:${name}`, "owner", JSON.stringify(members[0]));
 				resolve();
 			}
 		});
 	}
 
-	async getLoggedUsers(roomName: string): Promise<number[]> {
+	async getMembers(roomName: string): Promise<number[]> {
 		return new Promise((resolve) => {
-			this.client.hget(`room:${roomName}`, "logged", (error, response) => {
+			this.client.hget(`room:${roomName}`, "members", (error, response) => {
 				if (error) {
 					console.error(error);
 					resolve([]);
 					return;
 				}
-				let logged = JSON.parse(response);
-				resolve(logged);
+				let members = JSON.parse(response);
+				resolve(members);
 			});
 		});
 	}
@@ -355,14 +355,14 @@ export class RedisService {
 
 	async checkIfRoomIsFull(name: string): Promise<boolean> {
 		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "logged", (error, response) => {
+			this.client.hget(`room:${name}`, "members", (error, response) => {
 				if (error) {
 					console.error(error);
 					reject(error);
 					return;
 				}
-				let logged = JSON.parse(response);
-				if (logged.length >= 10) {
+				let members = JSON.parse(response);
+				if (members.length >= 10) {
 					resolve(true);
 					return;
 				}
@@ -373,15 +373,15 @@ export class RedisService {
 
 	async joinRoom(userId, name: string): Promise<void> {
 		return new Promise((resolve) => {
-			this.client.hget(`room:${name}`, "logged", (error, response) => {
+			this.client.hget(`room:${name}`, "members", (error, response) => {
 				if (error) {
 					console.error(error);
 					resolve();
 					return;
 				}
-				let logged = JSON.parse(response);
-				logged.push(userId);
-				this.client.hset(`room:${name}`, "logged", JSON.stringify(logged));
+				let members = JSON.parse(response);
+				members.push(userId);
+				this.client.hset(`room:${name}`, "members", JSON.stringify(members));
 				this.client.hset(`user-rooms:${userId}`, name, '1');
 				resolve();
 			});
@@ -399,10 +399,10 @@ export class RedisService {
 				let banned = JSON.parse(response);
 				banned.push(userId);
 				this.client.hset(`room:${name}`, "banned", JSON.stringify(banned));
-				this.client.hget(`room:${name}`, "logged", (error, response) => {
-					let logged = JSON.parse(response);
-					logged = logged.filter((x) => x != userId);
-					this.client.hset(`room:${name}`, "logged", JSON.stringify(logged));
+				this.client.hget(`room:${name}`, "members", (error, response) => {
+					let members = JSON.parse(response);
+					members = members.filter((x) => x != userId);
+					this.client.hset(`room:${name}`, "members", JSON.stringify(members));
 					this.client.hdel(`user-rooms:${userId}`, name);
 				});
 				resolve();
@@ -515,16 +515,16 @@ export class RedisService {
 		});
 	}
 
-	async checkIfUserIsLogged(userId, name: string) {
+	async checkIfUserIsMember(userId, name: string) {
 		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "logged", (error, response) => {
+			this.client.hget(`room:${name}`, "members", (error, response) => {
 				if (error) {
 					console.error(error);
 					reject(error);
 					return;
 				}
-				const logged = JSON.parse(response);
-				if (logged.includes(userId))
+				const members = JSON.parse(response);
+				if (members.includes(userId))
 					resolve(true);
 				else
 					resolve(false);
@@ -648,15 +648,15 @@ export class RedisService {
 
 	async checkIfRoomIsEmpty(name: string) {
 		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "logged", (error, response) => {
+			this.client.hget(`room:${name}`, "members", (error, response) => {
 				if (error) {
 					console.error(error);
 					reject(error);
 					return;
 				}
-				const logged = JSON.parse(response);
-				console.log({ logged });
-				if (logged.length === 0)
+				const members = JSON.parse(response);
+				console.log({ members });
+				if (members.length === 0)
 					resolve(true);
 				else
 					resolve(false);

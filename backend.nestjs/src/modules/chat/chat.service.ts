@@ -83,10 +83,10 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.roomNotLeft, dto.roomName))
 			return;
 
-		if (await this.userIsntLogged(socket, Event.roomNotLeft, dto.roomName))
+		if (await this.userIsntMember(socket, Event.roomNotLeft, dto.roomName))
 			return;
 
-		console.log(`User ${socket.data.userId} is logged in room ${dto.roomName}, leaving...`);
+		console.log(`User ${socket.data.userId} is member in room ${dto.roomName}, leaving...`);
 		await this.redis.leaveRoom(socket.data.userId, dto);
 
 		if (await this.redis.getUserRoomNb(socket.data.userId) == 0)
@@ -141,7 +141,7 @@ export class ChatService {
 		if (await this.userIsBanned(socket, Event.roomNotJoined, dto.roomName))
 			return;
 
-		if (await this.userIsLogged(socket, Event.roomNotJoined, dto.roomName))
+		if (await this.userIsMember(socket, Event.roomNotJoined, dto.roomName))
 			return;
 
 		if (await this.roomIsFull(socket, Event.roomNotJoined, dto.roomName))
@@ -175,7 +175,7 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.userNotBanned, dto.roomName))
 			return;
 
-		if (await this.userIsntLogged(socket, Event.userNotBanned, dto.roomName))
+		if (await this.userIsntMember(socket, Event.userNotBanned, dto.roomName))
 			return;
 
 		if (socket.data.userId == dto.userId) {
@@ -208,12 +208,12 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == false) {
-			console.log(`User ${dto.userId} is not logged in room ${dto.roomName}.`);
+		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
+			console.log(`User ${dto.userId} is not member in room ${dto.roomName}.`);
 			socket.emit(Event.userNotBanned, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not logged in room ${dto.roomName}.`
+				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
 			});
 			return;
 		}
@@ -241,7 +241,7 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.userNotUnbanned, dto.roomName))
 			return;
 
-		if (await this.userIsntLogged(socket, Event.userNotUnbanned, dto.roomName))
+		if (await this.userIsntMember(socket, Event.userNotUnbanned, dto.roomName))
 			return;
 
 		if (socket.data.userId == dto.userId) {
@@ -287,7 +287,7 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.userNotMuted, dto.roomName))
 			return;
 
-		if (await this.userIsntLogged(socket, Event.userNotMuted, dto.roomName))
+		if (await this.userIsntMember(socket, Event.userNotMuted, dto.roomName))
 			return;
 
 		if (socket.data.userId == dto.userId) {
@@ -300,12 +300,12 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == false) {
-			console.log(`User ${dto.userId} is not logged in room ${dto.roomName}`);
+		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
+			console.log(`User ${dto.userId} is not member in room ${dto.roomName}`);
 			socket.emit(Event.userNotMuted, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not logged in this room.`
+				message: `User ${dto.userId} is not member in this room.`
 			});
 			return;
 		}
@@ -343,7 +343,7 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.userNotUnmuted, dto.roomName))
 			return;
 
-		if (await this.userIsntLogged(socket, Event.userNotUnmuted, dto.roomName))
+		if (await this.userIsntMember(socket, Event.userNotUnmuted, dto.roomName))
 			return;
 
 		if (socket.data.userId == dto.userId) {
@@ -356,12 +356,12 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == false) {
-			console.log(`User ${dto.userId} is not logged in room ${dto.roomName}`);
+		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
+			console.log(`User ${dto.userId} is not member in room ${dto.roomName}`);
 			socket.emit(Event.userNotUnmuted, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not logged in room ${dto.roomName}.`
+				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
 			});
 			return;
 		}
@@ -399,7 +399,7 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.userNotInvited, dto.roomName))
 			return;
 
-		if (await this.userIsntLogged(socket, Event.userNotInvited, dto.roomName))
+		if (await this.userIsntMember(socket, Event.userNotInvited, dto.roomName))
 			return;
 
 		if (socket.data.userId == dto.userId) {
@@ -412,12 +412,12 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == true) {
-			console.log(`User ${dto.userId} is already logged in room ${dto.roomName}`);
+		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == true) {
+			console.log(`User ${dto.userId} is already member in room ${dto.roomName}`);
 			socket.emit(Event.userNotInvited, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `User ${dto.roomName} is already logged in room ${dto.roomName}.`
+				message: `User ${dto.roomName} is already member in room ${dto.roomName}.`
 			});
 			return;
 		}
@@ -466,12 +466,12 @@ export class ChatService {
 			return;
 		}
 
-		if (await this.redis.checkIfUserIsLogged(socket.data.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} is not logged in room ${dto.roomName}`);
+		if (await this.redis.checkIfUserIsMember(socket.data.userId, dto.roomName) == false) {
+			console.log(`User ${socket.data.userId} is not member in room ${dto.roomName}`);
 			socket.emit(Event.msgNotSended, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You are not logged in room ${dto.roomName}.`,
+				message: `You are not member in room ${dto.roomName}.`,
 			});
 			return;
 		}
@@ -507,12 +507,12 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.roomNotUpdated, dto.roomName))
 			return;
 
-		if (await this.redis.checkIfUserIsLogged(socket.data.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} is not logged in room ${dto.roomName}`);
+		if (await this.redis.checkIfUserIsMember(socket.data.userId, dto.roomName) == false) {
+			console.log(`User ${socket.data.userId} is not member in room ${dto.roomName}`);
 			socket.emit(Event.roomNotUpdated, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You are not logged in room ${dto.roomName}.`
+				message: `You are not member in room ${dto.roomName}.`
 			});
 			return;
 		}
@@ -554,13 +554,13 @@ export class ChatService {
 		return false;
 	}
 
-	async userIsntLogged(socket, event: Event, roomName) {
-		if (await this.redis.checkIfUserIsLogged(socket.data.userId, roomName) == false) {
-			console.log(`User ${socket.data.userId} is not logged in room ${roomName}`);
+	async userIsntMember(socket, event: Event, roomName) {
+		if (await this.redis.checkIfUserIsMember(socket.data.userId, roomName) == false) {
+			console.log(`User ${socket.data.userId} is not member in room ${roomName}`);
 			socket.emit(event, {
 				roomName: roomName,
 				timestamp: new Date().toISOString(),
-				message: `You are not logged in room ${roomName}.`,
+				message: `You are not member in room ${roomName}.`,
 			});
 			return true;
 		}
@@ -580,13 +580,13 @@ export class ChatService {
 		return false;
 	}
 
-	async userIsLogged(socket, event: Event, roomName) {
-		if (await this.redis.checkIfUserIsLogged(socket.data.userId, roomName) == true) {
-			console.log(`User ${socket.data.userId} is already logged in room ${roomName}`);
+	async userIsMember(socket, event: Event, roomName) {
+		if (await this.redis.checkIfUserIsMember(socket.data.userId, roomName) == true) {
+			console.log(`User ${socket.data.userId} is already member in room ${roomName}`);
 			socket.emit(event, {
 				roomName: roomName,
 				timestamp: new Date().toISOString(),
-				message: `You are already logged in room ${roomName}.`,
+				message: `You are already member in room ${roomName}.`,
 			});
 			return true;
 		}
