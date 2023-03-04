@@ -178,6 +178,16 @@ export class ChatService {
 		if (await this.userIsntLogged(socket, Event.userNotBanned, dto.roomName))
 			return;
 
+		if (socket.data.userId == dto.userId) {
+			console.log(`User ${socket.data.userId} cannot ban himself`);
+			socket.emit(Event.userNotBanned, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You cannot ban yourself.`
+			});
+			return;
+		}
+
 		if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
 			console.log(`User ${socket.data.userId} does not have the correct privilege to ban user ${dto.userId} in room ${dto.roomName}`);
 			socket.emit(Event.userNotBanned, {
@@ -234,6 +244,16 @@ export class ChatService {
 		if (await this.userIsntLogged(socket, Event.userNotUnbanned, dto.roomName))
 			return;
 
+		if (socket.data.userId == dto.userId) {
+			console.log(`User ${socket.data.userId} cannot unban himself`);
+			socket.emit(Event.userNotUnbanned, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You cannot unban yourself.`
+			});
+			return;
+		}
+
 		if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
 			console.log(`User ${socket.data.userId} does not have right privileges to unban user ${dto.userId} in room ${dto.roomName}.`);
 			socket.emit(Event.userNotUnbanned, {
@@ -269,6 +289,16 @@ export class ChatService {
 
 		if (await this.userIsntLogged(socket, Event.userNotMuted, dto.roomName))
 			return;
+
+		if (socket.data.userId == dto.userId) {
+			console.log(`User ${socket.data.userId} cannot mute himself`);
+			socket.emit(Event.userNotMuted, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You cannot mute yourself.`
+			});
+			return;
+		}
 
 		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == false) {
 			console.log(`User ${dto.userId} is not logged in room ${dto.roomName}`);
@@ -316,6 +346,16 @@ export class ChatService {
 		if (await this.userIsntLogged(socket, Event.userNotUnmuted, dto.roomName))
 			return;
 
+		if (socket.data.userId == dto.userId) {
+			console.log(`User ${socket.data.userId} cannot unmute himself`);
+			socket.emit(Event.userNotUnmuted, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You cannot unmute yourself.`
+			});
+			return;
+		}
+
 		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == false) {
 			console.log(`User ${dto.userId} is not logged in room ${dto.roomName}`);
 			socket.emit(Event.userNotUnmuted, {
@@ -359,8 +399,18 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.userNotInvited, dto.roomName))
 			return;
 
-		if (await this.userIsLogged(socket, Event.userNotInvited, dto.roomName))
+		if (await this.userIsntLogged(socket, Event.userNotInvited, dto.roomName))
 			return;
+
+		if (socket.data.userId == dto.userId) {
+			console.log(`User ${socket.data.userId} cannot invite himself`);
+			socket.emit(Event.userNotInvited, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You cannot invite yourself.`
+			});
+			return;
+		}
 
 		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == true) {
 			console.log(`User ${dto.userId} is already logged in room ${dto.roomName}`);
