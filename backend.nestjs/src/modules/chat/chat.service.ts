@@ -51,7 +51,7 @@ export class ChatService {
 	}
 
 	async logout(userId: number, server) {
-		console.log(`User ${userId} logging out`);
+		console.log(`User ${userId} logged out`);
 		const socketIds = await this.redis.getSocketsIds(userId);
 		console.log({ socketIds });
 		for (const socketId of socketIds)
@@ -80,10 +80,10 @@ export class ChatService {
 	}
 
 	async leaveRoom(socket, dto: LeaveRoomDto, server) {
-		if (this.roomDontExists(socket, Event.roomNotLeft, dto.roomName))
+		if (await this.roomDontExists(socket, Event.roomNotLeft, dto.roomName))
 			return;
 
-		if (this.userIsntLogged(socket, Event.roomNotLeft, dto.roomName))
+		if (await this.userIsntLogged(socket, Event.roomNotLeft, dto.roomName))
 			return;
 
 		console.log(`User ${socket.data.userId} is logged in room ${dto.roomName}, leaving...`);
@@ -116,7 +116,7 @@ export class ChatService {
 	}
 
 	async joinRoom(socket, dto: JoinRoomDto, server) {
-		if (this.roomDontExists(socket, Event.roomNotJoined, dto.roomName))
+		if (await this.roomDontExists(socket, Event.roomNotJoined, dto.roomName))
 			return;
 		else if (await this.redis.checkIfRoomIsPublic(dto.roomName) == false) {
 			if (await this.redis.checkIfUserIsInvited(socket.data.userId, dto.roomName) == false) {
@@ -144,7 +144,7 @@ export class ChatService {
 				return;
 		}
 
-		this.redis.removeInvitation(socket.data.userId, dto.roomName);
+		await this.redis.removeInvitation(socket.data.userId, dto.roomName);
 		console.log(`User ${socket.data.userId} is joining room ${dto.roomName}...`);
 		await this.redis.joinRoom(socket.data.userId, dto.roomName);
 		const socketIds = await this.redis.getSocketsIds(socket.data.userId);
@@ -167,9 +167,6 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.userNotBanned, dto.roomName))
 			return;
 
-		if (await this.userIsLogged(socket, Event.userNotBanned, dto.roomName))
-			return;
-
 		if (await this.userIsntLogged(socket, Event.userNotBanned, dto.roomName))
 			return;
 
@@ -189,6 +186,16 @@ export class ChatService {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
 				message: `User ${dto.userId} is already banned in room ${dto.roomName}.`
+			});
+			return;
+		}
+
+		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == false) {
+			console.log(`User ${dto.userId} is not logged in room ${dto.roomName}.`);
+			socket.emit(Event.userNotBanned, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} is not logged in room ${dto.roomName}.`
 			});
 			return;
 		}
@@ -286,10 +293,10 @@ export class ChatService {
 	}
 
 	async unmuteUser(socket, dto: UnmuteUserDto, server) {
-		if (this.roomDontExists(socket, Event.userNotUnmuted, dto.roomName))
+		if (await this.roomDontExists(socket, Event.userNotUnmuted, dto.roomName))
 			return;
 
-		if (this.userIsntLogged(socket, Event.userNotUnmuted, dto.roomName))
+		if (await this.userIsntLogged(socket, Event.userNotUnmuted, dto.roomName))
 			return;
 
 		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == false) {
@@ -332,10 +339,10 @@ export class ChatService {
 	}
 
 	async inviteUser(socket, dto: InviteUserDto, server) {
-		if (this.roomDontExists(socket, Event.userNotInvited, dto.roomName))
+		if (await this.roomDontExists(socket, Event.userNotInvited, dto.roomName))
 			return;
 
-		if (this.userIsLogged(socket, Event.userNotInvited, dto.roomName))
+		if (await this.userIsLogged(socket, Event.userNotInvited, dto.roomName))
 			return;
 
 		if (await this.redis.checkIfUserIsLogged(dto.userId, dto.roomName) == true) {
@@ -379,7 +386,7 @@ export class ChatService {
 	}
 
 	async sendMessage(socket, dto: SendMessageDto, server) {
-		if (this.roomDontExists(socket, Event.msgNotSended, dto.roomName))
+		if (await this.roomDontExists(socket, Event.msgNotSended, dto.roomName))
 			return;
 
 		if (await this.redis.checkIfUserIsLogged(socket.data.userId, dto.roomName) == false) {
@@ -406,7 +413,7 @@ export class ChatService {
 			socket.emit(Event.msgNotSended, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message:`You are muted in room ${dto.roomName}.`
+				message: `You are muted in room ${dto.roomName}.`
 			});
 			return;
 		}
@@ -429,7 +436,7 @@ export class ChatService {
 	}
 
 	async updateRoom(socket, dto: UpdateRoomDto, server) {
-		if (this.roomDontExists(socket, Event.roomNotUpdated, dto.roomName))
+		if (await this.roomDontExists(socket, Event.roomNotUpdated, dto.roomName))
 			return;
 
 		if (await this.redis.checkIfUserIsLogged(socket.data.userId, dto.roomName) == false) {
@@ -493,7 +500,7 @@ export class ChatService {
 	}
 
 	async userIsBanned(socket, event: Event, roomName) {
-		if (await this.redis.checkIfUserIsBanned(socket.data.userId, roomName) == false) {
+		if (await this.redis.checkIfUserIsBanned(socket.data.userId, roomName) == true) {
 			console.log(`User ${socket.data.userId} is banned from room ${roomName}`);
 			socket.emit(event, {
 				roomName: roomName,
