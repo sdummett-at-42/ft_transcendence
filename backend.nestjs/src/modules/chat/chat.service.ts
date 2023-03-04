@@ -102,7 +102,15 @@ export class ChatService {
 			if (await this.redis.checkIfUserIsAdmin(socket.data.userId, dto.roomName) == true)
 				await this.redis.removeUserFromAdmins(socket.data.userId, dto.roomName);
 		}
-		socket.leave(dto.roomName);
+
+		const socketIds = await this.redis.getSocketsIds(socket.data.userId);
+		console.log({ socketIds });
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => socket.data.userId === socket.data.userId);
+		for (const socket of userSockets) {
+			socket.leave(dto.roomName);
+		}
+
 		socket.emit(Event.roomLeft, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
@@ -202,6 +210,15 @@ export class ChatService {
 
 		console.log(`User ${socket.data.userId} is banning user ${dto.userId} from room ${dto.roomName}...`);
 		await this.redis.banUser(dto.userId, dto.roomName);
+
+		const socketIds = await this.redis.getSocketsIds(dto.userId);
+		console.log({ socketIds });
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => dto.userId === dto.userId);
+		for (const socket of userSockets) {
+			socket.leave(dto.roomName);
+		}
+
 		server.to(dto.roomName).emit(Event.userBanned, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
@@ -389,21 +406,22 @@ export class ChatService {
 		if (await this.roomDontExists(socket, Event.msgNotSended, dto.roomName))
 			return;
 
-		if (await this.redis.checkIfUserIsLogged(socket.data.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} is not logged in room ${dto.roomName}`);
-			socket.emit(Event.msgNotSended, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are not logged in room ${dto.roomName}.`,
-			});
-			return;
-		}
 		if (await this.redis.checkIfUserIsBanned(socket.data.userId, dto.roomName) == true) {
 			console.log(`User ${socket.data.userId} is banned from room ${dto.roomName}`);
 			socket.emit(Event.msgNotSended, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
 				message: `You are banned from room ${dto.roomName}.`,
+			});
+			return;
+		}
+
+		if (await this.redis.checkIfUserIsLogged(socket.data.userId, dto.roomName) == false) {
+			console.log(`User ${socket.data.userId} is not logged in room ${dto.roomName}`);
+			socket.emit(Event.msgNotSended, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You are not logged in room ${dto.roomName}.`,
 			});
 			return;
 		}
