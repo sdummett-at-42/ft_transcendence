@@ -310,29 +310,45 @@ export class RedisService {
 		});
 	}
 
-	// This function need to be improved, next owner should be the first in admin list
-	// or the first user in the logged list
 	async changeRoomOwner(name: string): Promise<void> {
+		return new Promise(async (resolve) => {
+			let admins = await this.getAdmins(name);
+			if (admins.length != 0) {
+				this.client.hset(`room:${name}`, "owner", JSON.stringify(admins[0]));
+				resolve();
+			}
+			let logged = await this.getLoggedUsers(name);
+			if (logged.length != 0) {
+				this.client.hset(`room:${name}`, "owner", JSON.stringify(logged[0]));
+				resolve();
+			}
+		});
+	}
+
+	async getLoggedUsers(roomName: string): Promise<number[]> {
 		return new Promise((resolve) => {
-			this.client.hget(`room:${name}`, "logged", (error, response) => {
+			this.client.hget(`room:${roomName}`, "logged", (error, response) => {
 				if (error) {
 					console.error(error);
+					resolve([]);
 					return;
 				}
 				let logged = JSON.parse(response);
-				this.client.hset(`room:${name}`, "owner", JSON.stringify(logged[0]));
-				this.client.hget(`room:${name}`, "admins", (error, response) => {
-					if (error) {
-						console.error(error);
-						return;
-					}
-					let admins = JSON.parse(response);
-					console.log({ adminsBefore: admins })
-					admins.push(logged[0]);
-					console.log({ adminsAfter: admins })
-					this.client.hset(`room:${name}`, "admins", JSON.stringify(admins));
-					resolve();
-				});
+				resolve(logged);
+			});
+		});
+	}
+
+	async getAdmins(roomName: string): Promise<number[]> {
+		return new Promise((resolve) => {
+			this.client.hget(`room:${roomName}`, "admins", (error, response) => {
+				if (error) {
+					console.error(error);
+					resolve([]);
+					return;
+				}
+				let admins = JSON.parse(response);
+				resolve(admins);
 			});
 		});
 	}
