@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, ChangeUserRoleDto } from './chat.dto';
 import { Event } from './chat-event.enum';
+import { UserRole } from './chat-role.enum';
 
 @Injectable()
 export class ChatService {
@@ -170,506 +171,638 @@ export class ChatService {
 		});
 	}
 
-	async kickUser(socket, dto: KickUserDto, server) {
-		if (await this.roomDontExists(socket, Event.userNotKicked, dto.roomName))
+	async changeUserRole(socket, dto: ChangeUserRoleDto, server) {
+		if (await this.roomDontExists(socket, Event.userRoleNotChanged, dto.roomName))
 			return;
 
-		if (await this.userIsntMember(socket, Event.userNotKicked, dto.roomName))
+		if (await this.userIsntMember(socket, Event.userRoleNotChanged, dto.roomName))
 			return;
 
-		if (socket.data.userId == dto.userId) {
-			console.log(`User ${socket.data.userId} cannot kick himself`);
-			socket.emit(Event.userNotKicked, {
+		const userRole = await this.redis.getUserRole(socket.data.userId, dto.roomName);
+		const userToChangeRole = await this.redis.getUserRole(dto.userId, dto.roomName);
+
+		if (userRole == UserRole.MEMBER) {
+			console.log(`User ${socket.data.userId} is not allowed to change user role`);
+			socket.emit(Event.userRoleNotChanged, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You cannot kick yourself.`
+				message: `You are not allowed to change user role.`
 			});
 			return;
 		}
-
-		if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} does not have the correct privilege to kick user ${dto.userId} in room ${dto.roomName}`);
-			socket.emit(Event.userNotKicked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You do not have the correct privilege to kick in room ${dto.roomName}.`
-			});
-			return;
+		else if (userRole == UserRole.ADMIN) {
+			if (socket.data.userId === dto.userId && dto.role === UserRole.MEMBER) {
+				console.log(`User ${socket.data.userId} is demoting himself`);
+				await this.redis.removeUserFromAdmins(socket.data.userId, dto.roomName);
+				socket.emit(Event.userRoleChanged, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are no longer admin in room ${dto.roomName}.`
+				});
+				server.to(dto.roomName).emit(Event.userRoleChanged, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${socket.data.userId} is no longer admin in room ${dto.roomName}.`
+				});
+				return;
+			}
+			if (socket.data.userId != dto.userId) {
+				console.log(`User ${socket.data.userId} cannot change user role`);
+				socket.emit(Event.userRoleNotChanged, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are not allowed to change user role.`
+				});
+				return;
+			}
 		}
-
-		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
-			console.log(`User ${dto.userId} is not member in room ${dto.roomName}.`);
-			socket.emit(Event.userNotKicked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
-			});
-			return;
+		else if (userRole == UserRole.OWNER) {
+			if (socket.data.userId === dto.userId) {
+				console.log(`User ${socket.data.userId} cannot demote himself without giving ownership`);
+				socket.emit(Event.userRoleNotChanged, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You cannot demote yourself without giving ownership.`
+				});
+			}
+			else if (dto.role === UserRole.ADMIN) {
+				if (userToChangeRole === UserRole.ADMIN) {
+					console.log(`User ${dto.userId} is already admin`);
+					socket.emit(Event.userRoleNotChanged, {
+						roomName: dto.roomName,
+						timestamp: new Date().toISOString(),
+						message: `User ${dto.userId} is already admin.`
+					});
+					return;
+				}
+				else if (userToChangeRole === UserRole.MEMBER) {
+					console.log(`User ${dto.userId} is now admin`);
+					let admins: string[] = await this.redis.getRoomAdmins(dto.roomName);
+					admins.push(dto.userId.toString());
+					await this.redis.setRoomAdmins(dto.roomName, JSON.stringify(admins));
+					socket.emit(Event.userRoleChanged, {
+						roomName: dto.roomName,
+						timestamp: new Date().toISOString(),
+						message: `User ${dto.userId} is now admin.`
+					});
+					server.to(dto.roomName).emit(Event.userRoleChanged, {
+						roomName: dto.roomName,
+						timestamp: new Date().toISOString(),
+						message: `User ${dto.userId} is now admin.`
+					});
+					return;
+				}
+			}
+			else if (dto.role === UserRole.MEMBER) {
+				if (userToChangeRole === UserRole.MEMBER) {
+					console.log(`User ${dto.userId} is already member`);
+					socket.emit(Event.userRoleNotChanged, {
+						roomName: dto.roomName,
+						timestamp: new Date().toISOString(),
+						message: `User ${dto.userId} is already member.`
+					});
+					return;
+				}
+				else if (userToChangeRole === UserRole.ADMIN) {
+					console.log(`User ${dto.userId} has been demoted to member`);
+					const admins = await this.redis.getRoomAdmins(dto.roomName);
+					const index = admins.indexOf(dto.userId.toString());
+					if (index > -1)
+						admins.splice(index, 1);
+					await this.redis.setRoomAdmins(dto.roomName, JSON.stringify(admins));
+					socket.emit(Event.userRoleChanged, {
+						roomName: dto.roomName,
+						timestamp: new Date().toISOString(),
+						message: `User ${dto.userId} is now member.`
+					});
+					// TODO: send event to concerned user
+					return;
+				}
+			}
+			else if (dto.role === UserRole.OWNER) {
+				console.log(`Owner ${socket.data.userId} is giving ownership to ${dto.userId}`);
+				if (userToChangeRole != UserRole.ADMIN) {
+					console.log(`User ${dto.userId} is now admin`);
+					const admins = await this.redis.getRoomAdmins(dto.roomName);
+					admins.push(dto.userId.toString());
+					await this.redis.setRoomAdmins(dto.roomName, JSON.stringify(admins));
+				}
+				await this.redis.giveOwnership(dto.userId, dto.roomName);
+				socket.emit(Event.userRoleChanged, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is now owner of room ${dto.roomName}.`
+				});
+				server.to(dto.roomName).emit(Event.userRoleChanged, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is now owner of room ${dto.roomName}.`
+				});
+				return;
+			}
 		}
-
-		console.log(`User ${socket.data.userId} is kicking user ${dto.userId} from room ${dto.roomName}...`);
-		await this.redis.kickUser(dto.userId, dto.roomName);
-
-		const socketIds = await this.redis.getSocketsIds(dto.userId);
-		console.log({ socketIds });
-		const sockets = await server.in(dto.roomName).fetchSockets();
-		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
-		for (const socket of userSockets) {
-			socket.leave(dto.roomName);
-		}
-
-		server.to(dto.roomName).emit(Event.userKicked, {
-			roomName: dto.roomName,
-			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been kicked from the room ${dto.roomName}.`
-		});
 	}
+
+	async kickUser(socket, dto: KickUserDto, server) {
+			if (await this.roomDontExists(socket, Event.userNotKicked, dto.roomName))
+				return;
+
+			if (await this.userIsntMember(socket, Event.userNotKicked, dto.roomName))
+				return;
+
+			if (socket.data.userId == dto.userId) {
+				console.log(`User ${socket.data.userId} cannot kick himself`);
+				socket.emit(Event.userNotKicked, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You cannot kick yourself.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
+				console.log(`User ${socket.data.userId} does not have the correct privilege to kick user ${dto.userId} in room ${dto.roomName}`);
+				socket.emit(Event.userNotKicked, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You do not have the correct privilege to kick in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
+				console.log(`User ${dto.userId} is not member in room ${dto.roomName}.`);
+				socket.emit(Event.userNotKicked, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is not member in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			console.log(`User ${socket.data.userId} is kicking user ${dto.userId} from room ${dto.roomName}...`);
+			await this.redis.kickUser(dto.userId, dto.roomName);
+
+			const socketIds = await this.redis.getSocketsIds(dto.userId);
+			console.log({ socketIds });
+			const sockets = await server.in(dto.roomName).fetchSockets();
+			const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
+			for (const socket of userSockets) {
+				socket.leave(dto.roomName);
+			}
+
+			server.to(dto.roomName).emit(Event.userKicked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} has been kicked from the room ${dto.roomName}.`
+			});
+		}
 
 	async banUser(socket, dto: BanUserDto, server) {
-		if (await this.roomDontExists(socket, Event.userNotBanned, dto.roomName))
-			return;
+			if (await this.roomDontExists(socket, Event.userNotBanned, dto.roomName))
+				return;
 
-		if (await this.userIsntMember(socket, Event.userNotBanned, dto.roomName))
-			return;
+			if (await this.userIsntMember(socket, Event.userNotBanned, dto.roomName))
+				return;
 
-		if (socket.data.userId == dto.userId) {
-			console.log(`User ${socket.data.userId} cannot ban himself`);
-			socket.emit(Event.userNotBanned, {
+			if (socket.data.userId == dto.userId) {
+				console.log(`User ${socket.data.userId} cannot ban himself`);
+				socket.emit(Event.userNotBanned, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You cannot ban yourself.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
+				console.log(`User ${socket.data.userId} does not have the correct privilege to ban user ${dto.userId} in room ${dto.roomName}`);
+				socket.emit(Event.userNotBanned, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You do not have the correct privilege to ban in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsBanned(dto.userId, dto.roomName) == true) {
+				console.log(`User ${dto.userId} is already banned from room ${dto.roomName}`);
+				socket.emit(Event.userNotBanned, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is already banned in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
+				console.log(`User ${dto.userId} is not member in room ${dto.roomName}.`);
+				socket.emit(Event.userNotBanned, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is not member in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			console.log(`User ${socket.data.userId} is banning user ${dto.userId} from room ${dto.roomName}...`);
+			await this.redis.banUser(dto.userId, dto.roomName);
+
+			const socketIds = await this.redis.getSocketsIds(dto.userId);
+			console.log({ socketIds });
+			const sockets = await server.in(dto.roomName).fetchSockets();
+			const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
+			for (const socket of userSockets) {
+				socket.leave(dto.roomName);
+			}
+
+			server.to(dto.roomName).emit(Event.userBanned, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You cannot ban yourself.`
+				message: `User ${dto.userId} has been banned from the room ${dto.roomName}.`
 			});
-			return;
 		}
-
-		if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} does not have the correct privilege to ban user ${dto.userId} in room ${dto.roomName}`);
-			socket.emit(Event.userNotBanned, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You do not have the correct privilege to ban in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserIsBanned(dto.userId, dto.roomName) == true) {
-			console.log(`User ${dto.userId} is already banned from room ${dto.roomName}`);
-			socket.emit(Event.userNotBanned, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is already banned in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
-			console.log(`User ${dto.userId} is not member in room ${dto.roomName}.`);
-			socket.emit(Event.userNotBanned, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		console.log(`User ${socket.data.userId} is banning user ${dto.userId} from room ${dto.roomName}...`);
-		await this.redis.banUser(dto.userId, dto.roomName);
-
-		const socketIds = await this.redis.getSocketsIds(dto.userId);
-		console.log({ socketIds });
-		const sockets = await server.in(dto.roomName).fetchSockets();
-		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
-		for (const socket of userSockets) {
-			socket.leave(dto.roomName);
-		}
-
-		server.to(dto.roomName).emit(Event.userBanned, {
-			roomName: dto.roomName,
-			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been banned from the room ${dto.roomName}.`
-		});
-	}
 
 	async unbanUser(socket, dto: UnbanUserDto, server) {
 
-		if (await this.roomDontExists(socket, Event.userNotUnbanned, dto.roomName))
-			return;
+			if (await this.roomDontExists(socket, Event.userNotUnbanned, dto.roomName))
+				return;
 
-		if (await this.userIsntMember(socket, Event.userNotUnbanned, dto.roomName))
-			return;
+			if (await this.userIsntMember(socket, Event.userNotUnbanned, dto.roomName))
+				return;
 
-		if (socket.data.userId == dto.userId) {
-			console.log(`User ${socket.data.userId} cannot unban himself`);
-			socket.emit(Event.userNotUnbanned, {
+			if (socket.data.userId == dto.userId) {
+				console.log(`User ${socket.data.userId} cannot unban himself`);
+				socket.emit(Event.userNotUnbanned, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You cannot unban yourself.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
+				console.log(`User ${socket.data.userId} does not have right privileges to unban user ${dto.userId} in room ${dto.roomName}.`);
+				socket.emit(Event.userNotUnbanned, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You do not have the right privileges to unban in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsBanned(dto.userId, dto.roomName) == false) {
+				console.log(`User ${dto.userId} is not banned from room ${dto.roomName}.`);
+				socket.emit(Event.userNotUnbanned, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is not banned from room ${dto.roomName}.`,
+				});
+				return;
+			}
+
+			console.log(`User ${socket.data.userId} is unbanning user ${dto.userId} from room ${dto.roomName}...`);
+			await this.redis.unbanUser(dto.userId, dto.roomName);
+			server.to(dto.roomName).emit(Event.userUnbanned, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You cannot unban yourself.`
+				message: `User ${dto.userId} has been unban from the room ${dto.roomName}.`
 			});
-			return;
 		}
-
-		if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} does not have right privileges to unban user ${dto.userId} in room ${dto.roomName}.`);
-			socket.emit(Event.userNotUnbanned, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You do not have the right privileges to unban in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserIsBanned(dto.userId, dto.roomName) == false) {
-			console.log(`User ${dto.userId} is not banned from room ${dto.roomName}.`);
-			socket.emit(Event.userNotUnbanned, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not banned from room ${dto.roomName}.`,
-			});
-			return;
-		}
-
-		console.log(`User ${socket.data.userId} is unbanning user ${dto.userId} from room ${dto.roomName}...`);
-		await this.redis.unbanUser(dto.userId, dto.roomName);
-		server.to(dto.roomName).emit(Event.userUnbanned, {
-			roomName: dto.roomName,
-			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been unban from the room ${dto.roomName}.`
-		});
-	}
 
 	async muteUser(socket, dto: MuteUserDto, server) {
-		if (await this.roomDontExists(socket, Event.userNotMuted, dto.roomName))
-			return;
+			if (await this.roomDontExists(socket, Event.userNotMuted, dto.roomName))
+				return;
 
-		if (await this.userIsntMember(socket, Event.userNotMuted, dto.roomName))
-			return;
+			if (await this.userIsntMember(socket, Event.userNotMuted, dto.roomName))
+				return;
 
-		if (socket.data.userId == dto.userId) {
-			console.log(`User ${socket.data.userId} cannot mute himself`);
-			socket.emit(Event.userNotMuted, {
+			if (socket.data.userId == dto.userId) {
+				console.log(`User ${socket.data.userId} cannot mute himself`);
+				socket.emit(Event.userNotMuted, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You cannot mute yourself.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
+				console.log(`User ${dto.userId} is not member in room ${dto.roomName}`);
+				socket.emit(Event.userNotMuted, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is not member in this room.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
+				console.log(`User ${socket.data.userId} does not have right privileges to mute user ${dto.userId} in room ${dto.roomName}`);
+				socket.emit(Event.userNotMuted, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You do not have the right privileges to mute in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsMuted(dto.userId, dto.roomName) == true) {
+				console.log(`User ${dto.userId} is already muted in room ${dto.roomName}`);
+				socket.emit(Event.userNotMuted, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is already muted in roo ${dto.roomName}.`
+				});
+				return;
+			}
+
+			console.log(`User ${socket.data.userId} is muting user ${dto.userId} in room ${dto.roomName}...`);
+			await this.redis.muteUser(dto.userId, dto.roomName, dto.timeout);
+			server.to(dto.roomName).emit(Event.userMuted, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You cannot mute yourself.`
+				message: `User ${dto.userId} has been muted from the room ${dto.roomName} for ${dto.timeout} secs.`
 			});
-			return;
 		}
-
-		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
-			console.log(`User ${dto.userId} is not member in room ${dto.roomName}`);
-			socket.emit(Event.userNotMuted, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not member in this room.`
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} does not have right privileges to mute user ${dto.userId} in room ${dto.roomName}`);
-			socket.emit(Event.userNotMuted, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You do not have the right privileges to mute in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserIsMuted(dto.userId, dto.roomName) == true) {
-			console.log(`User ${dto.userId} is already muted in room ${dto.roomName}`);
-			socket.emit(Event.userNotMuted, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is already muted in roo ${dto.roomName}.`
-			});
-			return;
-		}
-
-		console.log(`User ${socket.data.userId} is muting user ${dto.userId} in room ${dto.roomName}...`);
-		await this.redis.muteUser(dto.userId, dto.roomName, dto.timeout);
-		server.to(dto.roomName).emit(Event.userMuted, {
-			roomName: dto.roomName,
-			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been muted from the room ${dto.roomName} for ${dto.timeout} secs.`
-		});
-	}
 
 	async unmuteUser(socket, dto: UnmuteUserDto, server) {
-		if (await this.roomDontExists(socket, Event.userNotUnmuted, dto.roomName))
-			return;
+			if (await this.roomDontExists(socket, Event.userNotUnmuted, dto.roomName))
+				return;
 
-		if (await this.userIsntMember(socket, Event.userNotUnmuted, dto.roomName))
-			return;
+			if (await this.userIsntMember(socket, Event.userNotUnmuted, dto.roomName))
+				return;
 
-		if (socket.data.userId == dto.userId) {
-			console.log(`User ${socket.data.userId} cannot unmute himself`);
-			socket.emit(Event.userNotUnmuted, {
+			if (socket.data.userId == dto.userId) {
+				console.log(`User ${socket.data.userId} cannot unmute himself`);
+				socket.emit(Event.userNotUnmuted, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You cannot unmute yourself.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
+				console.log(`User ${dto.userId} is not member in room ${dto.roomName}`);
+				socket.emit(Event.userNotUnmuted, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is not member in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
+				console.log(`User ${socket.data.userId} does not have right privileges to unmute user ${dto.userId} in room ${dto.roomName}`);
+				socket.emit(Event.userNotUnmuted, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You do not have the right privileges to unmute in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsMuted(dto.userId, dto.roomName) == false) {
+				console.log(`User ${dto.userId} is not muted in room ${dto.roomName}`);
+				socket.emit(Event.userNotUnmuted, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is not muted in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			console.log(`User ${socket.data.userId} is unmuting user ${dto.userId} in room ${dto.roomName}...`);
+			await this.redis.unmuteUser(dto.userId, dto.roomName);
+			server.to(dto.roomName).emit(Event.userUnmuted, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You cannot unmute yourself.`
+				message: `User ${dto.userId} has been unmuted from the room ${dto.roomName}.`
 			});
-			return;
 		}
-
-		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
-			console.log(`User ${dto.userId} is not member in room ${dto.roomName}`);
-			socket.emit(Event.userNotUnmuted, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} does not have right privileges to unmute user ${dto.userId} in room ${dto.roomName}`);
-			socket.emit(Event.userNotUnmuted, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You do not have the right privileges to unmute in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserIsMuted(dto.userId, dto.roomName) == false) {
-			console.log(`User ${dto.userId} is not muted in room ${dto.roomName}`);
-			socket.emit(Event.userNotUnmuted, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not muted in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		console.log(`User ${socket.data.userId} is unmuting user ${dto.userId} in room ${dto.roomName}...`);
-		await this.redis.unmuteUser(dto.userId, dto.roomName);
-		server.to(dto.roomName).emit(Event.userUnmuted, {
-			roomName: dto.roomName,
-			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been unmuted from the room ${dto.roomName}.`
-		});
-	}
 
 	async inviteUser(socket, dto: InviteUserDto, server) {
-		if (await this.roomDontExists(socket, Event.userNotInvited, dto.roomName))
-			return;
+			if (await this.roomDontExists(socket, Event.userNotInvited, dto.roomName))
+				return;
 
-		if (await this.userIsntMember(socket, Event.userNotInvited, dto.roomName))
-			return;
+			if (await this.userIsntMember(socket, Event.userNotInvited, dto.roomName))
+				return;
 
-		if (socket.data.userId == dto.userId) {
-			console.log(`User ${socket.data.userId} cannot invite himself`);
-			socket.emit(Event.userNotInvited, {
+			if (socket.data.userId == dto.userId) {
+				console.log(`User ${socket.data.userId} cannot invite himself`);
+				socket.emit(Event.userNotInvited, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You cannot invite yourself.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == true) {
+				console.log(`User ${dto.userId} is already member in room ${dto.roomName}`);
+				socket.emit(Event.userNotInvited, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.roomName} is already member in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsInvited(dto.userId, dto.roomName) == true) {
+				console.log(`User ${dto.userId} is already invited in room ${dto.roomName}`);
+				socket.emit(Event.userNotInvited, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is already invited in room ${dto.roomName}.`,
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsBanned(dto.userId, dto.roomName) == true) {
+				console.log(`User ${dto.userId} is banned from room ${dto.roomName}`);
+				socket.emit(Event.userNotInvited, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `User ${dto.userId} is banned from room ${dto.roomName}.`,
+				});
+				return;
+			}
+
+			console.log(`User ${socket.data.userId} is inviting user ${dto.userId} to room ${dto.roomName}...`);
+			await this.redis.inviteUser(dto.userId, dto.roomName);
+			// Not sure about this line, we should only inform the user that sended the invitation.
+			server.to(dto.roomName).emit(Event.userInvited, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You cannot invite yourself.`
+				message: `Invitation for the room ${dto.roomName} sended to user ${dto.userId}.`,
 			});
-			return;
 		}
-
-		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == true) {
-			console.log(`User ${dto.userId} is already member in room ${dto.roomName}`);
-			socket.emit(Event.userNotInvited, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.roomName} is already member in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserIsInvited(dto.userId, dto.roomName) == true) {
-			console.log(`User ${dto.userId} is already invited in room ${dto.roomName}`);
-			socket.emit(Event.userNotInvited, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is already invited in room ${dto.roomName}.`,
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserIsBanned(dto.userId, dto.roomName) == true) {
-			console.log(`User ${dto.userId} is banned from room ${dto.roomName}`);
-			socket.emit(Event.userNotInvited, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is banned from room ${dto.roomName}.`,
-			});
-			return;
-		}
-
-		console.log(`User ${socket.data.userId} is inviting user ${dto.userId} to room ${dto.roomName}...`);
-		await this.redis.inviteUser(dto.userId, dto.roomName);
-		// Not sure about this line, we should only inform the user that sended the invitation.
-		server.to(dto.roomName).emit(Event.userInvited, {
-			roomName: dto.roomName,
-			timestamp: new Date().toISOString(),
-			message: `Invitation for the room ${dto.roomName} sended to user ${dto.userId}.`,
-		});
-	}
 
 	async sendMessage(socket, dto: SendMessageDto, server) {
-		if (await this.roomDontExists(socket, Event.msgNotSended, dto.roomName))
-			return;
+			if (await this.roomDontExists(socket, Event.msgNotSended, dto.roomName))
+				return;
 
-		if (await this.redis.checkIfUserIsBanned(socket.data.userId, dto.roomName) == true) {
-			console.log(`User ${socket.data.userId} is banned from room ${dto.roomName}`);
-			socket.emit(Event.msgNotSended, {
+			if (await this.redis.checkIfUserIsBanned(socket.data.userId, dto.roomName) == true) {
+				console.log(`User ${socket.data.userId} is banned from room ${dto.roomName}`);
+				socket.emit(Event.msgNotSended, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are banned from room ${dto.roomName}.`,
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsMember(socket.data.userId, dto.roomName) == false) {
+				console.log(`User ${socket.data.userId} is not member in room ${dto.roomName}`);
+				socket.emit(Event.msgNotSended, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are not member in room ${dto.roomName}.`,
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsMuted(socket.data.userId, dto.roomName) == true) {
+				console.log(`User ${socket.data.userId} is muted in room ${dto.roomName}`);
+				socket.emit(Event.msgNotSended, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are muted in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			console.log(`User ${socket.data.userId} is sending a message to room ${dto.roomName}`);
+			const currentTimestamp = Date.now()
+			await this.redis.sendMessage(dto.roomName, socket.data.userId, currentTimestamp, dto.message);
+			server.to(dto.roomName).emit(Event.msgSended, {
 				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are banned from room ${dto.roomName}.`,
-			});
-			return;
+				timestamp: new Date(currentTimestamp).toISOString(),
+				message: dto.message,
+				userId: socket.data.userId,
+			})
+			//Maybe useless, should we use it with the above statement
+			// socket.emit(Event.msgSended, {
+			// 	roomName: dto.roomName,
+			// 	timestamp: new Date().toISOString(),
+			// 	message: "Message sended.",
+			// });
 		}
-
-		if (await this.redis.checkIfUserIsMember(socket.data.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} is not member in room ${dto.roomName}`);
-			socket.emit(Event.msgNotSended, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are not member in room ${dto.roomName}.`,
-			});
-			return;
-		}
-
-		if (await this.redis.checkIfUserIsMuted(socket.data.userId, dto.roomName) == true) {
-			console.log(`User ${socket.data.userId} is muted in room ${dto.roomName}`);
-			socket.emit(Event.msgNotSended, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are muted in room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		console.log(`User ${socket.data.userId} is sending a message to room ${dto.roomName}`);
-		const currentTimestamp = Date.now()
-		await this.redis.sendMessage(dto.roomName, socket.data.userId, currentTimestamp, dto.message);
-		server.to(dto.roomName).emit(Event.msgSended, {
-			roomName: dto.roomName,
-			timestamp: new Date(currentTimestamp).toISOString(),
-			message: dto.message,
-			userId: socket.data.userId,
-		})
-		//Maybe useless, should we use it with the above statement
-		// socket.emit(Event.msgSended, {
-		// 	roomName: dto.roomName,
-		// 	timestamp: new Date().toISOString(),
-		// 	message: "Message sended.",
-		// });
-	}
 
 	async updateRoom(socket, dto: UpdateRoomDto, server) {
-		if (await this.roomDontExists(socket, Event.roomNotUpdated, dto.roomName))
-			return;
+			if (await this.roomDontExists(socket, Event.roomNotUpdated, dto.roomName))
+				return;
 
-		if (await this.redis.checkIfUserIsMember(socket.data.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} is not member in room ${dto.roomName}`);
-			socket.emit(Event.roomNotUpdated, {
+			if (await this.redis.checkIfUserIsMember(socket.data.userId, dto.roomName) == false) {
+				console.log(`User ${socket.data.userId} is not member in room ${dto.roomName}`);
+				socket.emit(Event.roomNotUpdated, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are not member in room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			if (await this.redis.checkIfUserIsAdmin(socket.data.userId, dto.roomName) == false) {
+				console.log(`User ${socket.data.userId} is not admin of room ${dto.roomName}`);
+				socket.emit(Event.roomNotUpdated, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are not admin of the room ${dto.roomName}.`
+				});
+				return;
+			}
+
+			console.log(`User ${socket.data.userId} is updating room ${dto.roomName}`);
+			await this.redis.updateRoom(dto);
+			// socket.emit(Event.roomUpdated, {
+			// 	roomName: dto.roomName,
+			// 	timestamp: new Date().toISOString(),
+			// 	message: `Room ${dto.roomName} has been updated.`,
+			// })
+			server.to(dto.roomName).emit(Event.roomUpdated, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You are not member in room ${dto.roomName}.`
+				dto,
 			});
-			return;
 		}
-
-		if (await this.redis.checkIfUserIsAdmin(socket.data.userId, dto.roomName) == false) {
-			console.log(`User ${socket.data.userId} is not admin of room ${dto.roomName}`);
-			socket.emit(Event.roomNotUpdated, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are not admin of the room ${dto.roomName}.`
-			});
-			return;
-		}
-
-		console.log(`User ${socket.data.userId} is updating room ${dto.roomName}`);
-		await this.redis.updateRoom(dto);
-		// socket.emit(Event.roomUpdated, {
-		// 	roomName: dto.roomName,
-		// 	timestamp: new Date().toISOString(),
-		// 	message: `Room ${dto.roomName} has been updated.`,
-		// })
-		server.to(dto.roomName).emit(Event.roomUpdated, {
-			roomName: dto.roomName,
-			timestamp: new Date().toISOString(),
-			dto,
-		});
-	}
 
 	async roomDontExists(socket, event: Event, roomName) {
-		if (await this.redis.checkIfRoomExists(roomName) == false) {
-			console.log(`Room ${roomName} does not exist`);
-			socket.emit(event, {
-				roomName: roomName,
-				timestamp: new Date().toISOString(),
-				message: `Room ${roomName} does not exist.`,
-			});
-			return true;
+			if (await this.redis.checkIfRoomExists(roomName) == false) {
+				console.log(`Room ${roomName} does not exist`);
+				socket.emit(event, {
+					roomName: roomName,
+					timestamp: new Date().toISOString(),
+					message: `Room ${roomName} does not exist.`,
+				});
+				return true;
+			}
+			return false;
 		}
-		return false;
-	}
 
 	async userIsntMember(socket, event: Event, roomName) {
-		if (await this.redis.checkIfUserIsMember(socket.data.userId, roomName) == false) {
-			console.log(`User ${socket.data.userId} is not member in room ${roomName}`);
-			socket.emit(event, {
-				roomName: roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are not member in room ${roomName}.`,
-			});
-			return true;
+			if (await this.redis.checkIfUserIsMember(socket.data.userId, roomName) == false) {
+				console.log(`User ${socket.data.userId} is not member in room ${roomName}`);
+				socket.emit(event, {
+					roomName: roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are not member in room ${roomName}.`,
+				});
+				return true;
+			}
+			return false;
 		}
-		return false;
-	}
 
 	async userIsBanned(socket, event: Event, roomName) {
-		if (await this.redis.checkIfUserIsBanned(socket.data.userId, roomName) == true) {
-			console.log(`User ${socket.data.userId} is banned from room ${roomName}`);
-			socket.emit(event, {
-				roomName: roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are banned from room ${roomName}.`,
-			});
-			return true;
+			if (await this.redis.checkIfUserIsBanned(socket.data.userId, roomName) == true) {
+				console.log(`User ${socket.data.userId} is banned from room ${roomName}`);
+				socket.emit(event, {
+					roomName: roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are banned from room ${roomName}.`,
+				});
+				return true;
+			}
+			return false;
 		}
-		return false;
-	}
 
 	async userIsMember(socket, event: Event, roomName) {
-		if (await this.redis.checkIfUserIsMember(socket.data.userId, roomName) == true) {
-			console.log(`User ${socket.data.userId} is already member in room ${roomName}`);
-			socket.emit(event, {
-				roomName: roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are already member in room ${roomName}.`,
-			});
-			return true;
+			if (await this.redis.checkIfUserIsMember(socket.data.userId, roomName) == true) {
+				console.log(`User ${socket.data.userId} is already member in room ${roomName}`);
+				socket.emit(event, {
+					roomName: roomName,
+					timestamp: new Date().toISOString(),
+					message: `You are already member in room ${roomName}.`,
+				});
+				return true;
+			}
+			return false;
 		}
-		return false;
-	}
 
 	async roomIsFull(socket, event: Event, roomName) {
-		if (await this.redis.checkIfRoomIsFull(roomName) == true) {
-			console.log(`Room ${roomName} is full`);
-			socket.emit(event, {
-				roomName: roomName,
-				timestamp: new Date().toISOString(),
-				message: `Room ${roomName} is full.`,
-			});
-			return true;
+			if (await this.redis.checkIfRoomIsFull(roomName) == true) {
+				console.log(`Room ${roomName} is full`);
+				socket.emit(event, {
+					roomName: roomName,
+					timestamp: new Date().toISOString(),
+					message: `Room ${roomName} is full.`,
+				});
+				return true;
+			}
+			return false;
 		}
-		return false;
-	}
 
 	async passwordIsWrong(socket, event: Event, roomName, password) {
-		if (await this.redis.checkIfPasswordIsCorrect(roomName, password) == false) {
-			console.log(`Password for room ${roomName} is incorrect`);
-			socket.emit(event, {
-				roomName: roomName,
-				timestamp: new Date().toISOString(),
-				message: `Password is incorrect for room ${roomName}.`
-			});
-			return true;
+			if (await this.redis.checkIfPasswordIsCorrect(roomName, password) == false) {
+				console.log(`Password for room ${roomName} is incorrect`);
+				socket.emit(event, {
+					roomName: roomName,
+					timestamp: new Date().toISOString(),
+					message: `Password is incorrect for room ${roomName}.`
+				});
+				return true;
+			}
+			return false;
 		}
-		return false;
 	}
-}

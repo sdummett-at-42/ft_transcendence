@@ -198,6 +198,70 @@ export class RedisService {
 		});
 	}
 
+	async getUserRole(userId: number, roomName) : Promise<string> {
+		return new Promise(async (resolve, reject) => {
+			const roomOwnerId = await this.getRoomOwner(roomName);
+			const roomAdmins = await this.getRoomAdmins(roomName);
+			const roomMembers = await this.getRoomMembers(roomName);
+			if (roomOwnerId === userId.toString()) {
+				resolve("owner");
+				return;
+			}
+			else if (roomAdmins.includes(userId.toString())) {
+				resolve("admin");
+				return;
+			}
+			else if (roomMembers.includes(userId.toString())) {
+				resolve("member");
+				return;
+			}
+			resolve(null);
+
+		});
+	}
+
+	async getRoomOwner(roomName) : Promise<string> {
+		return new Promise(async (resolve, reject) => {
+			await this.client.hget(`room:${roomName}`, "owner", (error, owner) => {
+				if (error) {
+					console.log("redis.hget error: ", error);
+					resolve(null);
+				} else {
+					resolve(owner);
+				}
+			});
+		});
+	}
+
+	async getRoomAdmins(roomName) : Promise<string[]> {
+		return new Promise(async (resolve, reject) => {
+			await this.client.hget(`room:${roomName}`, "admins", (error, admins) => {
+				if (error) {
+					console.log("redis.hget error: ", error);
+					resolve(null);
+				} else
+					resolve(JSON.parse(admins));
+			});
+		});
+	}
+
+	async setRoomAdmins(roomName: string, admins: string) {
+		await this.client.hset(`room:${roomName}`, "admins", admins);
+	}
+
+	async getRoomMembers(roomName) : Promise<string[]> {
+		return new Promise(async (resolve, reject) => {
+			await this.client.hget(`room:${roomName}`, "members", (error, members) => {
+				if (error) {
+					console.log("redis.hget error: ", error);
+					resolve(null);
+				} else {
+					resolve(members);
+				}
+			});
+		});
+	}
+
 	async getSocketsIds(userId: number) : Promise<string[]> {
 		return new Promise((resolve, reject) => {
 			this.client.hkeys(`user-sockets:${userId}`, (error, keys) => {
@@ -208,6 +272,13 @@ export class RedisService {
 				}
 				resolve(keys);
 			});
+		});
+	}
+
+	async giveOwnership(userId: number, roomName): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			this.client.hset(`room:${roomName}`, "owner", JSON.stringify(userId));
+			resolve();
 		});
 	}
 
