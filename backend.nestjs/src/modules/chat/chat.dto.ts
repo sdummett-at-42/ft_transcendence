@@ -30,6 +30,16 @@ export const JoinRoomSchema = Joi.object({
 	password: Joi.string().min(1).max(32).optional(),
 });
 
+export class KickUserDto {
+	roomName: string;
+	userId: number;
+}
+
+export const KickUserSchema = Joi.object({
+	roomName: Joi.string().min(1).max(32).required(),
+	userId: Joi.number().required(),
+})
+
 export class BanUserDto {
 	roomName: string;
 	userId: number;

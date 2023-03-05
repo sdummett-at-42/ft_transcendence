@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto } from './chat.dto';
 import { Event } from './chat-event.enum';
 
 @Injectable()
@@ -168,6 +168,61 @@ export class ChatService {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
 			message: `User ${socket.data.userId} has joined the room ${dto.roomName}.`
+		});
+	}
+
+	async kickUser(socket, dto: KickUserDto, server) {
+		if (await this.roomDontExists(socket, Event.userNotKicked, dto.roomName))
+			return;
+
+		if (await this.userIsntMember(socket, Event.userNotKicked, dto.roomName))
+			return;
+
+		if (socket.data.userId == dto.userId) {
+			console.log(`User ${socket.data.userId} cannot kick himself`);
+			socket.emit(Event.userNotKicked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You cannot kick yourself.`
+			});
+			return;
+		}
+
+		if (await this.redis.checkIfUserHasPrivileges(socket.data.userId, dto.userId, dto.roomName) == false) {
+			console.log(`User ${socket.data.userId} does not have the correct privilege to kick user ${dto.userId} in room ${dto.roomName}`);
+			socket.emit(Event.userNotKicked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You do not have the correct privilege to kick in room ${dto.roomName}.`
+			});
+			return;
+		}
+
+		if (await this.redis.checkIfUserIsMember(dto.userId, dto.roomName) == false) {
+			console.log(`User ${dto.userId} is not member in room ${dto.roomName}.`);
+			socket.emit(Event.userNotKicked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
+			});
+			return;
+		}
+
+		console.log(`User ${socket.data.userId} is kicking user ${dto.userId} from room ${dto.roomName}...`);
+		await this.redis.kickUser(dto.userId, dto.roomName);
+
+		const socketIds = await this.redis.getSocketsIds(dto.userId);
+		console.log({ socketIds });
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => dto.userId === dto.userId);
+		for (const socket of userSockets) {
+			socket.leave(dto.roomName);
+		}
+
+		server.to(dto.roomName).emit(Event.userKicked, {
+			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been kicked from the room ${dto.roomName}.`
 		});
 	}
 
