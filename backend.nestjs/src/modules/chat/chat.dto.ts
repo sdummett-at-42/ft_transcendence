@@ -1,5 +1,5 @@
 import * as  Joi from 'joi';
-
+import { UserRole } from './chat-role.enum';
 export class CreateRoomDto {
 	roomName: string;
 	isPublic: boolean;
@@ -28,6 +28,19 @@ export class JoinRoomDto {
 export const JoinRoomSchema = Joi.object({
 	roomName: Joi.string().min(1).max(32).required(),
 	password: Joi.string().min(1).max(32).optional(),
+});
+
+
+export class ChangeUserRoleDto {
+	roomName: string;
+	userId: number;
+	role: string;
+}
+
+export const ChangeUserRoleSchema = Joi.object({
+	roomName: Joi.string().min(1).max(32).required(),
+	userId: Joi.number().required(),
+	role: Joi.string().valid(UserRole.OWNER, UserRole.ADMIN, UserRole.MEMBER).required(),
 });
 
 export class KickUserDto {

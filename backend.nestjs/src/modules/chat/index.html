@@ -35,6 +35,12 @@
 		socket.on("roomNotLeft", function(payload) {
 			console.log({ roomNotLeft: payload })
 		})
+		socket.on("userRoleChanged", function(payload) {
+			console.log({ userRoleChanged: payload })
+		})
+		socket.on("userRoleNotChanged", function(payload) {
+			console.log({ userRoleNotChanged: payload })
+		})
 		socket.on("userKicked", function(payload) {
 			console.log({ userKicked: payload })
 		})
