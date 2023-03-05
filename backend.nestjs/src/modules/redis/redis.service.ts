@@ -388,6 +388,18 @@ export class RedisService {
 		});
 	}
 
+	async kickUser(userId, name: string): Promise<void> {
+		return new Promise((resolve) => {
+			this.client.hget(`room:${name}`, "members", (error, response) => {
+				let members = JSON.parse(response);
+				members = members.filter((x) => x != userId);
+				this.client.hset(`room:${name}`, "members", JSON.stringify(members));
+				this.client.hdel(`user-rooms:${userId}`, name);
+			});
+			resolve();
+		});
+	}
+
 	async banUser(userId, name: string): Promise<void> {
 		return new Promise((resolve) => {
 			this.client.hget(`room:${name}`, "banned", (error, response) => {
