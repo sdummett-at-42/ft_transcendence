@@ -103,10 +103,9 @@ export class ChatService {
 				await this.redis.removeUserFromAdmins(socket.data.userId, dto.roomName);
 		}
 
-		const socketIds = await this.redis.getSocketsIds(socket.data.userId);
-		console.log({ socketIds });
+		const userId = socket.data.userId;
 		const sockets = await server.in(dto.roomName).fetchSockets();
-		const userSockets = sockets.filter(socket => socket.data.userId === socket.data.userId);
+		const userSockets = sockets.filter(socket => socket.data.userId === userId);
 		for (const socket of userSockets) {
 			socket.leave(dto.roomName);
 		}
@@ -214,7 +213,7 @@ export class ChatService {
 		const socketIds = await this.redis.getSocketsIds(dto.userId);
 		console.log({ socketIds });
 		const sockets = await server.in(dto.roomName).fetchSockets();
-		const userSockets = sockets.filter(socket => dto.userId === dto.userId);
+		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
 		for (const socket of userSockets) {
 			socket.leave(dto.roomName);
 		}
@@ -279,7 +278,7 @@ export class ChatService {
 		const socketIds = await this.redis.getSocketsIds(dto.userId);
 		console.log({ socketIds });
 		const sockets = await server.in(dto.roomName).fetchSockets();
-		const userSockets = sockets.filter(socket => dto.userId === dto.userId);
+		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
 		for (const socket of userSockets) {
 			socket.leave(dto.roomName);
 		}
