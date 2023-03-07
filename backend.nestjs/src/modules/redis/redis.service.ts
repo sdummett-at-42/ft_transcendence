@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import * as Redis from 'redis';
 import { ConfigService } from '@nestjs/config';
-import { CreateRoomDto, UpdateRoomDto, LeaveRoomDto } from '../chat/chat.dto';
 import * as argon2 from 'argon2';
+import { v4 as uuid } from 'uuid';
+import { resolve } from 'path';
+import { rejects } from 'assert';
 
 @Injectable()
 export class RedisService {
@@ -15,10 +17,10 @@ export class RedisService {
 		});
 		this.client.connect();
 		this.client.on('error', (err) => {
-			console.log('Redis error: ', err);
+			console.debug('Redis error: ', err);
 		});
 		this.client.on('connect', () => {
-			console.log('Redis connected');
+			console.debug('Redis connected');
 		});
 	}
 
@@ -26,778 +28,304 @@ export class RedisService {
 		return this.client;
 	}
 
-	async delSocketKeys() {
-		this.client.keys('socket:*', (error, keys) => {
-			if (error)
-				console.log("redis error: ", error);
-			else {
-				if (keys.length > 0) {
-					this.client.del(keys, (error, response) => {
-						if (error) {
-							console.log("redis.del error: ", error);
-						} else {
-							console.log(`redis.del: Deleting ${response} keys`);
-						}
-					});
-				}
-			}
-		});
+	async setRoomOwner(roomName: string, userId: number) {
+		await this.client.del(`room:${roomName}:infos:owner`);
+		this.client.hset(`room:${roomName}:infos:owner`, userId, 1);
 	}
 
-	async delRoomKeys() {
-		this.client.keys('room:*', (error, keys) => {
-			if (error)
-				console.log("redis error: ", error);
-			else {
-				if (keys.length > 0) {
-					this.client.del(keys, (error, response) => {
-						if (error) {
-							console.log("redis.del error: ", error);
-						} else {
-							console.log(`redis.del: Deleting ${response} keys`);
-						}
-					});
-				}
-			}
-		});
-	}
-
-	async delRoomMessagesKeys() {
-		this.client.keys('room-messages:*', (error, keys) => {
-			if (error)
-				console.log("redis error: ", error);
-			else {
-				if (keys.length > 0) {
-					this.client.del(keys, (error, response) => {
-						if (error) {
-							console.log("redis.del error: ", error);
-						} else {
-							console.log(`redis.del: Deleting ${response} keys`);
-						}
-					});
-				}
-			}
-		});
-	}
-
-	async delUserSocketsKeys() {
-		this.client.keys('user-sockets:*', (error, keys) => {
-			if (error)
-				console.log("redis error: ", error);
-			else {
-				if (keys.length > 0) {
-					this.client.del(keys, (error, response) => {
-						if (error) {
-							console.log("redis.del error: ", error);
-						} else {
-							console.log(`redis.del: Deleting ${response} keys`);
-						}
-					});
-				}
-			}
-		});
-	}
-
-	async delUserRoomsKeys() {
-		this.client.keys('user-rooms:*', (error, keys) => {
-			if (error)
-				console.log("redis error: ", error);
-			else {
-				if (keys.length > 0) {
-					this.client.del(keys, (error, response) => {
-						if (error) {
-							console.log("redis.del error: ", error);
-						} else {
-							console.log(`redis.del: Deleting ${response} keys`);
-						}
-					});
-				}
-			}
-		});
-	}
-
-	async delRoomMutedKeys() {
-		this.client.keys('room-muted:*', (error, keys) => {
-			if (error)
-				console.log("redis error: ", error);
-			else {
-				if (keys.length > 0) {
-					this.client.del(keys, (error, response) => {
-						if (error) {
-							console.log("redis.del error: ", error);
-						} else {
-							console.log(`redis.del: Deleting ${response} keys`);
-						}
-					});
-				}
-			}
-		});
-	}
-
-	async delUser(userId) {
-		this.client.del(`user:${userId}`);
-	}
-
-	async delUserSocket(userId, socketId) {
-		this.client.hdel(`user-sockets:${userId}`, socketId, (error, response) => {
-			if (error) {
-				console.log("redis.hdel error: ", error);
-			} else {
-				console.log(`redis.hdel: Deleted ${response} keys`);
-			}
-		});
-	}
-
-	async delUserRooms(userId) {
-		this.client.del(`user-rooms:${userId}`);
-	}
-
-	async addUserSocket(userId, socketId) {
-		this.client.hset(`user-sockets:${userId}`, socketId, '1');
-	}
-
-	async getUserSocketsNb(userId: number) {
+	async getRoomOwner(roomName: string): Promise<string> {
 		return new Promise((resolve, reject) => {
-			this.client.hlen(`user-sockets:${userId}`, (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				resolve(response);
-			});
-		});
+			this.client.hkeys(`room:${roomName}:infos:owner`, (err, owner) => {
+				resolve(owner[0]);
+			})
+		})
 	}
 
-	async getUserId(socket) {
+	async setRoomAdmin(roomName: string, userId: number) {
+		this.client.hset(`room:${roomName}:infos:admin`, userId, 1);
+	}
+
+	async unsetRoomAdmin(roomName: string, userId: number) {
+		this.client.hdel(`room:${roomName}:infos:admin`, userId, 1);
+	}
+
+	async getRoomAdmins(roomName: string): Promise<string[]> {
 		return new Promise((resolve, reject) => {
-			if (socket.handshake.headers.cookie === undefined)
-				resolve(null);
-			const redisKey = `sess:${socket.handshake.headers.cookie.slice(16).split(".")[0]}`;
-			this.client.get(redisKey, (error, session) => {
-				if (session === null)
-					resolve(session);
-				else {
-					const userId = JSON.parse(session).passport.user.id;
-					resolve(userId);
-				}
-			});
-		});
+			this.client.hkeys(`room:${roomName}:infos:admin`, (err, admins) => {
+				resolve(admins);
+			})
+		})
 	}
 
-	async getUserRooms(userId) : Promise<string[]> {
+	async setRoomMember(roomName: string, userId: number) {
+		this.client.hset(`room:${roomName}:infos:member`, userId, 1);
+	}
+
+	async unsetRoomMember(roomName: string, userId: number) {
+		this.client.hdel(`room:${roomName}:infos:member`, userId, 1);
+	}
+
+	async getRoomMembers(roomName: string): Promise<string[]> {
 		return new Promise((resolve, reject) => {
-			this.client.hkeys(`user-rooms:${userId}`, (error, rooms) => {
-				if (error) {
-					console.log("redis.smembers error: ", error);
-					resolve([]);
-				} else {
-					resolve(rooms);
-				}
-			});
-		});
+			this.client.hkeys(`room:${roomName}:infos:member`, (err, members) => {
+				resolve(members);
+			})
+		})
 	}
 
-	async getUserRole(userId: number, roomName) : Promise<string> {
-		return new Promise(async (resolve, reject) => {
-			const roomOwnerId = await this.getRoomOwner(roomName);
-			const roomAdmins = await this.getRoomAdmins(roomName);
-			const roomMembers = await this.getRoomMembers(roomName);
-			if (roomOwnerId === userId.toString()) {
-				resolve("owner");
-				return;
-			}
-			else if (roomAdmins.includes(userId.toString())) {
-				resolve("admin");
-				return;
-			}
-			else if (roomMembers.includes(userId.toString())) {
-				resolve("member");
-				return;
-			}
-			resolve(null);
-
-		});
+	async setRoomBanned(roomName: string, userId: number) {
+		this.client.hset(`room:${roomName}:infos:banned`, userId, 1);
 	}
 
-	async getRoomOwner(roomName) : Promise<string> {
-		return new Promise(async (resolve, reject) => {
-			await this.client.hget(`room:${roomName}`, "owner", (error, owner) => {
-				if (error) {
-					console.log("redis.hget error: ", error);
-					resolve(null);
-				} else {
-					resolve(owner);
-				}
-			});
-		});
+	async unsetRoomBanned(roomName: string, userId: number) {
+		this.client.hdel(`room:${roomName}:infos:banned`, userId, 1);
 	}
 
-	async getRoomAdmins(roomName) : Promise<string[]> {
-		return new Promise(async (resolve, reject) => {
-			await this.client.hget(`room:${roomName}`, "admins", (error, admins) => {
-				if (error) {
-					console.log("redis.hget error: ", error);
-					resolve(null);
-				} else
-					resolve(JSON.parse(admins));
-			});
-		});
-	}
-
-	async setRoomAdmins(roomName: string, admins: string) {
-		await this.client.hset(`room:${roomName}`, "admins", admins);
-	}
-
-	async getRoomMembers(roomName) : Promise<string[]> {
-		return new Promise(async (resolve, reject) => {
-			await this.client.hget(`room:${roomName}`, "members", (error, members) => {
-				if (error) {
-					console.log("redis.hget error: ", error);
-					resolve(null);
-				} else {
-					resolve(members);
-				}
-			});
-		});
-	}
-
-	async getSocketsIds(userId: number) : Promise<string[]> {
+	async getRoomBanned(roomName: string): Promise<string[]> {
 		return new Promise((resolve, reject) => {
-			this.client.hkeys(`user-sockets:${userId}`, (error, keys) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
+			this.client.hkeys(`room:${roomName}:infos:banned`, (err, banned) => {
+				resolve(banned);
+			})
+		})
+	}
+
+	async setRoomMuted(roomName: string, userId: number, expirationTime: number) {
+		this.client.multi()
+			.set(`room:${roomName}:infos:muted:${userId}`, 1)
+			.expire(`room:${roomName}:infos:muted:${userId}`, expirationTime)
+			.exec()
+	}
+
+	async unsetRoomMuted(roomName: string, userId: number) {
+		this.client.del(`room:${roomName}:infos:muted:${userId}`);
+	}
+
+	async getRoomMuted(roomName: string, userId: number): Promise<string[]> {
+		return new Promise((resolve, reject) => {
+			this.client.keys(`room:${roomName}:infos:muted:${userId}`, (err, muted) => {
+				resolve(muted);
+			})
+		})
+	}
+
+	async setRoomInvited(roomName: string, userId: number) {
+		this.client.hset(`room:${roomName}:infos:invited`, userId, 1);
+	}
+
+	async unsetRoomInvited(roomName: string, userId: number) {
+		this.client.hdel(`room:${roomName}:infos:invited`, userId, 1);
+	}
+
+	async getRoomInvited(roomName: string): Promise<string[]> {
+		return new Promise((resolve, reject) => {
+			this.client.hkeys(`room:${roomName}:infos:invited`, (err, invited) => {
+				resolve(invited);
+			})
+		})
+	}
+
+	async setRoomPassword(roomName: string, password: string) {
+		await this.client.del(`room:${roomName}:infos:password`);
+		this.client.hset(`room:${roomName}:infos:password`, password, 1);
+	}
+
+	async getRoomPassword(roomName: string): Promise<string> {
+		return new Promise((resolve, reject) => {
+			this.client.hkeys(`room:${roomName}:infos:password`, (err, password) => {
+				resolve(password[0]);
+			})
+		})
+	}
+
+	async setRoomVisibility(roomName: string, visibility: string) {
+		await this.client.del(`room:${roomName}:infos:visibility`);
+		this.client.hset(`room:${roomName}:infos:visibility`, visibility, 1);
+	}
+
+	async getRoomVisibility(roomName: string): Promise<string> {
+		return new Promise((resolve, reject) => {
+			this.client.hkeys(`room:${roomName}:infos:visibility`, (err, visibility) => {
+				resolve(visibility[0]);
+			})
+		})
+	}
+
+	async setRoomMessage(roomName: string, timestamp: number, userId: number, message: string, expirationTime: number) {
+		const uniqueId = uuid();
+		this.client.multi()
+			.set(`room:${roomName}:message:${uniqueId}`, JSON.stringify({
+				timestamp: timestamp,
+				userId: userId,
+				message: message,
+			}))
+			.expire(`room:${roomName}:message:${uniqueId}`, expirationTime)
+			.exec()
+	}
+
+	private async getRoomMessagesKeys(roomName: string): Promise<string[]> {
+		return new Promise(async (resolve, reject) => {
+			await this.client.keys(`room:${roomName}:message:*`, (err, keys) => {
+				resolve(keys);
+			})
+		});
+	}
+
+	async getRoomMessages(roomName: string): Promise<any[]> {
+		const messageKeys = await this.getRoomMessagesKeys(roomName);
+
+		if (!messageKeys || messageKeys.length === 0) {
+			return [];
+		}
+
+		const messages = await Promise.all(
+			messageKeys.map(key => {
+				return new Promise((resolve, reject) => {
+					this.client.get(key, (err, value) => {
+						const message = JSON.parse(value);
+						resolve(message);
+					})
+				});
+			}));
+		return messages;
+	}
+
+	async setUserRoom(userId: number, roomName: string) {
+		this.client.set(`user:${userId}:room:${roomName}`, 1);
+	}
+
+	async unsetUserRoom(userId: number, roomName: string) {
+		this.client.del(`user:${userId}:room:${roomName}`, 1);
+	}
+
+	async getUserRooms(userId: number): Promise<string[]> {//: Promise<string[]> {
+		const userRoomsKeys: string[] = await new Promise((resolve, reject) => {
+			this.client.keys(`user:${userId}:room:*`, (err, keys) => {
+				resolve(keys)
+			});
+		});
+		const patternToRemove = `user:${userId}:room:`;
+		const userRooms = userRoomsKeys.map((str) => str.replace(new RegExp(`^${patternToRemove}`), ''));
+		return userRooms;
+	}
+
+	async getRoom(roomName: string): Promise<string[]> {
+		return new Promise((resolve, reject) => {
+			this.client.keys(`room:${roomName}:*`, (err, keys) => {
+				resolve(keys);
+			})
+		})
+	}
+
+	async unsetRoom(roomName: string) {
+		const keys = await this.getRoom(roomName);
+		keys.forEach(key => {
+			this.client.del(key);
+		})
+	}
+
+	private async getRoomsKeys(): Promise<string[]> {
+		return new Promise((resolve, reject) => {
+			this.client.keys(`room:*`, (err, keys) => {
 				resolve(keys);
 			});
 		});
 	}
 
-	async giveOwnership(userId: number, roomName): Promise<void> {
-		return new Promise(async (resolve, reject) => {
-			this.client.hset(`room:${roomName}`, "owner", JSON.stringify(userId));
-			resolve();
-		});
-	}
-
-	async createRoom(userId, dto: CreateRoomDto) {
-		let { password } = dto;
-		if (!password || password === "")
-			password = ""
-		else
-			password = await argon2.hash(password);
-
-		this.client.multi()
-			.hset(`room:${dto.roomName}`, "owner", JSON.stringify(userId))
-			.hset(`room:${dto.roomName}`, "isPublic", JSON.stringify(dto.isPublic))
-			.hset(`room:${dto.roomName}`, "members", JSON.stringify([userId]))
-			.hset(`room:${dto.roomName}`, "banned", JSON.stringify([]))
-			.hset(`room:${dto.roomName}`, "admins", JSON.stringify([userId]))
-			.hset(`room:${dto.roomName}`, "invited", JSON.stringify([]))
-			.hset(`room:${dto.roomName}`, "password", JSON.stringify(password))
-			.exec((error, response) => {
-				if (error) {
-					console.error(error)
-					return;
-				}
-				console.log(`redis: Created room:${dto.roomName}`);
-			});
-
-		this.client.hset(`user-rooms:${userId}`, dto.roomName, '1');
-
-		this.client.multi()
-			.zadd(`room-messages:${dto.roomName}`, Date.now(), JSON.stringify({ userId: -1, message: `Welcome to your channel ${dto.roomName}.` }))
-			.expire(`room-messages:${dto.roomName}`, 2 * 24 * 60 * 60)
-			.exec();
-
-		// Print the newly created room for debug purpose
-		this.client.hgetall(`room:${dto.roomName}`, (error, response) => {
-			if (error) {
-				console.error(error);
-				return;
-			}
-			console.log(response);
+	async unsetRooms() {
+		const keys = await this.getRoomsKeys();
+		keys.forEach(key => {
+			this.client.del(key);
 		})
 	}
 
-	async removeUserFromAdmins(userId, roomName): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.hget(`room:${roomName}`, "admins", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve();
-					return;
-				}
-				let admins = JSON.parse(response);
-				console.log({ adminsRmBefore: admins })
-				admins = admins.filter((x) => x !== userId);
-				console.log({ adminsRmAfter: admins })
-				this.client.hset(`room:${roomName}`, "admins", JSON.stringify(admins));
-				resolve();
-			});
-		});
-	}
-
-	async getUserRoomNb(userId: number) {
+	async getSession(sess: string): Promise<string> {
 		return new Promise((resolve, reject) => {
-			this.client.hlen(`user-rooms:${userId}`, (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				resolve(response);
-			});
-		})
-	}
-
-	async leaveRoom(userId, dto: LeaveRoomDto): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.hget(`room:${dto.roomName}`, "members", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve();
-					return;
-				}
-				let members = JSON.parse(response);
-				members = members.filter((x) => x !== userId);
-				console.log({ memberAfterRemoverLeaver: members });
-				this.client.hset(`room:${dto.roomName}`, "members", JSON.stringify(members));
-				this.client.hdel(`user-rooms:${userId}`, dto.roomName);
-				resolve()
+			this.client.get(`sess:${sess}`, (err, session) => {
+				resolve(session);
 			});
 		});
 	}
 
-	async deleteRoom(name: string) {
-		this.client.del(`room:${name}`, (error, response) => {
-			if (error) {
-				console.error(error);
-				return;
-			}
-			console.log(`redis: Deleted room:${name}`);
-		});
+	/* ******** */
+	/* Tests */
+
+	async delay(ms: number) {
+		return new Promise(resolve => setTimeout(resolve, ms));
 	}
 
-	async changeRoomOwner(name: string): Promise<void> {
-		return new Promise(async (resolve) => {
-			let admins = await this.getAdmins(name);
-			if (admins.length != 0) {
-				this.client.hset(`room:${name}`, "owner", JSON.stringify(admins[0]));
-				resolve();
-			}
-			let members = await this.getMembers(name);
-			if (members.length != 0) {
-				this.client.hset(`room:${name}`, "owner", JSON.stringify(members[0]));
-				resolve();
-			}
-		});
-	}
+	async atomic_test() {
+		await this.setRoomBanned("42", 24);
+		await this.setRoomBanned("42", 12313);
+		await this.setRoomOwner("42", 2245);
+		// await this.unsetRoomBanned("42", 24);
 
-	async getMembers(roomName: string): Promise<number[]> {
-		return new Promise((resolve) => {
-			this.client.hget(`room:${roomName}`, "members", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve([]);
-					return;
-				}
-				let members = JSON.parse(response);
-				resolve(members);
-			});
-		});
-	}
+		// await this.unsetAllRooms();  
+		const owner = await this.getRoomOwner("42");
+		console.debug(`length: ${owner.length}`)
+		console.debug(`owner: ${owner}`);
 
-	async getAdmins(roomName: string): Promise<number[]> {
-		return new Promise((resolve) => {
-			this.client.hget(`room:${roomName}`, "admins", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve([]);
-					return;
-				}
-				let admins = JSON.parse(response);
-				resolve(admins);
-			});
-		});
-	}
+		// const uniqueId = uuid();
+		// console.debug(`uniqueId: ${uniqueId}`)
+		await this.setRoomMessage("42", Date.now(), 244, "Hello World", 15);
+		// await new Promise(f => setTimeout(f, 10000));
+		await this.setRoomMessage("42", 244, Date.now(), "Hello Last World", 15);
+		const messages = await this.getRoomMessages("42");
+		console.debug("messages:");
+		console.debug(messages)
+		console.debug(`typeof messages: ${typeof messages}`)
+		const room = await this.getRoom("42");
+		console.debug(`room.length: ${room.length}`);
+		console.debug(`typeof room: ${typeof room}`)
+		const room2 = await this.getRoom("unknown");
+		console.debug(`room2.length: ${room2.length}`);
+		console.debug(`typeof room2: ${typeof room2}`)
 
-	async checkIfRoomIsFull(name: string): Promise<boolean> {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "members", (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				let members = JSON.parse(response);
-				if (members.length >= 10) {
-					resolve(true);
-					return;
-				}
-				resolve(false);
-			});
-		});
-	}
+		await this.setRoomMember("42", 1337);
+		await this.setRoomMember("42", 1338);
+		await this.setRoomMember("42", 29384);
+		let members = await this.getRoomMembers("42");
+		console.debug(`members: ${members}`);
+		console.debug(`members.length: ${members.length}`);
+		console.debug(members.includes("1337"));
+		await this.unsetRoomMember("42", 1337);
+		members = await this.getRoomMembers("42");
 
-	async joinRoom(userId, name: string): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.hget(`room:${name}`, "members", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve();
-					return;
-				}
-				let members = JSON.parse(response);
-				members.push(userId);
-				this.client.hset(`room:${name}`, "members", JSON.stringify(members));
-				this.client.hset(`user-rooms:${userId}`, name, '1');
-				resolve();
-			});
-		});
-	}
+		console.debug(members.includes("1337"));
 
-	async kickUser(userId, name: string): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.hget(`room:${name}`, "members", (error, response) => {
-				let members = JSON.parse(response);
-				members = members.filter((x) => x != userId);
-				this.client.hset(`room:${name}`, "members", JSON.stringify(members));
-				this.client.hdel(`user-rooms:${userId}`, name);
-			});
-			resolve();
-		});
-	}
+		await this.setRoomVisibility("42", "LOOL");
+		let visibility = await this.getRoomVisibility("42");
+		console.debug(`visibility: ${visibility}`);
+		await this.setRoomVisibility("42", "MDR")
+		visibility = await this.getRoomVisibility("42");
+		console.debug(`visibility: ${visibility}`);
 
-	async banUser(userId, name: string): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.hget(`room:${name}`, "banned", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve();
-					return;
-				}
-				let banned = JSON.parse(response);
-				banned.push(userId);
-				this.client.hset(`room:${name}`, "banned", JSON.stringify(banned));
-				this.client.hget(`room:${name}`, "members", (error, response) => {
-					let members = JSON.parse(response);
-					members = members.filter((x) => x != userId);
-					this.client.hset(`room:${name}`, "members", JSON.stringify(members));
-					this.client.hdel(`user-rooms:${userId}`, name);
-				});
-				resolve();
-			});
-		});
-	}
+		await this.setRoomPassword("42", await argon2.hash(""));
+		const hash = await this.getRoomPassword("42");
+		console.debug(`hash: ${hash}`);
+		console.debug(`verify: ${await argon2.verify(hash, "")}`);
 
-	async unbanUser(userId, name: string): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.hget(`room:${name}`, "banned", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve();
-					return;
-				}
-				let banned = JSON.parse(response);
-				banned = banned.filter((x) => x != userId);
-				this.client.hset(`room:${name}`, "banned", JSON.stringify(banned), () => {
-					resolve();
-				});
-			});
-		});
-	}
+		await this.setRoomMuted("42", 4242, 10);
+		await this.unsetRoomMuted("42", 4242);
+		let muted = await this.getRoomMuted("42", 4242);
+		console.debug(`muted: ${muted}`);
+		console.debug(`muted.length: ${muted.length}`);
+		muted = await this.getRoomMuted("42", 4243);
+		console.debug(`muted: ${muted}`);
+		console.debug(`muted.length: ${muted.length}`);
+		await this.setRoomMuted("42", 4243, 10);
+		console.debug(`muted: ${muted}`);
+		console.debug(`muted.length: ${muted.length}`);
 
-	async muteUser(userId, name: string, timeout): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.multi()
-				.set(`room-muted:${name}:${userId}`, 'true')
-				.expire(`room-muted:${name}:${userId}`, timeout)
-				.exec();
-			resolve();
-		});
-	}
+		await this.setUserRoom(4242, "roooomz");
+		await this.setUserRoom(4242, "roooomz-2");
+		await this.setUserRoom(4242, "roooomz-42");
+		await this.setUserRoom(4242, "roooomz-224");
+		await this.unsetUserRoom(4242, "roooomz");
+		// await this.unsetUserRoom(4242, "roooomz-2");
+		await this.unsetUserRoom(4242, "roooomz-42");
+		// await this.unsetUserRoom(4242, "roooomz-224");
 
-	async unmuteUser(userId, name: string): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.del(`room-muted:${name}:${userId}`)
-			resolve();
-		});
-	}
-
-	async inviteUser(userId, name: string): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.hget(`room:${name}`, "invited", (error, response) => {
-				if (error) {
-					console.error(error);
-					resolve();
-					return;
-				}
-				let invited = JSON.parse(response);
-				invited.push(userId);
-				this.client.hset(`room:${name}`, "invited", JSON.stringify(invited), () => {
-					resolve();
-				});
-			});
-		});
-	}
-
-	async removeInvitation(userId, name: string): Promise<void> {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "invited", (error, response) => {
-				if (error) {
-					console.error(error);
-					return;
-				}
-				let invited = JSON.parse(response);
-				invited = invited.filter((x) => x !== userId);
-				this.client.hset(`room:${name}`, "invited", JSON.stringify(invited));
-				resolve();
-			})
-		});
-	}
-
-	async sendMessage(name, userId, timestamp, message): Promise<void> {
-		return new Promise((resolve) => {
-			this.client.multi()
-				.zadd(`room-messages:${name}`, Date.now(), JSON.stringify({
-					userId,
-					timestamp,
-					message,
-				})).exec(() => {
-					resolve();
-				});
-		});
-	}
-
-	async updateRoom(dto: UpdateRoomDto): Promise<void> {
-		return new Promise(async (resolve) => {
-			let { password } = dto;
-			if (password != undefined && password != "")
-				password = await argon2.hash(password);
-			if (password != undefined)
-				this.client.hset(`room:${dto.roomName}`, "password", JSON.stringify(password));
-			if (dto.isPublic != undefined)
-				this.client.hset(`room:${dto.roomName}`, "isPublic", JSON.stringify(dto.isPublic));
-			resolve()
-		});
-	}
-
-	async checkIfRoomExists(name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.exists(`room:${name}`, (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				resolve(response);
-			});
-		});
-	}
-
-	async checkIfUserIsMember(userId, name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "members", (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				const members = JSON.parse(response);
-				if (members.includes(userId))
-					resolve(true);
-				else
-					resolve(false);
-			});
-		});
-	}
-
-	async checkIfUserIsOwner(userId, name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "owner", (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				const owner = JSON.parse(response);
-				if (owner === userId)
-					resolve(true);
-				else
-					resolve(false);
-			});
-		});
-	}
-
-	async checkIfUserIsAdmin(userId, name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "admins", (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				const admins = JSON.parse(response);
-				if (admins.includes(userId))
-					resolve(true);
-				else
-					resolve(false);
-			});
-		});
-	}
-
-	async checkIfUserIsMuted(userId, name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.get(`room-muted:${name}:${userId}`, (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				if (response === null)
-					resolve(false);
-				else
-					resolve(true);
-			});
-		});
-	}
-
-	async checkIfUserIsBanned(userId, name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "banned", (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				const banned = JSON.parse(response);
-				if (banned.includes(userId))
-					resolve(true);
-				else
-					resolve(false);
-			});
-		});
-	}
-
-	async checkIfUserIsInvited(userId, name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "invited", (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				const invited = JSON.parse(response);
-				if (invited.includes(userId))
-					resolve(true);
-				else
-					resolve(false);
-			});
-		});
-	}
-
-	async checkIfUserHasPrivileges(bannerId, bannedId, name: string) {
-		return new Promise(async (resolve, reject) => {
-			if (await this.checkIfUserIsOwner(bannedId, name) == true)
-				resolve(false);
-			else if (await this.checkIfUserIsOwner(bannerId, name) == true)
-				resolve(true);
-			else if (await this.checkIfUserIsAdmin(bannerId, name) == true &&
-				await this.checkIfUserIsAdmin(bannedId, name) == false)
-				resolve(true);
-			resolve(false);
-		});
-	}
-
-	async checkIfRoomIsProtected(name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "password", (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				const password = JSON.parse(response);
-				if (password === "")
-					resolve(false);
-				else
-					resolve(true);
-			});
-		});
-	}
-
-	async checkIfRoomIsEmpty(name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "members", (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				const members = JSON.parse(response);
-				console.log({ members });
-				if (members.length === 0)
-					resolve(true);
-				else
-					resolve(false);
-			});
-		});
-	}
-
-	async checkIfRoomIsPublic(name: string) {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "isPublic", (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				const isPublic = JSON.parse(response);
-				if (isPublic)
-					resolve(true);
-				else
-					resolve(false);
-			});
-		});
-	}
-
-	async checkIfPasswordIsCorrect(name: string, password: string) {
-		return new Promise((resolve, reject) => {
-			this.client.hget(`room:${name}`, "password", async (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				const roomPassword = JSON.parse(response);
-				if (password == undefined && roomPassword === "")
-					resolve(true);
-				else if (password != undefined && password === "" && roomPassword === "")
-					resolve(true);
-				else if (password != undefined && await argon2.verify(roomPassword, password) === true)
-					resolve(true);
-				else
-					resolve(false);
-			});
-		});
-	}
-
-	async checkIfUserExists(userId: string) {
-		return new Promise((resolve, reject) => {
-			this.client.exists(`user:${userId}`, (error, response) => {
-				if (error) {
-					console.error(error);
-					reject(error);
-					return;
-				}
-				if (response === 1)
-					resolve(true);
-				else
-					resolve(false);
-			});
-		});
+		const userRooms = await this.getUserRooms(4242);
+		console.debug(`userRooms: ${userRooms}`)
 	}
 }

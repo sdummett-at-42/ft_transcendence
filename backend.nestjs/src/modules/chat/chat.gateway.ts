@@ -2,7 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema, KickUserSchema, ChangeUserRoleSchema } from './chat.dto';
+import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema, KickUserSchema, AddRoomAdminDto, AddRoomAdminSchema, RemoveRoomAdminSchema, GiveOwnershipSchema } from './chat.dto';
 import { Injectable } from '@nestjs/common';
 import { Event } from './chat-event.enum';
 
@@ -13,6 +13,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	server: Server;
 
 	constructor(private readonly chat: ChatService) { }
+
+	// async afterInit(server: Server) {
+	// 	this.chat.atomic_test();
+	// }
 
 	async afterInit(server: Server) {
 		await this.chat.afterInit();
@@ -38,7 +42,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.createRoom)
 	async onCreateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = CreateRoomSchema.validate(dto);
@@ -53,7 +57,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.joinRoom)
 	onJoinRoom(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = JoinRoomSchema.validate(dto);
@@ -68,7 +72,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.leaveRoom)
 	onLeaveRoom(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = LeaveRoomSchema.validate(dto);
@@ -80,25 +84,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.leaveRoom(socket, dto, this.server);
 	}
 
-	@SubscribeMessage(Event.changeUserRole)
-	onChangeUserRole(@ConnectedSocket() socket, @MessageBody() dto) {
-		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
-			return;
-		}
-		const { error } = ChangeUserRoleSchema.validate(dto);
-		if (error) {
-			console.log(error.message);
-			socket.emit(Event.dataError, { message: error.message });
-			return;
-		}
-		this.chat.changeUserRole(socket, dto, this.server);
-	}
-
 	@SubscribeMessage(Event.kickUser)
 	onKickUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = KickUserSchema.validate(dto);
@@ -113,7 +102,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.banUser)
 	onBanUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = BanUserSchema.validate(dto);
@@ -128,7 +117,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.unbanUser)
 	onUnbanUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = UnbanUserSchema.validate(dto);
@@ -143,7 +132,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.muteUser)
 	onMuteUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = MuteUserSchema.validate(dto);
@@ -158,7 +147,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.unmuteUser)
 	onUnmuteUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = UnmuteUserSchema.validate(dto);
@@ -173,7 +162,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.inviteUser)
 	onInviteUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = InviteUserSchema.validate(dto);
@@ -188,7 +177,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.sendMsg)
 	onSendMessage(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = SendMessageSchema.validate(dto);
@@ -203,7 +192,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.updateRoom)
 	onUpdateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
-			socket.emit(Event.dataError, { message: "You must pass an object as a payload."});
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = UpdateRoomSchema.validate(dto);
@@ -213,5 +202,50 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			return;
 		}
 		this.chat.updateRoom(socket, dto, this.server);
+	}
+
+	@SubscribeMessage(Event.addRoomAdmin)
+	onAddRoomAdmin(@ConnectedSocket() socket, @MessageBody() dto) {
+		if (dto === undefined) {
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
+			return;
+		}
+		const { error } = AddRoomAdminSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit(Event.dataError, { message: error.message });
+			return;
+		}
+		this.chat.addRoomAdmin(socket, dto, this.server);
+	}
+
+	@SubscribeMessage(Event.removeRoomAdmin)
+	onRemoveRoomAdmin(@ConnectedSocket() socket, @MessageBody() dto) {
+		if (dto === undefined) {
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
+			return;
+		}
+		const { error } = RemoveRoomAdminSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit(Event.dataError, { message: error.message });
+			return;
+		}
+		this.chat.removeAdmin(socket, dto, this.server);
+	}
+
+	@SubscribeMessage(Event.giveRoomOwnership)
+	onGiveRoomOwnership(@ConnectedSocket() socket, @MessageBody() dto) {
+		if (dto === undefined) {
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
+			return;
+		}
+		const { error } = GiveOwnershipSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit(Event.dataError, { message: error.message });
+			return;
+		}
+		this.chat.giveRoomOwnership(socket, dto, this.server);
 	}
 }
