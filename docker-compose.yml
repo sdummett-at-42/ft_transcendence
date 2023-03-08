@@ -1,6 +1,6 @@
 version: '3.8'
-services:
 
+services:
   postgres:
     image: postgres:15.2-alpine3.17
     restart: always
@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+      - 5432:5432
     networks:
       - backend
 
@@ -38,7 +38,7 @@ services:
     volumes:
       - ./backend.nestjs/src:/app/src
     ports:
-      - ${APP_PORT}:${APP_PORT}
+      - 3001:3001
     networks:
       - backend
 
@@ -47,7 +47,16 @@ services:
     restart: always
     container_name: redis.cache
     ports:
-      - ${REDIS_PORT}:${REDIS_PORT}
+      - 7777:7777
+    networks:
+      - backend
+
+  react-frontend:
+    build: ./frontend
+    container_name: react.front
+    restart: always
+    ports:
+      - 3000:3000
     networks:
       - backend
 
