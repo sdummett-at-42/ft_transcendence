@@ -4,6 +4,7 @@ import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema } from './chat.dto';
 import { Injectable } from '@nestjs/common';
+import { Event } from './chat-event.enum';
 
 @Injectable()
 @WebSocketGateway()
@@ -34,7 +35,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.logout(userId, this.server);
 	}
 
-	@SubscribeMessage("create")
+	@SubscribeMessage(Event.createRoom)
 	async onCreateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = CreateRoomSchema.validate(dto);
 		if (error) {
@@ -45,7 +46,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.createRoom(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("join")
+	@SubscribeMessage(Event.joinRoom)
 	onJoinRoom(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = JoinRoomSchema.validate(dto);
 		if (error) {
@@ -56,7 +57,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.joinRoom(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("leave")
+	@SubscribeMessage(Event.leaveRoom)
 	onLeaveRoom(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = LeaveRoomSchema.validate(dto);
 		if (error) {
@@ -67,7 +68,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.leaveRoom(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("ban")
+	@SubscribeMessage(Event.banUser)
 	onBanUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = BanUserSchema.validate(dto);
 		if (error) {
@@ -78,7 +79,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.banUser(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("unban")
+	@SubscribeMessage(Event.unbanUser)
 	onUnbanUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = UnbanUserSchema.validate(dto);
 		if (error) {
@@ -89,7 +90,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.unbanUser(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("mute")
+	@SubscribeMessage(Event.muteUser)
 	onMuteUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = MuteUserSchema.validate(dto);
 		if (error) {
@@ -100,7 +101,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.muteUser(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("unmute")
+	@SubscribeMessage(Event.unmuteUser)
 	onUnmuteUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = UnmuteUserSchema.validate(dto);
 		if (error) {
@@ -111,7 +112,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.unmuteUser(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("invite")
+	@SubscribeMessage(Event.inviteUser)
 	onInviteUser(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = InviteUserSchema.validate(dto);
 		if (error) {
@@ -122,7 +123,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.inviteUser(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("send")
+	@SubscribeMessage(Event.sendMsg)
 	onSendMessage(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = SendMessageSchema.validate(dto);
 		if (error) {
@@ -133,7 +134,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.sendMessage(socket, dto, this.server);
 	}
 
-	@SubscribeMessage("update")
+	@SubscribeMessage(Event.updateRoom)
 	onUpdateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
 		const { error } = UpdateRoomSchema.validate(dto);
 		if (error) {
@@ -142,12 +143,5 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			return;
 		}
 		this.chat.updateRoom(socket, dto, this.server);
-	}
-
-	@SubscribeMessage("server")
-	getSocketsInRoom(@MessageBody() room) {
-		console.log(this.server.sockets.adapter.rooms[room]
-			? Object.values(this.server.sockets.adapter.rooms[room].sockets)
-			: []);
 	}
 }
