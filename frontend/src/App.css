@@ -1,38 +1,151 @@
-.App {
+:root {
+  --border: rgb(3, 169, 244);
+  --border-color: rgb(255, 255, 255, 0.1);
+  color: white;
+  
+  --g1: rgb(98, 0, 234);
+  --g2: rgb(236, 64, 122);
+  --g3: rgb(253, 216, 53);
+}
+
+body {
+  background-color: rgb(7, 15, 23);
+  display: grid;
+  height: 100vh;
+  margin: 0px;
+  padding: 0px;
+  place-items: center;
+  overflow: hidden;
+}
+
+.card {
+  background-color: rgb(10, 10, 10);
+  aspect-ratio: 1 / 1.6;
+  border: 0.5vmin solid var(--border);
+  border-radius: 8px;
+  position: relative;
+  width: 56vmin;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
+.card:hover:before {
+  background-position: 100% 100%;
+  transform: scale(1.08, 1.03);
+}
+
+.card:hover > .card-content {
+  background-position: -10% 0%;
+}
+
+.card:hover > .card-content > .card-subtitle > .card-subtitle-word {  
+  opacity: 1;
+  transform: translateY(0%);
+  transition: opacity 0ms, transform 200ms cubic-bezier(.90, .06, .15, .90);
+}
+
+.card:hover > .card-content .invert-effect {
+  transition: filter 200ms;
+  filter: invert(0%);
+}
+
+.card:before {
+    background: linear-gradient(
+    130deg, 
+    transparent 0% 33%, 
+    var(--g1) 66%, 
+    var(--g2) 83.5%, 
+    var(--g3) 100%
+  );
+  border-radius: 8px;
+  background-position: 0% 0%;
+  background-size: 300% 300%;
+  content: "";
+  height: 100%;
+  left: 0px;
   pointer-events: none;
+  position: absolute;
+  top: 0px;
+  transition: background-position 350ms ease, transform 350ms ease;
+  width: 100%;
+  z-index: 1;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.card-content {
+    background-image: radial-gradient(
+    rgba(255, 255, 255, 0.2) 8%, 
+    transparent 8%
+  );
+  background-position: 0% 0%;
+  background-size: 5vmin 5vmin;
+  height: calc(100% - 10vmin);
+  padding: 5vmin;
+  position: relative;
+  transition: background-position 350ms ease;
+  width: calc(100% - 10vmin);
+  z-index: 2;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.invert-effect {
+  filter: invert(100%)
+}
+
+.card-title,
+.card-subtitle {
+  font-family: "Anek Latin", sans-serif;
+  font-weight: 400;
+  margin: 0px;
+}
+
+.card-title {
+  text-align: center;
+  font-size: 5vmin;
+}
+
+.card-subtitle {
+  font-size: 3vmin;
+  margin-top: 2vmin;
+}
+
+.card-subtitle-word {
+  display: inline-block;
+  margin: 0vmin 0.3vmin;
+  opacity: 0;
+  position: relative;  
+  transform: translateY(40%);
+  transition: none;
+}
+
+.button {
+  cursor:pointer;
+  border-radius: 0.5vmin;
+  background-color: rgb(24, 30, 37);
+  margin-top: 2vmin;
   display: flex;
-  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--border-color);
+}
+
+.button:hover {
+  transition: background-color 300ms;
+  background-color: rgb(50, 50, 50);
+}
+
+.button > .button-content {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  padding: 1rem;
+  gap: 1.5rem;
 }
 
-.App-link {
-  color: #61dafb;
+.button > .button-image {
+  font-size: 2.5rem;
+  flex-basis: calc(100% / 3);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.button > .button-content > .button-text {
+  flex-grow: 1;
+}
+
+.create-account {
+  margin-top: 2vmin;
 }
