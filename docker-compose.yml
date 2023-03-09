@@ -51,14 +51,14 @@ services:
     networks:
       - backend
 
-  react-frontend:
-    build: ./frontend
-    container_name: react.front
-    restart: always
-    ports:
-      - 3000:3000
-    networks:
-      - backend
+  # react-frontend:
+  #   build: ./frontend
+  #   container_name: react.front
+  #   restart: always
+  #   ports:
+  #     - 3000:3000
+  #   networks:
+  #     - backend
 
 volumes:
   postgres:
