@@ -63,16 +63,18 @@ The returned message explain why the validation of the data has failed.
 
 
 #### Events received by the server
-##### logout
+##### `logout`
 Disconnect all the connected sockets of a user (only the current session ?).
 
 ##### `createRoom`
 ```typescript
 { roomName: string, visibility: string, password: string }
 ```
-Create a room that can be either private/public and/or password protected or not.
+Create a room that can be either private/public and/or password protected or not.  
 On failure, `roomNotCreated` is sent to the socket that triggered the event.  
-On success, `roomCreated` is sent to the socket that triggered the event and `joined` to all the active sockets of the user.  
+On success:
+- `roomCreated` is sent to the socket that triggered the event.
+- `joined`is sent to all the active sockets of the user that created the room.  
 
 ##### `updateRoom`
 ```typescript
@@ -108,7 +110,7 @@ On success:
 ```typescript
 { roomName: string, userId: string }
 ```
-Give a member the admin title.
+Give a member the admin title.  
 On failure, `roomAdminNotAdded` is sent to the socket that triggered the event.  
 On success:
  - `roomAdminAdded` is sent to the socket that triggered the event.
@@ -121,7 +123,7 @@ On success:
 { roomName: string, userId: number }
 ```
 Remove the admin title to a member.  
-On failure, `roomAdminNotRemoved` is sent to the socket that triggered the event.
+On failure, `roomAdminNotRemoved` is sent to the socket that triggered the event.  
 On success:
  - `roomAdminRemoved` is sent to the socket that triggered the event 
  - `demoted` is sent to all the active sockets of the user that has been demoted to a normal member.
@@ -132,7 +134,7 @@ On success:
 ```typescript
 { roomName: string, userId: number }
 ```
-Give the ownership to another user.
+Give the ownership to another user.  
 On failure, `roomOwnershipNotGived` is sent to the socket that triggered the event.  
 On success:
 - `roomOwnershipGived` is sent to the socket that triggered the event.
@@ -142,8 +144,11 @@ Give a member the owner title.
 *The user must be the **owner** of the room to succeed.*  
 
 ##### `kickUser`
+```typescript
+{ roomName: string, userId: number }
+```
 Kick out user from the room.  
-On failure, `userNotKicked` is sent to the socket that triggered the event.
+On failure, `userNotKicked` is sent to the socket that triggered the event.  
 On success:
 - `userKicked` is sent to the socket that triggered the event.
 - `kicked` is sent to all the active sockets of the user that has been kicked.
@@ -154,8 +159,8 @@ On success:
 ```typescript
 { roomName: string, userId: number }
 ```
-Ban a user from a room. Its has no limit on the time. The user will not be able to join the room even if invited.  
-On failure, `userNotBanned` is sent to the socket that triggered the event.
+Ban a user from a room. It has no limit on the time. The user will not be able to join the room even if invited.  
+On failure, `userNotBanned` is sent to the socket that triggered the event.  
 On success:
 - `userBanned` is sent to the socket that triggered the event.
 - `banned` is sent to all the active sockets of the user that has been banned.
@@ -168,7 +173,7 @@ On success:
 { roomName: string, userId: number }
 ```
 Unban a user.  
-On failure, `userNotUnbanned` is sent to the socket that triggered the event.
+On failure, `userNotUnbanned` is sent to the socket that triggered the event.  
 On success:
 - `userBanned` is sent to the socket that triggered the event.
 - `unbanned` is sent to all the active sockets of the user that has been unbanned.
@@ -181,7 +186,7 @@ On success:
 { roomName: string, userId: number, timeout: number }
 ```
 Mute a user for `timeout` seconds.  
-On failure, `userNotMuted` is sent to the socket that triggered the event.
+On failure, `userNotMuted` is sent to the socket that triggered the event.  
 On success:
 - `userMuted` is sent to the socket that triggered the event.
 - `muted` is sent to all the active sockets of the user that has been muted.
@@ -194,7 +199,7 @@ On success:
 { roomName: string, userId: number }
 ```
 Unmute a user.  
-On failure, `userNotUnmuted` is sent to the socket that triggered the event.
+On failure, `userNotUnmuted` is sent to the socket that triggered the event.  
 On success:
 - `userMuted` is sent to the socket that triggered the event.
 - `muted` is sent to all the active sockets of the user that has been unmuted.
@@ -207,7 +212,7 @@ On success:
 { roomName: string, userId: number }
 ```
 Block user message. That means that the blocker will not be able to receive messages from `userId` in `roomName`. The blocked user will still be able to send message in the room.  
-On failure, `userNotBlocked` is sent to the socket that triggered the event.
+On failure, `userNotBlocked` is sent to the socket that triggered the event.  
 On success:
 - `userBlocked` is sent to the socket that triggered the event.
 - `` is sent to all the active sockets of the user that
@@ -218,7 +223,7 @@ On success:
 { roomName: string, userId: number }
 ```
 Unblock a user.  
-On failure, `userNotUnblock` is sent to the socket that triggered the event.
+On failure, `userNotUnblock` is sent to the socket that triggered the event.  
 On success:
 - `userUnblocked` is sent to the socket that triggered the event.
 - `` is sent to all the active sockets of the user that
@@ -229,7 +234,7 @@ On success:
 { roomName: string, userId: number }
 ```
 Invite a user in a room.  
-On failure, `userNotInvited` is sent to the socket that triggered the event.
+On failure, `userNotInvited` is sent to the socket that triggered the event.  
 On success:
 - `userInvited` is sent to the socket that triggered the event.
 - `invited` is sent to all the active sockets of the user that has been invited.
@@ -240,7 +245,7 @@ On success:
 { roomName: string, userId: number }
 ```
 Uninvite a user from the room.  
-On failure, `userNotUninvited` is sent to the socket that triggered the event.
+On failure, `userNotUninvited` is sent to the socket that triggered the event.  
 On success:
 - `userUninvited` is sent to the socket that triggered the event.
 - `` is sent to all the active sockets of the user that
@@ -251,7 +256,7 @@ On success:
 { roomName: string, message: string }
 ```
 Send a message in a room.  
-On failure, `roomMsgNotSended` is sent to the socket that triggered the event.
+On failure, `roomMsgNotSended` is sent to the socket that triggered the event.  
 On success:
 - `` is sent to the socket that triggered the event.
 - `` is sent to all the active sockets of the user that
