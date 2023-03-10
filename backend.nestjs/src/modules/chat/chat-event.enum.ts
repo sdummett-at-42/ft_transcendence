@@ -56,4 +56,6 @@ export enum Event {
 	userJoined = "userJoined",
 	userLeft = "userLeft",
 	memberListUpdated = "memberListUpdated",
+	getRoomsList = "getRoomsList",
+	roomsListReceveid = "roomsListReceveid",
 }

@@ -124,9 +124,10 @@ export class RedisService {
 		})
 	}
 
-	async setRoomPassword(roomName: string, password: string) {
+	async setRoomPassword(roomName: string, password: string, protectedByPassword: string) {
 		await this.client.del(`room:${roomName}:infos:password`);
 		this.client.hset(`room:${roomName}:infos:password`, password, 1);
+		this.client.set(`room:${roomName}:infos:protected`, protectedByPassword);
 	}
 
 	async getRoomPassword(roomName: string): Promise<string> {
@@ -135,6 +136,14 @@ export class RedisService {
 				resolve(password[0]);
 			})
 		})
+	}
+
+	getRoomProtection(roomName: string): Promise<string> {
+		return new Promise((resolve, reject) => {
+			this.client.get(`room:${roomName}:infos:protected`, (err, protectedByPassword) => {
+				resolve(protectedByPassword);
+			})
+		});
 	}
 
 	async setRoomVisibility(roomName: string, visibility: string) {
@@ -197,7 +206,7 @@ export class RedisService {
 		this.client.del(`user:${userId}:room:${roomName}`, 1);
 	}
 
-	async getUserRooms(userId: number): Promise<string[]> {//: Promise<string[]> {
+	async getUserRooms(userId: number): Promise<string[]> {
 		const userRoomsKeys: string[] = await new Promise((resolve, reject) => {
 			this.client.keys(`user:${userId}:room:*`, (err, keys) => {
 				resolve(keys)
@@ -206,6 +215,48 @@ export class RedisService {
 		const patternToRemove = `user:${userId}:room:`;
 		const userRooms = userRoomsKeys.map((str) => str.replace(new RegExp(`^${patternToRemove}`), ''));
 		return userRooms;
+	}
+
+	async setRoomName(roomName: string) {
+		this.client.set(`roomName:${roomName}`, roomName);
+	}
+
+	async unsetRoomName(roomName: string) {
+		this.client.del(`roomName:${roomName}`, roomName);
+	}
+
+	private async getRoomName(roomName: string): Promise<string> {
+		return new Promise((resolve, reject) => {
+			this.client.get(`roomName:${roomName}`, (err, roomName) => {
+				resolve(roomName);
+			});
+		});
+	}
+
+	private async getRoomNameKeys(): Promise<string[]> {
+		return new Promise(async (resolve, reject) => {
+			await this.client.keys(`roomName:*`, (err, keys) => {
+				resolve(keys);
+			})
+		});
+	}
+	async getRoomNames(): Promise<any[]> {
+		const roomNameKeys = await this.getRoomNameKeys();
+
+		if (!roomNameKeys || roomNameKeys.length === 0) {
+			return [];
+		}
+
+		const roomNames = await Promise.all(
+			roomNameKeys.map(key => {
+				return new Promise((resolve, reject) => {
+					this.client.get(key, (err, value) => {
+						// const roomName = JSON.parse(value);
+						resolve(value);
+					})
+				});
+			}));
+		return roomNames;
 	}
 
 	async getRoom(roomName: string): Promise<string[]> {
@@ -299,7 +350,7 @@ export class RedisService {
 		visibility = await this.getRoomVisibility("42");
 		console.debug(`visibility: ${visibility}`);
 
-		await this.setRoomPassword("42", await argon2.hash(""));
+		// await this.setRoomPassword("42", await argon2.hash(""));
 		const hash = await this.getRoomPassword("42");
 		console.debug(`hash: ${hash}`);
 		console.debug(`verify: ${await argon2.verify(hash, "")}`);

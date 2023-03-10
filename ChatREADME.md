@@ -259,9 +259,9 @@ On success:
 
 ##### `getRoomsList`
 ```typescript
-no payload needed
+undefined
 ```
-Get the public rooms.
+Get all the public rooms.
 #### Event emitted to the concerned room
 
 ##### `memberListUpdated`

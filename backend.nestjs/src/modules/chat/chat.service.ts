@@ -82,12 +82,17 @@ export class ChatService {
 			});
 			return;
 		}
+
 		console.debug(`Creating room ${dto.roomName}, owner: ${socket.data.userId}`);
+		let isProtected = false;
+		if (dto.password != "")
+			isProtected = true;
+		await this.redis.setRoomName(dto.roomName);
 		await this.redis.setRoomOwner(dto.roomName, socket.data.userId);
 		await this.redis.setRoomAdmin(dto.roomName, socket.data.userId);
 		await this.redis.setRoomMember(dto.roomName, socket.data.userId);
 		await this.redis.setRoomVisibility(dto.roomName, dto.visibility);
-		await this.redis.setRoomPassword(dto.roomName, await argon2.hash(dto.password));
+		await this.redis.setRoomPassword(dto.roomName, await argon2.hash(dto.password), JSON.stringify(isProtected));
 		await this.redis.setUserRoom(socket.data.userId, dto.roomName);
 
 		socket.emit(Event.roomCreated, {
@@ -150,8 +155,10 @@ export class ChatService {
 				const members = await this.redis.getRoomMembers(dto.roomName);
 				if (members.length > 0)
 					await this.redis.setRoomOwner(dto.roomName, +members[0])
-				else
+				else {
 					this.redis.unsetRoom(dto.roomName);
+					this.redis.unsetRoomName(dto.roomName);
+				}
 			}
 		}
 
@@ -275,10 +282,10 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList : {
-				owner : await this.redis.getRoomOwner(dto.roomName),
-				admins : await this.redis.getRoomAdmins(dto.roomName),
-				members : await this.redis.getRoomMembers(dto.roomName),
+			memberList: {
+				owner: await this.redis.getRoomOwner(dto.roomName),
+				admins: await this.redis.getRoomAdmins(dto.roomName),
+				members: await this.redis.getRoomMembers(dto.roomName),
 			}
 		});
 	}
@@ -391,10 +398,10 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList : {
-				owner : await this.redis.getRoomOwner(dto.roomName),
-				admins : await this.redis.getRoomAdmins(dto.roomName),
-				members : await this.redis.getRoomMembers(dto.roomName),
+			memberList: {
+				owner: await this.redis.getRoomOwner(dto.roomName),
+				admins: await this.redis.getRoomAdmins(dto.roomName),
+				members: await this.redis.getRoomMembers(dto.roomName),
 			}
 		});
 	}
@@ -523,10 +530,10 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList : {
-				owner : await this.redis.getRoomOwner(dto.roomName),
-				admins : await this.redis.getRoomAdmins(dto.roomName),
-				members : await this.redis.getRoomMembers(dto.roomName),
+			memberList: {
+				owner: await this.redis.getRoomOwner(dto.roomName),
+				admins: await this.redis.getRoomAdmins(dto.roomName),
+				members: await this.redis.getRoomMembers(dto.roomName),
 			}
 		});
 	}
@@ -1021,8 +1028,11 @@ export class ChatService {
 
 		console.debug(`User ${socket.data.userId} is updating room ${dto.roomName}`);
 
+		let isProtected = false;
+		if (dto.password != "")
+			isProtected = true;
 		await this.redis.setRoomVisibility(dto.roomName, dto.visibility);
-		await this.redis.setRoomPassword(dto.roomName, await argon2.hash(dto.password))
+		await this.redis.setRoomPassword(dto.roomName, await argon2.hash(dto.password), JSON.stringify(isProtected));
 
 		socket.emit(Event.roomUpdated, {
 			roomName: dto.roomName,
@@ -1119,10 +1129,10 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList : {
-				owner : await this.redis.getRoomOwner(dto.roomName),
-				admins : await this.redis.getRoomAdmins(dto.roomName),
-				members : await this.redis.getRoomMembers(dto.roomName),
+			memberList: {
+				owner: await this.redis.getRoomOwner(dto.roomName),
+				admins: await this.redis.getRoomAdmins(dto.roomName),
+				members: await this.redis.getRoomMembers(dto.roomName),
 			}
 		});
 	}
@@ -1215,10 +1225,10 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList : {
-				owner : await this.redis.getRoomOwner(dto.roomName),
-				admins : await this.redis.getRoomAdmins(dto.roomName),
-				members : await this.redis.getRoomMembers(dto.roomName),
+			memberList: {
+				owner: await this.redis.getRoomOwner(dto.roomName),
+				admins: await this.redis.getRoomAdmins(dto.roomName),
+				members: await this.redis.getRoomMembers(dto.roomName),
 			}
 		});
 	}
@@ -1301,12 +1311,33 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList : {
-				owner : await this.redis.getRoomOwner(dto.roomName),
-				admins : await this.redis.getRoomAdmins(dto.roomName),
-				members : await this.redis.getRoomMembers(dto.roomName),
+			memberList: {
+				owner: await this.redis.getRoomOwner(dto.roomName),
+				admins: await this.redis.getRoomAdmins(dto.roomName),
+				members: await this.redis.getRoomMembers(dto.roomName),
 			}
 		});
+	}
+
+	async getRoomsList(socket, dto, server) {
+		const roomsList = [];
+		const roomNames = await this.redis.getRoomNames();
+
+		await Promise.all(roomNames.map(async (roomName) => {
+			if (await this.redis.getRoomVisibility(roomName) == "public") {
+				let isProtected = false;
+				if (await this.redis.getRoomProtection(roomName) == "true")
+					isProtected = true;
+
+				roomsList.push({
+					roomName,
+					protected: isProtected
+				});
+			}
+		}));
+		socket.emit(Event.roomsListReceveid, {
+			roomsList,
+		})
 	}
 
 	async atomic_test() {
