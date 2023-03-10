@@ -272,6 +272,15 @@ export class ChatService {
 			timestamp: new Date().toISOString(),
 			message: `User ${socket.data.userId} has joined the room ${dto.roomName}.`
 		});
+
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList : {
+				owner : await this.redis.getRoomOwner(dto.roomName),
+				admins : await this.redis.getRoomAdmins(dto.roomName),
+				members : await this.redis.getRoomMembers(dto.roomName),
+			}
+		});
 	}
 
 	async kickUser(socket, dto: KickUserDto, server) {
@@ -378,6 +387,15 @@ export class ChatService {
 			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been kicked from the room ${dto.roomName}.`
+		});
+
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList : {
+				owner : await this.redis.getRoomOwner(dto.roomName),
+				admins : await this.redis.getRoomAdmins(dto.roomName),
+				members : await this.redis.getRoomMembers(dto.roomName),
+			}
 		});
 	}
 
@@ -501,6 +519,15 @@ export class ChatService {
 			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been banned from the room ${dto.roomName}.`
+		});
+
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList : {
+				owner : await this.redis.getRoomOwner(dto.roomName),
+				admins : await this.redis.getRoomAdmins(dto.roomName),
+				members : await this.redis.getRoomMembers(dto.roomName),
+			}
 		});
 	}
 
@@ -1089,6 +1116,15 @@ export class ChatService {
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been granted admin in the room ${dto.roomName}.`
 		});
+
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList : {
+				owner : await this.redis.getRoomOwner(dto.roomName),
+				admins : await this.redis.getRoomAdmins(dto.roomName),
+				members : await this.redis.getRoomMembers(dto.roomName),
+			}
+		});
 	}
 
 	async removeAdmin(socket, dto: RemoveRoomAdminDto, server) {
@@ -1176,6 +1212,15 @@ export class ChatService {
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been demoted to a normal user in the room ${dto.roomName}.`
 		});
+
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList : {
+				owner : await this.redis.getRoomOwner(dto.roomName),
+				admins : await this.redis.getRoomAdmins(dto.roomName),
+				members : await this.redis.getRoomMembers(dto.roomName),
+			}
+		});
 	}
 
 	async giveRoomOwnership(socket, dto: GiveOwnershipDto, server) {
@@ -1252,6 +1297,15 @@ export class ChatService {
 			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} is the new owner of the room ${dto.roomName}.`
+		});
+
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList : {
+				owner : await this.redis.getRoomOwner(dto.roomName),
+				admins : await this.redis.getRoomAdmins(dto.roomName),
+				members : await this.redis.getRoomMembers(dto.roomName),
+			}
 		});
 	}
 

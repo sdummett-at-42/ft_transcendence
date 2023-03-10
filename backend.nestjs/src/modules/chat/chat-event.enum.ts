@@ -55,4 +55,5 @@ export enum Event {
 	notConnected = "notConnected",
 	userJoined = "userJoined",
 	userLeft = "userLeft",
+	memberListUpdated = "memberListUpdated",
 }
