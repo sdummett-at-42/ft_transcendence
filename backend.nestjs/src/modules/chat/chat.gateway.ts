@@ -174,8 +174,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.inviteUser(socket, dto, this.server);
 	}
 
-	@SubscribeMessage(Event.sendMsg)
-	onSendMessage(@ConnectedSocket() socket, @MessageBody() dto) {
+	@SubscribeMessage(Event.sendRoomMsg)
+	onSendRoomMessage(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (dto === undefined) {
 			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
@@ -186,7 +186,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
-		this.chat.sendMessage(socket, dto, this.server);
+		this.chat.sendRoomMessage(socket, dto, this.server);
 	}
 
 	@SubscribeMessage(Event.updateRoom)
