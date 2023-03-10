@@ -2,7 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema, KickUserSchema, AddRoomAdminDto, AddRoomAdminSchema, RemoveRoomAdminSchema, GiveOwnershipSchema } from './chat.dto';
+import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema, KickUserSchema, AddRoomAdminSchema, RemoveRoomAdminSchema, GiveOwnershipSchema } from './chat.dto';
 import { Injectable } from '@nestjs/common';
 import { Event } from './chat-event.enum';
 
@@ -247,5 +247,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			return;
 		}
 		this.chat.giveRoomOwnership(socket, dto, this.server);
+	}
+
+	@SubscribeMessage(Event.getRoomsList)
+	onGetRoomsList(@ConnectedSocket() socket, @MessageBody() dto) {
+		if (dto != undefined) {
+			socket.emit(Event.dataError, { message: "You musn't pass any object as a payload." });
+			return;
+		}
+		this.chat.getRoomsList(socket, dto, this.server);
 	}
 }
