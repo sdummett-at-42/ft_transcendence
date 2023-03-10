@@ -7,10 +7,10 @@ We used socket.io.
 ### Events table
 | Events received by the server | Event emitted to the concerned room| Event emitted to the socket sender| Event emitted to all the sockets of the concerned user|
 |-|-|-|-|
-|`createRoom`||`roomNotCreated` `roomCreated`|`joined`|
+|`createRoom`||`roomNotCreated` `roomCreated`|`roomJoined`|
 |`updateRoom`||`roomNotUpdated` `roomUpdated`||
-|`joinRoom`|`userJoined`|`roomNotJoined` `roomJoined`|`joined`|
-|`leaveRoom`|`userLeft`|`roomNotLeft`|`roomLeft`|
+|`joinRoom`|`memberListUpdated`|`roomNotJoined` |`roomJoined`|
+|`leaveRoom`|`memberListUpdated`|`roomNotLeft`|`roomLeft`|
 |`addRoomAdmin`|`memberListUpdated`|`roomAdminNotAdded` `roomAdminAdded`|`granted`|
 |`removeRoomAdmin`|`memberListUpdated`|`roomAdminNotRemoved` `roomAdminRemoved`|`demoted`|
 |`giveRoomOwnership`|`memberListUpdated`|`roomOwnershipNotGived` `roomOwnershipGived`|`granted`|
@@ -19,11 +19,14 @@ We used socket.io.
 |`unbanUser`|`memberListUpdated`|`userNotUnbanned` `userUnbanned`|`unbanned`|
 |`muteUser`||`userNotMuted` `userMuted`|`muted`|
 |`unmuteUser`||`userNotUnmuted` `userUnmuted`|`unmuted`|
-|`blockUser`||`userNotBlocked``userBlocked`||
+|`blockUser`||`userNotBlocked` `userBlocked`||
 |`unblockUser`||`userNotUnblocked` `userUnblocked`||
 |`inviteUser`||`userNotInvited` `userInvited`|`invited`|
 |`uninviteUser`||`userNotUnvited` `userUninvited`||
 |`sendRoomMsg`|`roomMsgReceived`|`roomMsgNotSended`||
+|`getRoomsList`||`roomsListReceived`||
+
+When the following events succeed `joinRoom`, `leaveRom`, `addRoomAdmin`, `removeRoomAdmin`, `giveRoomOwnership`, `kickUser`, `banUser`, `unbanUser`, `muteUser`, `unmuteUser`, a message using `roomMsgReceived` is sended to the room by the server with the field `userId = -1`, to notify the room on what happened.  
 
 ### Data fields
 
@@ -49,11 +52,13 @@ The user socket is successfully connected.
 { message: string }
 ```
 The socket has been disconnected for some reason.
+For example the user isn't logged.
 
 ##### `dataError`
 ```typescript
 { message: string }
 ```
+When emitting an event to the server, if the payload validation failed, this event is returned back to the client.  
 The returned message explain why the validation of the data has failed.
 
 
@@ -63,7 +68,7 @@ Disconnect all the connected sockets of a user (only the current session ?).
 
 ##### `createRoom`
 ```typescript
-{ roomName: string, visibility: boolean, password: string }
+{ roomName: string, visibility: string, password: string }
 ```
 Create a room that can be either private/public and/or password protected or not.
 On failure, `roomNotCreated` is sent to the socket that triggered the event.  
@@ -71,7 +76,7 @@ On success, `roomCreated` is sent to the socket that triggered the event and `jo
 
 ##### `updateRoom`
 ```typescript
-{ roomName: string, visibility: boolean, password: string }
+{ roomName: string, visibility: string, password: string }
 ```
 Updates a room by changing the visibility and/or the password.  
 On failure, `roomNotUpdated` is sent to the socket that triggered the event.  
@@ -250,8 +255,13 @@ On failure, `roomMsgNotSended` is sent to the socket that triggered the event.
 On success:
 - `` is sent to the socket that triggered the event.
 - `` is sent to all the active sockets of the user that
-- `roomMsgReceived` is sent to the room.
+- `roomMsgReceived` is sent to the room.  
 
+##### `getRoomsList`
+```typescript
+no payload needed
+```
+Get the public rooms.
 #### Event emitted to the concerned room
 
 ##### `memberListUpdated`
@@ -360,7 +370,11 @@ Failed to uninvite a user.
 Successfully uninvited a user.
 ##### `roomMsgNotSended`
 Failed to send a room message.
-
+##### `roomsListReceived`
+```typescript
+{ roomsList: [{ roomName: string, protected: boolean }] }
+```
+Returns the list of public rooms and whether it's protected or not.
 #### Event emitted to all the sockets of the concerned user
 The concerned user is the one on which the event will affect.  
 For example if `banUser` is triggered, the concerned user is the one who is being banned.

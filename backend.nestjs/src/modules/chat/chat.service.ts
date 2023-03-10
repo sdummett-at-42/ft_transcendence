@@ -8,6 +8,7 @@ import * as argon2 from 'argon2';
 @Injectable()
 export class ChatService {
 
+	// NOTE: When server sends message to the room, we should replace ${userId} with the pseudo of the user instead.
 	constructor(private readonly redis: RedisService) { }
 
 	async afterInit() {
@@ -89,17 +90,24 @@ export class ChatService {
 		await this.redis.setRoomPassword(dto.roomName, await argon2.hash(dto.password));
 		await this.redis.setUserRoom(socket.data.userId, dto.roomName);
 
-		const sockets = server.sockets.sockets;
-		sockets.forEach((value, key) => {
-			if (value.data.userId === socket.data.userId)
-				value.join(dto.roomName)
-		});
-
 		socket.emit(Event.roomCreated, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
 			message: `Room ${dto.roomName} has been created.`
 		});
+
+		const sockets = server.sockets.sockets;
+		sockets.forEach((value, key) => {
+			if (value.data.userId === socket.data.userId) {
+				value.join(dto.roomName)
+				value.emit(Event.roomJoined, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You have joined room ${dto.roomName}.`
+				})
+			}
+		});
+
 	}
 
 	async leaveRoom(socket, dto: LeaveRoomDto, server) {
@@ -151,16 +159,19 @@ export class ChatService {
 		const userSockets = sockets.filter(socket => socket.data.userId === +userId);
 		for (const socket of userSockets) {
 			socket.leave(dto.roomName);
+			socket.emit(Event.roomLeft, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You have left room ${dto.roomName}.`
+			});
 		}
-		socket.emit(Event.roomLeft, {
+
+		// TODO: Must add the server message in redis here.
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
+			userId: -1,
 			timestamp: new Date().toISOString(),
-			message: `You have left room ${dto.roomName}.`
-		});
-		server.to(dto.roomName).emit(Event.userLeft, {
-			roomName: dto.roomName,
-			timestamp: new Date().toISOString(),
-			message: `User ${socket.data.userId} has left the room ${dto.roomName}.`
+			message: `User ${userId} has left the room ${dto.roomName}.`
 		});
 	}
 
@@ -244,14 +255,20 @@ export class ChatService {
 
 		const sockets = server.sockets.sockets;
 		sockets.forEach((value, key) => {
-			if (value.data.userId === socket.data.userId)
+			if (value.data.userId === socket.data.userId) {
 				value.join(dto.roomName)
+				value.join(Event.roomJoined, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You have joined room ${dto.roomName}.`,
+				})
+			}
 		});
 
-		// Maybe notify each socket that room have been joined.
-
-		server.to(dto.roomName).emit(Event.userJoined, {
+		// TODO: Add server msg in redis
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
+			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${socket.data.userId} has joined the room ${dto.roomName}.`
 		});
@@ -338,16 +355,27 @@ export class ChatService {
 		await this.redis.unsetRoomMember(dto.roomName, dto.userId);
 		await this.redis.unsetUserRoom(dto.userId, dto.roomName);
 
-		const sockets = server.sockets.sockets;
-		sockets.forEach((value, key) => {
-			if (value.data.userId === dto.userId)
-				value.leave(dto.roomName)
-		});
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
+		for (const socket of userSockets) {
+			socket.leave(dto.roomName);
+			socket.emit(Event.kicked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You have been kicked from room ${dto.roomName}.`,
+			});
+		}
 
-		// Maybe notify each socket that room have been joined.
-
-		server.to(dto.roomName).emit(Event.userKicked, {
+		socket.emit(Event.userKicked, {
 			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been succesfully kicked from room ${dto.roomName}.`,
+		})
+
+		// TODO: store server message to redis
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been kicked from the room ${dto.roomName}.`
 		});
@@ -448,16 +476,29 @@ export class ChatService {
 		await this.redis.setRoomBanned(dto.roomName, dto.userId);
 		await this.redis.unsetUserRoom(dto.userId, dto.roomName);
 
-		const sockets = server.sockets.sockets;
-		sockets.forEach((value, key) => {
-			if (value.data.userId === dto.userId)
-				value.leave(dto.roomName)
-		});
+		// Notify user being banned
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
+		for (const socket of userSockets) {
+			socket.leave(dto.roomName);
+			socket.emit(Event.banned, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You have been banned from room ${dto.roomName}.`,
+			});
+		}
 
-		// Maybe notify each socket that user has been banned.
-
-		server.to(dto.roomName).emit(Event.userBanned, {
+		// Success notify
+		socket.emit(Event.userBanned, {
 			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been successfully banned from room ${dto.roomName}.`,
+		})
+
+		// Send message to room by the server to notify user that someone has been banned
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been banned from the room ${dto.roomName}.`
 		});
@@ -525,10 +566,29 @@ export class ChatService {
 
 		await this.redis.unsetRoomBanned(dto.roomName, dto.userId);
 
-		server.to(dto.roomName).emit(Event.userUnbanned, {
+		const sockets = server.sockets.sockets;
+		sockets.forEach((value, key) => {
+			if (value.data.userId === dto.userId) {
+				value.emit(Event.unbanned, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You have been unbanned from room ${dto.roomName}.`
+				})
+			}
+		});
+
+		socket.emit(Event.userUnbanned, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been unban from the room ${dto.roomName}.`
+			message: `User ${dto.userId} has been succesfully unbanned from room ${dto.roomName}.`,
+		})
+
+		// TODO: store server message to redis
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
+			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been unbanned from the room ${dto.roomName}.`
 		});
 	}
 
@@ -624,8 +684,27 @@ export class ChatService {
 
 		await this.redis.setRoomMuted(dto.roomName, dto.userId, dto.timeout);
 
-		server.to(dto.roomName).emit(Event.userMuted, {
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
+		for (const socket of userSockets) {
+			socket.emit(Event.muted, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You have been muted from room ${dto.roomName} for ${dto.timeout} secs.`,
+			});
+		}
+
+		// Success notify
+		socket.emit(Event.userMuted, {
 			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been successfully muted from room ${dto.roomName} for ${dto.timeout} secs.`,
+		})
+
+		// Send message to room by the server to notify user that someone has been banned
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been muted from the room ${dto.roomName} for ${dto.timeout} secs.`
 		});
@@ -702,8 +781,27 @@ export class ChatService {
 		console.debug(`User ${socket.data.userId} is unmuting user ${dto.userId} in room ${dto.roomName}`);
 
 		await this.redis.unsetRoomMuted(dto.roomName, dto.userId);
-		server.to(dto.roomName).emit(Event.userUnmuted, {
+
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
+		for (const socket of userSockets) {
+			socket.emit(Event.unmuted, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You have been unmuted from room ${dto.roomName}.`,
+			});
+		}
+
+		socket.emit(Event.userUnmuted, {
 			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been succesfully unmuted from room ${dto.roomName}.`,
+		})
+
+		// TODO: store server message to redis
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been unmuted from the room ${dto.roomName}.`
 		});
@@ -780,14 +878,25 @@ export class ChatService {
 
 		await this.redis.setRoomInvited(dto.roomName, dto.userId);
 
-		server.to(dto.roomName).emit(Event.userInvited, {
+		const sockets = server.sockets.sockets;
+		sockets.forEach((value, key) => {
+			if (value.data.userId === dto.userId) {
+				value.emit(Event.invited, {
+					roomName: dto.roomName,
+					timestamp: new Date().toISOString(),
+					message: `You have been invited to room ${dto.roomName}.`
+				})
+			}
+		});
+
+		socket.emit(Event.userInvited, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
-			message: `Invitation for the room ${dto.roomName} sended to user ${dto.userId}.`,
+			message: `User ${userId} has been succesfully invited to room ${dto.roomName}.`,
 		});
 	}
 
-	async sendMessage(socket, dto: SendMessageDto, server) {
+	async sendRoomMessage(socket, dto: SendMessageDto, server) {
 		const userId: string = socket.data.userId.toString();
 
 		const room = await this.redis.getRoom(dto.roomName);
@@ -839,11 +948,11 @@ export class ChatService {
 		const currentTimestamp = Date.now()
 		this.redis.setRoomMessage(dto.roomName, currentTimestamp, +userId, dto.message, 2 * 24 * 60 * 60);
 
-		server.to(dto.roomName).emit(Event.msgSended, {
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
+			userId: socket.data.userId,
 			timestamp: new Date(currentTimestamp).toISOString(),
 			message: dto.message,
-			userId: socket.data.userId,
 		})
 	}
 
@@ -956,10 +1065,27 @@ export class ChatService {
 
 		await this.redis.setRoomAdmin(dto.roomName, dto.userId);
 
-		// Send to the owner admin added
-		// Send to the member he is an admin now
-		server.to(dto.roomName).emit(Event.roomAdminAdded, {
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
+		for (const socket of userSockets) {
+			socket.emit(Event.granted, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You have been greanted admin in the room ${dto.roomName}.`,
+			});
+		}
+
+		// Success notify
+		socket.emit(Event.roomAdminAdded, {
 			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been successfully granted admin in room ${dto.roomName}.`,
+		})
+
+		// Send message to room by the server to notify user that someone has been banned
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been granted admin in the room ${dto.roomName}.`
 		});
@@ -1026,12 +1152,29 @@ export class ChatService {
 
 		await this.redis.unsetRoomAdmin(dto.roomName, dto.userId);
 
-		// Send to the owner the admin is now a member
-		// Send to the admin he is now a member
-		server.to(dto.roomName).emit(Event.roomAdminRemoved, {
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
+		for (const socket of userSockets) {
+			socket.emit(Event.demoted, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You have been demoted to a normal member in the room ${dto.roomName}.`,
+			});
+		}
+
+		// Success notify
+		socket.emit(Event.roomAdminRemoved, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been removed from admin list in the room ${dto.roomName}.`
+			message: `User ${dto.userId} has been removed from admin list in the room ${dto.roomName}.`,
+		})
+
+		// Send message to room by the server to notify user that someone has been banned
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
+			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been demoted to a normal user in the room ${dto.roomName}.`
 		});
 	}
 
@@ -1086,10 +1229,27 @@ export class ChatService {
 		await this.redis.setRoomOwner(dto.roomName, dto.userId);
 		await this.redis.setRoomAdmin(dto.roomName, dto.userId);
 
-		// Send to old owner that he has succesfully gived its ownership
-		// Send to the member that he is the new owner of the room
-		server.to(dto.roomName).emit(Event.roomOwnershipGived, {
+		const sockets = await server.in(dto.roomName).fetchSockets();
+		const userSockets = sockets.filter(socket => socket.data.userId === dto.userId);
+		for (const socket of userSockets) {
+			socket.emit(Event.granted, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You have been granted owner in the room ${dto.roomName}.`,
+			});
+		}
+
+		// Success notify
+		socket.emit(Event.roomOwnershipGived, {
 			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been successfully granted owner in room ${dto.roomName}.`,
+		})
+
+		// Send message to room by the server to notify user that someone has been banned
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} is the new owner of the room ${dto.roomName}.`
 		});
