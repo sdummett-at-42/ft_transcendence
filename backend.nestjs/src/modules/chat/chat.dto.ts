@@ -94,6 +94,15 @@ export const InviteUserSchema = Joi.object({
 	userId: Joi.number().required(),
 });
 
+export class UninviteUserDto {
+	roomName: string;
+	userId: number;
+}
+export const UninviteUserSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().required(),
+});
+
 export class SendMessageDto {
 	roomName: string;
 	message: string;
