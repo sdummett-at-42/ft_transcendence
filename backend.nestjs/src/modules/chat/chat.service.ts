@@ -1384,7 +1384,7 @@ export class ChatService {
 				});
 			}
 		}));
-		socket.emit(Event.roomsListReceveid, {
+		socket.emit(Event.roomsListReceived, {
 			roomsList,
 		})
 	}

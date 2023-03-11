@@ -60,7 +60,7 @@ export enum Event {
 	userLeft = "userLeft",
 	memberListUpdated = "memberListUpdated",
 	getRoomsList = "getRoomsList",
-	roomsListReceveid = "roomsListReceveid",
+	roomsListReceived = "roomsListReceveid",
 	blockUser = "blockUser",
 	userBlocked = "userBlocked",
 	userNotBlocked = "userNotBlocked",
