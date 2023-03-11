@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto } from './chat.dto';
 import { Event } from './chat-event.enum';
 import * as argon2 from 'argon2';
 
@@ -981,12 +981,18 @@ export class ChatService {
 		const currentTimestamp = Date.now()
 		this.redis.setRoomMessage(dto.roomName, currentTimestamp, +userId, dto.message, 2 * 24 * 60 * 60);
 
-		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+		const blockedBy = await this.redis.getRoomUsersBlockedBy(dto.roomName, +userId);
+		const sockets = await server.in(dto.roomName).fetchSockets();
+
+		const excludedSockets = sockets.filter(s => {
+			return blockedBy.includes(s.data.userId)
+		});
+		server.to(dto.roomName).except(excludedSockets).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: socket.data.userId,
 			timestamp: new Date(currentTimestamp).toISOString(),
 			message: dto.message,
-		})
+		});
 	}
 
 	async updateRoom(socket, dto: UpdateRoomDto, server) {
@@ -1324,6 +1330,130 @@ export class ChatService {
 		}));
 		socket.emit(Event.roomsListReceveid, {
 			roomsList,
+		})
+	}
+
+	async blockUser(socket, dto: BlockUserDto, server) {
+		const userId: string = socket.data.userId.toString();
+
+		const room = await this.redis.getRoom(dto.roomName);
+		if (room.length === 0) {
+			console.debug(`Room ${dto.roomName} doesn't exist`);
+			socket.emit(Event.userNotBlocked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `Room ${dto.roomName} doesn't exists.`
+			});
+			return;
+		}
+
+		const members = await this.redis.getRoomMembers(dto.roomName);
+		if (members.includes(userId) === false) {
+			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
+			socket.emit(Event.userNotBlocked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You are not member in room ${dto.roomName}.`,
+			});
+			return;
+		}
+
+		if (userId == dto.userId.toString()) {
+			console.debug(`User ${socket.data.userId} cannot block himself`);
+			socket.emit(Event.userNotBlocked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You cannot block yourself.`
+			});
+			return;
+		}
+
+		const usersblocked = await this.redis.getRoomUsersBlocked(dto.roomName, +userId);
+		if (usersblocked.includes(dto.userId)) {
+			console.debug(`User ${dto.userId} is already blocked from room ${dto.roomName} by user ${userId}`);
+			socket.emit(Event.userNotBlocked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} is already blocked in room ${dto.roomName} by you.`
+			});
+			return;
+		}
+
+		if (members.includes(dto.userId.toString()) === false) {
+			console.debug(`User ${dto.userId} is not member in room ${dto.roomName}.`);
+			socket.emit(Event.userNotBlocked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
+			});
+			return;
+		}
+
+		console.debug(`User ${socket.data.userId} is blocking user ${dto.userId} from room ${dto.roomName}`);
+
+		await this.redis.setRoomUserBlocked(dto.roomName, +userId, dto.userId);
+
+		socket.emit(Event.userBlocked, {
+			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			userId: dto.userId,
+		})
+	}
+
+	async unblockUser(socket, dto: UnblockUserDto, server) {
+		const userId: string = socket.data.userId.toString();
+
+		const room = await this.redis.getRoom(dto.roomName);
+		if (room.length === 0) {
+			console.debug(`Room ${dto.roomName} doesn't exist`);
+			socket.emit(Event.userNotUnblocked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `Room ${dto.roomName} doesn't exists.`
+			});
+			return;
+		}
+
+		const members = await this.redis.getRoomMembers(dto.roomName);
+		if (members.includes(userId) === false) {
+			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
+			socket.emit(Event.userNotUnblocked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You are not member in room ${dto.roomName}.`,
+			});
+			return;
+		}
+
+		if (userId == dto.userId.toString()) {
+			console.debug(`User ${socket.data.userId} cannot unblock himself`);
+			socket.emit(Event.userNotUnblocked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You cannot unblock yourself.`
+			});
+			return;
+		}
+
+		const userBlocked = await this.redis.getRoomUsersBlocked(dto.roomName, +userId);
+		if (userBlocked.includes(dto.userId) == false) {
+			console.debug(`User ${dto.userId} is not blocked from room ${dto.roomName} by user ${userId}`);
+			socket.emit(Event.userNotUnblocked, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} is not blocked by you in room ${dto.roomName}.`
+			});
+			return;
+		}
+
+		console.debug(`User ${socket.data.userId} is unblocking user ${dto.userId} from room ${dto.roomName}`);
+
+		await this.redis.unsetRoomUserBlocked(dto.roomName, +userId, dto.userId);
+
+		socket.emit(Event.userUnblocked, {
+			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			userId: dto.userId,
 		})
 	}
 
