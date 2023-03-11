@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto, UninviteUserDto } from './chat.dto';
 import { Event } from './chat-event.enum';
 import * as argon2 from 'argon2';
 
@@ -926,6 +926,62 @@ export class ChatService {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
 			message: `User ${userId} has been succesfully invited to room ${dto.roomName}.`,
+		});
+	}
+
+	async uninviteUser(socket, dto: UninviteUserDto, server) {
+		const userId: string = socket.data.userId.toString();
+
+		const room = await this.redis.getRoom(dto.roomName);
+		if (room.length === 0) {
+			console.debug(`Room ${dto.roomName} doesn't exist`);
+			socket.emit(Event.userNotUninvited, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `Room ${dto.roomName} doesn't exists.`
+			});
+			return;
+		}
+
+		const members = await this.redis.getRoomMembers(dto.roomName);
+		if (members.includes(userId) === false) {
+			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
+			socket.emit(Event.userNotUninvited, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You are not member in room ${dto.roomName}.`,
+			});
+			return;
+		}
+
+		if (userId == dto.userId.toString()) {
+			console.debug(`User ${socket.data.userId} cannot uninvite himself`);
+			socket.emit(Event.userNotUninvited, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You cannot uninvite yourself.`
+			});
+			return;
+		}
+
+		const invited = await this.redis.getRoomInvited(dto.roomName);
+		if (invited.includes(dto.userId.toString()) == false) {
+			console.debug(`User ${dto.userId} is not invited in room ${dto.roomName}`);
+			socket.emit(Event.userNotInvited, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} is not invited in room ${dto.roomName}.`,
+			});
+			return;
+		}
+		console.debug(`User ${socket.data.userId} is uninviting user ${dto.userId} from room ${dto.roomName}`);
+
+		await this.redis.unsetRoomInvited(dto.roomName, dto.userId);
+
+		socket.emit(Event.userUninvited, {
+			roomName: dto.roomName,
+			timestamp: new Date().toISOString(),
+			message: `User ${userId} has been succesfully uninvited to room ${dto.roomName}.`,
 		});
 	}
 
