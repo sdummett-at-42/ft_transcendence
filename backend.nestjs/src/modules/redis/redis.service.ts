@@ -138,7 +138,7 @@ export class RedisService {
 		})
 	}
 
-	getRoomProtection(roomName: string): Promise<string> {
+	async getRoomProtection(roomName: string): Promise<string> {
 		return new Promise((resolve, reject) => {
 			this.client.get(`room:${roomName}:infos:protected`, (err, protectedByPassword) => {
 				resolve(protectedByPassword);
@@ -157,6 +157,66 @@ export class RedisService {
 				resolve(visibility[0]);
 			})
 		})
+	}
+
+	async setRoomUserBlocked(roomName: string, userBlockedById: number, userBlockedId: number) {
+		this.client.set(`room:${roomName}:infos:blocked:${userBlockedById}:${userBlockedId}`, JSON.stringify({ userBlockedById, userBlockedId }));
+	}
+
+	async unsetRoomUserBlocked(roomName: string, userId: number, userBlockedId: number) {
+		this.client.del(`room:${roomName}:infos:blocked:${userId}:${userBlockedId}`);
+	}
+
+	private async getRoomUsersBlockedKeys(roomName: string, userId: number): Promise<string[]> {
+		return new Promise(async (resolve, reject) => {
+			await this.client.keys(`room:${roomName}:infos:blocked:${userId}:*`, (err, keys) => {
+				resolve(keys);
+			})
+		});
+	}
+
+	async getRoomUsersBlocked(roomName: string, userId: number): Promise<any[]> {
+		const usersBlockedKeys = await this.getRoomUsersBlockedKeys(roomName, userId);
+		if (!usersBlockedKeys || usersBlockedKeys.length === 0) {
+			return [];
+		}
+
+		const usersBlocked = await Promise.all(
+			usersBlockedKeys.map(key => {
+				return new Promise((resolve, reject) => {
+					this.client.get(key, (err, value) => {
+						resolve((JSON.parse(value)).userBlockedId);
+					});
+				})
+			})
+		);
+		return usersBlocked;
+	}
+
+	private async getRoomUsersBlockedByKeys(roomName: string, userBlockedId: number): Promise<string[]> {
+		return new Promise(async (resolve, reject) => {
+			await this.client.keys(`room:${roomName}:infos:blocked:*:${userBlockedId}`, (err, keys) => {
+				resolve(keys);
+			})
+		});
+	}
+
+	async getRoomUsersBlockedBy(roomName: string, userId: number): Promise<any[]> {
+		const usersBlockedByKeys = await this.getRoomUsersBlockedByKeys(roomName, userId);
+		if (!usersBlockedByKeys || usersBlockedByKeys.length === 0) {
+			return [];
+		}
+
+		const userBlockedBy = await Promise.all(
+			usersBlockedByKeys.map(key => {
+				return new Promise((resolve, reject) => {
+					this.client.get(key, (err, value) => {
+						resolve((JSON.parse(value)).userBlockedById);
+					});
+				})
+			})
+		);
+		return userBlockedBy;
 	}
 
 	async setRoomMessage(roomName: string, timestamp: number, userId: number, message: string, expirationTime: number) {

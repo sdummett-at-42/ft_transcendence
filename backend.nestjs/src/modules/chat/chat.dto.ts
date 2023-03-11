@@ -140,3 +140,23 @@ export const GiveOwnershipSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
 	userId: Joi.number().required(),
 })
+
+export class BlockUserDto {
+	roomName: string;
+	userId: number;
+}
+
+export const BlockUserSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().required(),
+})
+
+export class UnblockUserDto {
+	roomName: string;
+	userId: number;
+}
+
+export const UnblockUserSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().required(),
+})
