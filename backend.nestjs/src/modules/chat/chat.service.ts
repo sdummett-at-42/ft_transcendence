@@ -71,6 +71,18 @@ export class ChatService {
 			socket.disconnect();
 	}
 
+	async getMemberList(roomName: string) {
+		const owner = await this.redis.getRoomOwner(roomName);
+		let admins = (await this.redis.getRoomAdmins(roomName)).map(Number);
+		let members = (await this.redis.getRoomMembers(roomName)).map(Number);
+		const memberList = {
+			owner: owner,
+			admins: admins,
+			members: members,
+		}
+		return memberList;
+	}
+
 	async createRoom(socket, dto: CreateRoomDto, server) {
 		const room = await this.redis.getRoom(dto.roomName);
 		if (room.length > 0) {
@@ -112,7 +124,6 @@ export class ChatService {
 				})
 			}
 		});
-
 	}
 
 	async leaveRoom(socket, dto: LeaveRoomDto, server) {
@@ -282,11 +293,7 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList: {
-				owner: await this.redis.getRoomOwner(dto.roomName),
-				admins: await this.redis.getRoomAdmins(dto.roomName),
-				members: await this.redis.getRoomMembers(dto.roomName),
-			}
+			memberList: await this.getMemberList(dto.roomName),
 		});
 	}
 
@@ -398,11 +405,7 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList: {
-				owner: await this.redis.getRoomOwner(dto.roomName),
-				admins: await this.redis.getRoomAdmins(dto.roomName),
-				members: await this.redis.getRoomMembers(dto.roomName),
-			}
+			memberList: await this.getMemberList(dto.roomName),
 		});
 	}
 
@@ -530,11 +533,7 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList: {
-				owner: await this.redis.getRoomOwner(dto.roomName),
-				admins: await this.redis.getRoomAdmins(dto.roomName),
-				members: await this.redis.getRoomMembers(dto.roomName),
-			}
+			memberList: await this.getMemberList(dto.roomName),
 		});
 	}
 
@@ -1129,11 +1128,7 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList: {
-				owner: await this.redis.getRoomOwner(dto.roomName),
-				admins: await this.redis.getRoomAdmins(dto.roomName),
-				members: await this.redis.getRoomMembers(dto.roomName),
-			}
+			memberList: await this.getMemberList(dto.roomName),
 		});
 	}
 
@@ -1225,11 +1220,7 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList: {
-				owner: await this.redis.getRoomOwner(dto.roomName),
-				admins: await this.redis.getRoomAdmins(dto.roomName),
-				members: await this.redis.getRoomMembers(dto.roomName),
-			}
+			memberList: await this.getMemberList(dto.roomName),
 		});
 	}
 
@@ -1311,11 +1302,7 @@ export class ChatService {
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
 			roomName: dto.roomName,
-			memberList: {
-				owner: await this.redis.getRoomOwner(dto.roomName),
-				admins: await this.redis.getRoomAdmins(dto.roomName),
-				members: await this.redis.getRoomMembers(dto.roomName),
-			}
+			memberList: await this.getMemberList(dto.roomName),
 		});
 	}
 
