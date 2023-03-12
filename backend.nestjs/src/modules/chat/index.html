@@ -98,6 +98,18 @@
 		socket.on("userLeft", function(payload) {
 			console.log({ userLeft: payload })
 		})
+		socket.on("DMReceived", function(payload) {
+			console.log({ DMReceived: payload })
+		})
+		socket.on("roomMsgReceived", function(payload) {
+			console.log({ roomMsgReceived: payload })
+		})
+		socket.on("DMNotSended", function(payload) {
+			console.log({ DMNotSended: payload })
+		})
+		socket.on("unreadNotif", function(payload) {
+			console.log({ unreadNotif: payload })
+		})
 	</script>
 </head>
 

@@ -2,7 +2,7 @@ import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect,
 import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema, KickUserSchema, AddRoomAdminSchema, RemoveRoomAdminSchema, GiveOwnershipSchema, BlockUserSchema, UnblockUserSchema, UninviteUserSchema, GetRoomMsgHistSchema } from './chat.dto';
+import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema, KickUserSchema, AddRoomAdminSchema, RemoveRoomAdminSchema, GiveOwnershipSchema, BlockUserSchema, UnblockUserSchema, UninviteUserSchema, GetRoomMsgHistSchema, sendDMSchema } from './chat.dto';
 import { Injectable } from '@nestjs/common';
 import { Event } from './chat-event.enum';
 
@@ -318,4 +318,29 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		this.chat.getRoomMsgHist(socket, dto, this.server);
 	}
+
+	@SubscribeMessage(Event.sendDM)
+	onSendDM(@ConnectedSocket() socket, @MessageBody() dto) {
+		if (dto === undefined) {
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
+			return;
+		}
+		const { error } = sendDMSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit(Event.dataError, { message: error.message });
+			return;
+		}
+		this.chat.sendDM(socket, dto, this.server);
+	}
+
+	@SubscribeMessage(Event.notifRead)
+	onNotifsRead(@ConnectedSocket() socket, @MessageBody() dto) {
+		if (dto != undefined) {
+			socket.emit(Event.dataError, { message: "You musn't pass any object as a payload." });
+			return;
+		}
+		this.chat.notifsRead(socket, dto, this.server);
+	}
+
 }

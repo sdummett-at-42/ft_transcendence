@@ -3,8 +3,6 @@ import * as Redis from 'redis';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { v4 as uuid } from 'uuid';
-import { resolve } from 'path';
-import { rejects } from 'assert';
 
 @Injectable()
 export class RedisService {
@@ -275,6 +273,101 @@ export class RedisService {
 		const patternToRemove = `user:${userId}:room:`;
 		const userRooms = userRoomsKeys.map((str) => str.replace(new RegExp(`^${patternToRemove}`), ''));
 		return userRooms;
+	}
+
+	async setUserUnreadDM(emitterId: number, receiverId: number) {
+		let users = await this.getUserUnreadDM(receiverId);
+		if (!users)
+			users = [];
+		if (!users.includes(emitterId))
+			users.push(emitterId);
+		await this.client.set(`user:${receiverId}:unreaddm`, JSON.stringify(users))//users);
+
+	}
+
+	async unsetUserUnreadDM(userId: number) {
+		this.client.del(`user:${userId}:unreaddm`);
+	}
+
+	async getUserUnreadDM(userId: number): Promise<number[]> {
+		return new Promise((resolve, reject) => {
+			this.client.get(`user:${userId}:unreaddm`, (err, reply) => {
+				resolve(reply)
+			});
+		});
+	}
+
+	private createDmId(userId1: number, userId2) {
+		const tmp = userId1;
+		if (userId1 > userId2) {
+			userId1 = userId2;
+			userId2 = tmp;
+		}
+		return userId1.toString() + userId2.toString();
+	}
+
+	async setDm(emitterId: number, receiverId: number, timestamp: string, message: string, expirationTime: number) {
+		const dmId = this.createDmId(emitterId, receiverId);
+		const uniqueId = uuid();
+		this.client.multi()
+		this.client.multi()
+			.set(`dm:${dmId}:message:${uniqueId}`, JSON.stringify({
+				timestamp: timestamp,
+				userId: emitterId,
+				message: message,
+			}))
+			.expire(`dm:${dmId}:message:${uniqueId}`, expirationTime)
+			.exec()
+			this.setDmList(emitterId, receiverId, expirationTime);
+			this.setDmList(receiverId, emitterId, expirationTime);
+	}
+
+	async getDm(userId1: number, userId2: number) {
+		const messageKeys = await this.getDmKeys(userId1, userId2);
+
+		if (!messageKeys || messageKeys.length === 0) {
+			return [];
+		}
+
+		const messages = await Promise.all(
+			messageKeys.map(key => {
+				return new Promise((resolve, reject) => {
+					this.client.get(key, (err, value) => {
+						const message = JSON.parse(value);
+						resolve(message);
+					})
+				});
+			}));
+		return messages;
+	}
+
+	private async getDmKeys(userId1: number, userId2: number): Promise<string[]> {
+		const dmId = this.createDmId(userId1, userId2);
+		return new Promise(async (resolve, reject) => {
+			await this.client.keys(`dm:${dmId}:message:*`, (err, keys) => {
+				resolve(keys);
+			})
+		});
+	}
+
+	async setDmList(userId: number, userIdToAdd: number, expirationTime: number) {
+		let users = await this.getDmList(userId);
+		if (!users)
+			users = [];
+		if (!users.includes(userIdToAdd))
+			users.push(userIdToAdd);
+		this.client.multi()
+			.set(`user:${userId}:dms`, JSON.stringify(users))//users)
+			.expire(`user:${userId}: dms`, expirationTime + 42)
+			.exec()
+	}
+
+	async getDmList(userId:number): Promise<number[]> {
+		return new Promise((resolve, reject) => {
+			this.client.get(`user:${userId}:dms`, (err, reply) => {
+				resolve(JSON.parse(reply));
+			});
+		})
 	}
 
 	async setRoomName(roomName: string) {
