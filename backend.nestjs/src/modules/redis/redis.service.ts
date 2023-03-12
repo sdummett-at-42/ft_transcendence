@@ -219,7 +219,7 @@ export class RedisService {
 		return userBlockedBy;
 	}
 
-	async setRoomMessage(roomName: string, timestamp: number, userId: number, message: string, expirationTime: number) {
+	async setRoomMessage(roomName: string, timestamp: string, userId: number, message: string, expirationTime: number) {
 		const uniqueId = uuid();
 		this.client.multi()
 			.set(`room:${roomName}:message:${uniqueId}`, JSON.stringify({
@@ -377,9 +377,9 @@ export class RedisService {
 
 		// const uniqueId = uuid();
 		// console.debug(`uniqueId: ${uniqueId}`)
-		await this.setRoomMessage("42", Date.now(), 244, "Hello World", 15);
+		// await this.setRoomMessage("42", Date.now(), 244, "Hello World", 15);
 		// await new Promise(f => setTimeout(f, 10000));
-		await this.setRoomMessage("42", 244, Date.now(), "Hello Last World", 15);
+		// await this.setRoomMessage("42", 244, Date.now(), "Hello Last World", 15);
 		const messages = await this.getRoomMessages("42");
 		console.debug("messages:");
 		console.debug(messages)

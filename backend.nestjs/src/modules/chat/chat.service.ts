@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto, UninviteUserDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto, UninviteUserDto, GetRoomMsgHistDto } from './chat.dto';
 import { Event } from './chat-event.enum';
 import * as argon2 from 'argon2';
 
@@ -1035,7 +1035,7 @@ export class ChatService {
 		console.debug(`User ${socket.data.userId} is sending a message to room ${dto.roomName}`);
 
 		const currentTimestamp = Date.now()
-		this.redis.setRoomMessage(dto.roomName, currentTimestamp, +userId, dto.message, 2 * 24 * 60 * 60);
+		this.redis.setRoomMessage(dto.roomName, new Date(currentTimestamp).toISOString(), +userId, dto.message, 2 * 24 * 60 * 60);
 
 		const blockedBy = await this.redis.getRoomUsersBlockedBy(dto.roomName, +userId);
 		const sockets = await server.in(dto.roomName).fetchSockets();
@@ -1510,6 +1510,39 @@ export class ChatService {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
 			userId: dto.userId,
+		})
+	}
+
+	async getRoomMsgHist(socket, dto: GetRoomMsgHistDto, server) {
+		const userId: string = socket.data.userId.toString();
+
+		const room = await this.redis.getRoom(dto.roomName);
+		if (room.length === 0) {
+			console.debug(`Room ${dto.roomName} doesn't exist`);
+			socket.emit(Event.roomMsgHistNotReceived, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `Room ${dto.roomName} doesn't exists.`
+			});
+			return;
+		}
+
+		const members = await this.redis.getRoomMembers(dto.roomName);
+		if (members.includes(userId) === false) {
+			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
+			socket.emit(Event.roomMsgHistNotReceived, {
+				roomName: dto.roomName,
+				timestamp: new Date().toISOString(),
+				message: `You are not member in room ${dto.roomName}.`,
+			});
+			return;
+		}
+
+		const roomMessages = await this.redis.getRoomMessages(dto.roomName);
+		console.log(`roomMessages: ${JSON.stringify(roomMessages)}`);
+		socket.emit(Event.roomMsgHistReceived, {
+			roomName: dto.roomName,
+			msgHist: roomMessages,
 		})
 	}
 
