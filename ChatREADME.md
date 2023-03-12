@@ -23,6 +23,7 @@ We used socket.io.
 |`uninviteUser`||`userNotUnvited` `userUninvited`||
 |`sendRoomMsg`|`roomMsgReceived`|`roomMsgNotSended`||
 |`getRoomsList`||`roomsListReceived`||
+|`getRoomMsgHist`||`roomMsgHistNotReceived` `roomMsgHistReceived`||
 
 When the following events succeed `joinRoom`, `leaveRom`, `addRoomAdmin`, `removeRoomAdmin`, `giveRoomOwnership`, `kickUser`, `banUser`, `unbanUser`, `muteUser`, `unmuteUser`, a message using `roomMsgReceived` is sended to the room by the server with the field `userId = -1`, to notify the room on what happened.  
 
@@ -267,6 +268,14 @@ undefined
 Get all the public rooms.  
 Returns `roomsListReceived`
 
+#### `getRoomMsgHist`
+```typescript
+{ roomName: string }
+```
+Return all the messages of a room. The user must be a member of this room.  
+On failure, `roomMsgHistNotReceived` is sent to the socket that triggered the event.
+On success, `roomMsgHistReceived` is sent to the socket that triggered the event.
+
 ---
 
 ## Event emitted by the server to the targeted room
@@ -288,6 +297,11 @@ A message has been sended to the room.
 The payload returned by `roomsListReceived`:
 ```typescript
 { roomsList: [{ roomName: string, protected: boolean }] }
+```
+
+The payload returned by `roomMsgHistReceived`:
+```typescript
+{ roomName: string, msgHist: [{ timestamp: Date, userId: number, message: string}]}
 ```
 
 The payload returned is the same for the following events;  

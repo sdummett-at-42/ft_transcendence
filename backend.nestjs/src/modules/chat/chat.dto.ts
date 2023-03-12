@@ -5,7 +5,7 @@ const ROOM_NAME_MAX = 32;
 const PASSWORD_MIN = 0;
 const PASSWORD_MAX = 32;
 const TIMEOUT_MIN = 30
-const TIMEOUT_MAX = 1260; // change
+const TIMEOUT_MAX = 1260;
 const MESSAGE_MIN = 1;
 const MESSAGE_MAX = 150;
 const PUBLIC = "public";
@@ -168,4 +168,12 @@ export class UnblockUserDto {
 export const UnblockUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
 	userId: Joi.number().required(),
+})
+
+export class GetRoomMsgHistDto {
+	roomName: string;
+}
+
+export const GetRoomMsgHistSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
 })

@@ -67,4 +67,7 @@ export enum Event {
 	unblockUser = "unblockUser",
 	userUnblocked = "userUnblocked",
 	userNotUnblocked = "userNotUnblocked",
+	getRoomMsgHist = "getRoomMsgHist",
+	roomMsgHistNotReceived = "roomMsgHistNotReceived",
+	roomMsgHistReceived = "roomMsgHistReceived",
 }
