@@ -177,3 +177,13 @@ export class GetRoomMsgHistDto {
 export const GetRoomMsgHistSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
 })
+
+export class sendDMDto {
+	userId: number;
+	message: string
+}
+
+export const sendDMSchema = Joi.object({
+	userId: Joi.number().required(),
+	message: Joi.string().min(MESSAGE_MIN).max(MESSAGE_MAX).required(),
+})

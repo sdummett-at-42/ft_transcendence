@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto, UninviteUserDto, GetRoomMsgHistDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto, UninviteUserDto, GetRoomMsgHistDto, sendDMDto } from './chat.dto';
 import { Event } from './chat-event.enum';
 import * as argon2 from 'argon2';
+import { PrismaService } from "nestjs-prisma";
+
+const EXPIRATION_TIME = 2 * 24 * 60 * 60;
 
 @Injectable()
 export class ChatService {
 
 	// NOTE: When server sends message to the room, we should replace ${userId} with the pseudo of the user instead.
-	constructor(private readonly redis: RedisService) { }
+	constructor(private readonly redis: RedisService, private readonly prisma: PrismaService) { }
 
 	async afterInit() {
 		// Delete all the rooms afterInit ?
@@ -48,6 +51,10 @@ export class ChatService {
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
 		});
+		socket.emit(Event.unreadNotif, {
+			rooms: [], // TO DO.
+			users: await this.redis.getUserUnreadDM(userId),
+		})
 	}
 
 	async handleDisconnect(@ConnectedSocket() socket) {
@@ -1035,7 +1042,7 @@ export class ChatService {
 		console.debug(`User ${socket.data.userId} is sending a message to room ${dto.roomName}`);
 
 		const currentTimestamp = Date.now()
-		this.redis.setRoomMessage(dto.roomName, new Date(currentTimestamp).toISOString(), +userId, dto.message, 2 * 24 * 60 * 60);
+		this.redis.setRoomMessage(dto.roomName, new Date(currentTimestamp).toISOString(), +userId, dto.message, EXPIRATION_TIME);
 
 		const blockedBy = await this.redis.getRoomUsersBlockedBy(dto.roomName, +userId);
 		const sockets = await server.in(dto.roomName).fetchSockets();
@@ -1544,6 +1551,56 @@ export class ChatService {
 			roomName: dto.roomName,
 			msgHist: roomMessages,
 		})
+	}
+
+	async sendDM(socket, dto: sendDMDto, server) {
+		const userId: string = socket.data.userId.toString();
+
+		if (+userId === dto.userId) {
+			socket.emit(Event.DMNotSended, {
+				userId: dto.userId,
+				timestamp: new Date().toISOString(),
+				message: `You cannot send DM to yourself.`,
+			});
+			return;
+		}
+
+		const user = await this.prisma.user.findUnique({ where: {
+			id: dto.userId
+		}});
+		if (!user || user.id === 0) {
+			socket.emit(Event.DMNotSended, {
+				userId: dto.userId,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} doesn't exist.`,
+			});
+			return;
+		}
+
+		const sockets = await server.fetchSockets();
+		const receiverSockets = sockets.filter(s => {
+			return s.data.userId === dto.userId;
+		});
+
+		const currentTimestamp = Date.now();
+		this.redis.setDm(+userId, dto.userId, new Date(currentTimestamp).toISOString(), dto.message, EXPIRATION_TIME);
+		if (receiverSockets.length === 0) {
+			await this.redis.setUserUnreadDM(+userId, dto.userId);
+			return;
+		}
+
+		receiverSockets.forEach(socket => {
+			socket.emit(Event.DMReceived, {
+				userId: +userId,
+				timestamp: new Date(currentTimestamp).toISOString(),
+				message: dto.message,
+			})
+		});
+	}
+
+	async notifsRead(socket, dto, server) {
+		await this.redis.unsetUserUnreadDM(socket.data.userId);
+		// unsetUnreadRoomMsg <== TODO
 	}
 
 	async atomic_test() {
