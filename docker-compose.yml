@@ -2,6 +2,56 @@ version: '3.8'
 
 services:
 
+  postgres:
+    image: postgres:15.2-alpine3.17
+    restart: always
+    container_name: postgres.db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - backend
+
+  nestjs:
+    build: ./backend.nestjs
+    restart: always
+    container_name: nestjs.back
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_URL=${REDIS_URL}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - APP_PORT=${APP_PORT}
+      - THROTTLER_TTL=${THROTTLER_TTL}
+      - THROTTLER_LIMIT=${THROTTLER_LIMIT}
+      - DATABASE_URL=${DATABASE_URL}
+      - FORTYTWO_CLIENT_ID=${FORTYTWO_CLIENT_ID}
+      - FORTYTWO_CLIENT_SECRET=${FORTYTWO_CLIENT_SECRET}
+      - FORTYTWO_CALLBACK_URL=${FORTYTWO_CALLBACK_URL}
+    volumes:
+      - ./backend.nestjs/src:/app/src
+    ports:
+      - 3001:3001
+    networks:
+      - backend
+
+  redis:
+    image: redis:7.0.8-alpine3.17
+    restart: always
+    container_name: redis.cache
+    ports:
+      - 7777:7777
+    networks:
+      - backend
+
   front:
     build: ./front
     restart: always
@@ -10,3 +60,9 @@ services:
       - ./front/src:/app/src
     ports:
       - "5173:5173"
+
+volumes:
+  postgres:
+
+networks:
+  backend:
