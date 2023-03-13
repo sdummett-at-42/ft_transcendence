@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import LoginSelector from './Pages/Login/LoginSelector';
 import Home from './Pages/Home/Home';
 import Profile from './Pages/Profile/Profile';
-import Error404 from './Pages/Errors/Error404';
+import NotFound from './Pages/Errors/NotFound';
 import Navbar from './Pages/Navbar/Navbar';
 import GoogleLogin from './Pages/Login/Google/GoogleLogin';
 import FortyTwoLogin from './Pages/Login/42/FortyTwoLogin';
@@ -20,7 +20,7 @@ function App() {
         <Route path="/login/transcendence" element={<TranscendenceLogin />} />
         <Route path="/home" element={<Home />} />
         <Route path='/profil/:id' element={<Profile/>} />
-        <Route path='/*' element={<Error404 />} />
+        <Route path='/*' element={<NotFound />} />
       </Routes>
     </div>
   );

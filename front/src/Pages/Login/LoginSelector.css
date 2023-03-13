@@ -8,21 +8,11 @@
     --g3: rgb(253, 216, 53);
 }
 
-img {
+.logo {
     width:15vmin;
     height:15vmin;
 }
-  
-.body {
-    background-color: rgb(7, 15, 23);
-    display: grid;
-    height: 100vh;
-    margin: 0px;
-    padding: 0px;
-    place-items: center;
-    overflow: hidden;
-}
-  
+
 .card {
     background-color: rgb(10, 10, 10);
     aspect-ratio: 1 / 1.6;
@@ -32,7 +22,7 @@ img {
     width: 56vmin;
     text-align: center;
 }
-  
+
 .card:hover:before {
     background-position: 100% 100%;
     transform: scale(1.08, 1.03);
@@ -120,6 +110,18 @@ img {
     transition: none;
 }
 
+.hidden-text {
+    position: absolute;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    padding-bottom: 3vmin;
+}
+
+.card:hover + .hidden-text {
+    opacity: 1;
+}
+
 .button {
     cursor:pointer;
     border-radius: 0.5vmin;
@@ -128,6 +130,8 @@ img {
     display: flex;
     width: 100%;
     border: 1px solid var(--border-color);
+    color: white;
+    text-decoration: none;
 }
 
 .button:hover {
@@ -149,6 +153,7 @@ img {
 
 .button > .button-content > .button-text {
     flex-grow: 1;
+    font-family: 'Verdana', Geneva, Tahoma, sans-serif;
 }
 
 .create-account {

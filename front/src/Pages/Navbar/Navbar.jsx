@@ -7,7 +7,6 @@ export default function Navbar() {
         <nav>
             <Link to="/">Login Select</Link>
             <Link to="/home">Accueil</Link>
-            <Link to="/profil/:self">Profil</Link>
         </nav>
     );
 }
