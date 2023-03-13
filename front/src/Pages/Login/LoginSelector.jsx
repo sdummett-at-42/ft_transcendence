@@ -35,7 +35,7 @@ export default function LoginSelector() {
     // // createAccountMsg("Create an account");
 
     return (
-        <div className="body">
+        <div>
             <div className="card">
         <div className="card-content">
 
