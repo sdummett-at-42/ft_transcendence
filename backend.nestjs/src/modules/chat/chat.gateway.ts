@@ -30,7 +30,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.handleDisconnect(socket);
 	}
 
-	@SubscribeMessage('logout')
+	// Maybe not needed since we call logout via users module
+	@SubscribeMessage(Event.logout)
 	async onLogout(@ConnectedSocket() socket) {
 		this.chat.logout(socket.data.userId, this.server);
 	}
@@ -247,7 +248,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
-		this.chat.removeAdmin(socket, dto, this.server);
+		this.chat.removeRoomAdmin(socket, dto, this.server);
 	}
 
 	@SubscribeMessage(Event.giveRoomOwnership)

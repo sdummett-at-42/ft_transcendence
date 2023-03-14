@@ -8,6 +8,7 @@ const TIMEOUT_MIN = 30
 const TIMEOUT_MAX = 1260;
 const MESSAGE_MIN = 1;
 const MESSAGE_MAX = 150;
+const USERID_MIN = 1;
 const PUBLIC = "public";
 const PRIVATE = "private";
 
@@ -44,7 +45,7 @@ export class KickUserDto {
 }
 export const KickUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class BanUserDto {
@@ -53,7 +54,7 @@ export class BanUserDto {
 }
 export const BanUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 });
 
 export class UnbanUserDto {
@@ -62,7 +63,7 @@ export class UnbanUserDto {
 }
 export const UnbanUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 });
 
 export class MuteUserDto {
@@ -72,7 +73,7 @@ export class MuteUserDto {
 }
 export const MuteUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 	timeout: Joi.number().min(TIMEOUT_MIN).max(TIMEOUT_MAX).required(),
 });
 
@@ -82,7 +83,7 @@ export class UnmuteUserDto {
 }
 export const UnmuteUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class InviteUserDto {
@@ -91,7 +92,7 @@ export class InviteUserDto {
 }
 export const InviteUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 });
 
 export class UninviteUserDto {
@@ -100,7 +101,7 @@ export class UninviteUserDto {
 }
 export const UninviteUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 });
 
 export class SendMessageDto {
@@ -129,7 +130,7 @@ export class AddRoomAdminDto {
 }
 export const AddRoomAdminSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class RemoveRoomAdminDto {
@@ -138,7 +139,7 @@ export class RemoveRoomAdminDto {
 }
 export const RemoveRoomAdminSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class GiveOwnershipDto {
@@ -147,7 +148,7 @@ export class GiveOwnershipDto {
 }
 export const GiveOwnershipSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class BlockUserDto {
@@ -157,7 +158,7 @@ export class BlockUserDto {
 
 export const BlockUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class UnblockUserDto {
@@ -167,7 +168,7 @@ export class UnblockUserDto {
 
 export const UnblockUserSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class GetRoomMsgHistDto {
@@ -184,6 +185,6 @@ export class sendDMDto {
 }
 
 export const sendDMSchema = Joi.object({
-	userId: Joi.number().required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 	message: Joi.string().min(MESSAGE_MIN).max(MESSAGE_MAX).required(),
 })

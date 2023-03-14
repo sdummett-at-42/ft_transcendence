@@ -730,6 +730,7 @@ export class ChatService {
 			socket.emit(Event.muted, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
+				timeout: dto.timeout,
 				message: `You have been muted from room ${dto.roomName} for ${dto.timeout} secs.`,
 			});
 		}
@@ -998,7 +999,7 @@ export class ChatService {
 		const room = await this.redis.getRoom(dto.roomName);
 		if (room.length === 0) {
 			console.debug(`Room ${dto.roomName} doesn't exist`);
-			socket.emit(Event.msgNotSended, {
+			socket.emit(Event.roomMsgNotSended, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
 				message: `Room ${dto.roomName} doesn't exists.`
@@ -1009,7 +1010,7 @@ export class ChatService {
 		const banned = await this.redis.getRoomBanned(dto.roomName);
 		if (banned.includes(userId)) {
 			console.debug(`User ${socket.data.userId} is banned from room ${dto.roomName}`);
-			socket.emit(Event.msgNotSended, {
+			socket.emit(Event.roomMsgNotSended, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
 				message: `You are banned from room ${dto.roomName}.`,
@@ -1020,7 +1021,7 @@ export class ChatService {
 		const members = await this.redis.getRoomMembers(dto.roomName);
 		if (members.includes(userId) === false) {
 			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
-			socket.emit(Event.msgNotSended, {
+			socket.emit(Event.roomMsgNotSended, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
 				message: `You are not member in room ${dto.roomName}.`,
@@ -1031,7 +1032,7 @@ export class ChatService {
 		const muted = await this.redis.getRoomMuted(dto.roomName, +userId);
 		if (muted.length > 0) {
 			console.debug(`User ${userId} is muted in room ${dto.roomName}`);
-			socket.emit(Event.msgNotSended, {
+			socket.emit(Event.roomMsgNotSended, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
 				message: `You are muted in room ${dto.roomName}.`
@@ -1045,12 +1046,13 @@ export class ChatService {
 		this.redis.setRoomMessage(dto.roomName, new Date(currentTimestamp).toISOString(), +userId, dto.message, EXPIRATION_TIME);
 
 		const blockedBy = await this.redis.getRoomUsersBlockedBy(dto.roomName, +userId);
+		console.log(`user ${userId} is blocked by ${JSON.stringify(blockedBy)}`);
 		const sockets = await server.in(dto.roomName).fetchSockets();
-
-		const excludedSockets = sockets.filter(s => {
-			return blockedBy.includes(s.data.userId)
+		let excludedSocketIds = sockets.map((socket) => {
+			if (blockedBy.includes(socket.data.userId))
+				return socket.id;
 		});
-		server.to(dto.roomName).except(excludedSockets).emit(Event.roomMsgReceived, {
+		server.to(dto.roomName).except(excludedSocketIds).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: socket.data.userId,
 			timestamp: new Date(currentTimestamp).toISOString(),
@@ -1201,7 +1203,7 @@ export class ChatService {
 		});
 	}
 
-	async removeAdmin(socket, dto: RemoveRoomAdminDto, server) {
+	async removeRoomAdmin(socket, dto: RemoveRoomAdminDto, server) {
 		const userId: string = socket.data.userId.toString();
 
 		const room = await this.redis.getRoom(dto.roomName);
@@ -1391,6 +1393,8 @@ export class ChatService {
 				});
 			}
 		}));
+
+		console.debug(`Sending public rooms to user ${socket.data.userId}`);
 		socket.emit(Event.roomsListReceived, {
 			roomsList,
 		})
@@ -1459,6 +1463,7 @@ export class ChatService {
 		socket.emit(Event.userBlocked, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been successfully blocked.`,
 			userId: dto.userId,
 		})
 	}
@@ -1516,6 +1521,7 @@ export class ChatService {
 		socket.emit(Event.userUnblocked, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
+			message: `User ${dto.userId} has been successfully unblocked.`,
 			userId: dto.userId,
 		})
 	}
@@ -1545,8 +1551,8 @@ export class ChatService {
 			return;
 		}
 
+		console.debug(`Sending message history from room ${dto.roomName} to user ${userId}`)
 		const roomMessages = await this.redis.getRoomMessages(dto.roomName);
-		console.log(`roomMessages: ${JSON.stringify(roomMessages)}`);
 		socket.emit(Event.roomMsgHistReceived, {
 			roomName: dto.roomName,
 			msgHist: roomMessages,
@@ -1565,9 +1571,11 @@ export class ChatService {
 			return;
 		}
 
-		const user = await this.prisma.user.findUnique({ where: {
-			id: dto.userId
-		}});
+		const user = await this.prisma.user.findUnique({
+			where: {
+				id: dto.userId
+			}
+		});
 		if (!user || user.id === 0) {
 			socket.emit(Event.DMNotSended, {
 				userId: dto.userId,
@@ -1585,10 +1593,12 @@ export class ChatService {
 		const currentTimestamp = Date.now();
 		this.redis.setDm(+userId, dto.userId, new Date(currentTimestamp).toISOString(), dto.message, EXPIRATION_TIME);
 		if (receiverSockets.length === 0) {
+			console.debug(`User ${userId} is sending a DM to user ${dto.userId} (disconnected)`);
 			await this.redis.setUserUnreadDM(+userId, dto.userId);
 			return;
 		}
 
+		console.debug(`User ${userId} is sending a DM to user ${dto.userId}`);
 		receiverSockets.forEach(socket => {
 			socket.emit(Event.DMReceived, {
 				userId: +userId,
