@@ -12,51 +12,51 @@ export default function LoginSelector() {
             <div className="card">
                 <div className="card-content">
 
-                    <img className="invert-effect logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/42_Logo.svg/1200px-42_Logo.svg.png" alt="Logo-ecole-42" />
-                    <h3 className="card-title">Transcendence</h3>
+                    <img className="LoginSelector-invert-effect LoginSelector-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/42_Logo.svg/1200px-42_Logo.svg.png" alt="Logo-ecole-42" />
+                    <h3 className="LoginSelector-card-title">Transcendence</h3>
 
-                    <div className="card-subtitle">
-                        <div className="card-subtitle-word">
+                    <div className="LoginSelector-card-subtitle">
+                        <div className="LoginSelector-card-subtitle-word">
                             Choose your sign-in method :
                         </div>
                     </div>
 
-                    <div className="card-subtitle">
+                    <div className="LoginSelector-card-subtitle">
                   
-                        <Link className="button" to="/login/auth42" >
-                            <div className="button-content">
-                                <div className="button-image">
+                        <Link className="LoginSelector-button" to="/login/auth42" >
+                            <div className="LoginSelector-button-content">
+                                <div className="LoginSelector-button-image">
                                     <FontAwesomeIcon icon={faCoffee} />
                                 </div>
-                                <div className="button-text">Intra 42</div>
+                                <div className="LoginSelector-button-text">Intra 42</div>
                             </div>
                         </Link>
                 
-                        <Link className="button" to="/login/google">
-                            <div className="button-content">
-                                <div className="button-image">
+                        <Link className="LoginSelector-button" to="/login/google">
+                            <div className="LoginSelector-button-content">
+                                <div className="LoginSelector-button-image">
                                     <FontAwesomeIcon icon={faGoogle} />
                                 </div>
-                                <div className="button-text">Google</div>
+                                <div className="LoginSelector-button-text">Google</div>
                             </div>
                         </Link>
             
-                        <Link className="button" to="/login/transcendence">
-                            <div className="button-content">
-                                <div className="button-image">
+                        <Link className="LoginSelector-button" to="/login/transcendence">
+                            <div className="LoginSelector-button-content">
+                                <div className="LoginSelector-button-image">
                                     <FontAwesomeIcon icon={faUser} />
                                 </div>
-                                <div className="button-text">Other</div>
+                                <div className="LoginSelector-button-text">Other</div>
                             </div>
                         </Link>
     
                     </div>
 
-                    <div className="card-subtitle">
-                        <div className="card-subtitle-word">
+                    <div className="LoginSelector-card-subtitle">
+                        <div className="LoginSelector-card-subtitle-word">
                             No account ?
                         </div>
-                        <Link className="card-subtitle-word" to="/login/create-account">
+                        <Link className="LoginSelector-card-subtitle-word" to="/login/create-account">
                             Create an account
                         </Link>
                     </div>

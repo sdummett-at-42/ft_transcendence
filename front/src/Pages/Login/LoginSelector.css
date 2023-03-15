@@ -1,6 +1,6 @@
 :root {
-    --border: rgb(3, 169, 244);
-    --border-color: rgb(255, 255, 255, 0.1);
+    --LoginSelector-border: rgb(3, 169, 244);
+    --LoginSelector-border-color: rgb(255, 255, 255, 0.1);
     color: white;
     
     --g1: rgb(98, 0, 234);
@@ -8,42 +8,51 @@
     --g3: rgb(253, 216, 53);
 }
 
-.logo {
+.LoginSelector-body {
+    min-height: 100vmin;
+    min-width: 100vmin;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
+
+.LoginSelector-logo {
     width:15vmin;
     height:15vmin;
 }
 
-.card {
+.LoginSelector-card {
     background-color: rgb(10, 10, 10);
     aspect-ratio: 1 / 1.6;
-    border: 0.5vmin solid var(--border);
+    border: 0.5vmin solid var(--LoginSelector-border);
     border-radius: 8px;
     position: relative;
     width: 56vmin;
     text-align: center;
 }
 
-.card:hover:before {
+.LoginSelector-card:hover:before {
     background-position: 100% 100%;
     transform: scale(1.08, 1.03);
 }
   
-.card:hover > .card-content {
+.LoginSelector-card:hover > .LoginSelector-card-content {
     background-position: -10% 0%;
 }
   
-.card:hover > .card-content > .card-subtitle > .card-subtitle-word {  
+.LoginSelector-card:hover > .LoginSelector-card-content > .LoginSelector-card-subtitle > .LoginSelector-card-subtitle-word {  
     opacity: 1;
     transform: translateY(0%);
     transition: opacity 0ms, transform 200ms cubic-bezier(.90, .06, .15, .90);
 }
 
-.card:hover > .card-content .invert-effect {
+.LoginSelector-card:hover > .LoginSelector-card-content .LoginSelector-invert-effect {
     transition: filter 200ms;
     filter: invert(0%);
 }
 
-.card:before {
+.LoginSelector-card:before {
       background: linear-gradient(
       130deg, 
       transparent 0% 33%, 
@@ -65,7 +74,7 @@
     z-index: 1;
 }
   
-.card-content {
+.LoginSelector-card-content {
       background-image: radial-gradient(
       rgba(255, 255, 255, 0.2) 8%, 
       transparent 8%
@@ -80,28 +89,28 @@
     z-index: 2;
 }
 
-.invert-effect {
+.LoginSelector-invert-effect {
     filter: invert(100%)
 }
   
-.card-title,
-.card-subtitle {
+.LoginSelector-card-title,
+.LoginSelector-card-subtitle {
     font-family: "Anek Latin", sans-serif;
     font-weight: 400;
     margin: 0px;
 }
   
-.card-title {
+.LoginSelector-card-title {
     text-align: center;
     font-size: 5vmin;
 }
   
-.card-subtitle {
+.LoginSelector-card-subtitle {
     font-size: 3vmin;
     margin-top: 2vmin;
 }
   
-.card-subtitle-word {
+.LoginSelector-card-subtitle-word {
     display: inline-block;
     margin: 0vmin 0.3vmin;
     opacity: 0;
@@ -117,33 +126,33 @@
     margin-top: 2vmin;
     display: flex;
     width: 100%;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--LoginSelector-border-color);
     color: white;
     text-decoration: none;
 }
 
-.button:hover {
+.LoginSelector-button:hover {
     transition: background-color 300ms;
     background-color: rgb(50, 50, 50);
 }
 
-.button > .button-content {
+.LoginSelector-button > .LoginSelector-button-content {
     display: flex;
     align-items: center;
     padding: 1rem;
     gap: 1.5rem;
 }
 
-.button > .button-image {
+.LoginSelector-button > .LoginSelector-button-image {
     font-size: 2.5rem;
     flex-basis: calc(100% / 3);
 }
 
-.button > .button-content > .button-text {
+.LoginSelector-button > .LoginSelector-button-content > .LoginSelector-button-text {
     flex-grow: 1;
     font-family: 'Verdana', Geneva, Tahoma, sans-serif;
 }
 
-.create-account {
+.LoginSelector-create-account {
     margin-top: 2vmin;
 }

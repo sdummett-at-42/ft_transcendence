@@ -1,9 +1,10 @@
 import React from "react";
+import "./FortyTwoLogin.css"
 
 export default function FortyTwoLogin() {
     return (
         <div>
-            <p>42 authentification</p>
+            <div></div>
         </div>
     );
 }
