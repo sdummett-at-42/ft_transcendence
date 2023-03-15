@@ -110,18 +110,6 @@
     transition: none;
 }
 
-.hidden-text {
-    position: absolute;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-    padding-bottom: 3vmin;
-}
-
-.card:hover + .hidden-text {
-    opacity: 1;
-}
-
 .button {
     cursor:pointer;
     border-radius: 0.5vmin;

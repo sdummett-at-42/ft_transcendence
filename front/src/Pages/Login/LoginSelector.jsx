@@ -8,7 +8,7 @@ import { faGoogle } from "@fortawesome/free-brands-svg-icons"
 export default function LoginSelector() {
 
     return (
-        <div>
+        <div className="body">
             <div className="card">
                 <div className="card-content">
 
