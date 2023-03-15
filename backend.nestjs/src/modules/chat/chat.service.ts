@@ -975,7 +975,7 @@ export class ChatService {
 		const invited = await this.redis.getRoomInvited(dto.roomName);
 		if (invited.includes(dto.userId.toString()) == false) {
 			console.debug(`User ${dto.userId} is not invited in room ${dto.roomName}`);
-			socket.emit(Event.userNotInvited, {
+			socket.emit(Event.userNotUninvited, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
 				message: `User ${dto.userId} is not invited in room ${dto.roomName}.`,
