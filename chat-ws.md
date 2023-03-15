@@ -20,12 +20,19 @@ We used socket.io.
 |`blockUser`||`userNotBlocked` `userBlocked`||
 |`unblockUser`||`userNotUnblocked` `userUnblocked`||
 |`inviteUser`||`userNotInvited` `userInvited`|`invited`|
-|`uninviteUser`||`userNotUnvited` `userUninvited`||
+|`uninviteUser`||`userNotUninvited` `userUninvited`||
 |`sendRoomMsg`|`roomMsgReceived`|`roomMsgNotSended`||
+|`sendDM`||`DMNotSended`|`DMReceived`|
 |`getRoomsList`||`roomsListReceived`||
 |`getRoomMsgHist`||`roomMsgHistNotReceived` `roomMsgHistReceived`||
 
 When the following events succeed `joinRoom`, `leaveRom`, `addRoomAdmin`, `removeRoomAdmin`, `giveRoomOwnership`, `kickUser`, `banUser`, `unbanUser`, `muteUser`, `unmuteUser`, a message using `roomMsgReceived` is sended to the room by the server with the field `userId = -1`, to notify the room on what happened.  
+
+### `unreadNotif`
+Each time a socket connects to the server, `unreadNotif` is sent back to him.  
+Alongside with the `unreadNotif`, a payload is sent too.  
+The payload consist of an object containing the field `rooms` and `users` which holds an array of room names and hold an array of user id respectively. These field are filled with room names and user ids where message has been received during its absence.
+The frontend must emit a `notifRead` for the backend to flush the room names and user ids array.
 
 ## Data fields
 Fields received alongside with an emitted event to the server:    
@@ -73,7 +80,7 @@ Create a room that can be either private/public and/or password protected or not
 On failure, `roomNotCreated` is sent to the socket that triggered the event.  
 On success:
 - `roomCreated` is sent to the socket that triggered the event.
-- `joined`is sent to all the active sockets of the user that created the room.  
+- `roomJoined`is sent to all the active sockets of the user that created the room.  
 
 #### `updateRoom`
 ```typescript
@@ -92,7 +99,7 @@ Attempt to join an existing room.
 On failure, `roomNotJoined` is sent to the socket that triggered the event.  
 On success:
  - `roomJoined` is sent to the socket that triggered the event 
- - `joined` is sent to all the active sockets of the user.
+ - `roomJoined` is sent to all the active sockets of the user.
  - `userJoined` is sent to the room.  
 
 #### `leaveRoom`
@@ -174,7 +181,7 @@ On success:
 Unban a user.  
 On failure, `userNotUnbanned` is sent to the socket that triggered the event.  
 On success:
-- `userBanned` is sent to the socket that triggered the event.
+- `userUnbanned` is sent to the socket that triggered the event.
 - `unbanned` is sent to all the active sockets of the user that has been unbanned.
 - `` is sent to the room.
 
@@ -200,8 +207,8 @@ On success:
 Unmute a user.  
 On failure, `userNotUnmuted` is sent to the socket that triggered the event.  
 On success:
-- `userMuted` is sent to the socket that triggered the event.
-- `muted` is sent to all the active sockets of the user that has been unmuted.
+- `userUnmuted` is sent to the socket that triggered the event.
+- `unmuted` is sent to all the active sockets of the user that has been unmuted.
 - `` is sent to the room.
 
 *The user must be either the **owner** or an **admin** to succeed.*  
@@ -222,7 +229,7 @@ On success:
 { roomName: string, userId: number }
 ```
 Unblock a user.  
-On failure, `userNotUnblock` is sent to the socket that triggered the event.  
+On failure, `userNotUnblocked` is sent to the socket that triggered the event.  
 On success:
 - `userUnblocked` is sent to the socket that triggered the event.
 - `` is sent to all the active sockets of the user that
@@ -261,12 +268,20 @@ On success:
 - `` is sent to all the active sockets of the user that
 - `roomMsgReceived` is sent to the room.  
 
+#### `sendDM`
+```typescript
+{ userId: number, message: string }
+```
+Send a DM to another user.
+On failure, `DMNotSended` is sent to the socket that triggered the event.
+On success, `DMReceived` is sent to all the active sockets of the user for which the message is sent for.
+
 #### `getRoomsList`
 ```typescript
 undefined
 ```
 Get all the public rooms.  
-Returns `roomsListReceived`
+Returns `roomsListReceived`.
 
 #### `getRoomMsgHist`
 ```typescript
@@ -288,15 +303,17 @@ This event is sended to the room when a user join, left or has been gived a titl
 
 #### `roomMsgReceived`
 ```typescript
-{ roomName: string, userId: number, message }
+{ roomName: string, timestamp: Date, userId: number, message: string }
 ```
 A message has been sended to the room.
+
+---
 
 ## Event emitted by the server to the socket that triggered the event
 
 The payload returned by `roomsListReceived`:
 ```typescript
-{ roomsList: [{ roomName: string, protected: boolean }] }
+{ roomsList: [{ roomName: string, protected: boolean }, ...] }
 ```
 
 The payload returned by `roomMsgHistReceived`:
@@ -304,13 +321,18 @@ The payload returned by `roomMsgHistReceived`:
 { roomName: string, msgHist: [{ timestamp: Date, userId: number, message: string}]}
 ```
 
+The payload returned alongside with `DMNotSended` is:
+```typescript
+{ userId: number, timestamp: Date, message: string }
+```
+
 The payload returned is the same for the following events;  
-`roomNotCreated`, `roomCreated`, `roomNotUpdated`, `roomUpdated`, `roomNotJoined`,  
+`roomNotCreated`, `roomCreated`, `roomNotLeft`, `roomNotUpdated`, `roomUpdated`, `roomNotJoined`,  
 `roomJoined`, `roomAdminNotAdded`, `roomAdminAdded`, `roomAdminNotRemoved`,  
-`roomAdminRemoved`, `roomOwnershipNotGived`, `roomOwnershipGived`, `userNotKicked`,  
-`userNotBanned`, `userNotUnbanned`, `userNotMuted`, `userNotUnmuted`, `userNotBlocked`,  
-`userBlocked`, `userNotUnblocked`, `userUnblocked`, `userNotInvited`, `userInvited`,  
-`userNotUninvited`, `userUninvited`, `roomMsgNotSended`:
+`roomAdminRemoved`, `roomOwnershipNotGived`, `roomOwnershipGived`, `userKicked`,  
+`userNotKicked`, `userBanned`, `userNotBanned`, `userUnbanned`, `userNotUnbanned`,  
+`userMuted`, `userNotMuted`, `userUnmuted`, `userNotUnmuted`, `userNotBlocked`,  
+`userBlocked`, `userNotUnblocked`, `userUnblocked`,  `userNotInvited`, `userInvited`,  `userNotUninvited`, `userUninvited`, `roomMsgNotSended`, `roomMsgHistNotReceived`:  
 ```typescript
 { roomName: string, timestamp: Date, message: string }
 ```
@@ -325,12 +347,17 @@ Another example if `createRoom` or `joinRoom` is triggered, the targeted user is
 
 The payload returned is the same for the following events;
 `roomJoined`,`roomLeft`,`granted`,`demoted`,`kicked`,`banned`,`unbanned`,`unmuted`,  
-`invited`,`uninvited`,`muted`:
+`invited`,`uninvited`:
 ```typescript
 { roomName: string, timestamp: Date, message: string }
 ```
 
 The payload returned alongside with the `muted` event is:
 ```typescript
-{ roomName: string, timeout: number, message: string }
+{ roomName: string, timestamp: Date, timeout: number, message: string }
+```
+
+The payload returned alongside with `DMReceived` event is:
+```typescript
+{ userId: number, timestamp: Date, message: string }
 ```
