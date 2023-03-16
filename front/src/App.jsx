@@ -8,6 +8,7 @@ import Layout from './Pages/Navbar/Layout';
 import GoogleLogin from './Pages/Login/Google/GoogleLogin';
 import FortyTwoLogin from './Pages/Login/42/FortyTwoLogin';
 import TranscendenceLogin from './Pages/Login/Transcendence/TranscendenceLogin';
+import ChatLogin from './Pages/Chat/ChatLogin';
 
 function App() {
 
@@ -18,6 +19,7 @@ function App() {
         <Route path="/login/auth42" element={<FortyTwoLogin />} />
         <Route path="/login/google" element={<GoogleLogin />} />
         <Route path="/login/transcendence" element={<TranscendenceLogin />} />
+        <Route path="/chat" element={<ChatLogin/>} />
 
         <Route path="/home" element={<Layout children={<Home />} />} />
         <Route path='/profil/:id' element={<Layout children={<Profile />} />} />
