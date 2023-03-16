@@ -11,4 +11,4 @@ ADD . /app
 RUN npx prisma generate
 
 # Run prisma migrate and seed, then start the application
-CMD npx prisma migrate dev && npx prisma db seed && npm run start:dev
+CMD npx prisma migrate dev --name init && npx prisma db seed && npm run start:dev

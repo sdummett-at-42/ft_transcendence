@@ -10,7 +10,7 @@ export class RedisService {
 
 	constructor(private readonly config: ConfigService) {
 		this.client = Redis.createClient({
-			url: this.config.get('REDIS_URL'),
+			url: "redis://redis:6379", //this.config.get('REDIS_URL'),
 			legacyMode: true,
 		});
 		this.client.connect();
