@@ -1,5 +1,9 @@
-.Layout {
-    height: 100vh;
-    width: 100vw;
-    /* background-color: rgb(8, 19, 48); */
+.Layout-navbar {
+    height: 7vmin;
+    width: 100%;
+}
+
+.Layout-children {
+    width: 100%;
+    height: max-content;
 }

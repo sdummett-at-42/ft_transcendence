@@ -3,9 +3,13 @@ import "./Layout.css"
 
 function Layout(props) {
   return (
-    <div className='Layout'>
-      <Navbar />
-      {props.children}
+    <div>
+      <div className='Layou-navbar'>
+        <Navbar />
+      </div>
+      <div className='Layout-children'>
+        {props.children}
+      </div>
     </div>
   );
 }

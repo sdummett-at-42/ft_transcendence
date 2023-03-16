@@ -119,7 +119,7 @@
     transition: none;
 }
 
-.button {
+.LoginSelector-button {
     cursor:pointer;
     border-radius: 0.5vmin;
     background-color: rgb(24, 30, 37);

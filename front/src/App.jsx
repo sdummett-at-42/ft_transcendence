@@ -20,6 +20,7 @@ function App() {
         <Route path="/login/transcendence" element={<TranscendenceLogin />} />
 
         <Route path="/home" element={<Layout children={<Home />} />} />
+        {/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
         <Route path='/profil/:id' element={<Layout children={<Profile />} />} />
         <Route path='/*' element={<Layout children={<NotFound />} />} />
       </Routes>

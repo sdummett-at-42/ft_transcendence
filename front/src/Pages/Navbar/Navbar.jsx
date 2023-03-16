@@ -9,9 +9,7 @@ export default function Navbar() {
             <div className="Navbar-nav-section" id="Navbar-left">
                 <Link to="/home"><img className="LoginSelector-invert-effect Navbar-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/42_Logo.svg/1200px-42_Logo.svg.png" alt="Logo-ecole-42" /></Link>
                 <Link to="/game">
-                    <div className="arrow-pointer">
-                        Pong
-                    </div>
+                    Pong
                 </Link>
             </div>
 

@@ -8,9 +8,9 @@ import { faGoogle } from "@fortawesome/free-brands-svg-icons"
 export default function LoginSelector() {
 
     return (
-        <div className="body">
-            <div className="card">
-                <div className="card-content">
+        <div className="LoginSelector-body">
+            <div className="LoginSelector-card">
+                <div className="LoginSelector-card-content">
 
                     <img className="LoginSelector-invert-effect LoginSelector-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/42_Logo.svg/1200px-42_Logo.svg.png" alt="Logo-ecole-42" />
                     <h3 className="LoginSelector-card-title">Transcendence</h3>
