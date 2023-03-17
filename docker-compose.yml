@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
     networks:
       - backend
 
@@ -35,10 +35,13 @@ services:
       - FORTYTWO_CLIENT_ID=${FORTYTWO_CLIENT_ID}
       - FORTYTWO_CLIENT_SECRET=${FORTYTWO_CLIENT_SECRET}
       - FORTYTWO_CALLBACK_URL=${FORTYTWO_CALLBACK_URL}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
     volumes:
       - ./backend.nestjs/src:/app/src
     ports:
-      - 3001:3001
+      - ${APP_PORT}:${APP_PORT}
     networks:
       - backend
 
@@ -47,7 +50,7 @@ services:
     restart: always
     container_name: redis.cache
     ports:
-      - 7777:7777
+      - ${REDIS_PORT}:${REDIS_PORT}
     networks:
       - backend
 

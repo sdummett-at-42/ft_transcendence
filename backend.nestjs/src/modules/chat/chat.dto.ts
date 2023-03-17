@@ -1,105 +1,190 @@
 import * as  Joi from 'joi';
 
-export class CreateRoomDto {
-	name: string;
-	isPublic: boolean;
-	password?: string;
-}
+const ROOM_NAME_MIN = 1;
+const ROOM_NAME_MAX = 32;
+const PASSWORD_MIN = 0;
+const PASSWORD_MAX = 32;
+const TIMEOUT_MIN = 30
+const TIMEOUT_MAX = 1260;
+const MESSAGE_MIN = 1;
+const MESSAGE_MAX = 150;
+const USERID_MIN = 1;
+const PUBLIC = "public";
+const PRIVATE = "private";
 
+export class CreateRoomDto {
+	roomName: string;
+	visibility: string;
+	password: string;
+}
 export const CreateRoomSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
-	isPublic: Joi.boolean().required(),
-	password: Joi.string().min(1).max(32).optional(),
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	visibility: Joi.string().valid(PUBLIC, PRIVATE).required(),
+	password: Joi.string().min(PASSWORD_MIN).max(PASSWORD_MAX).required(),
 });
 
 export class LeaveRoomDto {
-	name: string;
+	roomName: string;
 }
-
 export const LeaveRoomSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
 });
 
 export class JoinRoomDto {
-	name: string;
-	password?: string;
+	roomName: string;
+	password: string;
 }
-
 export const JoinRoomSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
-	password: Joi.string().min(1).max(32).optional(),
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	password: Joi.string().min(PASSWORD_MIN).max(PASSWORD_MAX).required(),
 });
 
-export class BanUserDto {
-	name: string;
+export class KickUserDto {
+	roomName: string;
 	userId: number;
 }
+export const KickUserSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
+})
 
+export class BanUserDto {
+	roomName: string;
+	userId: number;
+}
 export const BanUserSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
-	userId: Joi.number().required(),
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 });
 
 export class UnbanUserDto {
-	name: string;
+	roomName: string;
 	userId: number;
 }
-
 export const UnbanUserSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
-	userId: Joi.number().required(),
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 });
 
 export class MuteUserDto {
-	name: string;
+	roomName: string;
 	userId: number;
 	timeout: number;
 }
-
 export const MuteUserSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
-	userId: Joi.number().required(),
-	timeout: Joi.number().min(30).max(1260).required(),
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
+	timeout: Joi.number().min(TIMEOUT_MIN).max(TIMEOUT_MAX).required(),
 });
 
 export class UnmuteUserDto {
-	name: string;
+	roomName: string;
 	userId: number;
 }
-
 export const UnmuteUserSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
-	userId: Joi.number().required(),
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class InviteUserDto {
-	name: string;
+	roomName: string;
 	userId: number;
 }
-
 export const InviteUserSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
-	userId: Joi.number().required(),
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
+});
+
+export class UninviteUserDto {
+	roomName: string;
+	userId: number;
+}
+export const UninviteUserSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
 });
 
 export class SendMessageDto {
-	name: string;
+	roomName: string;
 	message: string;
 }
-
 export const SendMessageSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
-	message: Joi.string().min(1).max(150).required(),
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	message: Joi.string().min(MESSAGE_MIN).max(MESSAGE_MAX).required(),
 });
 
 export class UpdateRoomDto {
-	name: string;
-	isPublic?: boolean;
-	password?: string;
+	roomName: string;
+	visibility: string;
+	password: string;
+}
+export const UpdateRoomSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	visibility: Joi.string().valid(PUBLIC, PRIVATE).required(),
+	password: Joi.string().min(PASSWORD_MIN).max(PASSWORD_MAX).required(),
+});
+
+export class AddRoomAdminDto {
+	roomName: string;
+	userId: number;
+}
+export const AddRoomAdminSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
+})
+
+export class RemoveRoomAdminDto {
+	roomName: string;
+	userId: number;	
+}
+export const RemoveRoomAdminSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
+})
+
+export class GiveOwnershipDto {
+	roomName: string;
+	userId: number;
+}
+export const GiveOwnershipSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
+})
+
+export class BlockUserDto {
+	roomName: string;
+	userId: number;
 }
 
-export const UpdateRoomSchema = Joi.object({
-	name: Joi.string().min(1).max(32).required(),
-	isPublic: Joi.boolean().optional(),
-	password: Joi.string().min(0).max(32).optional(),
-});
+export const BlockUserSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
+})
+
+export class UnblockUserDto {
+	roomName: string;
+	userId: number;
+}
+
+export const UnblockUserSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+	userId: Joi.number().min(USERID_MIN).required(),
+})
+
+export class GetRoomMsgHistDto {
+	roomName: string;
+}
+
+export const GetRoomMsgHistSchema = Joi.object({
+	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
+})
+
+export class sendDMDto {
+	userId: number;
+	message: string
+}
+
+export const sendDMSchema = Joi.object({
+	userId: Joi.number().min(USERID_MIN).required(),
+	message: Joi.string().min(MESSAGE_MIN).max(MESSAGE_MAX).required(),
+})
