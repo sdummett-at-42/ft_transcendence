@@ -1612,8 +1612,4 @@ export class ChatService {
 		await this.redis.unsetUserUnreadDM(socket.data.userId);
 		// unsetUnreadRoomMsg <== TODO
 	}
-
-	async atomic_test() {
-		this.redis.atomic_test();
-	}
 }

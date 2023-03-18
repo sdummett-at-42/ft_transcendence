@@ -14,10 +14,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	constructor(private readonly chat: ChatService) { }
 
-	// async afterInit(server: Server) {
-	// 	this.chat.atomic_test();
-	// }
-
 	async afterInit(server: Server) {
 		await this.chat.afterInit();
 	}
