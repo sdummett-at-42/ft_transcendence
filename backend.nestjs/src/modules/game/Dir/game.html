@@ -10,24 +10,25 @@
 	</style>
 </head>
 <body>
-    <button onclick="startGame()">Start Game !</button>
+    <button id="startBtn" onclick="startGame()">Start Game</button>
     <br>
-	<canvas id="mapGame" width="600" height="200"> Désolé, votre navigateur ne prend pas en charge &lt;canvas&gt;. </canvas>
+	<canvas id="mapGame" width="1200" height="600"> Désolé, votre navigateur ne prend pas en charge &lt;canvas&gt;. </canvas>
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-
+    
     <script>
-        const socket = io();
+        const socket = io("ws://localhost:3001/game");
 		socket.on("connect", function () {
 			console.log("Connected to the server");
-            const msg = "User have join the game has player X.";
+            const msg = "User have join the game Y has player X.";
             socket.emit("joinGame", msg);
 		});
 
 
         const mapjeu = document.getElementById('mapGame');
         const ctx = mapjeu.getContext("2d");
-        mapjeu.addEventListener("mousemove", updateGame);
+        mapjeu.addEventListener("mousemove", updateGame); // catch on mouse's mouvement
+        // mapjeu.addEventListener("click", updateGame);
 
         function updateGame(event) {
             const rect = mapjeu.getBoundingClientRect(); // obtenir la position de l'élément Canvas
@@ -40,17 +41,29 @@
         }
 
         function startGame() {
+
 			const msg = "Start game from client";
 			socket.emit("start", msg);
+
+            // Changer le texte du bouton\
+            const startBtn = document.getElementById("startBtn");
+            startBtn.innerHTML = "Ce bouton ne sert a rien !";
 		}
 
         socket.on('image', function(data) {
-            const img = new Image();
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0);
-            };
-            img.src = data.data;
-            });
+            console.log("image");
+            ctx.clearRect(0, 0, mapjeu.width, mapjeu.height);
+
+
+            ctx.beginPath();
+
+
+            ctx.arc(data.pos.x, data.pos.y, data.r, 0, 2 * Math.PI);
+            ctx.fillStyle = "red";
+            ctx.fill();
+
+            console.log(data);
+        });
     </script>
 </body>
 </html>

@@ -1,8 +1,9 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
 import { Server, Socket} from 'socket.io';
-import { createCanvas } from 'canvas';
+import { Circle, Coordonnee } from './entities/game.entities';
+// import { createCanvas } from 'canvas';
 
-@WebSocketGateway()
+@WebSocketGateway({namespace: 'game'})
 export class GameGateway {
   @WebSocketServer() server: Server;
 
@@ -26,27 +27,17 @@ export class GameGateway {
   MouvementMessage(client: any, payload: any) : void{
     const x = payload.x;
     const y = payload.y;
+    console.log(`MouvementMessage Detected !`);
     console.log(`Position de la souris : x=${x}, y=${y}`);
 
-      // Créer un canvas de 600 x 200 pixels
-      const canvas = createCanvas(600, 200);
-      const ctx = canvas.getContext('2d');
-
-      // Dessiner un cercle à la position x, y
-      ctx.beginPath();
-      ctx.arc(x, y, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = 'white';
-      ctx.fill();
-
-      // Convertir l'image en base64
-      const image = canvas.toDataURL();
-
-      // Envoyer l'image au client
-      this.server.emit('image', { data: image });
+      // Envoyer etat objet de la map ?
+      const circle = new Circle(x, y, 5);
+      this.server.emit('image', circle);
   }
 
   @SubscribeMessage('joinGame')
   JoinMessage(client: any, payload: any) : void{
+    console.log(`player has join`);
     console.log(payload);
   }
 
