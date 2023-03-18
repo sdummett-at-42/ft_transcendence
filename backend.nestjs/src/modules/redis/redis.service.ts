@@ -358,7 +358,7 @@ export class RedisService {
 			users.push(userIdToAdd);
 		this.client.multi()
 			.set(`user:${userId}:dms`, JSON.stringify(users))//users)
-			.expire(`user:${userId}: dms`, expirationTime + 42)
+			.expire(`user:${userId}:dms`, expirationTime + 42)
 			.exec()
 	}
 
@@ -446,6 +446,33 @@ export class RedisService {
 		return new Promise((resolve, reject) => {
 			this.client.get(`sess:${sess}`, (err, session) => {
 				resolve(session);
+			});
+		});
+	}
+
+	async set2faCookie(userId: number, value: string, expirationTime: number) {
+		this.client.multi()
+			.set(`user:${userId}:twofactor_cookie`, value)
+			.expire(`user:${userId}:twofactor_cookie`, expirationTime)
+			.exec()
+	}
+
+	async unset2faCookie(userId: number) {
+		this.client.del(`user:${userId}:twofactor_cookie`);
+	}
+
+	async get2faCookie(userId: number) {
+		return new Promise((resolve, reject) => {
+			this.client.get(`user:${userId}:twofactor_cookie`, (err, cookie) => {
+				resolve(cookie);
+			});
+		});
+	}
+
+	async get2faCookieExpirationTime(userId: number): Promise<number> {
+		return new Promise((resolve, reject) => {
+			this.client.ttl(`user:${userId}:twofactor_cookie`, (err, ttl) => {
+				resolve(ttl);
 			});
 		});
 	}
