@@ -476,4 +476,31 @@ export class RedisService {
 			});
 		});
 	}
+
+	async setSidCookie(cookieValue: string, userId: number, expirationTime: number) {
+		this.client.multi()
+			.set(`session:sid:${cookieValue}`, JSON.stringify({ userId }))
+			.expire(`session:sid:${cookieValue}`, expirationTime)
+			.exec()
+	}
+
+	async unsetSidCookie(cookieValue: string) {
+		this.client.del(`session:sid:${cookieValue}`);
+	}
+
+	async getSidCookie(cookieValue: string) {
+		return new Promise((resolve, reject) => {
+			this.client.get(`session:sid:${cookieValue}`, (err, reply) => {
+				resolve(reply);
+			})
+		})
+	}
+
+	async getSidCookieExpirationTime(cookieValue: string) {
+		return new Promise((resolve, reject) => {
+			this.client.ttl(`session:sid:${cookieValue}`, (err, ttl) => {
+				resolve(ttl);
+			})
+		})
+	}
 }

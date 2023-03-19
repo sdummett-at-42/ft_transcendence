@@ -145,16 +145,21 @@ export class AuthController {
 		});
 	}
 
-	// <= Change to post method and extract the otp from the body
-	@Get('2fa/validate/:otp')
-	async validate2fa(@Param('otp') otp: string, @Req() req) {
+	getCookie(cookieName: string, req) {
 		const cookieHeader = req.headers.cookie;
 		const cookies = parse(cookieHeader || '');
-		const twofactorCookie = cookies['2fa'];
+		return cookies[cookieName];
+	}
+
+	// <= Change to post method and extract the otp from the body
+	@Get('2fa/validate/:otp')
+	async validate2fa(@Param('otp') otp: string, @Req() req, @Res() res) {
+		const twofactorCookie = this.getCookie('2fa', req);
 		console.log(`twofactorCookie: ${twofactorCookie}`);
 		if (twofactorCookie === undefined) {
 			// no 2fa sended => quit
-			console.log("Not 2FA Cookie sended, No Cookie")
+			console.log("No 2FA Cookie sended, No Cookie")
+			res.send("No 2FA Cookie sended, No Cookie")
 			return;
 		}
 		let userId;
@@ -165,6 +170,8 @@ export class AuthController {
 			console.log(err);
 			// Send Invalid Cookie
 			console.log(`Decrypting 2FA Cookie failed, Invalid Cookie.`)
+			res.send(`Decrypting 2FA Cookie failed, Invalid Cookie.`)
+			return;
 		}
 
 		console.log(`userId ==> ${userId}`);
@@ -172,11 +179,13 @@ export class AuthController {
 		if (!cookie) {
 			// Send Invalid Cookie
 			console.log("2FA Cookie doesnt exist, Invalid Cookie")
+			res.send("2FA Cookie doesnt exist, Invalid Cookie")
 		}
 		const secret = await this.users.get2faSecret(userId);
 		if (!secret) {
 			// Send 2FA Not Enabled
 			console.log(`secret === NULL, 2FA Not Enabled`)
+			res.send(`secret === NULL, 2FA Not Enabled`)
 			return;
 		}
 
@@ -184,15 +193,41 @@ export class AuthController {
 		if (!check) {
 			// Send Invalid OTP
 			console.log(`OTP check failed, Invalid OTP`)
+			res.send(`OTP check failed, Invalid OTP`)
 			return;
 		}
 
 		console.log(`Success logging in user`)
 
-		// >> LOGIN HERE <<
-		// Code below dont work =(
-		// const authGuard = new FortyTwoAuthGuard();
-		// authGuard.logIn(req);
+		let expirationTime;
+		let sessionId;
+		const checkSidCookie = this.getCookie('sid', req);
+		if (checkSidCookie != undefined && await this.redis.getSidCookie(checkSidCookie) != null) {
+			expirationTime = await this.redis.getSidCookieExpirationTime(checkSidCookie);
+			sessionId = checkSidCookie;
+		}
+		else {
+			expirationTime = 60;
+			sessionId = this.createSession(userId, expirationTime);
+		}
+
+		const sidCookie = serialize('sid', sessionId as string, {
+			httpOnly: true,
+			maxAge: expirationTime,
+			path: "/",
+		});
+		res.setHeader('Set-Cookie', sidCookie);
+		res.send({
+			msg: "Successfully logged, 2FA validated =)",
+			twofactor_enabled: true,
+			twofactor_validated: true,
+		});
+	}
+
+	createSession(userId: number, expirationTime: number) {
+		const sessionId = this.generateSessionId(userId);
+		this.redis.setSidCookie(sessionId, userId, expirationTime);
+		return sessionId;
 	}
 
 	// Use env to store this secret

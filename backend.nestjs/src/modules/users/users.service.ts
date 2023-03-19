@@ -101,8 +101,8 @@ export class UsersService {
 			return null;
 		return this.prisma.user.update({
 			where: { id },
-			data: { twofa_isEnabled: enabled },
-			select: { twofa_isEnabled: true },
+			data: { twofactorIsEnabled: enabled },
+			select: { twofactorIsEnabled: true },
 		})
 	}
 
@@ -112,23 +112,22 @@ export class UsersService {
 			return;
 		const up = await this.prisma.user.update({
 			where: { id },
-			data: { twofa_secret: secret },
+			data: { twofactorSecret: secret },
 		});
-		console.log(`after setSecret: ${JSON.stringify(up)}`);
 	}
 
 	async get2faIsEnabled(id: number) {
 		const user = await this.prisma.user.findUnique({ where: { id } });
 		if (!user)
 			return null;
-		return user.twofa_isEnabled;
+		return user.twofactorIsEnabled;
 	}
 
 	async get2faSecret(id: number) {
 		const user = await this.prisma.user.findUnique({ where: { id }});
 		if (!user)
 			return null;
-		return user.twofa_secret;
+		return user.twofactorSecret;
 	}
 
 	async removeUser(id: number) {

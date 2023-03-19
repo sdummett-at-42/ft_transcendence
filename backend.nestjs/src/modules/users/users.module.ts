@@ -6,6 +6,7 @@ import { ImagesService } from '../images/images.service';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { ChatModule } from '../chat/chat.module';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
 	controllers: [UsersController],
@@ -14,7 +15,7 @@ import { ChatModule } from '../chat/chat.module';
 			provide: APP_GUARD,
 			useClass: ThrottlerGuard
 		}],
-	imports: [PrismaModule, ChatModule],
+	imports: [PrismaModule, ChatModule, RedisModule],
 	exports: [UsersService],
 })
 export class UsersModule { }
