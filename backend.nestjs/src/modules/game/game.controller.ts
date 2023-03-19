@@ -1,17 +1,20 @@
 import { Controller , Get, Res, Param} from '@nestjs/common';
 import { Response } from 'express';
+import { GameService } from './game.service';
 
 @Controller('game')
 export class GameController {
+    constructor(private readonly gameService: GameService) {}
+
     @Get()
     helloGame() {
         console.log("Controller('game')  @Get() hellogame()");
-        return "Hello From Game !";
+        return "Hello From Game cette page deviendra surement le lobby !";
     }
 
     @Get(':id')
-    gameRoom(@Param('id')id :string, @Res() res:Response) {
+    async gameRoom(@Param('id')id :string, @Res() res:Response) {
         console.log(`Controller('game')  @Get(':id') gamerRoon: ${id}`);
-        res.sendFile('game.html', { root: 'src/modules/game/Dir'});
+        this.gameService.initGame(id, res);
     }
 }

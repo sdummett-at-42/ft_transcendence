@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title>Canvas de jeu</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<style>
 		canvas {
 			background-color: gray;
@@ -12,7 +13,7 @@
 <body>
     <button id="startBtn" onclick="startGame()">Start Game</button>
     <br>
-	<canvas id="mapGame" width="1200" height="600"> Désolé, votre navigateur ne prend pas en charge &lt;canvas&gt;. </canvas>
+	<canvas id="mapGame" width="800" height="400"> Désolé, votre navigateur ne prend pas en charge &lt;canvas&gt;. </canvas>
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     
@@ -43,24 +44,57 @@
         function startGame() {
 
 			const msg = "Start game from client";
-			socket.emit("start", msg);
-
             // Changer le texte du bouton\
             const startBtn = document.getElementById("startBtn");
-            startBtn.innerHTML = "Ce bouton ne sert a rien !";
+            if (startBtn.innerHTML === "Start Game")
+            {
+                socket.emit("start", msg);
+                startBtn.innerHTML = "End Game";
+            }
+            else if (startBtn.innerHTML === "End Game")
+            {
+                socket.emit("end", msg);
+                startBtn.innerHTML = "Start Game";
+            }
 		}
 
         socket.on('image', function(data) {
             console.log("image");
             ctx.clearRect(0, 0, mapjeu.width, mapjeu.height);
+            //ctx.beginPath();
 
-
-            ctx.beginPath();
-
-
-            ctx.arc(data.pos.x, data.pos.y, data.r, 0, 2 * Math.PI);
-            ctx.fillStyle = "red";
-            ctx.fill();
+            console.log(`size = ${data.length}`);
+            console.log(data);
+            for (let i = 0; i < data.length; i++)
+            {
+                ctx.beginPath();
+                //console.log(`type is ${data[0].type}`);
+                if (data[i].type === "Bullet")
+                {
+                    console.log("this is bullet");
+                    // pos : Coordonnee;   // Coordonnee
+                    // r : number;         // size of radius
+                    // v : number;         // speed
+                    // a : number;         // direction
+                    ctx.fillStyle = "red"; // a remplacer par couleur objet
+                    ctx.arc(data[i].pos.x, data[i].pos.y, data[i].r, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+                else if (data[i].type === "Circle")
+                {
+                    console.log("this is Circle");
+                    ctx.strokeStyle = "blue";
+                    ctx.arc(data[i].pos.x, data[i].pos.y, data[i].r, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+                else if (data[i].type === "Square")
+                {
+                    console.log("this is saqure");
+                    ctx.fillStyle = "green";
+                    ctx.fillRect(data[i].pos.x, data[i].pos.y, data[i].length, data[i].width);
+                    ctx.fill();
+                }
+            }
 
             console.log(data);
         });
