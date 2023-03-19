@@ -9,6 +9,7 @@ import { AuthenticatedGuard } from "./utils/authenticated.guard";
 import { serialize, parse } from 'cookie';
 import { RedisService } from "../redis/redis.service";
 import * as crypto from 'crypto';
+import { ConfigService } from "@nestjs/config";
 
 ApiTags('auth')
 @Controller("auth")
@@ -16,24 +17,25 @@ export class AuthController {
 
 	constructor(
 		private readonly users: UsersService,
-		private readonly redis: RedisService) {}
+		private readonly redis: RedisService,
+		private readonly config: ConfigService) {}
 
-
+	// - Store userId AND user > mail < in the session
 	@Get('2fa/generate')
 	@UseGuards(AuthenticatedGuard)
 	async generate(@Res() res, @Req() req) {
-		const userId = req.user.id; // <= change
-		// set 2fa enabled to false since we reset the secret and its not verified yet
+		// const userId = req.user.id; // <= change
+		const userId = this.getUserId(req);
+		console.log(`userId: ${userId}`);
+			// set 2fa enabled to false since we reset the secret and its not verified yet
 		await this.users.update2faIsEnabled(userId, false);
 		const secret = otplib.authenticator.generateSecret();
 
 		// store the 2fa secret for the user
 		await this.users.set2faSecret(userId, secret);
 
-		const checkSecret = await this.users.get2faSecret(userId);
-		console.log(`checkSecret: ${checkSecret}`);
 		const accountName = "user@example.com"; // <= change (use user mail)
-		const issuer = "transcendence.fr"; // <= change (user an env var)
+		const issuer = this.config.get('ISSUER');
 		// generate an url from the secret
 		const url = otplib.authenticator.keyuri(accountName, issuer, secret);
 
@@ -54,11 +56,11 @@ export class AuthController {
 	@Get('2fa/verify/:otp')
 	@UseGuards(AuthenticatedGuard)
 	async verify(@Param('otp') otp: string, @Req() req) {
-		const userId = req.user.id;
+		const userId = this.getUserId(req);
 		const isEnabled = await this.users.get2faIsEnabled(userId);
 		if (isEnabled)
 			return {
-				message: "2FA already enabled =)",
+				message: "2FA is already enabled.",
 				secret_generated: true,
 				secret_verified: true,
 				};
@@ -66,7 +68,7 @@ export class AuthController {
 		const secret = await this.users.get2faSecret(userId);
 		if (!secret)
 			return {
-				message: "Failed to verify because no secret has been generated => `auth/2fa/generate`",
+				message: "Failed to verify because no secret has been generated.",
 				secret_generated: false,
 				secret_verified: false,
 			};
@@ -74,14 +76,14 @@ export class AuthController {
 		const check = otplib.authenticator.check(otp, secret);
 		if (!check)
 			return {
-				message: "otp doesn't match. =( [2FA NOT ENABLED]",
+				message: "otp doesn't match. 2FA not enabled.",
 				secret_generated: true,
 				secret_verified: false,
 			};
 
 		await this.users.update2faIsEnabled(userId, true);
 		return ({
-			message: "otp match =) [2FA ENABLED]",
+			message: "otp match. 2FA enabled.",
 			secret_generated: true,
 			secret_verified: true,
 		});
@@ -90,19 +92,20 @@ export class AuthController {
 	// Move logout from user controller here
 	@Get('logout')
 	@UseGuards(AuthenticatedGuard)
-	logout(@Request() req) {
-		req.logout((err) => {
-			if (err)
-			  console.error(err);
-		});
+	async logout(@Request() req) {
+		const sidCookie = this.getCookie('sid', req);
+		if (sidCookie)
+			await this.redis.unsetSidCookie(sidCookie);
 		return ({ message: "Successfully logout" });
 	}
 
-	@Get('42/callback')
+	// Change to just '/callback'
+	@Get('/42/callback')
 	@UseGuards(FortyTwoAuthGuard)
-	async fortytwoCallback(@Req() req, @Res() res, context: ExecutionContext) {
+	async callback(@Req() req, @Res() res) {
 
 		const userId = req.user.id;
+		console.log(`req.user.id: ${req.user.id}`)
 		const twofactor_enabled = await this.users.get2faIsEnabled(userId);
 
 		console.log(`- UserId: ${userId} - 2FA ENABLED: ${twofactor_enabled}`);
@@ -121,24 +124,18 @@ export class AuthController {
 			const cookie = serialize('2fa', cookieValue as string, {
 				httpOnly: true,
 				maxAge: expirationTime,
-				// careful if we add prefix /api to all routes
-				// will need to update path
-				path: "/auth/2fa/validate",
+				path: "/",
 			});
 			res.setHeader('Set-Cookie', cookie);
 			res.send({
-				msg: "Partially logged, 2fa needed",
+				msg: "Partially logged, 2fa needed.",
 				twofactor_enabled: true,
 				twofactor_validated: false,
 			});
 			return;
 		}
 
-		// Not sure about that
-		const authGuard = new FortyTwoAuthGuard();
-		await authGuard.logIn(req);
-
-		res.send({
+		this.login(req, res, userId, {
 			msg: "Logged successfully.",
 			twofactor_enabled: false,
 			twofactor_validated: false,
@@ -151,7 +148,13 @@ export class AuthController {
 		return cookies[cookieName];
 	}
 
+	getUserId(req) {
+		const sidCookie = this.getCookie('sid', req);
+		return this.decryptSessionId(sidCookie);
+	}
+
 	// <= Change to post method and extract the otp from the body
+	// <= Change returned status codes
 	@Get('2fa/validate/:otp')
 	async validate2fa(@Param('otp') otp: string, @Req() req, @Res() res) {
 		const twofactorCookie = this.getCookie('2fa', req);
@@ -199,6 +202,14 @@ export class AuthController {
 
 		console.log(`Success logging in user`)
 
+		this.login(req, res, userId, {
+			msg: "Successfully logged, 2FA validated =)",
+			twofactor_enabled: true,
+			twofactor_validated: true,
+		});
+	}
+
+	async login(req, res, userId, payload) {
 		let expirationTime;
 		let sessionId;
 		const checkSidCookie = this.getCookie('sid', req);
@@ -207,7 +218,7 @@ export class AuthController {
 			sessionId = checkSidCookie;
 		}
 		else {
-			expirationTime = 60;
+			expirationTime = 60 * 60 * 24 * 92; // 3 months
 			sessionId = this.createSession(userId, expirationTime);
 		}
 
@@ -217,11 +228,7 @@ export class AuthController {
 			path: "/",
 		});
 		res.setHeader('Set-Cookie', sidCookie);
-		res.send({
-			msg: "Successfully logged, 2FA validated =)",
-			twofactor_enabled: true,
-			twofactor_validated: true,
-		});
+		res.send(payload);
 	}
 
 	createSession(userId: number, expirationTime: number) {
@@ -230,12 +237,9 @@ export class AuthController {
 		return sessionId;
 	}
 
-	// Use env to store this secret
-	private readonly secretKey: string = 'your-secret-key-here-your-secret-key-here';
-
 	// Generate session ID with user ID
 	generateSessionId(userId: number): string {
-		const key = this.secretKey.slice(0, 32);
+		const key = this.config.get('SESSION_SECRET').slice(0, 32);
 		const iv = crypto.randomBytes(16);
 		const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
 		let encrypted = cipher.update(userId.toString(), 'utf8', 'hex');
@@ -245,7 +249,7 @@ export class AuthController {
 
 	// Decrypt session ID to get user ID
 	decryptSessionId(sessionId: string): number {
-		const key = this.secretKey.slice(0, 32);
+		const key = this.config.get('SESSION_SECRET').slice(0, 32);
 		const iv = Buffer.from(sessionId.slice(0, 32), 'hex');
 		const encrypted = sessionId.slice(32);
 		const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
@@ -253,8 +257,6 @@ export class AuthController {
 		decrypted += decipher.final('utf8');
 		return parseInt(decrypted, 10);
 	}
-
-	//=====//
 
 	@Get('42/login')
 	@UseGuards(FortyTwoAuthGuard)
@@ -266,11 +268,5 @@ export class AuthController {
 	@UseGuards(GoogleAuthGuard)
 	handleGoogleLogin() {
 		return { msg: 'Google oauth'};
-	}
-
-	@Get('google/callback')
-	@UseGuards(GoogleAuthGuard)
-	googleCallback() {
-		return {msg: "Logged successfully."};
 	}
 }

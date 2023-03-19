@@ -24,8 +24,8 @@ model User {
 	eloHistory			Int[]				@default([1000])
 	friendedBy			Friend[]
 	friends				Friend[]			@relation("friends")
-	twofa_isEnabled		Boolean				@default(false)
-	twofa_secret		String?
+	twofactorIsEnabled	Boolean				@default(false)
+	twofactorSecret		String?
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
 }
