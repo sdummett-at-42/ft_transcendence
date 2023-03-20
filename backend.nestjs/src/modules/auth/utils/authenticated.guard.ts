@@ -14,9 +14,7 @@ export class AuthenticatedGuard implements CanActivate {
 
 	async canActivate(context: ExecutionContext) {
 		const request = context.switchToHttp().getRequest();
-		const sidCookie = this.getCookie('sid', request);
-
-		if (sidCookie != undefined && (await this.redis.getSidCookie(sidCookie) != null))
+		if (request.isAuthenticated())
 			return true;
 		throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 	}

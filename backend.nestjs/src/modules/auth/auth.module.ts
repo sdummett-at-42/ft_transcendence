@@ -21,10 +21,7 @@ import { SessionSerializer } from './utils/Serializer';
 		FortyTwoStrategy,
 		GoogleStrategy,
 		SessionSerializer,
-		{
-			provide: "AUTH_SERVICE",
-			useClass: AuthService,
-		},
+		AuthService
 	],
 })
 export class AuthModule {}
