@@ -3,7 +3,7 @@ import "./Home.css"
 import { Link } from "react-router-dom"
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import homeVideo from "../../assets/Home-background.mp4"
+import homeVideo from "../../assets/home-background.mp4"
 
 export default function Home() {
 
