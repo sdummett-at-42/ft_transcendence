@@ -9,7 +9,8 @@
 
 .Navbar-nav {
     display: flex;
-    text-decoration: none;
+    top: 0;
+    
 }
 
 .Navbar-nav > .Navbar-nav-section {
@@ -22,6 +23,8 @@
 #Navbar-left {
     justify-content: space-around;
     flex-basis: calc(100% * (1 / 8));
+    text-decoration: none;
+    color: whitesmoke;
 }
 
 #Navbar-mid {
@@ -29,9 +32,13 @@
     border-left: 1px solid var(--Navbar-border-color);
     flex-basis: calc(100% * (5 / 8));
     justify-content: space-around;
+    text-decoration: none;
+    color: whitesmoke;
 }
 
 #Navbar-right {
     justify-content: center;
     flex-grow: 1;
+    color: whitesmoke;
+    text-decoration: none;
 }
