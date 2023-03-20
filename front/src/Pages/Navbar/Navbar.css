@@ -1,0 +1,70 @@
+:root {
+    --Navbar-border-color: rgb(255, 255, 255, 0.1);
+}
+
+.Navbar-logo {
+    width: 5vmin;
+    height: 5vmin;
+}
+
+.Navbar-nav {
+    height: 7vmin;
+    display: flex;
+}
+
+.Navbar-nav > .Navbar-nav-section {
+    padding: 3rem 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+#Navbar-left {
+    justify-content: space-around;
+    flex-basis: calc(100% * (1 / 8));
+}
+
+#Navbar-mid {
+    border-right: 1px solid var(--Navbar-border-color);
+    border-left: 1px solid var(--Navbar-border-color);
+    flex-basis: calc(100% * (1 / 2));
+    justify-content: space-around;
+}
+
+#Navbar-right {
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.arrow-pointer {
+    color: #f6f7f6;
+    text-align: center;
+    justify-content: center;
+    text-decoration: none;
+    width: 7vmin;
+    height: 3.5vmin;
+    background: #2a9697;
+    position: relative;  
+}
+
+.arrow-pointer:after {
+      content: '';
+      position: absolute;
+      left: 0; bottom: 0; width: 0; height: 0;
+      border-left: 1.8vmin solid #242424;
+      border-top: 1.8vmin solid transparent;
+      border-bottom: 1.8vmin solid transparent;
+}
+  
+.arrow-pointer:before {
+      content: '';
+      position: absolute;
+      right: -1.75vmin;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border-left: 1.8vmin solid #2a9697;
+      border-top: 1.8vmin solid transparent;
+      border-bottom: 1.8vmin solid transparent;
+    }
