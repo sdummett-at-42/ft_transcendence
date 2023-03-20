@@ -1,20 +1,41 @@
 .Home-content {
     display: flex;
+    margin: 0;
+    padding: 0;
 }
 
+
 .Home-game {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: large;
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    width: 100%;
+    height: 100vh;
     border: 1px solid var(--Navbar-border-color);
     flex-basis: calc(100% * (6/8));
+}
+
+.Home-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.Home-game-text {
+    position: absolute;
+    width: 75%;
+    height: 100%;
+    flex-basis: calc(100% * (6/8));
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: large;
 }
 
 .Home-friend {
     display: flex;
     justify-content: center;
-    background-color: green;
+    border-top: 1px solid var(--Navbar-border-color);
+    /* background-color: green; */
     flex-grow: 1;
 }

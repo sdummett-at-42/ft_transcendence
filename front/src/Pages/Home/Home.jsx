@@ -1,7 +1,9 @@
 import React from "react";
 import "./Home.css"
+import { Link } from "react-router-dom"
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import homeVideo from "../../assets/Home-background.mp4"
 
 export default function Home() {
 
@@ -9,9 +11,12 @@ export default function Home() {
         <div>
             <div className="Home-content">
                 <div className="Home-game">
-                    Play the mighty pong !
-                    <div className="Home-button-play">
-                        <FontAwesomeIcon icon={faPlay} size="4x" />
+                    <video src={homeVideo} autoPlay loop muted className="Home-video"/>
+                    <div className="Home-game-text">
+                        Play the mighty pong !
+                        <Link to="/game">
+                            <FontAwesomeIcon icon={faPlay} size="4x" />
+                        </Link>
                     </div>
                 </div>
                 <div className="Home-friend">
