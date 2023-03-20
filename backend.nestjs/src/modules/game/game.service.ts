@@ -10,7 +10,10 @@ export class GameService {
     
     field = new Field(400, 800);
     shapes : Shape[] = [];
-    bulletInterval: NodeJS.Timeout; // stocker ID de l'intervalle
+    bulletInterval: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
+    frequencyInterval: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
+
+    //x:number, y:number, height:number, width:number) {
     player1 = new Player(20, 200, 84, 5);
 
     /* ******************* *\
@@ -31,9 +34,18 @@ export class GameService {
             if (this.shapes.length === 0 )
                 this.shapes.push(this.player1.racket);
             console.log("starting game !");
+
+            // Creation bullet
             // x, y, r, v, f, a
-            let bullet_01 = new Bullet(200, 200, 6, 3, 80, 3.14 /4);
+            let bullet_01 = new Bullet(200, 200, 180, 3, 30, 3.14 );
             this.shapes.push(bullet_01);
+
+            // Creation Circle : x, y, r
+            // const circle_01 = new Circle(50, 175, 30);
+            // this.shapes.push(circle_01);
+
+
+            server.emit("image", this.shapes);
 
             this.startMoving(server, bullet_01);
 
@@ -50,6 +62,7 @@ export class GameService {
             console.log("Fin de la partie !");
 
             console.log(this.shapes.length);
+            clearInterval(this.frequencyInterval);
             clearInterval(this.bulletInterval);
             this.shapes.splice(1);
 
@@ -60,11 +73,7 @@ export class GameService {
 
     mouvementGame(server : Server, x : number, y : number) : void { // faire pour joueur 1 et 2
         let tmpYmin : number = y - this.player1.racket.length / 2; // tmpY = haut de la racket
-        let tmpYmax : number = y + this.player1.racket.length / 2; // tmpY = bas de la racket
-
-
-        
-        
+        let tmpYmax : number = y + this.player1.racket.length / 2; // tmpY = bas de la racket      
         
         if (tmpYmin < 0) // si haut racket trop haut
             this.player1.racket.pos.y = 0;
@@ -89,35 +98,55 @@ export class GameService {
     \* *************** */
 
     startMoving(server: Server, bullet: Bullet) {
-        if (this.bulletInterval) clearInterval(this.bulletInterval);
-
+        if (this.bulletInterval)
+            clearInterval(this.bulletInterval);
+      
         let delay = 1000 / bullet.f;
         console.log("delay = ", delay, " bullet.r * Math.cos(bullet.a) = " ,bullet.r * Math.cos(bullet.a));
+      
 
-        this.bulletInterval = setInterval(() => {
-            const collisionInfo = this.checkCollision(bullet);
-            if (collisionInfo.collision === false) {
-                bullet.pos.x += bullet.v * Math.cos(bullet.a);
-                bullet.pos.y += bullet.v * Math.sin(bullet.a);
-            }
-            else {
-                const collisionShape = collisionInfo.shape;
-                const collisionAngle = this.collisionAngle(bullet, collisionShape);
-                this.bounce(bullet, collisionAngle);
-                bullet.pos.x += bullet.v * Math.cos(bullet.a);
-                bullet.pos.y += bullet.v * Math.sin(bullet.a);
-            }
-            console.log(`position = (${bullet.pos.x}.${bullet.pos.y})`);
+        // Start the interval to increment to all bullet.f every second
+        this.frequencyInterval = setInterval(() => {
+            bullet.f += 5;
+            console.log("bullet frequency: ", bullet.f);
+        }, 1000);
+
+
+        const intervalFunction = () => {
+            // Check if bullet got collisionwith element if collision bullet.a will change
+            this.checkCollision(bullet);
+        
+            // Change bullet.pos with new value
+            bullet.pos.x += bullet.v * Math.cos(bullet.a);
+            bullet.pos.y += bullet.v * Math.sin(bullet.a);
+        
+        //console.log(`position = (${bullet.pos.x}.${bullet.pos.y})`);
+        
+            // send shapes[] to front
             server.emit('image', this.shapes);
-        }, delay);
+        
+            // Recalculate the delay based on the new frequency
+            delay = 1000 / bullet.f;
+        
+            // Clear the previous interval and create a new one with the updated delay
+            clearInterval(this.bulletInterval);
+            this.bulletInterval = setInterval(intervalFunction, delay);
+        };
+      
+        // Set the first interval
+        this.bulletInterval = setInterval(intervalFunction, delay);
     }
+      
+      
+      
 
-    checkCollision(bullet : Bullet) : {collision: boolean, shape : Shape | null} {
+    checkCollision(bullet : Bullet) : void {
         // Vérifier si la balle touche les murs horizontaux
         if (bullet.pos.y + bullet.r > this.field.height || bullet.pos.y - bullet.r < 0)
             bullet.a = -bullet.a;
+        //console.log(bullet.a);
 
-        // Check mur verticaux for fun
+        // Check mur verticaux for fun || a supprime plus tard ou juste scorer
         if (bullet.pos.x + bullet.r > this.field.width) {
             bullet.pos.x = this.field.width - bullet.r;  // corrige la position pour éviter que la balle passe à travers le mur
             bullet.a = Math.PI - bullet.a;
@@ -126,89 +155,50 @@ export class GameService {
             bullet.a = Math.PI - bullet.a;
         }
             
-        //return {collision: true, shape : null}; 
+        // si collision, changer direction bullet
     
-        // Vérifier si la balle touche une autre forme
+        // Check if bullet hit an other shape
+        // collision activate with Square and Circle
+        // no collision between bullet (or himself)
         for (let i = 0; i < this.shapes.length; i++) {
             const shape = this.shapes[i];
             if (shape instanceof Circle) {
-                const dx = bullet.pos.x - shape.pos.x;
-                const dy = bullet.pos.y - shape.pos.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < bullet.r + shape.r) {
-                    return {collision : true, shape : shape};
+                // check if collision with circle
+                const dx :number = Math.pow(shape.pos.x - bullet.pos.x, 2);
+                const dy :number = Math.pow(shape.pos.y - bullet.pos.y, 2);
+                const dist = Math.sqrt(dx + dy);
+                if (dist <= shape.r + bullet.r) {// if true => change dir bullet
+                    console.log("Collision with Cercle !");
+                    // calculer angle collision
+                    bullet.a = Math.PI - bullet.a;
+
                 }
             } else if (shape instanceof Square) {
-                if (bullet.pos.x + bullet.r > shape.pos.x && bullet.pos.x - bullet.r < shape.pos.x + shape.width &&
-                    bullet.pos.y + bullet.r > shape.pos.y && bullet.pos.y - bullet.r < shape.pos.y + shape.length) {
-                        return {collision : true, shape : shape};
+                // check if collision with Square
+                const minX : number = bullet.pos.x - bullet.r; 
+                const maxX : number = bullet.pos.x + bullet.r; 
+                const minY : number = bullet.pos.y - bullet.r; 
+                const maxY : number = bullet.pos.y + bullet.r; 
+                // if true => change dir bullet
+                // if (shape.pos.x <= maxX && shape.pos.x + shape.length <= minX
+                //     && shape.pos.y <= maxY && shape.pos.y + shape.width <= minY) {
+                //         console.log("Collision with Square !"); 
+                //         bullet.a += 2;
+                //     }
+
+                console.log(minX, maxX, minY, maxY);
+                console.log(shape.pos.x, shape.pos.x + shape.width, shape.pos.y, shape.pos.y + shape.length);
+
+                if (((minX >= shape.pos.x && minX <= shape.pos.x + shape.width) || //    si partie gauche bullet
+                    (maxX >= shape.pos.x && maxX <= shape.pos.x + shape.width)) && // ou si partie droite
+                    ((minY >= shape.pos.y && minY <= shape.pos.y + shape.length) ||//et  si partie haute bullet
+                    (maxY >= shape.pos.y && maxY <= shape.pos.y + shape.length)) // ou    si partie bas bullet
+                    ) {
+                    console.log("Collision with Square !");
+                    bullet.a = Math.PI - bullet.a;
                 }
             }
         }
-        // Si aucune collision détectée, renvoyer false
-        return {collision: false, shape : null};
+        // Si aucune collision détectée, nothing change
     }
-
-    collisionAngle(bullet: Bullet, collisionShape: Shape): number | null {
-        // Vérifier si la balle touche une autre forme
-        if (collisionShape instanceof Circle) {
-            const dx = bullet.pos.x - collisionShape.pos.x;
-            const dy = bullet.pos.y - collisionShape.pos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < bullet.r + collisionShape.r) {
-                // Calculer l'angle de collision
-                const angle = Math.atan2(dy, dx);
-                return angle;
-            }
-            else if (collisionShape instanceof Square) {
-                // Vérifier si la balle touche le carré
-                const halfWidth = collisionShape.width / 2;
-                const halfLength = collisionShape.length / 2;
-                if (bullet.pos.x + bullet.r > collisionShape.pos.x - halfWidth &&
-                    bullet.pos.x - bullet.r < collisionShape.pos.x + halfWidth &&
-                    bullet.pos.y + bullet.r > collisionShape.pos.y - halfLength &&
-                    bullet.pos.y - bullet.r < collisionShape.pos.y + halfLength) {
-                    // Calculer l'angle de collision
-                    const dx = bullet.pos.x - collisionShape.pos.x;
-                    const dy = bullet.pos.y - collisionShape.pos.y;
-                    const angle = Math.atan2(dy, dx);
-                    return angle;
-                }
-            }
-        }
-        // Si aucune collision détectée, renvoyer null
-        return null;
-    }
-      
-
-    bounce(bullet: Bullet, angle: number) {
-        if (angle === null) {
-          return;
-        }
-      
-        // Calcul de l'angle de réflexion
-        const reflectionAngle = 2 * angle - bullet.a + Math.PI;
-      
-        // Correction de l'angle de réflexion en fonction de la position de collision
-        const dx = Math.abs(bullet.pos.x - this.field.width / 2);
-        const dy = Math.abs(bullet.pos.y - this.field.height / 2);
-        const factor = 0.1; // Ajustez ce facteur pour changer la réflexion en fonction de la position
-        const dxAdjusted = dx * factor;
-        const dyAdjusted = dy * factor;
-      
-        if (bullet.pos.x < this.field.width / 2) {
-            bullet.a = reflectionAngle + dxAdjusted;
-        } else {
-            bullet.a = reflectionAngle - dxAdjusted;
-        }
-        if (bullet.pos.y < this.field.height / 2) {
-            bullet.a = reflectionAngle + dyAdjusted;
-        } else {
-            bullet.a = reflectionAngle - dyAdjusted;
-        }
-      
-        // Mise à jour de la position de la balle
-        bullet.pos.x += bullet.v * Math.cos(bullet.a);
-        bullet.pos.y += bullet.v * Math.sin(bullet.a);
-      }
 }

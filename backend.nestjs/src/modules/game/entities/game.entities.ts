@@ -50,7 +50,7 @@ export class Square implements Shape {
     length : number;
     // color or img
 
-    constructor(x:number, y:number, width:number, length:number) {
+    constructor(x:number, y:number, length:number, width:number) {
         this.pos = new Coordonnee(x, y);
         this.width = width;
         this.length = length;
@@ -63,8 +63,8 @@ export class Player {
     // player 1 or 2 ?
     // id, name etc....
 
-    constructor(x:number, y:number, lenght:number, width:number) {
-        this.racket = new Square(x, y, lenght, width);
+    constructor(x:number, y:number, height:number, width:number) {
+        this.racket = new Square(x, y, height, width);
         this.score = 0;
         // couleur / skin
     }
