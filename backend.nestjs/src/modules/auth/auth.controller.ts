@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req, Request, Res, Response, UnauthorizedException, UseGuards } from "@nestjs/common";
+import { Controller, Get, Post, Delete, Body, Param, Req, Request, Res, Response, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { UsersService } from "../users/users.service";
 import * as otplib from 'otplib';
@@ -9,6 +9,7 @@ import { RedisService } from "../redis/redis.service";
 import * as crypto from 'crypto';
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
+import { OtpDto } from "./dto/otp.dto";
 
 ApiTags('auth')
 @Controller("auth")
@@ -19,16 +20,16 @@ export class AuthController {
 		private readonly redis: RedisService,
 		private readonly config: ConfigService) { }
 
-	// Move logout from user controller here
-	@Get('logout')
+	@Delete('logout')
 	@UseGuards(AuthenticatedGuard)
 	async logout(@Request() req, @Response() res) {
+		// this.chat.onLogoutViaController(req.user.id);
 		req.logout(() => {
-			res.send({ message: "Successfully logout" })
+			const user = req.user;
+			res.send(user);
 		})
 	}
 
-	// Restrict the login route to non-authenticated user (?) maybe
 	@Get('42/login')
 	@UseGuards(AuthGuard('42'))
 	handle42Login() { }
@@ -102,20 +103,20 @@ export class AuthController {
 		// generate qr code
 		const base64Qrcode = await qrcode.toDataURL(url);
 
-		// and send this qrcode as a response
-		// This below must be deleted, it's for test purpose
-		res.setHeader('Content-Type', 'image/png');
-		res.send(Buffer.from(base64Qrcode.split(',')[1], 'base64'));
-		return {
+		res.send({
 			contentType: 'image/png',
 			base64Qrcode,
-		}
+		});
+		// For test purpose comment the above return and
+		// uncomment the two line below to display the
+		// qrcode directly to screen
+		// res.setHeader('Content-Type', 'image/png');
+		// res.send(Buffer.from(base64Qrcode.split(',')[1], 'base64'));
 	}
 
-	// <= change to POST and`otp` should be extracted from the body
-	@Get('2fa/verify/:otp')
+	@Post('2fa/verify/')
 	@UseGuards(AuthenticatedGuard)
-	async verify(@Param('otp') otp: string, @Req() req) {
+	async verify(@Body() dto: OtpDto, @Req() req) {
 		const userId = req.user.id;
 		const isEnabled = await this.users.get2faIsEnabled(userId);
 		if (isEnabled)
@@ -133,7 +134,7 @@ export class AuthController {
 				secretVerified: false,
 			};
 
-		const check = otplib.authenticator.check(otp, secret);
+		const check = otplib.authenticator.check(dto.otp, secret);
 		if (!check)
 			return {
 				message: "otp doesn't match. 2FA not enabled.",
@@ -149,9 +150,8 @@ export class AuthController {
 		});
 	}
 
-	// <= Change to post method and extract the otp from the body
-	@Get('2fa/validate/:otp')
-	async validate2fa(@Param('otp') otp: string, @Req() req, @Res() res) {
+	@Post('2fa/validate/')
+	async validate2fa(@Body() dto: OtpDto, @Req() req, @Res() res) {
 		const twofactorCookie = this.getCookie('2fa', req);
 		// no 2fa cookie sended
 		if (twofactorCookie === undefined) {
@@ -182,7 +182,7 @@ export class AuthController {
 			return;
 		}
 
-		const check = otplib.authenticator.check(otp, secret);
+		const check = otplib.authenticator.check(dto.otp, secret);
 		if (!check) {
 			// Send Invalid OTP
 			res.send({

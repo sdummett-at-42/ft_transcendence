@@ -44,19 +44,6 @@ export class UsersController {
 		return this.users.findOneUserByIdWithEmail(req.user.id);
 	}
 
-	@Post('me/logout')
-	@HttpCode(201)
-	@ApiCreatedResponse({ type: UserEntity, description: 'Logs out the current user' })
-	logout(@Request() req) {
-		this.chat.onLogoutViaController(req.user.id);
-		const user = req.user;
-		req.logout((err) => {
-			if (err)
-			  console.error(err);
-		});
-		return user;
-	}
-
 	@Delete('me/delete')
 	@HttpCode(204)
 	@ApiNoContentResponse({ type: UserEntity, description: 'Deletes the current user' })
