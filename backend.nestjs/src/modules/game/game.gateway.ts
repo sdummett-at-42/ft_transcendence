@@ -12,6 +12,7 @@ export class GameGateway {
   // Connection
   handleConnection(socket: Socket) {
     console.log('New client connected game:', socket.id);
+    this.gameService.initGame(this.server, socket);
   }
 
   // Disconnection
@@ -38,8 +39,6 @@ export class GameGateway {
   MouvementMessage(client: any, payload: any) : void{
     const x = payload.x;
     const y = payload.y;
-    console.log(`MouvementMessage Detected !`);
-    console.log(`Position de la souris : x=${x}, y=${y}`);
 
       // send new coord
       this.gameService.mouvementGame(this.server, x, y);

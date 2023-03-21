@@ -1,6 +1,8 @@
 import { Controller , Get, Res, Param} from '@nestjs/common';
 import { Response } from 'express';
 import { GameService } from './game.service';
+import * as fs from "fs";
+
 
 @Controller('game')
 export class GameController {
@@ -15,6 +17,7 @@ export class GameController {
     @Get(':id')
     async gameRoom(@Param('id')id :string, @Res() res:Response) {
         console.log(`Controller('game')  @Get(':id') gamerRoon: ${id}`);
-        this.gameService.initGame(id, res);
+        const data = await fs.promises.readFile('src/modules/game/Dir/game.html', 'utf8');
+        res.send(data);
     }
 }

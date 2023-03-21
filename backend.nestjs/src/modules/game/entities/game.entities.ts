@@ -25,6 +25,18 @@ export class Circle implements Shape {
     }
 }
 
+export class BlackHole implements Shape {
+    type : string = "BlackHole";
+    pos : Coordonnee;
+    r : number;
+    // color or img
+
+    constructor(x:number, y:number, r:number) {
+        this.pos = new Coordonnee(x, y);
+        this.r = r;
+    }
+}
+
 export class Bullet implements Shape {
     type : string = "Bullet";
     pos : Coordonnee;   // Coordonnee

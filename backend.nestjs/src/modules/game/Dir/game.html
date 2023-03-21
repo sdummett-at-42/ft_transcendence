@@ -85,6 +85,14 @@
                     console.log("this is Circle");
                     ctx.strokeStyle = "blue";
                     ctx.arc(data[i].pos.x, data[i].pos.y, data[i].r, 0, 2 * Math.PI);
+                    //ctx.fill();
+                    ctx.stroke();
+                }
+                else if (data[i].type === "BlackHole")
+                {
+                    console.log("this is BlackHole");
+                    ctx.strokeStyle = "Black";
+                    ctx.arc(data[i].pos.x, data[i].pos.y, data[i].r, 0, 2 * Math.PI);
                     ctx.stroke();
                 }
                 else if (data[i].type === "Square")
