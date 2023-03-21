@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from 'nestjs-prisma';
+import { ChatGateway } from '../chat/chat.gateway';
+import { ChatModule } from '../chat/chat.module';
 import { RedisModule } from '../redis/redis.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
@@ -16,6 +18,7 @@ import { SessionSerializer } from './utils/Serializer';
 		UsersModule,
 		PassportModule.register({ session: true}),
 		RedisModule,
+		ChatModule,
 	],
 	controllers: [AuthController],
 	providers: [
@@ -23,7 +26,8 @@ import { SessionSerializer } from './utils/Serializer';
 		GoogleStrategy,
 		TwoFactorStrategy,
 		SessionSerializer,
-		AuthService
+		AuthService,
+		ChatGateway
 	],
 })
 export class AuthModule {}

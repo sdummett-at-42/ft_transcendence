@@ -4,13 +4,15 @@ import { serialize, parse } from 'cookie';
 import { ConfigService } from "@nestjs/config";
 import * as crypto from 'crypto';
 import { RedisService } from "../redis/redis.service";
+import { ChatGateway } from "../chat/chat.gateway";
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly users: UsersService,
 		private readonly config: ConfigService,
-		private readonly redis: RedisService) { }
+		private readonly redis: RedisService,
+		private readonly chat: ChatGateway) { }
 
 	async validateUser(email: string) {
 		const user = await this.users.findOneUserByEmail(email);
@@ -90,5 +92,9 @@ export class AuthService {
 
 	getIssuer() {
 		return this.config.get('ISSUER');
+	}
+
+	async disconnectUserSockets(userId: number) {
+		this.chat.disconnectUserSockets(userId);
 	}
 }

@@ -9,15 +9,12 @@ import {
 	NotFoundException,
 	UseGuards,
 	Request,
-	Post,
 	Req,
-	HttpException,
-	HttpStatus,
 	HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
 import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
 import { ContentTypeGuard } from '../../shared/content-type.guard';
@@ -49,7 +46,7 @@ export class UsersController {
 	@ApiNoContentResponse({ type: UserEntity, description: 'Deletes the current user' })
 	async deleteMe(@Request() req) {
 		const user = await this.users.removeUser(req.user.id);
-		this.chat.onLogoutViaController(req.user.id);
+		this.chat.disconnectUserSockets(req.user.id);
 		req.logout((err) => {
 			return user;
 		});

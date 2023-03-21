@@ -1,21 +1,13 @@
-import { CanActivate, ExecutionContext, HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
-import { RedisService } from "src/modules/redis/redis.service";
-import { parse } from 'cookie';
+import { CanActivate, ExecutionContext, UnauthorizedException, Injectable } from "@nestjs/common";
 
 @Injectable()
 export class AuthenticatedGuard implements CanActivate {
-	constructor(private readonly redis: RedisService) {}
-
-	getCookie(cookieName: string, req) {
-		const cookieHeader = req.headers.cookie;
-		const cookies = parse(cookieHeader || '');
-		return cookies[cookieName];
-	}
+	constructor() {}
 
 	async canActivate(context: ExecutionContext) {
 		const request = context.switchToHttp().getRequest();
 		if (request.isAuthenticated())
 			return true;
-		throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+		throw new UnauthorizedException('Unauthorized');
 	}
 }
