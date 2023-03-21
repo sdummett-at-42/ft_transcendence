@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Delete, Body, Req, Request, Res, Response, UseGuards } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { Controller, Get, Post, Delete, Body, Req, Request, Res, Response, UseGuards, HttpCode } from "@nestjs/common";
+import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import * as otplib from 'otplib';
 import * as qrcode from 'qrcode';
 import { AuthenticatedGuard } from "./utils/authenticated.guard";
@@ -7,9 +7,10 @@ import { serialize } from 'cookie';
 import { AuthGuard } from "@nestjs/passport";
 import { OtpDto } from "./dto/otp.dto";
 import { AuthService } from "./auth.service";
+import { SecretQrCodeEntity } from "./utils/2fa.entity";
 
-ApiTags('auth')
 @Controller("auth")
+@ApiTags('auth')
 export class AuthController {
 
 	constructor(private readonly auth: AuthService) { }
@@ -18,9 +19,15 @@ export class AuthController {
 	// this endpoint will validate the otp needed
 	@UseGuards(AuthGuard('2fa'))
 	@Post('2fa/validate')
-	twoFactorValidate() { return { message: `Successfully logged using 2FA` } }
+	@HttpCode(200)
+	@ApiOkResponse({ description: 'User has been logged in using 2FA.'})
+	@ApiUnauthorizedResponse({ description: 'User failed to logged in.' })
+	@ApiBadRequestResponse({ description: 'The payload is malformed.' })
+	twoFactorValidate(@Body() dto: OtpDto) { return { message: `Successfully logged using 2FA` } }
 
 	@Delete('logout')
+	@HttpCode(204)
+	@ApiNoContentResponse({ description: 'User has been logged out.'})
 	@UseGuards(AuthenticatedGuard)
 	async logout(@Request() req, @Response() res) {
 		// this.chat.onLogoutViaController(req.user.id);
@@ -31,10 +38,15 @@ export class AuthController {
 	}
 
 	@Get('42/login')
+	@HttpCode(200)
+	@ApiOkResponse({ description: 'Attempt to log user in using 42 oauth'})
+	@ApiUnauthorizedResponse({ description: 'User failed to logged in.' })
 	@UseGuards(AuthGuard('42'))
 	handle42Login() { }
 
 	@Get('/42/callback')
+	@HttpCode(200)
+	@ApiOkResponse({ description: 'If 2FA not enabled, successfully logged user, else will need to provide OTP at the /auth/2fa/validate endpoint'})
 	@UseGuards(AuthGuard('42'))
 	async fortyTwoCallback(@Req() req, @Res() res) {
 		const userId = req.user.id;
@@ -57,10 +69,12 @@ export class AuthController {
 	}
 
 	@Get('google/login')
+	@HttpCode(200)
 	@UseGuards(AuthGuard('google'))
 	handleGoogleLogin() { }
 
 	@Get('/google/callback')
+	@HttpCode(200)
 	@UseGuards(AuthGuard('google'))
 	async googleCallback(@Req() req, @Res() res) {
 		const userId = req.user.id;
@@ -87,6 +101,10 @@ export class AuthController {
 	// Generate a secret for activating 2fa
 	// Need to verify /auth/2fa/verify to enable 2fa
 	@Get('2fa/generate')
+	@HttpCode(200)
+	@ApiOkResponse({
+		type: SecretQrCodeEntity,
+		description: 'Generate a secret in order to enable 2FA, the user must verify at /auth/2fa/verify to effectively enabled 2fa.' })
 	@UseGuards(AuthenticatedGuard)
 	async generate(@Res() res, @Req() req) {
 		const userId = req.user.id;
@@ -114,6 +132,9 @@ export class AuthController {
 
 	// If successful the 2fa is effectively enabled
 	@Post('2fa/verify')
+	@HttpCode(201)
+	@ApiCreatedResponse({ description: 'Verify that the given otp is valid against the user secret.' })
+	@ApiBadRequestResponse({ description: 'The payload is malformed.' })
 	@UseGuards(AuthenticatedGuard)
 	async verify(@Body() dto: OtpDto, @Req() req) {
 		const userId = req.user.id;
