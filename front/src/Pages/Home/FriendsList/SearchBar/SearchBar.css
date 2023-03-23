@@ -14,13 +14,43 @@
     height: 100%;
     font-size: 1.25rem;
     width: 100%;
-    /* margin-left: 5px; */
 }
 
 #SearchBar-input:focus {
     outline: none;
 }
 
+#SearchBar-add-user-button {
+    background-color: transparent;
+    border: none;
+}
+
+#SearchBar-add-user-button:hover > #SearchBar-add-user-icon {
+    color: rgb(24, 170, 13);
+}
+
 #SearchBar-add-user-icon {
     color: rgb(8,129,150);
+}
+
+.SearchBar-results-list {
+    color:#242424;
+    width: 100%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0px 0px 8px #ddd;
+    border-radius: 10px;
+    margin-top: 1rem;
+    max-height: 300px;
+    overflow-y: scroll;
+}
+
+.SearchBar-search-result {
+    padding: 10px 20px;
+    font-family: Helvetica, sans-serif;
+}
+
+.SearchBar-search-result:hover {
+    background-color: #efefef;
 }
