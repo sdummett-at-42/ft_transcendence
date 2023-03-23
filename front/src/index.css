@@ -1,4 +1,9 @@
+*{
+  box-sizing:border-box;
+}
 :root {
+  box-sizing:border-box;
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -14,20 +19,4 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
-}
-body {
-  margin: 0;
-}
-#root {
-  display: flex;
-}
-
-.str-chat__channel-list {
-  width: 30%;
-}
-.str-chat__channel {
-  width: 100%;
-}
-.str-chat__thread {
-  width: 45%;
 }

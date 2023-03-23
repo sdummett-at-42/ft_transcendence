@@ -17,17 +17,17 @@ export default function ChatLogin() {
   }
 
     return (
-        <div className="container" >
-          <div className="row gx-5">
-              <div className="col vh-100 list-group">
+        <div  className="container">
+          <div className="row">
+              <div className="col srolling_bar">
                 <div className="input-group mb-3">
                   <input type="text" className="form-control" placeholder="New Room's name" aria-describedby="button-addon2" />
                   <button className="btn btn-outline-secondary" type="button" id="button-addon2" onClick={() => console.log("hihi")}>+</button>
                 </div >
               <ChatroomList onChatroomSelect={handleChatroomSelect}/>
               </div>
-              <div className=" col-6 vh-100"><Message chatroomId={selectedChatroom} /></div>
-              <div className="col vh-100 "><RoomDetail /></div>
+              <div className=" col-6 srolling_bar"><Message chatroomId={selectedChatroom} /></div>
+              <div className="col srolling_bar"><RoomDetail /></div>
 
           </div>
         </div>

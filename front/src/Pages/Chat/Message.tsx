@@ -16,7 +16,7 @@ export default function Message(props) {
   const [messages, setMessages] = useState([]);
 
   const item = messageList.map(each => (
-    <div className="srolling_bar" >
+    <div  >
       <p className="text-start my-1">{each.message}</p>
       <small className="text-end">{each.createtime}</small>
     </div>
@@ -32,7 +32,7 @@ export default function Message(props) {
   // }, [props.chatroomId]);
 
   return (
-    <div className=" scrollspy-example bg-body-tertiary p-3 rounded-2" data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" tabindex="0">
+    <div  >
     <div>{item}</div>
     <div className="input-group mb-3">
   <input type="text" className="form-control" placeholder="send a message..." aria-describedby="button-addon2 " />

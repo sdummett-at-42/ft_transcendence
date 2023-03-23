@@ -1,20 +1,33 @@
-:root{
-    background-color: white;
-}
+
 .container {
-    display: flex;
+    padding: 5px;
+    max-height: 400px;
+    max-width: 100%;
+    display: flex; /*added*/
+    flex-direction: column; 
+    display:inline-block;
+    /* display: flex; */
     /* background-color: black; */
-    height: 100vh;
-    width: 100vh;
+    /* height: 100vh; */
+    /* overflow-y: auto; */
     /* text-decoration-color: blanchedalmond; */
 }
   
-.container >  .div {
-    flex: 1;
-    height: 100px;
+.srolling_bar{
+    overflow-y: hidden;
+    overflow-x: hidden;
+     flex: 1; /* added */
+
+}
+.col-6{
+    max-height: inherit;
+}
+.col {
+    max-height: inherit;
 }
 
-.srolling_bar {
+
+/* .srolling_bar {
     overflow-y: scroll;
     scrollbar-color: grey;
-}
+} */
