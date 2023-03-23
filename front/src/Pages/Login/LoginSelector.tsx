@@ -33,21 +33,21 @@ export default function LoginSelector() {
                             </div>
                         </a>
                 
-                        <Link className="LoginSelector-button" to="/login/google">
+                        <a href="http://localhost:3001/auth/google/login" className="LoginSelector-button" to="/login/google">
                             <div className="LoginSelector-button-content">
                                 <div className="LoginSelector-button-image">
                                     <FontAwesomeIcon icon={faGoogle} />
                                 </div>
                                 <div className="LoginSelector-button-text">Google</div>
                             </div>
-                        </Link>
+                        </a>
             
                         <Link className="LoginSelector-button" to="/login/transcendence">
                             <div className="LoginSelector-button-content">
                                 <div className="LoginSelector-button-image">
                                     <FontAwesomeIcon icon={faUser} />
                                 </div>
-                                <div className="LoginSelector-button-text">Other</div>
+                                <div className="LoginSelector-button-text">Transcendence</div>
                             </div>
                         </Link>
     

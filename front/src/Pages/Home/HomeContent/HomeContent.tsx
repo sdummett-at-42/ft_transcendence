@@ -8,9 +8,9 @@ import homeVideo from "../../../assets/home-background.mp4"
 export default function HomeContent() {
 
     return (
-        <div className="Home-game">
-            <video src={homeVideo} autoPlay loop muted className="Home-video"/>
-            <div className="Home-game-text">
+        <div className="HomeContent">
+            <video src={homeVideo} autoPlay loop muted className="HomeContent-video"/>
+            <div className="HomeContent-text">
                 Play the mighty pong !
                 <Link to="/game" style={{textDecoration: 'none', color: 'whitesmoke'}}>
                     <FontAwesomeIcon icon={faPlay} size="4x" />

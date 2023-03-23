@@ -18,6 +18,7 @@ export default function FriendsList() {
             <div className="FriendsList-list">
                 <div className="FriendsList-user">
                     {/* added user */}
+                    user
                 </div>
             </div>
             <Link to="/message" className="FriendsList-icon" style={{textDecoration: 'none', color: 'whitesmoke'}}>

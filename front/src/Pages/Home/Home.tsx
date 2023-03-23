@@ -9,7 +9,7 @@ export default function Home() {
 
     return (
         <div>
-            <div className="Home-content">
+            <div className="Home">
                 <HomeContent />
                 <FriendsList />
             </div>
