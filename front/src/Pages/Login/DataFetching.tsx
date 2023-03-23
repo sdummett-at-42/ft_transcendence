@@ -4,13 +4,13 @@ import axios from "axios";
 
 function DataFetching() {
 
-    const [posts, setPosts] = useState([]);
+    const [data, setData] = useState([]);
 
     useEffect(() => {
         axios.get("http://localhost:3001/auth/42/login")
-            .then(res => {
-                console.log(res);
-                setPosts(res.data);
+            .then(response => {
+                console.log(response);
+                setData(response.data);
             })
             .catch (err => {
                 console.log(err);
@@ -19,13 +19,14 @@ function DataFetching() {
 
     return (
         <div>
-            {/* <ul>
-                {posts.map(posts => (
-                    <li key={posts.id}>{posts.title}</li>
-                ))}
-            </ul> */}
+            {data.map(item => (
+                <div key={item.id}>
+                    <p>{item.title}</p>
+                    <p>{item.description}</p>
+                </div>
+            ))}
         </div>
-    )
+    );
 }
 
 export default DataFetching

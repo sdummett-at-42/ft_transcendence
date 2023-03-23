@@ -33,57 +33,7 @@
     font-size: 5vmin;
 }
 
-/* .hero {
-    font-size: clamp(40px, 10vw, 100px);
-    line-height: 1;
-    display: inline-block;
-    color: #fff;
-    z-index: 2;
-    letter-spacing: 10px;
-  
-    /* Bright things in dark environments usually cast that light, giving off a glow */
-    /*filter: drop-shadow(0 1px 3px);
-}
-
-.layers {
-    position: relative;
-}
-  
-.layers::before,
-.layers::after {
-    content: attr(data-text);
-    position: absolute;
-    width: 110%;
-    z-index: -1;
-}
-  
-.layers::before {
-    top: 10px;
-    left: 15px;
-    color: #e0287d;
-}
-  
-.layers::after {
-    top: 5px;
-    left: -10px;
-    color: #1bc7fb;
-}
-
-.glitch span {
-    animation: paths 5s step-end infinite;
-}
-  
-.glitch::before {
-    animation: paths 5s step-end infinite, opacity 5s step-end infinite,
-      font 8s step-end infinite, movement 10s step-end infinite;
-}
-  
-.glitch::after {
-    animation: paths 5s step-end infinite, opacity 5s step-end infinite,
-      font 7s step-end infinite, movement 8s step-end infinite;
-} */
-
-  .Home-friend {
+.Home-friend {
     display: flex;
     flex-direction: column;
     border-top: 1px solid var(--Navbar-border-color);
