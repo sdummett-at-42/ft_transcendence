@@ -7,7 +7,7 @@ function DataFetching() {
     const [data, setData] = useState([]);
 
     useEffect(() => {
-        axios.get("http://localhost:3001/auth/google/login")
+        axios.get("http://localhost:3001/auth/42/login")
             .then(response => {
                 console.log(response);
                 setData(response.data);
