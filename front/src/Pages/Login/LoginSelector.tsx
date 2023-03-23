@@ -8,22 +8,6 @@ import Logo42 from "../../assets/42_Logo.png"
 
 export default function LoginSelector() {
 
-    function Auth42Login() {
-
-        var DataisLoaded = false;
-
-        fetch("http://localhost:3001/auth/42/login")
-            .then((res) => res.json())
-            .then((json) => {
-                this.setState({
-                    items: json,
-                    DataisLoaded: true
-                });
-            })
-
-        console.log(DataisLoaded);
-    }
-
     return (
         <div className="LoginSelector-body">
             <div className="LoginSelector-card">
@@ -39,15 +23,15 @@ export default function LoginSelector() {
                     </div>
 
                     <div className="LoginSelector-card-subtitle">
-                  
-                        <div className="LoginSelector-button" onClick={Auth42Login()}>
+
+                        <a href="http://localhost:3001/auth/42/login" className="LoginSelector-button">
                             <div className="LoginSelector-button-content">
                                 <div className="LoginSelector-button-image">
                                     <FontAwesomeIcon icon={faCoffee} />
                                 </div>
                                 <div className="LoginSelector-button-text">Intra 42</div>
                             </div>
-                        </div>
+                        </a>
                 
                         <Link className="LoginSelector-button" to="/login/google">
                             <div className="LoginSelector-button-content">

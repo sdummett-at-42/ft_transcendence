@@ -5,10 +5,7 @@ import Home from "./Pages/Home/Home";
 import Profile from "./Pages/Profile/Profile";
 import NotFound from "./Pages/Errors/NotFound";
 import Layout from "./Pages/Navbar/Layout";
-import GoogleLogin from "./Pages/Login/Google/GoogleLogin";
-import FortyTwoLogin from "./Pages/Login/42/FortyTwoLogin";
 import TranscendenceLogin from "./Pages/Login/Transcendence/TranscendenceLogin";
-import DataFetching from "./Pages/Login/DataFetching";
 
 function App() {
 
@@ -16,11 +13,7 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/" element={<LoginSelector />} />
-        <Route path="/login/auth42" element={<FortyTwoLogin />} />
-        <Route path="/login/google" element={<GoogleLogin />} />
         <Route path="/login/transcendence" element={<TranscendenceLogin />} />
-
-        <Route path="/login/test" element={<DataFetching />} />
 
         <Route path="/home" element={<Layout children={<Home />} />} />
         {/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
