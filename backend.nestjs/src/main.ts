@@ -13,6 +13,9 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	const config = app.get(ConfigService);
 
+	// Enable cors
+	app.enableCors();
+
 	// Session
 	const RedisStore = connectRedis(session);
 	const redis = app.get(RedisService);
