@@ -1,0 +1,20 @@
+:root{
+    background-color: white;
+}
+.container {
+    display: flex;
+    /* background-color: black; */
+    height: 100vh;
+    width: 100vh;
+    /* text-decoration-color: blanchedalmond; */
+}
+  
+.container >  .div {
+    flex: 1;
+    height: 100px;
+}
+
+.srolling_bar {
+    overflow-y: scroll;
+    scrollbar-color: grey;
+}

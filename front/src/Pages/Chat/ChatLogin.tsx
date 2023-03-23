@@ -6,6 +6,8 @@ import { io, Socket } from "socket.io-client";
 import ChatroomList from "./ChatroomList";
 //import ChatroomDetail from './ChatroomDetail';
 import Message from './Message';
+import RoomDetail from "./RoomDetail";
+import "./chat.css"
 
 export default function ChatLogin() {
   const [selectedChatroom, setSelectedChatroom] = useState(null);
@@ -15,17 +17,17 @@ export default function ChatLogin() {
   }
 
     return (
-        <div className="container text-center " >
+        <div className="container" >
           <div className="row gx-5">
-              <div className="col vh-100" class="list-group">
-              <div class="input-group mb-3">
-              <input type="text" class="form-control" placeholder="New Room's name" aria-describedby="button-addon2" />
-              <button class="btn btn-outline-secondary" type="button" id="button-addon2" onClick={() => console.log("hihi")}>+</button>
-              </div >
+              <div className="col vh-100 list-group">
+                <div className="input-group mb-3">
+                  <input type="text" className="form-control" placeholder="New Room's name" aria-describedby="button-addon2" />
+                  <button className="btn btn-outline-secondary" type="button" id="button-addon2" onClick={() => console.log("hihi")}>+</button>
+                </div >
               <ChatroomList onChatroomSelect={handleChatroomSelect}/>
               </div>
-              <div className="col-6 vh-100"><Message chatroomId={selectedChatroom} /></div>
-              <div className="col vh-100">ChatroomDetail</div>
+              <div className=" col-6 vh-100"><Message chatroomId={selectedChatroom} /></div>
+              <div className="col vh-100 "><RoomDetail /></div>
 
           </div>
         </div>

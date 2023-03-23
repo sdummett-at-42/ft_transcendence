@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
 import {messageList} from './data'
+import "./chat.css"
 //import styles from './Message.module.css';
 
 // interface MessageProps {}
@@ -15,9 +16,9 @@ export default function Message(props) {
   const [messages, setMessages] = useState([]);
 
   const item = messageList.map(each => (
-    <div >
-      <p>{each.message}</p>
-      <p>{each.timestamp}</p>
+    <div className="srolling_bar" >
+      <p className="text-start my-1">{each.message}</p>
+      <small className="text-end">{each.createtime}</small>
     </div>
   ));
 
@@ -31,9 +32,12 @@ export default function Message(props) {
   // }, [props.chatroomId]);
 
   return (
-    <div data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" className="scrollspy-example bg-body-tertiary p-3 rounded-2" tabindex="0">
+    <div className=" scrollspy-example bg-body-tertiary p-3 rounded-2" data-bs-spy="scroll" data-bs-target="#navbar-example2" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" tabindex="0">
     <div>{item}</div>
-    <input></input>
+    <div className="input-group mb-3">
+  <input type="text" className="form-control" placeholder="send a message..." aria-describedby="button-addon2 " />
+  <button className="btn btn-outline-secondary" type="button" id="button-addon2">Send</button>
+</div>
     </div>
   );
 }
