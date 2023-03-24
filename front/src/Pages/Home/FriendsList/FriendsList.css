@@ -1,8 +1,9 @@
 .FriendsList {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--Navbar-border-color);
+    border-top: 1px solid rgb(255, 255, 255, 0.1);
     flex-grow: 1;
+    color: #eee;
 }
 
 .FriendsList-title {
@@ -16,6 +17,7 @@
 
 .FriendsList-search-bar-container {
     margin-top: 1vmin;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -33,10 +35,9 @@
     display: flex;
     text-align: center;
     justify-content: center;
-    height: 5vmin;
 }
 
-.FriendsList-icon {
+.FriendsList-messages {
     position: fixed;
     border: 1px solid #d1a23a;
     background-color: rgb(8,129,150);

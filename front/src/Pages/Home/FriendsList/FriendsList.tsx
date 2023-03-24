@@ -21,7 +21,7 @@ export default function FriendsList() {
                     user
                 </div>
             </div>
-            <Link to="/message" className="FriendsList-icon" style={{textDecoration: 'none', color: 'whitesmoke'}}>
+            <Link to="/message" className="FriendsList-messages" style={{textDecoration: 'none', color: 'whitesmoke'}}>
                 <FontAwesomeIcon icon={faComments} size="2x" />
             </Link>
         </div>

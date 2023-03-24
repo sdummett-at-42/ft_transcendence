@@ -62,7 +62,7 @@ export default function SearchBar() {
             <div className="SearchBar-results-list">
                 {
                     results.map((result, id) => (
-                        <div onClick={() => handleSuggestion(result.name)} className="SearchBar-result" key={id} >
+                        <div onClick={() => handleSuggestion(result.name)} className="SearchBar-search-result" key={id} >
                             {result.name}
                         </div>
                     ))
