@@ -3,9 +3,12 @@ import { Server, Socket } from 'socket.io';
 import { Shape, Square , Bullet, Circle, Coordonnee , Player, Field, BlackHole} from './entities/game.entities';
 import { GameGateway } from './game.gateway';
 import { Response } from 'express';
+import { RedisService } from 'src/modules/redis/redis.service';
 
 @Injectable()
 export class GameService {
+    constructor(private readonly redis: RedisService) { }
+
     numberElement = 2;
 
     field = new Field(400, 800);
@@ -18,6 +21,37 @@ export class GameService {
     player1 = new Player(20, 200, 84, 5);
     player2 = new Player(780, 200, 84, 5);
 
+    /* ************************** *\
+    |* connect disconnect functon *|
+    \* ************************** */
+
+    async handleConnection(socket) {
+		if (socket.handshake.headers.cookie == undefined) {
+			console.debug("Session cookie wasn't provided. Disconnecting socket.");
+			socket.emit("NotConnected", {
+				timestamp: new Date().toISOString(),
+				message: `No session cookie provided`,
+			});
+			socket.disconnect()
+			return;
+		}//
+		const sessionHash = socket.handshake.headers.cookie.slice(16).split(".")[0];
+		const session = await this.redis.getSession(sessionHash);
+		if (session === null) {
+			console.debug("User isn't logged in");
+			socket.emit("NotConnected", {
+				timestamp: new Date().toISOString(),
+				message: `User isn't logged in.`,
+			});
+			socket.disconnect()
+			return;
+		}
+		socket.emit("IsConnected", {
+			timestamp: new Date().toISOString(),
+			message: `Socket successfully connected.`
+		});
+	}
+
     /* ******************* *\
     |* input/entry functon *|
     \* ******************* */
@@ -29,16 +63,16 @@ export class GameService {
         this.shapes.push(this.player2.racket);
 
         // Creation Circle : x, y, r
-        const circle_01 = new Circle(200, 100, 30);
-        this.shapes.push(circle_01);
+        // const circle_01 = new Circle(200, 100, 30);
+        // this.shapes.push(circle_01);
 
         // Creation square : x, y, l, w
         const square_01 = new Square(400, 240, 50, 100);
         this.shapes.push(square_01);
 
         // Creation BlackHole : x, y, l, w
-        const BlackHole_01 = new BlackHole(200, 300, 45);
-        this.shapes.push(BlackHole_01);
+        // const BlackHole_01 = new BlackHole(200, 300, 45);
+        // this.shapes.push(BlackHole_01);
 
         this.numberElement = this.shapes.length;
         server.emit("image", this.shapes);   
@@ -55,7 +89,7 @@ export class GameService {
 
             // Creation bullet
             // x, y, r, v, f, a
-            let bullet_01 = new Bullet(200, 200, 6, 3, 50, 3.14 );
+            let bullet_01 = new Bullet(200, 200, 3, 3, 50, 3.14 );
             this.shapes.push(bullet_01);
 
 
@@ -169,10 +203,7 @@ export class GameService {
         // Vérifier si la balle touche les murs horizontaux
         if (bullet.pos.y + bullet.r > this.field.height || bullet.pos.y - bullet.r < 0)
             bullet.a = -bullet.a;
-        //console.log(bullet.a);
             
-        // si collision, changer direction bullet
-
         // Check if bullet hit an other shape
         // collision activate with Square and Circle
         // no collision between bullet (or himself)
@@ -180,35 +211,19 @@ export class GameService {
             const shape = this.shapes[i];
             // Mettre optimisation check si radius bullet et radius shape no hit
             // === >
-
             if (shape instanceof Circle || shape instanceof BlackHole) {
                 // check if collision with circle
-                let dx :number = Math.pow(shape.pos.x - bullet.pos.x, 2);
-                let dy :number = Math.pow(shape.pos.y - bullet.pos.y, 2);
-                const dist = Math.sqrt(dx + dy);
-                if (dist <= shape.r + bullet.r) {// if true => change dir bullet
+                if (this.checkInRangeCircle(bullet, shape)) {
                     console.log("Collision with Cercle !");
-
-                    // Mettre à jour l'angle de la balle
+                    // Get new angle bullet
                     if (shape instanceof BlackHole)
                         this.collisionBlackHole(bullet, shape);
                     else
                         this.collisionCircle(bullet, shape);
-
                 }
-            } else if (shape instanceof Square) {
+            } else if (shape instanceof Square && this.checkInRange(bullet, shape)) { // Check if shape to far from bullet
                 // check if collision with Square
-                const minX : number = bullet.pos.x - bullet.r; 
-                const maxX : number = bullet.pos.x + bullet.r; 
-                const minY : number = bullet.pos.y - bullet.r; 
-                const maxY : number = bullet.pos.y + bullet.r; 
-
-                // erreur si balle trop grosse (bullet > obstacle ou racket) a changer avec les differents idees
-                if (((minX >= shape.pos.x && minX <= shape.pos.x + shape.width) || //    si partie gauche bullet
-                    (maxX >= shape.pos.x && maxX <= shape.pos.x + shape.width)) && // ou si partie droite
-                    ((minY >= shape.pos.y && minY <= shape.pos.y + shape.length) ||//et  si partie haute bullet
-                    (maxY >= shape.pos.y && maxY <= shape.pos.y + shape.length)) // ou    si partie bas bullet
-                    ) {
+                if (this.checkInRangeSquare(bullet, shape)) {
                     console.log("Collision with Square !");
 
                     // Cas racket
@@ -219,6 +234,78 @@ export class GameService {
                 }
             }
         }
+    }
+
+    checkInRange(bullet : Bullet, square : Square) : Boolean {
+        // Put square in circle
+
+        // Get coord square's center
+        const csx : number = square.pos.x + square.width / 2; 
+        const csy : number = square.pos.y + square.length / 2;
+
+        // Get radius circle
+        const dsx : number = square.pos.x + square.width;
+        const dsy : number = square.pos.y + square.length;
+        const sr : number = Math.sqrt(Math.pow(dsx, 2) + Math.pow(dsy, 2));
+
+        const circle = new Circle(dsx, dsy, sr);
+        if (this.checkInRangeCircle(bullet, circle))
+            return true;
+        return false;
+    }
+
+    checkInRangeSquare(bullet : Bullet, square : Square) : Boolean {
+        // // put bullet in square
+        const minX : number = bullet.pos.x - bullet.r;
+        const minY : number = bullet.pos.y - bullet.r;
+        const bs = new Square(minX, minY, bullet.r * 2, bullet.r *2);
+
+
+        // check if collission bullet's square and sqare 
+        if (this.checkInSquare(bs, square) || this.checkInSquare(square, bs))
+            return true;
+        
+        return false;
+    }
+
+    //function check if square1 is in squre2
+    checkInSquare(square1 : Square, square2 : Square) : Boolean {
+        const s1_xl : number = square1.pos.x;
+        const s1_xr : number = square1.pos.x + square1.width;
+        const s1_yt : number = square1.pos.y;
+        const s1_yb : number = square1.pos.x + square1.length;
+
+        const s2_xl : number = square2.pos.x;
+        const s2_xr : number = square2.pos.x + square2.width;
+        const s2_yt : number = square2.pos.y;
+        const s2_yb : number = square2.pos.x + square2.length;
+
+        console.log(s1_xl, s1_xr, s1_yt, s1_yb);
+
+        if (s1_xl <= s2_xr && s1_xr >= s2_xl && s1_yt <= s2_yb && s1_yb >= s2_yt) {
+            return true;
+}
+
+        if ((s1_xl >= s2_xl && s1_xl <= s2_xr && s1_yt >= s2_yt && s1_yt <= s2_yb)  // top left
+        ||  (s1_xr >= s2_xl && s1_xr <= s2_xr && s1_yt >= s2_yt && s1_yt <= s2_yb)  // top right) 
+        ||  (s1_xl >= s2_xl && s1_xl <= s2_xr && s1_yb >= s2_yt && s1_yb <= s2_yb)  // bot left
+        ||  (s1_xr >= s2_xl && s1_xr <= s2_xr && s1_yb >= s2_yt && s1_yb <= s2_yb) )// bot right
+            return true;
+        // check square collision but corner not in
+        if (s1_xl >= s2_xl && s1_xl <= s2_xr && s1_yt < s2_yt && s1_yb > s2_yt // cross top left to bot left 
+        ||  s1_xr >= s2_xl && s1_xr <= s2_xr && s1_yt < s2_yt && s1_yb > s2_yt)// cross top right to bot right
+            return true;
+        return false;
+    }
+
+    checkInRangeCircle(bullet : Bullet, circle : Circle | BlackHole) : Boolean {
+        // check if collision with circle and bullet
+        const dx : number = Math.pow(circle.pos.x - bullet.pos.x, 2);
+        const dy : number = Math.pow(circle.pos.y - bullet.pos.y, 2);
+        const dist = Math.sqrt(dx + dy);
+        if (dist <= circle.r + bullet.r)// if true => change dir bullet
+            return true
+        return false;
     }
 
     collisionRacket(bullet : Bullet, racket: Square) : void {
