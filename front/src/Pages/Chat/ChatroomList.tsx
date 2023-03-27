@@ -3,13 +3,13 @@ import {roomList} from './data'
 import { useState, useEffect } from 'react';
 import Modal from "./Modal";
 
+
 export default function ChatroomList(props) {
   const [chatrooms, setChatrooms] = useState([]);
   const [show, setShow] = useState(false);
     const close = () => {
       setShow(false);
     };
-
   // useEffect(() => {
   //   // Fetch list of chatrooms
   //   fetch('/api/chatrooms')
@@ -40,9 +40,13 @@ export default function ChatroomList(props) {
 
     <div className="people-list" id="people-list">
             <div className="search">
-            <button  onClick={(e) => {
+            <button  onClick={() => {
           setShow(true);}} >Create a New ChatRoom</button>
-          {show && <Modal close={close} />}
+          <Modal         isVisible={show}
+            title="Modal Title"
+            content={<p>Add your content here</p>}
+            footer={<button>Cancel</button>}
+            onClose={() => setShow(false)} />
            
             <i className="fa fa-plus" aria-hidden="true"></i>
             {/* <input type="text" placeholder="search" /> */}
