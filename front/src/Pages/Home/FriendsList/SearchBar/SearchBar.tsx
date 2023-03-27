@@ -3,7 +3,7 @@ import './SearchBar.css';
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export default function SearchBar() {
+export default function SearchBar(props) {
 
     const [input, setInput] = useState("");
     const [results, setResults] = useState([]);
@@ -12,6 +12,7 @@ export default function SearchBar() {
     // use to send the request to the user
     const sendFriendRequest = ({input}) => {
         console.log(input);
+        props = input;
     }
 
     // fetch user database

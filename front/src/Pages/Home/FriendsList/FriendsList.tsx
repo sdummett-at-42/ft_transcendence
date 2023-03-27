@@ -7,18 +7,21 @@ import SearchBar from "./SearchBar/SearchBar";
 
 export default function FriendsList() {
 
+    const [friend, setFriend] = useState([]);
+
     return (
         <div className="FriendsList">
             <div className="FriendsList-title">
                 Liste d'amis
             </div>
             <div className="FriendsList-search-bar-container">
-                <SearchBar />
+                <SearchBar props={setFriend} />
             </div>
             <div className="FriendsList-list">
                 <div className="FriendsList-user">
-                    {/* added user */}
-                    user
+                    <div>
+                        {friend.name}
+                    </div>
                 </div>
             </div>
             <Link to="/message" className="FriendsList-messages" style={{textDecoration: 'none', color: 'whitesmoke'}}>
