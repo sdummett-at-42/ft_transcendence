@@ -4,16 +4,31 @@ import React, { FC } from 'react';
 interface RoomDetailProps {}
 
 const RoomDetail: FC<RoomDetailProps> = () => (
-  <div >
-    <h1>Room name</h1>
-    <h2>public/private</h2>
-    <h2>list de admin</h2>
-    <h2>list de member</h2>
-    <h2>invite</h2>
-    <h2>mute/unmute</h2>
-    <h2>ban/unban</h2>
-    <h2></h2>
+ 
+  <div className="chatinfo">
+      <div className="chat-info-header clearfix">
+        <div className='chat-info-title'>Room Setiting</div>
+
+            <button >private</button>
+            <button >public</button>
+            <button >change</button>
+      </div>
+      <div className="chat-info-header clearfix">
+        <div className='chat-info-title'>Member List</div>
+            <li className="clearfix">
+              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_08.jpg" alt="avatar" />
+              <div className="about">
+                <div className="name">Monica Ward</div>
+                <div className="status">
+                  <i className="fa fa-circle online"></i> online
+                </div>
+              </div>
+            </li>
+
+            
+      </div>
   </div>
+
 );
 
 export default RoomDetail;

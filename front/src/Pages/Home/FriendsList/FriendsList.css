@@ -1,0 +1,49 @@
+.FriendsList {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--Navbar-border-color);
+    flex-grow: 1;
+}
+
+.FriendsList-title {
+    background-color: rgb(8,129,150);
+    height: 4vmin;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.FriendsList-search-bar-container {
+    margin-top: 1vmin;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 200px;
+}
+
+.FriendsList-list {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    height: 85vmin;
+}
+
+.FriendsList-user {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    height: 5vmin;
+}
+
+.FriendsList-icon {
+    position: fixed;
+    border: 1px solid #d1a23a;
+    background-color: rgb(8,129,150);
+    bottom: 0;
+    width: 24.5%;
+    height: 5vmin;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

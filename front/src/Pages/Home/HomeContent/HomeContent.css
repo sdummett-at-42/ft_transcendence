@@ -1,0 +1,28 @@
+.HomeContent {
+    width: 100%;
+    height: 100vh;
+    border: 1px solid var(--Navbar-border-color);
+    flex-basis: calc(100% * (6/8));
+}
+
+.HomeContent-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.HomeContent-text {
+    margin-top: 7vmin;
+    position: absolute;
+    width: 75%;
+    height: 100%;
+    flex-basis: calc(100% * (6/8));
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-weight: 400;
+    font-size: 5vmin;
+}

@@ -12,11 +12,15 @@ import { RedisService } from './modules/redis/redis.service';
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	const config = app.get(ConfigService);
+	const cors = require('cors');
 
 	// Session
 	const RedisStore = connectRedis(session);
 	const redis = app.get(RedisService);
 	app.use(
+		cors({
+			origin: 'http://localhost:5173'
+		}),
 		session({
 			store: new RedisStore({ client: redis.getClient() }),
 			secret: config.get('SESSION_SECRET'),
