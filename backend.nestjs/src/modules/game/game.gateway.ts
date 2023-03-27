@@ -12,6 +12,7 @@ export class GameGateway {
   // Connection
   handleConnection(socket: Socket) {
     console.log('New client connected game:', socket.id);
+    //this.gameService.handleConnection(socket);
     this.gameService.initGame(this.server, socket);
   }
 

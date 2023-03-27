@@ -10,6 +10,7 @@ export class GameService {
     constructor(private readonly redis: RedisService) { }
 
     numberElement = 2;
+    speed = 5;
 
     field = new Field(400, 800);
     shapes : Shape[] = [];
@@ -32,9 +33,10 @@ export class GameService {
 				timestamp: new Date().toISOString(),
 				message: `No session cookie provided`,
 			});
+            console.log("handleConnection no session cookie");
 			socket.disconnect()
 			return;
-		}//
+		}
 		const sessionHash = socket.handshake.headers.cookie.slice(16).split(".")[0];
 		const session = await this.redis.getSession(sessionHash);
 		if (session === null) {
@@ -43,9 +45,11 @@ export class GameService {
 				timestamp: new Date().toISOString(),
 				message: `User isn't logged in.`,
 			});
+            console.log("handleConnection not logged");
 			socket.disconnect()
 			return;
 		}
+        console.log("handleConnection: connected", socket.IsConnected);
 		socket.emit("IsConnected", {
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
@@ -59,6 +63,8 @@ export class GameService {
     initGame(server : Server, user : Socket) {
         // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
         // on count pour numberElement lors reset/scoring
+        if (this.shapes.length != 0)
+            return ;
         this.shapes.push(this.player1.racket);
         this.shapes.push(this.player2.racket);
 
@@ -89,7 +95,7 @@ export class GameService {
 
             // Creation bullet
             // x, y, r, v, f, a
-            let bullet_01 = new Bullet(200, 200, 3, 3, 50, 3.14 );
+            let bullet_01 = new Bullet(200, 200, 5, 3, 30, 3.14 );
             this.shapes.push(bullet_01);
 
 
@@ -108,7 +114,7 @@ export class GameService {
         }
         else {
             console.log("Fin de la partie !");//
-
+//
             //console.log(this.shapes.length);
             //console.log(this.shapes[2]);//
 
@@ -116,6 +122,7 @@ export class GameService {
             clearInterval(this.bulletInterval);
             this.shapes.splice(this.numberElement);
 
+            console.log(this.shapes);
             console.log("sub", this.shapes.length);
             server.emit('image', this.shapes);
         }
@@ -158,7 +165,7 @@ export class GameService {
 
         // Start the interval to increment to all bullet.f every second
         this.frequencyInterval = setInterval(() => {
-            bullet.f += 5;
+            bullet.f += this.speed;
             console.log("bullet frequency: ", bullet.f);
         }, 1000);
 
@@ -207,6 +214,7 @@ export class GameService {
         // Check if bullet hit an other shape
         // collision activate with Square and Circle
         // no collision between bullet (or himself)
+        console.log(this.shapes.length, this.shapes);
         for (let i = 0; i < this.shapes.length; i++) {
             const shape = this.shapes[i];
             // Mettre optimisation check si radius bullet et radius shape no hit
@@ -222,10 +230,10 @@ export class GameService {
                         this.collisionCircle(bullet, shape);
                 }
             } else if (shape instanceof Square && this.checkInRange(bullet, shape)) { // Check if shape to far from bullet
+            console.log("Square in range !");
                 // check if collision with Square
                 if (this.checkInRangeSquare(bullet, shape)) {
-                    console.log("Collision with Square !");
-
+                    console.log("----------------------Collision with Square !:", i);
                     // Cas racket
                     if (i < 2) // i = 0 J1 | i = 1 j2
                         this.collisionRacket(bullet, shape);
@@ -244,11 +252,11 @@ export class GameService {
         const csy : number = square.pos.y + square.length / 2;
 
         // Get radius circle
-        const dsx : number = square.pos.x + square.width;
-        const dsy : number = square.pos.y + square.length;
+        const dsx : number = square.width / 2;
+        const dsy : number = square.length / 2;
         const sr : number = Math.sqrt(Math.pow(dsx, 2) + Math.pow(dsy, 2));
 
-        const circle = new Circle(dsx, dsy, sr);
+        const circle = new Circle(csx, csy, sr);
         if (this.checkInRangeCircle(bullet, circle))
             return true;
         return false;
@@ -260,7 +268,7 @@ export class GameService {
         const minY : number = bullet.pos.y - bullet.r;
         const bs = new Square(minX, minY, bullet.r * 2, bullet.r *2);
 
-
+        console.log("minX, MinY:", minX, minY);
         // check if collission bullet's square and sqare 
         if (this.checkInSquare(bs, square) || this.checkInSquare(square, bs))
             return true;
@@ -273,14 +281,14 @@ export class GameService {
         const s1_xl : number = square1.pos.x;
         const s1_xr : number = square1.pos.x + square1.width;
         const s1_yt : number = square1.pos.y;
-        const s1_yb : number = square1.pos.x + square1.length;
+        const s1_yb : number = square1.pos.y + square1.length;
 
         const s2_xl : number = square2.pos.x;
         const s2_xr : number = square2.pos.x + square2.width;
         const s2_yt : number = square2.pos.y;
-        const s2_yb : number = square2.pos.x + square2.length;
+        const s2_yb : number = square2.pos.y + square2.length;
 
-        console.log(s1_xl, s1_xr, s1_yt, s1_yb);
+        console.log("xl, xr, yt, yb:", s1_xl, s1_xr, s1_yt, s1_yb);
 
         if (s1_xl <= s2_xr && s1_xr >= s2_xl && s1_yt <= s2_yb && s1_yb >= s2_yt) {
             return true;
@@ -303,6 +311,7 @@ export class GameService {
         const dx : number = Math.pow(circle.pos.x - bullet.pos.x, 2);
         const dy : number = Math.pow(circle.pos.y - bullet.pos.y, 2);
         const dist = Math.sqrt(dx + dy);
+
         if (dist <= circle.r + bullet.r)// if true => change dir bullet
             return true
         return false;
@@ -317,17 +326,25 @@ export class GameService {
         console.log(angle);
 
         // if angle to acute
-        if (angle >= 1.1 && angle <= 2.2) { // high 
-            if (angle < 1.6)
+        if (angle >= 1.1 && angle <= 2.2) { // top 
+            if (angle < 1.6) { // left
                 angle = 1.1
-            else
+                bullet.pos.x += bullet.r;
+            }
+            else {// right
                 angle = 2.2
+                bullet.pos.x -= bullet.r;
+            }
         }
-        else if (angle <= -1.1 && angle >= -2.2) { // low
-        if (angle > -1.6)
-                angle = -1.1
-            else
+        else if (angle <= -1.1 && angle >= -2.2) { // bot
+        if (angle > -1.6) {// left
+            angle = -1.1
+                bullet.pos.x += bullet.r;
+            }
+            else { //right
                 angle = -2.2
+                bullet.pos.x -= bullet.r;
+            }
         }
         // change bullet.a
         bullet.a = angle;
