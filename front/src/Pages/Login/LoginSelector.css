@@ -1,14 +1,5 @@
-:root {
-    --LoginSelector-border: rgb(3, 169, 244);
-    --LoginSelector-border-color: rgb(255, 255, 255, 0.1);
-    color: white;
-    
-    --g1: rgb(98, 0, 234);
-    --g2: rgb(236, 64, 122);
-    --g3: rgb(253, 216, 53);
-}
-
 .LoginSelector-body {
+    color: white;
     min-height: 100vmin;
     min-width: 100vmin;
     display: flex;
@@ -25,7 +16,7 @@
 .LoginSelector-card {
     background-color: rgb(10, 10, 10);
     aspect-ratio: 1 / 1.6;
-    border: 0.5vmin solid var(--LoginSelector-border);
+    border: 0.5vmin solid rgb(3, 169, 244);
     border-radius: 8px;
     position: relative;
     width: 56vmin;
@@ -56,9 +47,9 @@
       background: linear-gradient(
       130deg, 
       transparent 0% 33%, 
-      var(--g1) 66%, 
-      var(--g2) 83.5%, 
-      var(--g3) 100%
+      rgb(98, 0, 234) 66%, 
+      rgb(236, 64, 122) 83.5%, 
+      rgb(253, 216, 53) 100%
     );
     border-radius: 8px;
     background-position: 0% 0%;
@@ -126,7 +117,7 @@
     margin-top: 2vmin;
     display: flex;
     width: 100%;
-    border: 1px solid var(--LoginSelector-border-color);
+    border: 1px solid rgb(255, 255, 255, 0.1);
     color: white;
     text-decoration: none;
 }
