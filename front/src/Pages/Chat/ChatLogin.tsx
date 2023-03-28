@@ -34,10 +34,12 @@ export default function ChatLogin() {
 
 // const ChatLogin: React.FC = () => {
 //   const [socket, setSocket] = useState<Socket | null>(null);
+//   const [data, setData] = useState([]);
 
 //   useEffect(() => {
 //     // Create a new WebSocket connection using socket.io-client
 //     const newSocket = io("ws://localhost:3001");
+    
 
 //     // Set up the event listeners for the WebSocket
 //     newSocket.on("connect", () => {
@@ -59,13 +61,31 @@ export default function ChatLogin() {
 //     // Save the WebSocket instance to the state
 //     setSocket(newSocket);
 
+//     const fetchData = async () => {
+//       const response = await fetch("http://localhost:3001/users/1");
+//       const data = await response.json();
+//       setData(data);
+//     };
+
+//     fetchData();
+
 //     // Clean up the WebSocket connection when the component unmounts
 //     return () => {
+//       console.log(data);
 //       newSocket.disconnect();
 //     };
 //   }, []);
 
-//   return (        <div> HELLO!
+//   return (        <div> {data ? (
+//     <ul>
+//       {data.map((friend: any) => (
+//         <li key={friend.id}>{friend.name}</li>
+//       ))}
+//     </ul>
+//   ) : (
+//     <p>Loading...</p>
+//   )}
+
 //             </div>)
 // };
 

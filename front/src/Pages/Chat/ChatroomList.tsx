@@ -53,10 +53,9 @@ export default function ChatroomList(props) {
             
             </div>
           <ul className="list">
-            <li className="clearfix">
-            
+            <li className="clearfix">       
               <div className="about">
-                <div className="name">Vincent Porter</div>
+                <div className="name">Group a</div>
                 <div className="status">
                   <i className="fa fa-circle online"></i> online
                 </div>
@@ -64,9 +63,8 @@ export default function ChatroomList(props) {
             </li>
             
             <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_02.jpg" alt="avatar" />
               <div className="about">
-                <div className="name">Aiden Chavez</div>
+                <div className="name">Gaming</div>
                 <div className="status">
                   <i className="fa fa-circle offline"></i> left 7 mins ago
                 </div>
@@ -74,7 +72,6 @@ export default function ChatroomList(props) {
             </li>
             
             <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_03.jpg" alt="avatar" />
               <div className="about">
                 <div className="name">Mike Thomas</div>
                 <div className="status">
@@ -84,9 +81,8 @@ export default function ChatroomList(props) {
             </li>
             
             <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_04.jpg" alt="avatar" />
               <div className="about">
-                <div className="name">Erica Hughes</div>
+                <div className="name">Transcendance </div>
                 <div className="status">
                   <i className="fa fa-circle online"></i> online
                 </div>
@@ -94,9 +90,8 @@ export default function ChatroomList(props) {
             </li>
             
             <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_05.jpg" alt="avatar" />
               <div className="about">
-                <div className="name">Ginger Johnston</div>
+                <div className="name">Webserv</div>
                 <div className="status">
                   <i className="fa fa-circle online"></i> online
                 </div>
@@ -104,9 +99,8 @@ export default function ChatroomList(props) {
             </li>
             
             <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_06.jpg" alt="avatar" />
               <div className="about">
-                <div className="name">Tracy Carpenter</div>
+                <div className="name">Hello</div>
                 <div className="status">
                   <i className="fa fa-circle offline"></i> left 30 mins ago
                 </div>
@@ -114,7 +108,6 @@ export default function ChatroomList(props) {
             </li>
             
             <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_07.jpg" alt="avatar" />
               <div className="about">
                 <div className="name">Christian Kelly</div>
                 <div className="status">
@@ -124,7 +117,6 @@ export default function ChatroomList(props) {
             </li>
             
             <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_08.jpg" alt="avatar" />
               <div className="about">
                 <div className="name">Monica Ward</div>
                 <div className="status">
@@ -134,7 +126,6 @@ export default function ChatroomList(props) {
             </li>
             
             <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_09.jpg" alt="avatar" />
               <div className="about">
                 <div className="name">Dean Henry</div>
                 <div className="status">
@@ -144,7 +135,6 @@ export default function ChatroomList(props) {
             </li>
             
             <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_10.jpg" alt="avatar" />
               <div className="about">
                 <div className="name">Peyton Mckinney</div>
                 <div className="status">

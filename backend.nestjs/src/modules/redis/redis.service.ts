@@ -358,7 +358,7 @@ export class RedisService {
 			users.push(userIdToAdd);
 		this.client.multi()
 			.set(`user:${userId}:dms`, JSON.stringify(users))//users)
-			.expire(`user:${userId}: dms`, expirationTime + 42)
+			.expire(`user:${userId}:dms`, expirationTime + 42)
 			.exec()
 	}
 
@@ -450,86 +450,30 @@ export class RedisService {
 		});
 	}
 
-	/* ******** */
-	/* Tests */
-
-	async delay(ms: number) {
-		return new Promise(resolve => setTimeout(resolve, ms));
+	async set2faCookie(userId: number, value: string, expirationTime: number) {
+		this.client.multi()
+			.set(`user:${userId}:twofactor_cookie`, value)
+			.expire(`user:${userId}:twofactor_cookie`, expirationTime)
+			.exec()
 	}
 
-	async atomic_test() {
-		await this.setRoomBanned("42", 24);
-		await this.setRoomBanned("42", 12313);
-		await this.setRoomOwner("42", 2245);
-		// await this.unsetRoomBanned("42", 24);
+	async unset2faCookie(userId: number) {
+		this.client.del(`user:${userId}:twofactor_cookie`);
+	}
 
-		// await this.unsetAllRooms();  
-		const owner = await this.getRoomOwner("42");
-		console.debug(`length: ${owner.length}`)
-		console.debug(`owner: ${owner}`);
+	async get2faCookie(userId: number) {
+		return new Promise((resolve, reject) => {
+			this.client.get(`user:${userId}:twofactor_cookie`, (err, cookie) => {
+				resolve(cookie);
+			});
+		});
+	}
 
-		// const uniqueId = uuid();
-		// console.debug(`uniqueId: ${uniqueId}`)
-		// await this.setRoomMessage("42", Date.now(), 244, "Hello World", 15);
-		// await new Promise(f => setTimeout(f, 10000));
-		// await this.setRoomMessage("42", 244, Date.now(), "Hello Last World", 15);
-		const messages = await this.getRoomMessages("42");
-		console.debug("messages:");
-		console.debug(messages)
-		console.debug(`typeof messages: ${typeof messages}`)
-		const room = await this.getRoom("42");
-		console.debug(`room.length: ${room.length}`);
-		console.debug(`typeof room: ${typeof room}`)
-		const room2 = await this.getRoom("unknown");
-		console.debug(`room2.length: ${room2.length}`);
-		console.debug(`typeof room2: ${typeof room2}`)
-
-		await this.setRoomMember("42", 1337);
-		await this.setRoomMember("42", 1338);
-		await this.setRoomMember("42", 29384);
-		let members = await this.getRoomMembers("42");
-		console.debug(`members: ${members}`);
-		console.debug(`members.length: ${members.length}`);
-		console.debug(members.includes("1337"));
-		await this.unsetRoomMember("42", 1337);
-		members = await this.getRoomMembers("42");
-
-		console.debug(members.includes("1337"));
-
-		await this.setRoomVisibility("42", "LOOL");
-		let visibility = await this.getRoomVisibility("42");
-		console.debug(`visibility: ${visibility}`);
-		await this.setRoomVisibility("42", "MDR")
-		visibility = await this.getRoomVisibility("42");
-		console.debug(`visibility: ${visibility}`);
-
-		// await this.setRoomPassword("42", await argon2.hash(""));
-		const hash = await this.getRoomPassword("42");
-		console.debug(`hash: ${hash}`);
-		console.debug(`verify: ${await argon2.verify(hash, "")}`);
-
-		await this.setRoomMuted("42", 4242, 10);
-		await this.unsetRoomMuted("42", 4242);
-		let muted = await this.getRoomMuted("42", 4242);
-		console.debug(`muted: ${muted}`);
-		console.debug(`muted.length: ${muted.length}`);
-		muted = await this.getRoomMuted("42", 4243);
-		console.debug(`muted: ${muted}`);
-		console.debug(`muted.length: ${muted.length}`);
-		await this.setRoomMuted("42", 4243, 10);
-		console.debug(`muted: ${muted}`);
-		console.debug(`muted.length: ${muted.length}`);
-
-		await this.setUserRoom(4242, "roooomz");
-		await this.setUserRoom(4242, "roooomz-2");
-		await this.setUserRoom(4242, "roooomz-42");
-		await this.setUserRoom(4242, "roooomz-224");
-		await this.unsetUserRoom(4242, "roooomz");
-		// await this.unsetUserRoom(4242, "roooomz-2");
-		await this.unsetUserRoom(4242, "roooomz-42");
-		// await this.unsetUserRoom(4242, "roooomz-224");
-
-		const userRooms = await this.getUserRooms(4242);
-		console.debug(`userRooms: ${userRooms}`)
+	async get2faCookieExpirationTime(userId: number): Promise<number> {
+		return new Promise((resolve, reject) => {
+			this.client.ttl(`user:${userId}:twofactor_cookie`, (err, ttl) => {
+				resolve(ttl);
+			});
+		});
 	}
 }

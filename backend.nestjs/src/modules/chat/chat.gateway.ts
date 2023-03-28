@@ -7,16 +7,12 @@ import { Injectable } from '@nestjs/common';
 import { Event } from './chat-event.enum';
 
 @Injectable()
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;
 
 	constructor(private readonly chat: ChatService) { }
-
-	// async afterInit(server: Server) {
-	// 	this.chat.atomic_test();
-	// }
 
 	async afterInit(server: Server) {
 		await this.chat.afterInit();
@@ -33,11 +29,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	// Maybe not needed since we call logout via users module
 	@SubscribeMessage(Event.logout)
 	async onLogout(@ConnectedSocket() socket) {
-		this.chat.logout(socket.data.userId, this.server);
+		this.chat.disconnectUserSockets(socket.data.userId, this.server);
 	}
 
-	async onLogoutViaController(userId: number) {
-		this.chat.logout(userId, this.server);
+	async disconnectUserSockets(userId: number) {
+		this.chat.disconnectUserSockets(userId, this.server);
 	}
 
 	@SubscribeMessage(Event.createRoom)

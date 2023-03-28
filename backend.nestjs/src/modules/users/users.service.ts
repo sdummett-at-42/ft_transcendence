@@ -95,6 +95,41 @@ export class UsersService {
 		});
 	}
 
+	async update2faIsEnabled(id: number, enabled: boolean) {
+		const user = await this.prisma.user.findUnique({ where: { id } });
+		if (!user)
+			return null;
+		return this.prisma.user.update({
+			where: { id },
+			data: { twofactorIsEnabled: enabled },
+			select: { twofactorIsEnabled: true },
+		})
+	}
+
+	async set2faSecret(id: number, secret: string) {
+		const user = await this.prisma.user.findUnique({ where: { id } });
+		if (!user)
+			return;
+		const up = await this.prisma.user.update({
+			where: { id },
+			data: { twofactorSecret: secret },
+		});
+	}
+
+	async get2faIsEnabled(id: number) {
+		const user = await this.prisma.user.findUnique({ where: { id } });
+		if (!user)
+			return null;
+		return user.twofactorIsEnabled;
+	}
+
+	async get2faSecret(id: number) {
+		const user = await this.prisma.user.findUnique({ where: { id }});
+		if (!user)
+			return null;
+		return user.twofactorSecret;
+	}
+
 	async removeUser(id: number) {
 		await this.images.removeImage(id);
 		return this.prisma.user.delete({

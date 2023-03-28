@@ -14,13 +14,18 @@ async function bootstrap() {
 	const config = app.get(ConfigService);
 	const cors = require('cors');
 
+	// Enable cors
+	app.enableCors({
+		origin: '*',
+	});
+
 	// Session
 	const RedisStore = connectRedis(session);
 	const redis = app.get(RedisService);
 	app.use(
-		cors({
-			origin: 'http://localhost:5173'
-		}),
+		// cors({
+		// 	origin: 'http://localhost:5173'
+		// }),
 		session({
 			store: new RedisStore({ client: redis.getClient() }),
 			secret: config.get('SESSION_SECRET'),
@@ -45,12 +50,12 @@ async function bootstrap() {
 	const document = SwaggerModule.createDocument(app, swaggerConfig);
 	SwaggerModule.setup("api", app, document);
 
-	const corsOptions: CorsOptions = {
-		origin: '*',
-		methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-		allowedHeaders: ['Content-Type', 'Authorization'],
-	  };
-	  app.use(cors(corsOptions));
+	// const corsOptions: CorsOptions = {
+	// 	origin: '*',
+	// 	methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+	// 	allowedHeaders: ['Content-Type', 'Authorization'],
+	//   };
+	//   app.use(cors(corsOptions));
 
 	// app.setGlobalPrefix("api");
 	app.use(passport.initialize());

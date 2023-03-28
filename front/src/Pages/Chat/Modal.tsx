@@ -28,15 +28,11 @@ export default function Modal({ isVisible, title, content, footer, onClose }) {
             </span>
           </div>
           <div className="modal-body">
-            <div className="modal-content">{content}</div>
+            <div className="modal-content">
             <form>
             <div class="form-group">
                 <label for="inputChatRoomName">Chat Roon Name</label>
                 <input type="text" className="form-control" id="nputChatRoomName" placeholder="" />
-            </div>
-            <div class="form-group">
-                <label for="inputPassword">Password</label>
-                <input type="text" className="form-control" id="inputAddress" placeholder="" />
             </div>
             <div class="form-group col-md-4">
                 <label for="inputAccess">Accessibility</label>
@@ -47,11 +43,16 @@ export default function Modal({ isVisible, title, content, footer, onClose }) {
                 </select>
             </div>
             <div class="form-group">
+                <label for="inputPassword">Password</label>
+                <input type="text" className="form-control" id="inputAddress" placeholder="" />
+            </div>
+            <div class="form-group">
                 <label for="inputInvitefriend">Invite your friend</label>
                 <input type="text" className="form-control" id="inputAddress" placeholder="" />
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
           </form>
+          </div>
           </div>
           {footer && <div className="modal-footer">{footer}</div>}
         </div>
