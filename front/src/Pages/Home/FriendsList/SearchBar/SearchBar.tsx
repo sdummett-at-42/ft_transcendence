@@ -3,7 +3,7 @@ import './SearchBar.css';
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export default function SearchBar() {
+export default function SearchBar(props) {
 
     const [input, setInput] = useState("");
     const [results, setResults] = useState([]);
@@ -16,7 +16,10 @@ export default function SearchBar() {
 
     // fetch user database
     const fetchData = (value) => {
-        fetch("https://jsonplaceholder.typicode.com/users")
+        fetch("http://localhost:3001/users", {
+            method: "GET",
+            credentials: "include"
+        })
             .then((response) => response.json())
             .then(json => {
                 const results = json.filter((user) => {

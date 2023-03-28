@@ -1,5 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
+import FriendsList from "../Home/FriendsList/FriendsList";
 
 export default function Profile() {
 
@@ -8,7 +9,7 @@ export default function Profile() {
 
     return (
         <div>
-            <h1>Profil</h1>
+            <FriendsList />
         </div>
     );
 }
