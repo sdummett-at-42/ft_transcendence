@@ -60,11 +60,12 @@ export class AuthController {
 			if (err) {
 				console.log('Login Failed');
 			}
-			res.send({
-				message: "Logged successfully.",
-				twofactorEnabled: false,
-				twofactorValidated: false,
-			})
+			// res.send({
+			// 	message: "Logged successfully.",
+			// 	twofactorEnabled: false,
+			// 	twofactorValidated: false,
+			// })
+			res.status(200).redirect("http://localhost:5173/home")
 		});
 	}
 
@@ -192,5 +193,6 @@ export class AuthController {
 			twofactorEnabled: true,
 			twofactorValidated: false,
 		});
+		res.status(302).redirect("http://localhost:5173/home")
 	}
 }

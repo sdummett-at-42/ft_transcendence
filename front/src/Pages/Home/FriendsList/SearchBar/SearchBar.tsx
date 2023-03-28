@@ -12,12 +12,14 @@ export default function SearchBar(props) {
     // use to send the request to the user
     const sendFriendRequest = ({input}) => {
         console.log(input);
-        props = input;
     }
 
     // fetch user database
     const fetchData = (value) => {
-        fetch("https://jsonplaceholder.typicode.com/users")
+        fetch("http://localhost:3001/users", {
+            method: "GET",
+            credentials: "include"
+        })
             .then((response) => response.json())
             .then(json => {
                 const results = json.filter((user) => {

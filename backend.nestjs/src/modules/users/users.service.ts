@@ -9,11 +9,11 @@ export class UsersService {
 
 	constructor(private readonly prisma: PrismaService, private readonly images: ImagesService) { }
 
-	async create(email: string) {
+	async create(email: string, username: string) {
 		const user = await this.prisma.user.create({
 			data: {
 				email,
-				name: await this.generateUsername(),
+				name: username,
 			}
 		});
 

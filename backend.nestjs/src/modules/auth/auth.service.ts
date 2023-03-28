@@ -14,11 +14,11 @@ export class AuthService {
 		private readonly redis: RedisService,
 		private readonly chat: ChatGateway) { }
 
-	async validateUser(email: string) {
+	async validateUser(email: string, username: string) {
 		const user = await this.users.findOneUserByEmail(email);
 		if (user)
 			return user;
-		return await this.users.create(email);
+		return await this.users.create(email, username);
 	}
 
 	async findUser(id: number) {

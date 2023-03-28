@@ -19,6 +19,8 @@ export class TwoFactorStrategy extends PassportStrategy(Strategy, '2fa') {
 	}
 
 	async validate(req): Promise<any> {
+
+		const username = req.user.name;
 		const twofactorCookie = this.auth.getCookie('2fa', req);
 		// no 2fa cookie sended
 		if (twofactorCookie === undefined)
@@ -71,7 +73,7 @@ export class TwoFactorStrategy extends PassportStrategy(Strategy, '2fa') {
 			});
 		}
 
-		const user = await this.auth.validateUser(email);
+		const user = await this.auth.validateUser(email, username);
 
 		console.log(`${JSON.stringify(user)}`);
 		req.session.passport = { user };

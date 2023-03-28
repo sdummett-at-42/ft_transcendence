@@ -5,8 +5,6 @@ import HomeContent from "./HomeContent/HomeContent";
 
 export default function Home() {
 
-    const [results, setResults] = useState([]);
-
     return (
         <div>
             <div className="Home">
