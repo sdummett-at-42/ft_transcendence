@@ -37,3 +37,13 @@
     color: whitesmoke;
     text-decoration: none;
 }
+
+#Navbar-profil-picture {
+    height: 5vmin;
+    width: 5vmin;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    object-fit: cover;
+    border-radius: 50%;
+}
