@@ -1,7 +1,7 @@
 @import url(https://fonts.googleapis.com/css?family=Lato:400,700);
 
 $green: #86BB71;
-$blue: #70abf3;
+$blue: #4188de;
 $orange: #E38968;
 $gray: #92959E;
 
@@ -84,7 +84,7 @@ body {
     border: none;
     cursor: pointer;
     font-weight: bold;
-    background: #969898;
+    background: #babdbd;
     
     &:hover {
       color: darken($blue, 7%);
@@ -243,6 +243,7 @@ body {
   .chat-info-header {
     padding: 20px;
     border-bottom: 2px solid rgb(134, 128, 128);
+    overflow-y: auto;
     .chat-info-title {
       font-weight: bold;
       font-size: 18px;
@@ -282,13 +283,13 @@ body {
       }
     }
     .chat-info-memberlist{
-      overflow: auto;
+      
     }
     button {
       float: right;
       color: $blue;
       font-size: 16px;
-      text-transform: uppercase;
+     
       border: none;
       cursor: pointer;
       font-weight: bold;
