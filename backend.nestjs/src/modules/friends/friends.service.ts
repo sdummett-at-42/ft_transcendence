@@ -5,109 +5,51 @@ import { PrismaService } from "nestjs-prisma";
 export class FriendsService {
 	constructor(private readonly prisma: PrismaService) { }
 
-	findOneFriend(id: number, friendId: number) {
-		return this.prisma.friend.findUnique({
-			where: {
-				userId_friendId: {
-					userId: +id,
-					friendId: +friendId
-				}
-			},
-			select: {
-				friend: {
-					select: {
-						id: true,
-						name: true,
-						profilePicture: true,
-						elo: true
-					}
-				}
-			}
+	async findAll(id: number){
+		const user = await this.prisma.user.findUnique({
+			where: { id },
+			select: { friends: true },
+		});
+		if (!user)
+			return null;
+		return user.friends;
+	}
+
+	// depth mustn't be called with a depth, or called with a depth of 0
+	async addFriend(id: number, friendId: number, depth: number = 0) {
+		// Add the friend on the other side in a recursive manner
+		if (depth === 0)
+			this.addFriend(friendId, id, 1);
+
+		const user = await this.prisma.user.findUnique({ where : { id }, select: { friends: true }});
+		if (!user || user.friends.includes(friendId))
+			return user;
+
+		const friendIds: number[] = [...user.friends, friendId];
+
+		return this.prisma.user.update({
+			where: { id },
+			data: { friends: friendIds },
+			select: { friends: true},
 		});
 	}
 
-	addFriend(id: number, friendId: number) {
-		return this.prisma.friend.upsert({
-			where: {
-				userId_friendId: {
-					userId: +id,
-					friendId: +friendId
-				}
-			},
-			update: {},
-			create: {
-				user: { connect: { id: +id } },
-				friend: { connect: { id: +friendId } },
-			},
-			select: {
-				friend: {
-					select: {
-						id: true,
-						name: true,
-						profilePicture: true,
-						elo: true
-					}
-				}
-			}
-		});
-	}
+	// depth mustn't be called with a depth, or called with a depth of 0
+	async removeFriend(id: number, friendId: number, depth: number = 0) {
+		// Remove the friend on the other side in a recursive manner
+		if (depth === 0)
+			this.removeFriend(friendId, id, 1);
 
-	findAllFriends(id: number) {
-		return this.prisma.friend.findMany({
-			where: { userId: +id },
-			select: {
-				friend: {
-					select: {
-						id: true,
-						name: true,
-						profilePicture: true,
-						elo: true
+		const user = await this.prisma.user.findUnique({ where: { id }, select: { friends: true} });
+		if (!user || !user.friends.includes(friendId))
+			return user;
 
-					}
-				}
-			},
-		})
-	}
+		const friendIds: number[] = user.friends.filter(id => id !== friendId);
 
-	// sendFriendRequest(id: number, friendId: number) {
-
-	async removeFriend(id: number, friendId: number) {
-		const friend = await this.prisma.friend.findUnique({
-			where: {
-				userId_friendId: {
-					userId: +id,
-					friendId: +friendId
-				}
-			}
-		})
-		if (!friend)
-			throw new HttpException('You are not friends with this user', HttpStatus.BAD_REQUEST);
-
-		this.prisma.friend.delete({
-			where: {
-				userId_friendId: {
-					userId: +friendId,
-					friendId: +id
-				}
-			}
-		})
-		return this.prisma.friend.delete({
-			where: {
-				userId_friendId: {
-					userId: +id,
-					friendId: +friendId
-				}
-			},
-			select: {
-				friend: {
-					select: {
-						id: true,
-						name: true,
-						profilePicture: true,
-						elo: true
-					}
-				}
-			}
+		return this.prisma.user.update({
+			where: { id },
+			data: { friends: friendIds },
+			select: { friends: true },
 		})
 	}
 }

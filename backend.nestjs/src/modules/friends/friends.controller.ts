@@ -16,7 +16,7 @@ export class FriendsController {
 	@HttpCode(200)
 	@ApiOkResponse({ type: UserEntity, isArray: true, description: 'Returns all friends' })
 	async getFriends(@Req() request) {
-		return this.friends.findAllFriends(request.user.id);
+		return this.friends.findAll(request.user.id);
 	}
 
 	@Delete()
