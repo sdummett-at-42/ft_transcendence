@@ -73,4 +73,6 @@ export enum Event {
 	DMReceived = "DMReceived",
 	unreadNotif = "unreadNotif",
 	notifRead = "notifRead",
+	getUserRooms = "getUserRooms",
+	userRooms = "userRooms",
 }
