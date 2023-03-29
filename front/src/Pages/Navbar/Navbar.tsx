@@ -5,28 +5,23 @@ import Logo42 from "../../assets/42_Logo.png"
 
 export default function Navbar() {
 
-    const [data, setData] = useState();
-
-    // fetch data
-    const dataFetch = async () => {
-        try {
-            return (
-                fetch("http://localhost:3001/users/me", {
-                    method: "GET",
-                    credentials: "include"
-                })
-                .then((res) => res.json())
-                .then((d) => setData(d))
-            );
-        }
-        catch (e) {
-            console.log(e);
-        }
-    };
+    const [userData, setUserData] = useState(null);
 
     useEffect(() => {
-        dataFetch();
+        fetchUserData();
     }, []);
+
+    // fetch data
+    const fetchUserData = async () => {
+        const response = await fetch("http://localhost:3001/users/me", {
+            credentials: 'include',
+            method: "GET"
+        });
+        const data = await response.json();
+        console.log(data);
+        setUserData(data);
+    };
+
 
     return (
         <nav className="Navbar-nav">
@@ -48,14 +43,11 @@ export default function Navbar() {
                     <img id="Navbar-profil-picture" className="Navbar-logo" src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" alt="myProfilePicture" />
                 </div>
                 <div>
-                    {/* {data.map((dataObj, index) => {
-                        return (
-                            <div>
-                                {dataObj.name}
-                            </div>
-                        );
-                    }
-                )} */}
+                    {userData && (
+                        <div>
+                            {userData.name}
+                        </div>
+                    )}
                 </div>
                 <Link to="/profil/:self" style={{textDecoration: 'none', color: 'whitesmoke'}}>Profile</Link>
             </div>
