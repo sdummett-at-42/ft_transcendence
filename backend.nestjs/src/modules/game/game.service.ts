@@ -4,6 +4,7 @@ import { Shape, Square , Bullet, Circle, Coordonnee , Player, Field, BlackHole} 
 import { GameGateway } from './game.gateway';
 import { Response } from 'express';
 import { RedisService } from 'src/modules/redis/redis.service';
+import { EventGame } from './game-event.enum';
 
 @Injectable()
 export class GameService {
@@ -29,7 +30,7 @@ export class GameService {
     async handleConnection(socket) {
 		if (socket.handshake.headers.cookie == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
-			socket.emit("NotConnected", {
+			socket.emit(EventGame.NotConnected, {
 				timestamp: new Date().toISOString(),
 				message: `No session cookie provided`,
 			});
@@ -41,7 +42,7 @@ export class GameService {
 		const session = await this.redis.getSession(sessionHash);
 		if (session === null) {
 			console.debug("User isn't logged in");
-			socket.emit("NotConnected", {
+			socket.emit(EventGame.NotConnected, {
 				timestamp: new Date().toISOString(),
 				message: `User isn't logged in.`,
 			});
@@ -50,7 +51,7 @@ export class GameService {
 			return;
 		}
         console.log("handleConnection: connected", socket.IsConnected);
-		socket.emit("IsConnected", {
+		socket.emit(EventGame.IsConnected, {
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
 		});
@@ -60,9 +61,12 @@ export class GameService {
     |* input/entry functon *|
     \* ******************* */
 
-    initGame(server : Server, user : Socket) {
+    initGame(server : Server, user : Socket, room : string) {
         // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
         // on count pour numberElement lors reset/scoring
+
+        console.log(room);
+
         if (this.shapes.length != 0)
             return ;
         this.shapes.push(this.player1.racket);
@@ -77,11 +81,11 @@ export class GameService {
         this.shapes.push(square_01);
 
         // Creation BlackHole : x, y, l, w
-        // const BlackHole_01 = new BlackHole(200, 300, 45);
-        // this.shapes.push(BlackHole_01);
+        const BlackHole_01 = new BlackHole(200, 300, 45);
+        this.shapes.push(BlackHole_01);
 
         this.numberElement = this.shapes.length;
-        server.emit("image", this.shapes);   
+        server.emit(EventGame.gameImage, this.shapes);   
     }
 
     startingGame(server : Server) : void {
@@ -99,7 +103,7 @@ export class GameService {
             this.shapes.push(bullet_01);
 
 
-            server.emit("image", this.shapes);
+            server.emit(EventGame.gameImage, this.shapes);
 
             this.startMoving(server, bullet_01);
 
@@ -124,7 +128,7 @@ export class GameService {
 
             console.log(this.shapes);
             console.log("sub", this.shapes.length);
-            server.emit('image', this.shapes);
+            server.emit(EventGame.gameImage, this.shapes);
         }
     }
 
@@ -148,7 +152,7 @@ export class GameService {
         else
             this.player2.racket.pos.y = tmpYmin;
 
-        server.emit('image', this.shapes);
+        server.emit(EventGame.gameImage, this.shapes);
     }
 
     /* *************** *\
@@ -181,7 +185,7 @@ export class GameService {
         //console.log(`position = (${bullet.pos.x}.${bullet.pos.y})`);
         
             // send shapes[] to front
-            server.emit('image', this.shapes);
+            server.emit(EventGame.gameImage, this.shapes);
         
             // Recalculate the delay based on the new frequency
             delay = 1000 / bullet.f;

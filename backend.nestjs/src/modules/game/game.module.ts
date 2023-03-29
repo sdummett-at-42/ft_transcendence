@@ -4,10 +4,11 @@ import { GameService } from './game.service';
 import { GameGateway } from './game.gateway';
 import { PrismaModule } from "nestjs-prisma";
 import { RedisModule } from "../redis/redis.module";
+import { LobbyService } from './lobby/lobby.service';
 
 @Module({
   imports: [RedisModule, PrismaModule],
   controllers: [GameController],
-  providers: [GameService, GameGateway]
+  providers: [GameService, GameGateway, LobbyService]
 })
 export class GameModule {}
