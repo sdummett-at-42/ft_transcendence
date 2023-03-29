@@ -43,7 +43,7 @@ export default function Navbar() {
                 <div>
                     {userData && (
                         <div id="Navbar-profil">
-                            <img id="Navbar-profil-picture" className="Navbar-logo" src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" alt="myProfilePicture" />
+                            <img id="Navbar-profil-picture" className="Navbar-logo" src={userData.profilPicture} alt="myProfilePicture" />
                             <div id="Navbar-profil-name">
                                 {userData.name}
                             </div>
