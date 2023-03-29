@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from 'nestjs-prisma';
@@ -19,6 +20,7 @@ import { SessionSerializer } from './utils/Serializer';
 		PassportModule.register({ session: true}),
 		RedisModule,
 		ChatModule,
+		HttpModule,
 	],
 	controllers: [AuthController],
 	providers: [

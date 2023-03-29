@@ -56,6 +56,8 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		const userSockets = sockets.filter(s => { return s.data.userId === userId });
 		if (userSockets.length === 1) {
 			const friendIds = await this.friendsService.findAll(userId);
+			if (!friendIds)
+				return;
 			const friendSocketIds = Object.entries(sockets)
 			.filter(([key, value]) => friendIds.includes(value.data.userId))
 			.map(([key, value]) => value.id);
@@ -76,6 +78,8 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		const userSockets = sockets.filter(s => { return s.data.userId === userId });
 		if (userSockets.length === 1) {
 			const friendIds = await this.friendsService.findAll(userId);
+			if (!friendIds)
+				return;
 			const friendSocketIds = Object.entries(sockets)
 			.filter(([key, value]) => friendIds.includes(value.data.userId))
 			.map(([key, value]) => value.id);
