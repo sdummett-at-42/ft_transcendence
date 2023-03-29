@@ -19,8 +19,6 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
 	// If first connected socket, send 'friendConnected' to all the friends
 	async handleConnection(@ConnectedSocket() socket) {
-		// Check if its the first socket of the user
-
 		if (socket.handshake.headers.cookie == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
 			socket.emit('notConnected', { // Event to report here
@@ -53,35 +51,38 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
 		});
-		const sockets = await this.server.fetchSockets();
-		console.log(`sockets.length: ${sockets.length}`)
 
+		const sockets = await this.server.fetchSockets();
 		const userSockets = sockets.filter(s => { return s.data.userId === userId });
 		if (userSockets.length === 1) {
-			console.log(`Only one connected socket for userId ${userId}, sending event to friends`);
-
-			const userFriends = await this.friendsService.findAllFriends(userId);
-			console.log(`userFriends: ${JSON.stringify(userFriends)}`);
-
-			const friendIds: number[] = userFriends.map(user => user.friend.id);
-			console.log(`friendIds: ${JSON.stringify(friendIds)}`) 
-
-			const friendSocketIds: string[] = Object.entries(sockets)
-			.filter(([key, value]) => friendIds.includes(+value.id))
-			.map(([key, value]) => key);
-
-			console.log(`friendSOcketIds: ${JSON.stringify(friendSocketIds)}`);
+			const friendIds = await this.friendsService.findAll(userId);
+			const friendSocketIds = Object.entries(sockets)
+			.filter(([key, value]) => friendIds.includes(value.data.userId))
+			.map(([key, value]) => value.id);
 			
-			this.server.to(friendSocketIds).emit('friendConnected', {id: +userId});
+			if (friendSocketIds.length > 0)
+				this.server.to(friendSocketIds).emit('friendConnected', {id: +userId}); // Event to report here
 		}
-		else // FOR DEBUG
-			console.log(`More than one connected sockets, not sending any event to friends`)
 	}
 
 	// If last connected socket, send 'friendDisconnected' to all friends
 	async handleDisconnect(@ConnectedSocket() socket) {
 		// Check if the socket is in active session
+		const userId = socket.data.userId;
+		if (!userId)
+			return;
 
+		const sockets = await this.server.fetchSockets();
+		const userSockets = sockets.filter(s => { return s.data.userId === userId });
+		if (userSockets.length === 1) {
+			const friendIds = await this.friendsService.findAll(userId);
+			const friendSocketIds = Object.entries(sockets)
+			.filter(([key, value]) => friendIds.includes(value.data.userId))
+			.map(([key, value]) => value.id);
+
+			if (friendSocketIds.length > 0)
+				this.server.to(friendSocketIds).emit('friendDisconnected', {id: +userId}); // Event to report here
+		}
 	}
 
 	@SubscribeMessage('sendFriendRequest')

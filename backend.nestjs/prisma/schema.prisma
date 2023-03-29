@@ -22,23 +22,11 @@ model User {
 	matchWon			Match[]				@relation("winner")
 	elo					Int					@default(1000)
 	eloHistory			Int[]				@default([1000])
-	friendedBy			Friend[]
-	friends				Friend[]			@relation("friends")
+	friends				Int[]
 	twofactorIsEnabled	Boolean				@default(false)
 	twofactorSecret		String?
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
-}
-
-model	Friend {
-	user				User				@relation("friends",fields: [userId], references: [id])
-	userId				Int
-	friend				User				@relation(fields: [friendId], references: [id])
-	friendId			Int
-	createdAt			DateTime			@default(now())
-	updatedAt			DateTime			@default(now())
-
-	@@unique([userId, friendId])
 }
 
 model FriendRequest {
