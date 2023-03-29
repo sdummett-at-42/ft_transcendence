@@ -5,12 +5,16 @@ import { FriendsService } from "./friends.service";
 import { FriendRequestService } from "./friend-request.service";
 import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from "src/modules/users/entities/user.entity";
+import { FriendsGateway } from "./friends.gateway";
 
 @ApiTags('friends')
 @Controller('friends')
 @UseGuards(AuthenticatedGuard)
 export class FriendsController {
-	constructor(private readonly friends: FriendsService, private readonly friendRequest: FriendRequestService) { }
+	constructor(
+		private readonly friends: FriendsService,
+		private readonly friendRequest: FriendRequestService,
+		private readonly friendGateway: FriendsGateway) { }
 
 	@Get()
 	@HttpCode(200)
@@ -38,7 +42,9 @@ export class FriendsController {
 		@Req() request ,
 		@Body('friendId') friendId: number,
 	) {
-		return this.friendRequest.sendFriendRequest(request.user.id, friendId);
+		const friendRequest = await this.friendRequest.sendFriendRequest(request.user.id, friendId);
+		this.friendGateway.sendFriendRequest(request.user.id, friendId);
+		return friendRequest;
 	}
 
 	@Patch('requests')
@@ -49,7 +55,9 @@ export class FriendsController {
 		@Req() request ,
 		@Body('friendId') friendId: number,
 	) {
-		return this.friendRequest.acceptFriendRequest(request.user.id, friendId);
+		const friendRequest = await this.friendRequest.acceptFriendRequest(request.user.id, friendId);
+		this.friendGateway.acceptFriendRequest(friendId, request.user.id);
+		return friendRequest;
 	}
 
 	@Delete('requests')

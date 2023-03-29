@@ -85,9 +85,23 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		}
 	}
 
-	@SubscribeMessage('sendFriendRequest')
-	sendFriendRequest(@ConnectedSocket() socket, @MessageBody() dto) {
-		console.log('sendFriendRequest');
+	async sendFriendRequest(requesterId: number, receiverId: number) {
+		const sockets = await this.server.fetchSockets();
+		const receiverSocketIds = Object.entries(sockets)
+		.filter(([key, value]) => receiverId === value.data.userId)
+		.map(([key, value]) => value.id);
+
+		if (receiverSocketIds.length > 0)
+			this.server.to(receiverSocketIds).emit('friendRequestReceived', { id: requesterId }); // Event to report here
 	}
 
+	async acceptFriendRequest(requesterId: number, receiverId: number) {
+		const sockets = await this.server.fetchSockets();
+		const requesterSocketIds = Object.entries(sockets)
+		.filter(([key, value]) => requesterId === value.data.userId)
+		.map(([key, value]) => value.id);
+
+		if (requesterSocketIds.length > 0)
+			this.server.to(requesterSocketIds).emit('friendRequestAccepted', { id: receiverId }); // Event to report here
+	}
 }
