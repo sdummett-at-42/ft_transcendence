@@ -11,21 +11,21 @@ export default function SearchBar(props) {
 
     // use to send the request to the user
     const sendFriendRequest = ({input}) => {
-        // console.log(input);
+        console.log(input);
         props.onAddFriend(input);
         setInput('');
         fetchData('');
     }
 
     // fetch user database
-    const fetchData = (value) => {
-        fetch("http://localhost:3001/users", {
+    const fetchData = async (value) => {
+        await fetch("http://localhost:3001/users", {
             method: "GET",
             credentials: "include"
         })
             .then((response) => response.json())
             .then(json => {
-                const results = json.filter((user) => {
+                const result = json.filter((user) => {
                     return (
                         value &&
                         user &&
@@ -34,7 +34,8 @@ export default function SearchBar(props) {
                         value !== user.name
                     );
                 })
-                setResults(results);
+                setResults(result);
+                console.log(`SearchBar: ${result}`);
             });
     }
 
