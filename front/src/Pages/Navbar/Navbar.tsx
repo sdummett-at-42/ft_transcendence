@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import "./Navbar.css"
 import { Link } from "react-router-dom";
 import Logo42 from "../../assets/42_Logo.png"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserGear } from "@fortawesome/free-solid-svg-icons"
 
 export default function Navbar() {
 
@@ -18,7 +20,6 @@ export default function Navbar() {
             method: "GET"
         });
         const data = await response.json();
-        console.log(data);
         setUserData(data);
     };
 
@@ -39,17 +40,24 @@ export default function Navbar() {
             </div>
 
             <div className="Navbar-nav-section" id="Navbar-right">
-                <div >
-                    <img id="Navbar-profil-picture" className="Navbar-logo" src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" alt="myProfilePicture" />
-                </div>
                 <div>
                     {userData && (
-                        <div>
-                            {userData.name}
+                        <div id="Navbar-profil">
+                            <img id="Navbar-profil-picture" className="Navbar-logo" src="https://play-lh.googleusercontent.com/IeNJWoKYx1waOhfWF6TiuSiWBLfqLb18lmZYXSgsH1fvb8v1IYiZr5aYWe0Gxu-pVZX3" alt="myProfilePicture" />
+                            <div id="Navbar-profil-name">
+                                {userData.name}
+                            </div>
+                            <div id="Navbar-profil-elo">
+                                elo: {userData.elo}
+                            </div>
                         </div>
                     )}
                 </div>
-                <Link to="/profil/:self" style={{textDecoration: 'none', color: 'whitesmoke'}}>Profile</Link>
+                <div id="Navbar-option">
+                    <Link to="/profil/:self">
+                        <FontAwesomeIcon icon={faUserGear} style={{textDecoration: 'none', color: 'whitesmoke'}} size="lg" />
+                    </Link>
+                </div>
             </div>
         </nav>
     );

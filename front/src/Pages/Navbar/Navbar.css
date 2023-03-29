@@ -32,18 +32,28 @@
 }
 
 #Navbar-right {
+    display: flex;
     justify-content: center;
     flex-grow: 1;
     color: whitesmoke;
     text-decoration: none;
 }
 
-#Navbar-profil-picture {
-    height: 5vmin;
-    width: 5vmin;
+#Navbar-profil {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 2rem;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#Navbar-profil-picture {
+    height: 5vmin;
+    width: 5vmin;
     object-fit: cover;
     border-radius: 50%;
+}
+
+#Navbar-option {
+    margin-left: 3rem;
 }

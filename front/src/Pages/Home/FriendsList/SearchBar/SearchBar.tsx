@@ -11,7 +11,10 @@ export default function SearchBar(props) {
 
     // use to send the request to the user
     const sendFriendRequest = ({input}) => {
-        console.log(input);
+        // console.log(input);
+        props.onAddFriend(input);
+        setInput('');
+        fetchData('');
     }
 
     // fetch user database

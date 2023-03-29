@@ -7,7 +7,27 @@ import SearchBar from "./SearchBar/SearchBar";
 
 export default function FriendsList() {
 
-    const [friend, setFriend] = useState([]);
+    const [friends, setFriends] = useState(null);
+
+    const addFriend = (friend) => {
+        fetch("http://localhost:3001/users", {
+            method: "GET",
+            credentials: "include"
+        })
+            .then((response) => response.json())
+            .then(json => {
+                const results = json.filter((user) => {
+                    return (
+                        friend &&
+                        user &&
+                        user.name &&
+                        friend === user.name
+                    );
+                })
+                setFriends(results);
+                console.log(results);
+            });
+    }
 
     return (
         <div className="FriendsList">
@@ -15,13 +35,15 @@ export default function FriendsList() {
                 Liste d'amis
             </div>
             <div className="FriendsList-search-bar-container">
-                <SearchBar props={setFriend} />
+                <SearchBar onAddFriend={addFriend} />
             </div>
             <div className="FriendsList-list">
                 <div className="FriendsList-user">
-                    <div>
-                        {friend.name}
-                    </div>
+                    {friends && (
+                        <div key={friends.id}>
+                            {friends.name}
+                        </div>
+                    )}
                 </div>
             </div>
             <Link to="/message" className="FriendsList-messages" style={{textDecoration: 'none', color: 'whitesmoke'}}>
