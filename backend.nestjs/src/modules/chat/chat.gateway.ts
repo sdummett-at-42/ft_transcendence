@@ -344,4 +344,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	onGetUserRooms(@ConnectedSocket() socket) {
 		this.chat.getUserRooms(socket, null, this.server);
 	}
+
+	@SubscribeMessage(Event.getDmsList)
+	onGetDmsList(@ConnectedSocket() socket) {
+		this.chat.getDmsList(socket, null, this.server);
+	}
 }
