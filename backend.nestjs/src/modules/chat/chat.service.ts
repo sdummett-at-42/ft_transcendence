@@ -18,8 +18,22 @@ export class ChatService {
 		// Delete all the rooms afterInit ?
 	}
 
+	private extractString(inputString: string): string {
+		if (!inputString)
+			return '';
+
+		const prefix = 's%3A';
+		const suffix = '.';
+		const startIndex = inputString.indexOf(prefix);
+		const endIndex = inputString.indexOf(suffix, startIndex + prefix.length);
+
+		if (startIndex !== -1 && endIndex !== -1)
+			return inputString.substring(startIndex + prefix.length, endIndex);
+		return '';
+	}
+
 	async handleConnection(socket) {
-		if (socket.handshake.headers.cookie == undefined) {
+		if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
 			socket.emit(Event.notConnected, {
 				timestamp: new Date().toISOString(),
@@ -28,7 +42,7 @@ export class ChatService {
 			socket.disconnect()
 			return;
 		}
-		const sessionHash = socket.handshake.headers.cookie.slice(16).split(".")[0];
+		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
 		if (session === null) {
 			console.debug("User isn't logged in");
