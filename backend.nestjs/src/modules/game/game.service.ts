@@ -55,6 +55,9 @@ export class GameService {
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
 		});
+
+        const userId = JSON.parse(session).passport.user.id;
+		socket.data.userId = userId;
 	}
 
     /* ******************* *\
