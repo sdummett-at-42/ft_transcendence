@@ -18,8 +18,16 @@ export default function Navbar() {
         const response = await fetch("http://localhost:3001/users/me", {
             credentials: 'include',
             method: "GET"
-        });
-        const data = await response.json();
+        })
+            .then(res => {
+                console.log(res);
+                if (res.status >= 400) {
+                    window.location.href = "/unauthorized"
+                    return;
+                }
+                return res.json();
+            });
+        const data = await response;
         setUserData(data);
     };
 
@@ -43,12 +51,9 @@ export default function Navbar() {
                 <div>
                     {userData && (
                         <div id="Navbar-profil">
-                            <img id="Navbar-profil-picture" className="Navbar-logo" src={userData.profilPicture} alt="myProfilePicture" />
+                            <img id="Navbar-profil-picture" className="Navbar-logo" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="myProfilePicture" />
                             <div id="Navbar-profil-name">
                                 {userData.name}
-                            </div>
-                            <div id="Navbar-profil-elo">
-                                elo: {userData.elo}
                             </div>
                         </div>
                     )}
