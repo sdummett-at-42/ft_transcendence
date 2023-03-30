@@ -22,25 +22,11 @@ model User {
 	matchWon			Match[]				@relation("winner")
 	elo					Int					@default(1000)
 	eloHistory			Int[]				@default([1000])
-	friendedBy			Friend[]
-	friends				Friend[]			@relation("friends")
-	channelOwner		Channel[]			@relation("owner")
-	channelMember		Channel[]			@relation("users")
-	channelAdmin		Channel[]			@relation("admins")
-	channelBanned		Channel[]			@relation("bannedUsers")
+	friends				Int[]
+	twofactorIsEnabled	Boolean				@default(false)
+	twofactorSecret		String?
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
-}
-
-model	Friend {
-	user				User				@relation("friends",fields: [userId], references: [id])
-	userId				Int
-	friend				User				@relation(fields: [friendId], references: [id])
-	friendId			Int
-	createdAt			DateTime			@default(now())
-	updatedAt			DateTime			@default(now())
-
-	@@unique([userId, friendId])
 }
 
 model FriendRequest {
@@ -75,19 +61,3 @@ model Image {
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
 }
-
-model Channel {
-	id					Int					@id @default(autoincrement())
-	name				String				@unique
-	owner				User				@relation("owner", fields: [ownerId], references: [id])
-	ownerId				Int
-	users				User[]				@relation("users")
-	admins				User[]				@relation("admins")
-	banned				User[]				@relation("bannedUsers")
-	isPublic			Boolean				@default(false)
-	password			String?
-	hasPassword			Boolean				@default(false)
-	createdAt			DateTime			@default(now())
-	updatedAt			DateTime			@default(now())
-}
-

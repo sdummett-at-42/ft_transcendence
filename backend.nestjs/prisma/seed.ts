@@ -128,34 +128,34 @@ async function main() {
 	})
 
 	// Friend request
-	const BobAddCharlie = await prisma.friend.upsert({
-		where: {
-			userId_friendId: {
-				userId: bob.id,
-				friendId: charlie.id
-			}
-		},
-		update: {},
-		create: {
-			user: { connect: { id: bob.id } },
-			friend: { connect: { id: charlie.id } },
-		}
-	})
+	// const BobAddCharlie = await prisma.friend.upsert({
+	// 	where: {
+	// 		userId_friendId: {
+	// 			userId: bob.id,
+	// 			friendId: charlie.id
+	// 		}
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		user: { connect: { id: bob.id } },
+	// 		friend: { connect: { id: charlie.id } },
+	// 	}
+	// })
 
-	// Friend request
-	const BobAddAlice = await prisma.friend.upsert({
-		where: {
-			userId_friendId: {
-				userId: bob.id,
-				friendId: alice.id
-			}
-		},
-		update: {},
-		create: {
-			user: { connect: { id: bob.id } },
-			friend: { connect: { id: alice.id } },
-		}
-	})
+	// // Friend request
+	// const BobAddAlice = await prisma.friend.upsert({
+	// 	where: {
+	// 		userId_friendId: {
+	// 			userId: bob.id,
+	// 			friendId: alice.id
+	// 		}
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		user: { connect: { id: bob.id } },
+	// 		friend: { connect: { id: alice.id } },
+	// 	}
+	// })
 
 	// const CharlieAddBob = await prisma.friend.upsert({
 	// 	where: { userId_friendId: {
@@ -168,21 +168,21 @@ async function main() {
 	// 	}
 	// })
 
-	const findAllFriends = await prisma.friend.findMany({
-		where: { userId: bob.id },
-		select: {
-			friend: {
-				select: {
-					id: true,
-					name: true,
-					profilePicture: true,
-					elo: true
+	// const findAllFriends = await prisma.friend.findMany({
+	// 	where: { userId: bob.id },
+	// 	select: {
+	// 		friend: {
+	// 			select: {
+	// 				id: true,
+	// 				name: true,
+	// 				profilePicture: true,
+	// 				elo: true
 
-				}
-			}
-		},
-	})
-	console.log(findAllFriends)
+	// 			}
+	// 		}
+	// 	},
+	// })
+	// console.log(findAllFriends)
 
 	// const AliceSendRequestToMe = await prisma.friendRequest.upsert({
 	// 	where: {

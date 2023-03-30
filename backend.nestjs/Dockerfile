@@ -10,5 +10,7 @@ ADD . /app
 
 RUN npx prisma generate
 
-# Run prisma migrate and seed, then start the application
-CMD npx prisma migrate dev --name init && npx prisma db seed && npm run start:dev
+# Run prisma migrate deploy and seed the db with some datas, then start the application
+CMD npm run start:dev
+
+#npx prisma migrate deploy && npx prisma db seed && 

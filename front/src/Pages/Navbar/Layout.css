@@ -1,0 +1,9 @@
+.Layout-navbar {
+    height: 7vmin;
+    width: 100%;
+}
+
+.Layout-children {
+    width: 100%;
+    height: max-content;
+}

@@ -1,5 +1,4 @@
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-import { WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
+import { ConnectedSocket, WebSocketServer, MessageBody, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema, KickUserSchema, AddRoomAdminSchema, RemoveRoomAdminSchema, GiveOwnershipSchema, BlockUserSchema, UnblockUserSchema, UninviteUserSchema, GetRoomMsgHistSchema, sendDMSchema } from './chat.dto';
@@ -7,16 +6,12 @@ import { Injectable } from '@nestjs/common';
 import { Event } from './chat-event.enum';
 
 @Injectable()
-@WebSocketGateway()
+@WebSocketGateway({ namespace: 'chat' })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;
 
 	constructor(private readonly chat: ChatService) { }
-
-	// async afterInit(server: Server) {
-	// 	this.chat.atomic_test();
-	// }
 
 	async afterInit(server: Server) {
 		await this.chat.afterInit();
@@ -33,11 +28,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	// Maybe not needed since we call logout via users module
 	@SubscribeMessage(Event.logout)
 	async onLogout(@ConnectedSocket() socket) {
-		this.chat.logout(socket.data.userId, this.server);
+		this.chat.disconnectUserSockets(socket.data.userId, this.server);
 	}
 
-	async onLogoutViaController(userId: number) {
-		this.chat.logout(userId, this.server);
+	async disconnectUserSockets(userId: number) {
+		this.chat.disconnectUserSockets(userId, this.server);
 	}
 
 	@SubscribeMessage(Event.createRoom)
@@ -344,4 +339,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		this.chat.notifsRead(socket, dto, this.server);
 	}
 
+	@SubscribeMessage(Event.getUserRooms)
+	onGetUserRooms(@ConnectedSocket() socket) {
+		this.chat.getUserRooms(socket, null, this.server);
+	}
 }

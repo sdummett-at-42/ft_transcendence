@@ -61,7 +61,7 @@ export class ChatService {
 		console.debug(`Socket ${socket.id} disconnected`);
 	}
 
-	async logout(userId: number, server) {
+	async disconnectUserSockets(userId: number, server) {
 		console.debug(`User ${userId} logged out`);
 
 		// TODO: add session id in socket.data in order to disconnect
@@ -1613,7 +1613,8 @@ export class ChatService {
 		// unsetUnreadRoomMsg <== TODO
 	}
 
-	async atomic_test() {
-		this.redis.atomic_test();
+	async getUserRooms(socket, dto, server) {
+		const rooms = await this.redis.getUserRooms(socket.data.userId)
+		socket.emit(Event.userRooms, {rooms});
 	}
 }

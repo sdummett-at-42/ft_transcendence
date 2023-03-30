@@ -13,6 +13,10 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	const config = app.get(ConfigService);
 
+	// Enable cors
+	app.enableCors({origin: 'http://localhost:5173', credentials: true});
+	
+
 	// Session
 	const RedisStore = connectRedis(session);
 	const redis = app.get(RedisService);

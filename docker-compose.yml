@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
 
   postgres:
@@ -12,7 +13,7 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+      - 5432:5432
     networks:
       - backend
 
@@ -38,10 +39,11 @@ services:
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      - ISSUER=${ISSUER}
     volumes:
       - ./backend.nestjs/src:/app/src
     ports:
-      - ${APP_PORT}:${APP_PORT}
+      - 3001:3001
     networks:
       - backend
 
@@ -50,9 +52,18 @@ services:
     restart: always
     container_name: redis.cache
     ports:
-      - ${REDIS_PORT}:${REDIS_PORT}
+      - 7777:7777
     networks:
       - backend
+
+  front:
+    build: ./front
+    restart: always
+    container_name: frontend
+    volumes:
+      - ./front/src:/app/src
+    ports:
+      - "5173:5173"
 
 volumes:
   postgres:
