@@ -1,8 +1,8 @@
 import React from "react";
-import "./TranscendenceLogin.css"
+import "./CreateAccount.css"
 import Logo42 from "../../../assets/42_Logo.png"
 
-export default function TranscendenceLogin() {
+export default function CreateAccount() {
     return (
         <div className="LoginSelector-body">
             <div className="LoginSelector-card">

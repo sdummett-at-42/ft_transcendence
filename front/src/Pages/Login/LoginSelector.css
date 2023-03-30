@@ -1,18 +1,19 @@
-.Login-body {
+.LoginSelector-body {
     color: white;
     min-height: 100vmin;
     min-width: 100vmin;
     display: flex;
     justify-content: center;
     align-items: center;
+    
 }
 
-.Login-logo {
+.LoginSelector-logo {
     width:15vmin;
     height:15vmin;
 }
 
-.Login-card {
+.LoginSelector-card {
     background-color: rgb(10, 10, 10);
     aspect-ratio: 1 / 1.6;
     border: 0.5vmin solid rgb(3, 169, 244);
@@ -22,27 +23,27 @@
     text-align: center;
 }
 
-.Login-card:hover:before {
+.LoginSelector-card:hover:before {
     background-position: 100% 100%;
     transform: scale(1.08, 1.03);
 }
   
-.Login-card:hover > .Login-card-content {
+.LoginSelector-card:hover > .LoginSelector-card-content {
     background-position: -10% 0%;
 }
   
-.Login-card:hover > .Login-card-content > .Login-card-subtitle > .Login-card-subtitle-word {  
+.LoginSelector-card:hover > .LoginSelector-card-content > .LoginSelector-card-subtitle > .LoginSelector-card-subtitle-word {  
     opacity: 1;
     transform: translateY(0%);
     transition: opacity 0ms, transform 200ms cubic-bezier(.90, .06, .15, .90);
 }
 
-.Login-card:hover > .Login-card-content .Login-invert-effect {
+.LoginSelector-card:hover > .LoginSelector-card-content .LoginSelector-invert-effect {
     transition: filter 200ms;
     filter: invert(0%);
 }
 
-.Login-card:before {
+.LoginSelector-card:before {
       background: linear-gradient(
       130deg, 
       transparent 0% 33%, 
@@ -64,7 +65,7 @@
     z-index: 1;
 }
   
-.Login-card-content {
+.LoginSelector-card-content {
       background-image: radial-gradient(
       rgba(255, 255, 255, 0.2) 8%, 
       transparent 8%
@@ -79,28 +80,30 @@
     z-index: 2;
 }
 
-.Login-invert-effect {
+.LoginSelector-invert-effect {
     filter: invert(100%)
 }
   
-.Login-card-title,
-.Login-card-subtitle {
+.LoginSelector-card-title,
+.LoginSelector-card-subtitle {
     font-family: "Anek Latin", sans-serif;
     font-weight: 400;
     margin: 0px;
 }
   
-.Login-card-title {
+.LoginSelector-card-title {
     text-align: center;
     font-size: 5vmin;
 }
   
-.Login-card-subtitle {
+.LoginSelector-card-subtitle {
+    display: flex;
+    flex-direction: column;
     font-size: 3vmin;
-    margin-top: 4vmin;
+    margin-top: 2vmin;
 }
   
-.Login-card-subtitle-word {
+.LoginSelector-card-subtitle-word {
     display: inline-block;
     margin: 0vmin 0.3vmin;
     opacity: 0;
@@ -109,33 +112,64 @@
     transition: none;
 }
 
-.Login-button {
+.LoginSelector-button {
     cursor:pointer;
     border-radius: 0.5vmin;
     background-color: rgb(24, 30, 37);
-    margin-top: 2vmin;
+    margin-top: 1.5vmin;
     display: flex;
-    justify-content: center;
     width: 100%;
     border: 1px solid rgb(255, 255, 255, 0.1);
     color: white;
     text-decoration: none;
 }
 
-.Login-button:hover {
+.LoginSelector-input {
+    font-size: 2rem;
+}
+
+.LoginSelector-input:focus {
+    outline: none;
+    background-color: rgb(50, 50, 50);
+}
+
+.LoginSelector-input::placeholder {
+    padding-left: 2%;
+    font-style: italic;
+}
+
+.LoginSelector-submit {
+    background-color: transparent;
+    justify-content: center;
+}
+
+
+.LoginSelector-button:hover {
     transition: background-color 300ms;
     background-color: rgb(50, 50, 50);
 }
 
-.Login-button-content {
+.LoginSelector-submit:hover {
+    background-color: inherit;
+}
+
+.LoginSelector-button > .LoginSelector-button-content {
     display: flex;
     align-items: center;
-    justify-content: center;
     padding: 1rem;
     gap: 1.5rem;
 }
 
-.Login-button-text {
+.LoginSelector-button > .LoginSelector-button-image {
+    font-size: 2.5rem;
+    flex-basis: calc(100% / 3);
+}
+
+.LoginSelector-button > .LoginSelector-button-content > .LoginSelector-button-text {
     flex-grow: 1;
     font-family: 'Verdana', Geneva, Tahoma, sans-serif;
+}
+
+.LoginSelector-create-account {
+    margin-top: 2vmin;
 }

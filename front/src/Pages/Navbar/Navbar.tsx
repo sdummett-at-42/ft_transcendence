@@ -21,7 +21,7 @@ export default function Navbar() {
         })
             .then(res => {
                 console.log(res);
-                if (res.status >= 400) {
+                if (res.status == 401) {
                     window.location.href = "/unauthorized"
                     return;
                 }
@@ -51,7 +51,7 @@ export default function Navbar() {
                 <div>
                     {userData && (
                         <div id="Navbar-profil">
-                            <img id="Navbar-profil-picture" className="Navbar-logo" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="myProfilePicture" />
+                            <img id="Navbar-profil-picture" className="Navbar-logo" src={userData.profilPicture} alt="myProfilePicture" />
                             <div id="Navbar-profil-name">
                                 {userData.name}
                             </div>
