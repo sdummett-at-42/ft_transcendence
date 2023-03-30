@@ -22,6 +22,7 @@ export default function ChatLogin() {
 
 
   function getRoomsList() {
+    console.log("hello00\n");
     if (socket) {
       socket.emit("getRoomsList");
       console.log("hello?\n");

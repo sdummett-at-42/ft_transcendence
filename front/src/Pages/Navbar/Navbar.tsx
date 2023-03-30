@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./Navbar.css"
 import { Link } from "react-router-dom";
 import Logo42 from "../../assets/42_Logo.png"
@@ -7,8 +7,6 @@ import { faUserGear } from "@fortawesome/free-solid-svg-icons"
 
 export default function Navbar() {
 
-<<<<<<< HEAD
-=======
     const [userData, setUserData] = useState(null);
 
     useEffect(() => {
@@ -34,7 +32,6 @@ export default function Navbar() {
     };
 
 
->>>>>>> origin/gsap
     return (
         <nav className="Navbar-nav">
             <div className="Navbar-nav-section" id="Navbar-left">
@@ -51,9 +48,6 @@ export default function Navbar() {
             </div>
 
             <div className="Navbar-nav-section" id="Navbar-right">
-<<<<<<< HEAD
-                <Link to="/profil/:self" style={{textDecoration: 'none', color: 'whitesmoke'}}>Profile</Link>
-=======
                 <div>
                     {userData && (
                         <div id="Navbar-profil">
@@ -69,7 +63,6 @@ export default function Navbar() {
                         <FontAwesomeIcon icon={faUserGear} style={{textDecoration: 'none', color: 'whitesmoke'}} size="lg" />
                     </Link>
                 </div>
->>>>>>> origin/gsap
             </div>
         </nav>
     );
