@@ -22,7 +22,7 @@ export class ChatService {
 		if (!inputString)
 			return '';
 
-		const prefix = 's%3A';
+		const prefix = 's:';
 		const suffix = '.';
 		const startIndex = inputString.indexOf(prefix);
 		const endIndex = inputString.indexOf(suffix, startIndex + prefix.length);
