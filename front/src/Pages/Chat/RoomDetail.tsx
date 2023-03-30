@@ -41,8 +41,8 @@ const RoomDetail: FC<RoomDetailProps> = () => (
                 </div>    
               </div>             
             </li>
-            <button>Play</button><button>Message</button><button>Block</button>
-           
+            <button>Play</button><button>Message</button><button>...</button>
+            {/* <button>Play</button><button>Message</button><button>Block</button> */}
             <li className="clearfix">
               <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_03.jpg" alt="avatar" />
               <div className="about">
@@ -52,7 +52,8 @@ const RoomDetail: FC<RoomDetailProps> = () => (
                 </div>
               </div>
             </li>
-            <button>Play</button><button>Message</button><button>Block</button>
+            <button>Play</button><button>Message</button><button>...</button>
+            {/* <button>Play</button><button>Message</button><button>Block</button> */}
             <li className="clearfix">
               <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_05.jpg" alt="avatar" />
               <div className="about">
@@ -62,7 +63,8 @@ const RoomDetail: FC<RoomDetailProps> = () => (
                 </div>
               </div>
             </li>
-            <button>Play</button><button>Message</button><button>Block</button>
+            <button>Play</button><button>Message</button><button>...</button>
+            {/* <button>Play</button><button>Message</button><button>Block</button> */}
             <li className="clearfix">
               <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_06.jpg" alt="avatar" />
               <div className="about">
@@ -82,7 +84,8 @@ const RoomDetail: FC<RoomDetailProps> = () => (
                 </div>
               </div>
             </li>
-            <button>Play</button><button>Message</button><button>Block</button>
+            <button>Play</button><button>Message</button><button>...</button>
+            {/* <button>Play</button><button>Message</button><button>Block</button> */}
             
       </div>
   </div>

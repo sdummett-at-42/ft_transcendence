@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 import {roomList} from './data'
 import { useState, useEffect } from 'react';
 import Modal from "./Modal";
+import { faMessagePlus} from '@fortawesome/fontawesome-free';
 
 
 export default function ChatroomList(props) {
@@ -47,8 +48,7 @@ export default function ChatroomList(props) {
             content={<p>Add your content here</p>}
             footer={<button>Cancel</button>}
             onClose={() => setShow(false)} />
-           
-            <i className="fa fa-plus" aria-hidden="true"></i>
+        
             {/* <input type="text" placeholder="search" /> */}
             
             </div>

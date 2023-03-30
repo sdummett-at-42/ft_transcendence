@@ -5,9 +5,9 @@ $blue: #4188de;
 $orange: #E38968;
 $gray: #92959E;
 
-*, *:before, *:after {
-  box-sizing: border-box;
-}
+// *, *:before, *:after {
+//   box-sizing: border-box;
+// }
 
 body {
   background: #0b0b0b;
@@ -22,13 +22,15 @@ body {
   justify-content: space-evenly;
   margin: 0 auto;
   height: 90vh;
-  width: 120vh;
+  // width: 120vh;
   background: #444753;
   border-radius: 5px;
 }
 
 .people-list {
-  width:260px;
+  // width:260px;
+  width: 100%;
+  flex-basis: calc(100% * (3/16));
   float: left;
   overflow-y: scroll;
   
@@ -94,7 +96,8 @@ body {
 }
 
 .chat {
-  width: 470px;
+  width: 100%;
+  flex-basis: calc(100% * (9/16));
   float:left;
   background: #F2F5F8;
   border-top-right-radius: 5px;
@@ -235,7 +238,8 @@ body {
 }
 
 .chatinfo {
-  width: 260px;
+  width: 100%;
+  flex-basis: calc(100% * (4/16));
   float:left;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;

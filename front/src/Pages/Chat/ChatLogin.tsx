@@ -9,6 +9,8 @@ import Message from './Message';
 import RoomDetail from "./RoomDetail";
 import "./chat.css"
 import "./chat.scss"
+import Cookies from 'js-cookie';
+
 
 export default function ChatLogin() {
   const [selectedChatroom, setSelectedChatroom] = useState(null);
@@ -16,77 +18,84 @@ export default function ChatLogin() {
   function handleChatroomSelect(chatroomId) {
     setSelectedChatroom(chatroomId);
   }
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+
+  function getRoomsList() {
+    console.log("hello?00\n");
+    if (socket) {
+      socket.emit("getRoomsList");
+      console.log("hello?\n");
+    }
+  }
+
+  useEffect(() => {
+    console.log(`before`)
+    
+    const connectCookie = Cookies.get('connect.sid');
+    console.log(connectCookie);
+    const myCookie = document.cookie
+  .split('; ')
+  .find(row => row.startsWith('connect.sid='))
+  ?.split('=')[1];
+
+    console.log(Cookies);
+    console.log(document.cookie)
+    console.log(`connectCOokie: ${connectCookie}`)
+    // Create a new WebSocket connection using socket.io-client
+    const newSocket = io("ws://localhost:3001",{
+      extraHeaders: {
+        Cookie: `connect.sid=${connectCookie}`
+       }} );
+    
+
+    // Set up the event listeners for the WebSocket
+    newSocket.on("connect", () => {
+      console.log("WebSocket connection established!");
+      
+      getRoomsList();
+    });
+
+    newSocket.on("message", (data) => {
+      console.log(`Received message: ${data}`);
+    });
+
+    newSocket.on("error", (error) => {
+      console.error("WebSocket error:", error);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("WebSocket connection closed.");
+    });
+    newSocket.on("roomsListReceived", (payload) => console.log(JSON.stringify(payload)));
+    setSocket(newSocket);
+
+    // Save the WebSocket instance to the state
+   
+    // const fetchData = async () => {
+    //   const response = await fetch("http://localhost:3001/users/1");
+    //   const data = await response.json();
+    //   setData(data);
+    // };
+
+    // fetchData();
+    // Clean up the WebSocket connection when the component unmounts
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+
 
     return (
       <div >
         <div className="containerhere clearfix">
           <div className="row">
-          <ChatroomList />
+          <ChatroomList socket={socket} />
           <Message />
           <RoomDetail />
       </div>
       </div>
     </div>
     );
-}
-
-
-
-// const ChatLogin: React.FC = () => {
-//   const [socket, setSocket] = useState<Socket | null>(null);
-//   const [data, setData] = useState([]);
-
-//   useEffect(() => {
-//     // Create a new WebSocket connection using socket.io-client
-//     const newSocket = io("ws://localhost:3001");
-    
-
-//     // Set up the event listeners for the WebSocket
-//     newSocket.on("connect", () => {
-//       console.log("WebSocket connection established!");
-//     });
-
-//     newSocket.on("message", (data) => {
-//       console.log(`Received message: ${data}`);
-//     });
-
-//     newSocket.on("error", (error) => {
-//       console.error("WebSocket error:", error);
-//     });
-
-//     newSocket.on("disconnect", () => {
-//       console.log("WebSocket connection closed.");
-//     });
-
-//     // Save the WebSocket instance to the state
-//     setSocket(newSocket);
-
-//     const fetchData = async () => {
-//       const response = await fetch("http://localhost:3001/users/1");
-//       const data = await response.json();
-//       setData(data);
-//     };
-
-//     fetchData();
-
-//     // Clean up the WebSocket connection when the component unmounts
-//     return () => {
-//       console.log(data);
-//       newSocket.disconnect();
-//     };
-//   }, []);
-
-//   return (        <div> {data ? (
-//     <ul>
-//       {data.map((friend: any) => (
-//         <li key={friend.id}>{friend.name}</li>
-//       ))}
-//     </ul>
-//   ) : (
-//     <p>Loading...</p>
-//   )}
-
-//             </div>)
-// };
-
-// export default ChatLogin;
+};
