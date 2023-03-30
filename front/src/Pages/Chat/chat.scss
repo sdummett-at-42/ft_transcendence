@@ -47,6 +47,11 @@ body {
     width: 90%;
     font-size: 14px;
   }
+  .search{
+    border-radius: 3px;
+    border: none;
+    padding: 14px;
+  }
   
   // .fa-plus-square {
   //   position: relative;
@@ -79,14 +84,15 @@ body {
     color: $gray;
   }
   button {
+    border-radius: 3px;
     float: left;
     color: $blue;
-    font-size: 12px;
+    font-size: 16px;
     // text-transform: uppercase;
     border: none;
     cursor: pointer;
     font-weight: bold;
-    background: #babdbd;
+    background: #ffffff;
     
     &:hover {
       color: darken($blue, 7%);
@@ -228,7 +234,7 @@ body {
       border: none;
       cursor: pointer;
       font-weight: bold;
-      background: #F2F5F8;
+      background: #fefefe;
       
       &:hover {
         color: darken($blue, 7%);
@@ -286,9 +292,7 @@ body {
         list-style-type: none;
       }
     }
-    .chat-info-memberlist{
-      
-    }
+
     button {
       float: right;
       color: $blue;
@@ -297,7 +301,7 @@ body {
       border: none;
       cursor: pointer;
       font-weight: bold;
-      background: #6a6c6d;
+      background: #ffffff;
       
       &:hover {
         color: darken($blue, 7%);

@@ -3,17 +3,29 @@ import React, { FC } from 'react';
 import { faBan, faPlus, faVolumeXmark, faPersonRunning} from '@fortawesome/free-solid-svg-icons';
 import { faMessageSlash} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Setting from './Setting';
+import { useState, useEffect } from 'react';
 
 <FontAwesomeIcon icon={faBan} />
 interface RoomDetailProps {}
 
-const RoomDetail: FC<RoomDetailProps> = () => (
- 
+const RoomDetail: FC<RoomDetailProps> = () => {
+  const [show, setShow] = useState(false);
+  const close = () => {
+    setShow(false);
+  };
+ return (
   <div className="chatinfo">
       <div className="chat-info-header clearfix">
       <div className='chat-info-title'>Room Info</div>
         <div className='chat-info-subtitle'>Accessibility</div>
-        <button >Change</button>
+        <button  onClick={() => {
+          setShow(true);}} >Change</button>
+          <Setting         isVisible={show}
+            title="Modal Title"
+            content={<p>Add your content here</p>}
+            footer={<button>Cancel</button>}
+            onClose={() => setShow(false)} />
             <div className='chat-info-subtitle'>Public</div>
             <div className='chat-info-subtitle'>Invite a friend</div>
             <input placeholder="Name"></input>
@@ -89,7 +101,7 @@ const RoomDetail: FC<RoomDetailProps> = () => (
             
       </div>
   </div>
-
-);
+ );
+}
 
 export default RoomDetail;
