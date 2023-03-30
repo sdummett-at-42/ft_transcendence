@@ -22,7 +22,6 @@ export default function ChatLogin() {
 
 
   function getRoomsList() {
-    console.log("hello?00\n");
     if (socket) {
       socket.emit("getRoomsList");
       console.log("hello?\n");
@@ -30,23 +29,15 @@ export default function ChatLogin() {
   }
 
   useEffect(() => {
-    console.log(`before`)
     
-    const connectCookie = Cookies.get('connect.sid');
-    console.log(connectCookie);
-    const myCookie = document.cookie
-  .split('; ')
-  .find(row => row.startsWith('connect.sid='))
-  ?.split('=')[1];
-
-    console.log(Cookies);
-    console.log(document.cookie)
+    const connectCookie = Cookies.get('connect.sid')
     console.log(`connectCOokie: ${connectCookie}`)
     // Create a new WebSocket connection using socket.io-client
     const newSocket = io("ws://localhost:3001",{
-      extraHeaders: {
-        Cookie: `connect.sid=${connectCookie}`
-       }} );
+      auth: {
+        token: connectCookie,
+      }
+       } );
     
 
     // Set up the event listeners for the WebSocket
@@ -67,8 +58,9 @@ export default function ChatLogin() {
     newSocket.on("disconnect", () => {
       console.log("WebSocket connection closed.");
     });
-    newSocket.on("roomsListReceived", (payload) => console.log(JSON.stringify(payload)));
+    newSocket.on("roomsListReceived", (payload) => console.log(`The payload is: ${JSON.stringify(payload)}`));
     setSocket(newSocket);
+
 
     // Save the WebSocket instance to the state
    
