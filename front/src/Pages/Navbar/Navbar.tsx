@@ -20,7 +20,7 @@ export default function Navbar() {
             method: "GET"
         })
             .then(res => {
-                console.log(res);
+                // console.log(res);
                 if (res.status == 401) {
                     window.location.href = "/unauthorized"
                     return;
@@ -35,7 +35,7 @@ export default function Navbar() {
     return (
         <nav className="Navbar-nav">
             <div className="Navbar-nav-section" id="Navbar-left">
-                <Link to="/home"><img className="Login-invert-effect Navbar-logo" src={Logo42} alt="Logo-ecole-42" /></Link>
+                <Link to="/home"><img className="LoginSelector-invert-effect Navbar-logo" src={Logo42} alt="Logo-ecole-42" /></Link>
                 <Link to="/game" style={{textDecoration: 'none', color: 'whitesmoke'}}>
                     Pong
                 </Link>
@@ -51,7 +51,7 @@ export default function Navbar() {
                 <div>
                     {userData && (
                         <div id="Navbar-profil">
-                            <img id="Navbar-profil-picture" className="Navbar-logo" src={userData.profilPicture} alt="myProfilePicture" />
+                            <img id="Navbar-profil-picture" className="Navbar-logo" src={userData.profilePicture} alt="myProfilePicture" />
                             <div id="Navbar-profil-name">
                                 {userData.name}
                             </div>
