@@ -10,11 +10,6 @@ export class FriendRequestService {
 		if (+id === +friendId)
 			throw new HttpException('You cannot send a friend request to yourself', HttpStatus.BAD_REQUEST);
 
-		const friend = await this.friends.findOneFriend(id, friendId);
-
-		if (friend)
-			throw new HttpException('You are already friends with this user', HttpStatus.BAD_REQUEST);
-
 		const friendRequest = await this.prisma.friendRequest.findUnique({
 			where: {
 				senderId_receiverId: {
@@ -104,21 +99,7 @@ export class FriendRequestService {
 				}
 			}
 		})
-		// Add the friend in both sides
-		await this.prisma.friend.upsert({
-			where: {
-				userId_friendId: {
-					userId: +friendId,
-					friendId: +id
-				}
-			},
-			update: {},
-			create: {
-				user: { connect: { id: +friendId } },
-				friend: { connect: { id: +id } },
-			}
-		});
-
+		// Add the friend in both sides (addFriend using recursion)
 		return this.friends.addFriend(id, friendId);
 	}
 

@@ -1626,4 +1626,9 @@ export class ChatService {
 		await this.redis.unsetUserUnreadDM(socket.data.userId);
 		// unsetUnreadRoomMsg <== TODO
 	}
+
+	async getUserRooms(socket, dto, server) {
+		const rooms = await this.redis.getUserRooms(socket.data.userId)
+		socket.emit(Event.userRooms, {rooms});
+	}
 }
