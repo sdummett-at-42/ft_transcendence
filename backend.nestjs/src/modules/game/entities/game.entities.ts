@@ -70,16 +70,29 @@ export class Square implements Shape {
 }
 
 export class Player {
-    racket : Square;
-    score : number;
+    id : number;
+    name : string;
+    elo : number;
+//    eloTab : number[];
+
+    
+    score : number = 0;
+    racket? : Square;
+    
     // player 1 or 2 ?
     // id, name etc....
 
-    constructor(x:number, y:number, height:number, width:number) {
-        this.racket = new Square(x, y, height, width);
-        this.score = 0;
-        // couleur / skin
+    // constructor(id : number, name : string, elo : number, eloTab : number[]) {
+    constructor(data : any) {
+        this.id = data.id;
+        this.elo = data.elo;
+        //this.eloTab = data.elo[];
     }
+
+    // constructor(x:number, y:number, height:number, width:number) {
+    //     this.racket = new Square(x, y, height, width);
+
+    // }
 }
 
 export class Field {
@@ -93,5 +106,17 @@ export class Field {
         this.width = width;
         //this.shapes = shapes;
     }
+}
 
+export class Game {
+    id : number;
+    p1 : Player;
+    p2 : Player;
+    field? : Field;
+
+    constructor(id : number, p1 : Player, p2 : Player) {
+        this.id = id;
+        this.p1 = p1;
+        this.p2 = p2;
+    }
 }

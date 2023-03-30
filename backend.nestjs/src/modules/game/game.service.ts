@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { Shape, Square , Bullet, Circle, Coordonnee , Player, Field, BlackHole} from './entities/game.entities';
+import { Shape, Square , Bullet, Circle, Coordonnee , Player, Field, BlackHole, Game } from './entities/game.entities';
 import { GameGateway } from './game.gateway';
 import { Response } from 'express';
 import { RedisService } from 'src/modules/redis/redis.service';
@@ -20,14 +20,14 @@ export class GameService {
 
     //x:number, y:number, height:number, width:number)
     // a pofiner plus tard pour le set up des positions
-    player1 = new Player(20, 200, 84, 5);
-    player2 = new Player(780, 200, 84, 5);
+    player1 : Player;
+    player2 : Player;
 
     /* ************************** *\
     |* connect disconnect functon *|
     \* ************************** */
 
-    async handleConnection(socket) {
+    async handleConnection(socket : Socket) {
 		if (socket.handshake.headers.cookie == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
 			socket.emit(EventGame.NotConnected, {
@@ -50,14 +50,20 @@ export class GameService {
 			socket.disconnect()
 			return;
 		}
-        console.log("handleConnection: connected", socket.IsConnected);
+        console.log("handleConnection: connected");
 		socket.emit(EventGame.IsConnected, {
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
 		});
 
+        const allData = JSON.parse(session).passport.user;
         const userId = JSON.parse(session).passport.user.id;
 		socket.data.userId = userId;
+
+        socket.data.name = allData.name;
+        socket.data.elo = allData.elo;
+
+        console.log("user : ", JSON.parse(session).passport.user);
 	}
 
     /* ******************* *\
@@ -67,20 +73,29 @@ export class GameService {
     // TODO
     // maybe pass user to get his skin ?
     // need map too
-    initGame(server : Server, roomId : string) {
+    // Add 2 player
+    initGame(server : Server, game : Game) {
         // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
         // on count pour numberElement lors reset/scoring
 
-        console.log(roomId);
+        console.log(game.id);
 
         if (this.shapes.length != 0)
             return ;
+
+        this.player1 = game.p1;
+        this.player2 = game.p2;
+
+        this.player1.racket = new Square(420, 200, 84, 5);
+        this.player2.racket = new Square(780, 200, 84, 5);
+
+
         this.shapes.push(this.player1.racket);
         this.shapes.push(this.player2.racket);
 
         // Creation Circle : x, y, r
-        // const circle_01 = new Circle(200, 100, 30);
-        // this.shapes.push(circle_01);
+        const circle_01 = new Circle(200, 100, 30);
+        this.shapes.push(circle_01);
 
         // Creation square : x, y, l, w
         const square_01 = new Square(400, 240, 50, 100);
