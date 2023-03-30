@@ -8,10 +8,12 @@ import { GameGateway } from '../game.gateway'
 
 @Injectable()
 export class LobbyService {
-    constructor(private readonly gameService: GameService) {}
+    constructor(private readonly gameService: GameService,
+                private readonly gameGateway: GameGateway) {}
 
     users : Player[] = [];
 
+    // Send html
     async lobbyRoom(res : Response) {
         console.log("Lobby.service : Controller('game')  lobbyRoom");
         const data = await fs.promises.readFile('src/modules/game/Dir/lobby.html', 'utf8');
@@ -20,6 +22,7 @@ export class LobbyService {
 
     // Add user [] 
     lobbyJoinQueue(client : any) {
+        //console.log(client.handshake);
         // recuper les infos dont on a besoin du client
         // les convertir en player//
         // push dans users[]
@@ -43,11 +46,13 @@ export class LobbyService {
     }
 
     // take 2 player, delete user [], generate game
-    lobbyCreateGame(player1 : Player, player2 : Player) {
+    // lobbyCreateGame(player1 : Player, player2 : Player, server : Server) {
+    lobbyCreateGame() {
         // kick player from users[]
         // create game with p1 && p2, generate map && game
         // when done
 
-        //this.gameService.initGame() <-- change to fit
+
+        this.gameService.initGame(this.gameGateway.server, "42");
     } 
 }

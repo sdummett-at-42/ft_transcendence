@@ -61,11 +61,14 @@ export class GameService {
     |* input/entry functon *|
     \* ******************* */
 
-    initGame(server : Server, user : Socket, room : string) {
+    // TODO
+    // maybe pass user to get his skin ?
+    // need map too
+    initGame(server : Server, roomId : string) {
         // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
         // on count pour numberElement lors reset/scoring
 
-        console.log(room);
+        console.log(roomId);
 
         if (this.shapes.length != 0)
             return ;
@@ -111,7 +114,6 @@ export class GameService {
     }
 
     stopGame(server : Server) : void {
-        console.log("amour");
         if (this.shapes.length <= this.numberElement ) {
             console.log("la partie n'a pas commence !");
             return null;
@@ -127,7 +129,7 @@ export class GameService {
             this.shapes.splice(this.numberElement);
 
             console.log(this.shapes);
-            console.log("sub", this.shapes.length);
+            console.log("size shapes: ", this.shapes.length);
             server.emit(EventGame.gameImage, this.shapes);
         }
     }

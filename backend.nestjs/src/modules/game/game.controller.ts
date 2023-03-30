@@ -30,5 +30,6 @@ export class GameController {
         console.log(`Controller('game')  @Get(':id') gamerRoom: ${id}`);
         const data = await fs.promises.readFile('src/modules/game/Dir/game.html', 'utf8');
         res.send(data);
+        this.lobbyService.lobbyCreateGame();
     }
 }

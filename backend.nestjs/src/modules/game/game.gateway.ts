@@ -21,8 +21,7 @@ export class GameGateway {
   // Connection
   handleConnection(socket: Socket) {
     console.log('New client connected game:', socket.id);
-    //this.gameService.handleConnection(socket);
-    //this.gameService.initGame(this.server, socket);
+    this.gameService.handleConnection(socket);
   }
 //
   // Disconnection
@@ -55,6 +54,10 @@ export class GameGateway {
     console.log(`Gateway : player has join game`);
     console.log(payload);
   }
+
+  /* ***** *\
+  |* lobby *|
+  \* ***** */
 
   @SubscribeMessage(EventGame.playerJoinQueue)
   JoinLobbyMessage(client: any, payload: any) : void {
