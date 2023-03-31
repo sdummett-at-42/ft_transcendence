@@ -73,9 +73,10 @@ export class Player {
     id : number;
     name : string;
     elo : number;
+    socket : string;
 //    eloTab : number[];
+    //socket : string;
 
-    
     score : number = 0;
     racket? : Square;
     
@@ -84,8 +85,12 @@ export class Player {
 
     // constructor(id : number, name : string, elo : number, eloTab : number[]) {
     constructor(data : any) {
-        this.id = data.id;
+        console.log("construcotr PLayer, data :", data);
+        this.id = data.userId;
+        this.name = data.name;
         this.elo = data.elo;
+        this.socket = data.socket;
+        //this.socket = data.socket;
         //this.eloTab = data.elo[];
     }
 
@@ -110,13 +115,26 @@ export class Field {
 
 export class Game {
     id : number;
+    roomId : string;
+
     p1 : Player;
     p2 : Player;
-    field? : Field;
+
+    field : Field; // size
+    shapes : Shape[] = [];
+
+    bulletInterval: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
+    frequencyInterval: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
+
+    numberElement? : number;
+    speed? : number;
 
     constructor(id : number, p1 : Player, p2 : Player) {
         this.id = id;
+        this.roomId = "game" + id;
         this.p1 = p1;
         this.p2 = p2;
+
+        this.field = new Field(400, 800);
     }
 }

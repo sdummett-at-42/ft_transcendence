@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { Shape, Square , Bullet, Circle, Coordonnee , Player, Field, BlackHole, Game } from './entities/game.entities';
 import { GameGateway } from './game.gateway';
-import { Response } from 'express';
 import { RedisService } from 'src/modules/redis/redis.service';
 import { EventGame } from './game-event.enum';
 
@@ -10,18 +9,18 @@ import { EventGame } from './game-event.enum';
 export class GameService {
     constructor(private readonly redis: RedisService) { }
 
-    numberElement = 2;
-    speed = 5;
+    // numberElement = 2;
+    // speed = 5;
 
-    field = new Field(400, 800);
-    shapes : Shape[] = [];
-    bulletInterval: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
-    frequencyInterval: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
+    //field = new Field(400, 800);
+    //shapes : Shape[] = [];
+    //bulletInterval: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
+    //frequencyInterval: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
 
     //x:number, y:number, height:number, width:number)
     // a pofiner plus tard pour le set up des positions
-    player1 : Player;
-    player2 : Player;
+    // player1 : Player;
+    // player2 : Player;
 
     /* ************************** *\
     |* connect disconnect functon *|
@@ -62,13 +61,50 @@ export class GameService {
 
         socket.data.name = allData.name;
         socket.data.elo = allData.elo;
+        socket.data.socket = socket.id;
 
-        console.log("user : ", JSON.parse(session).passport.user);
+        console.log("data: ",  socket.data.socket);
+        console.log("socketid: ",  socket.id);
+
+        //console.log("user : ", JSON.parse(session).passport.user);
+        console.log("socket:", socket.handshake.headers.referer);
+        const gameId = socket.handshake.headers.referer.split('/').pop();
+        if (gameId === "game") {// not in game
+            socket.join(`game`);
+        } else {
+            //TODO
+            // check if game exist| ingame| finish
+            console.log(`gameId:`, gameId);
+            console.log(`game_${gameId}`);
+
+            socket.join(`game_${gameId}`); // create room "game_id" utliser avec l'url /game/:id
+        }
+
+
+
 	}
 
     /* ******************* *\
     |* input/entry functon *|
     \* ******************* */
+
+    // TODO
+    // check si client not in game ?
+    // check si client est joueur
+    //      yes = modifier player en question
+    //      non = spectateur
+    // si oui ajouter ou ecraser le socket ?
+    joinGame(server: Server, client : Socket, payload : {room : string, msg : string}) {
+        client.join(payload.room);
+        
+        if (client.data.userId === this.player1.id) { // c'est le joueur 1
+            this.player1.socket = client.data.socket;
+        }
+
+        if (client.data.userId === this.player2.id) { // c'est le joueur 2
+            this.player2.socket = client.data.socket;
+        }
+    }
 
     // TODO
     // maybe pass user to get his skin ?
@@ -78,7 +114,9 @@ export class GameService {
         // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
         // on count pour numberElement lors reset/scoring
 
-        console.log(game.id);
+        console.log("-------------");
+        console.log("----Game:", game);
+        console.log("-------------");
 
         if (this.shapes.length != 0)
             return ;
@@ -86,8 +124,9 @@ export class GameService {
         this.player1 = game.p1;
         this.player2 = game.p2;
 
-        this.player1.racket = new Square(420, 200, 84, 5);
-        this.player2.racket = new Square(780, 200, 84, 5);
+        const distwall = 10;
+        this.player1.racket = new Square(distwall , 200, 84, 5);
+        this.player2.racket = new Square(this.field.width - distwall , 200, 84, 5);
 
 
         this.shapes.push(this.player1.racket);
@@ -152,27 +191,34 @@ export class GameService {
         }
     }
 
-    mouvementGame(server : Server, x : number, y : number) : void { // faire pour joueur 1 et 2
+    mouvementGame(server : Server, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
         let tmpYmin : number = y - this.player1.racket.length / 2; // tmpY = haut de la racket
         let tmpYmax : number = y + this.player1.racket.length / 2; // tmpY = bas de la racket      
         
+        // console.log("client   :", client.data.userId);
         // Player 1
-        if (tmpYmin < 0) // si haut racket trop haut
-            this.player1.racket.pos.y = 0;
-        else if (tmpYmax > this.field.height) // si haut racket trop bas
-            this.player1.racket.pos.y = this.field.height - this.player1.racket.length;
-        else
-            this.player1.racket.pos.y = tmpYmin;
+        if (client.data.userId === this.player1.id) {
+            if (tmpYmin < 0) // si haut racket trop haut
+                this.player1.racket.pos.y = 0;
+            else if (tmpYmax > this.field.height) // si haut racket trop bas
+                this.player1.racket.pos.y = this.field.height - this.player1.racket.length;
+            else
+                this.player1.racket.pos.y = tmpYmin;
+        }
         
         // Player 2
-        if (tmpYmin < 0) // si haut racket trop haut
-            this.player2.racket.pos.y = 0;
-        else if (tmpYmax > this.field.height) // si haut racket trop bas
-            this.player2.racket.pos.y = this.field.height - this.player2.racket.length;
-        else
-            this.player2.racket.pos.y = tmpYmin;
+        if (client.data.userId === this.player2.id) {
+            if (tmpYmin < 0) // si haut racket trop haut
+                this.player2.racket.pos.y = 0;
+            else if (tmpYmax > this.field.height) // si haut racket trop bas
+                this.player2.racket.pos.y = this.field.height - this.player2.racket.length;
+            else
+                this.player2.racket.pos.y = tmpYmin;
+        }
 
-        server.emit(EventGame.gameImage, this.shapes);
+        if (client.data.userId === this.player2.id || client.data.userId === this.player1.id)
+            server.emit(EventGame.gameImage, this.shapes);
+
     }
 
     /* *************** *\

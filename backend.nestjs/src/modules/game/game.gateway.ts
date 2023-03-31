@@ -43,16 +43,20 @@ export class GameGateway {
     this.gameService.stopGame(this.server);
   }
 
+  // socket.emit("Mouvement", {roomId : room, data : data});
   @SubscribeMessage(EventGame.playerMouvement)
-  MouvementMessage(client: any, payload: any) : void {
+  MouvementMessage(client: any, payload: {roomId : number, data : Coordonnee}) : void {
     // send new coord
-    this.gameService.mouvementGame(this.server, payload.x, payload.y);
+    console.log("MouvementMessage");
+
+    this.gameService.mouvementGame(this.server, client, payload.data.x, payload.data.y);
   }
 
+  // When Client connect to socket server
   @SubscribeMessage(EventGame.playerJoinGame)
-  JoinGameMessage(client: any, payload: any) : void {
+  JoinGameMessage(client: any, payload: {room : string, msg : string}) : void {
     console.log(`Gateway : player has join game`);
-    console.log(payload);
+    this.gameService.joinGame(this.server, client, payload);
   }
 
   /* ***** *\

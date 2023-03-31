@@ -36,6 +36,14 @@
             }
         }
 
+        socket.on("goInGame", function(data) {
+            // go url game/data
+            window.addEventListener('beforeunload', () => {
+                socket.disconnect();
+            });
+            window.location.href = "/game/" + data;
+        })
+
 
     </script>
 </body>
