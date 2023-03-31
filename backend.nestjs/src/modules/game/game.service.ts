@@ -4,10 +4,13 @@ import { Shape, Square , Bullet, Circle, Coordonnee , Player, Field, BlackHole, 
 import { GameGateway } from './game.gateway';
 import { RedisService } from 'src/modules/redis/redis.service';
 import { EventGame } from './game-event.enum';
+import { LobbyService } from './lobby/lobby.service';
 
 @Injectable()
 export class GameService {
-    constructor(private readonly redis: RedisService) { }
+    constructor(private readonly redis: RedisService,
+                //private readonly lobbyService: LobbyService
+                ) { }
 
     // numberElement = 2;
     // speed = 5;
@@ -66,19 +69,28 @@ export class GameService {
         console.log("data: ",  socket.data.socket);
         console.log("socketid: ",  socket.id);
 
+        // TODO
+        // check si avec https j'ai encore acces a headers.referer
+
         //console.log("user : ", JSON.parse(session).passport.user);
         console.log("socket:", socket.handshake.headers.referer);
         const gameId = socket.handshake.headers.referer.split('/').pop();
-        if (gameId === "game") {// not in game
+        console.log("**************************");
+        if (gameId === "game") { // not in game
+            console.log("socket in: /game");
             socket.join(`game`);
         } else {
             //TODO
             // check if game exist| ingame| finish
-            console.log(`gameId:`, gameId);
-            console.log(`game_${gameId}`);
+            console.log("socket in: /game/qqch");
 
-            socket.join(`game_${gameId}`); // create room "game_id" utliser avec l'url /game/:id
+            console.log(`gameId:`, gameId);
+            socket.data.ingame = gameId;
+            // console.log(`game${gameId}`);
+
+            // socket.join(`game${gameId}`); // create room "game_id" utliser avec l'url /game/:id
         }
+        console.log("**************************");
 
 
 
@@ -94,84 +106,53 @@ export class GameService {
     //      yes = modifier player en question
     //      non = spectateur
     // si oui ajouter ou ecraser le socket ?
-    joinGame(server: Server, client : Socket, payload : {room : string, msg : string}) {
-        client.join(payload.room);
+    joinGame(server: Server, game : Game, client : Socket, payload : {roomId : string, msg : string}) {
         
-        if (client.data.userId === this.player1.id) { // c'est le joueur 1
-            this.player1.socket = client.data.socket;
+        client.join(payload.roomId);
+
+        console.log(payload);
+        console.log(game.roomId);
+        
+        console.log("client  ", client.data.userId);
+        console.log("player 1", game.p1.id);
+        console.log("player 2", game.p2.id);
+
+        if (client.data.userId === game.p1.id) { // c'est le joueur 1
+            game.p1.socket = client.data.socket;
         }
 
-        if (client.data.userId === this.player2.id) { // c'est le joueur 2
-            this.player2.socket = client.data.socket;
+        if (client.data.userId === game.p2.id) { // c'est le joueur 2
+            game.p2.socket = client.data.socket;
         }
     }
 
-    // TODO
-    // maybe pass user to get his skin ?
-    // need map too
-    // Add 2 player
-    initGame(server : Server, game : Game) {
-        // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
-        // on count pour numberElement lors reset/scoring
+    startingGame(server : Server, game : Game) : void {
 
-        console.log("-------------");
-        console.log("----Game:", game);
-        console.log("-------------");
-
-        if (this.shapes.length != 0)
-            return ;
-
-        this.player1 = game.p1;
-        this.player2 = game.p2;
-
-        const distwall = 10;
-        this.player1.racket = new Square(distwall , 200, 84, 5);
-        this.player2.racket = new Square(this.field.width - distwall , 200, 84, 5);
-
-
-        this.shapes.push(this.player1.racket);
-        this.shapes.push(this.player2.racket);
-
-        // Creation Circle : x, y, r
-        const circle_01 = new Circle(200, 100, 30);
-        this.shapes.push(circle_01);
-
-        // Creation square : x, y, l, w
-        const square_01 = new Square(400, 240, 50, 100);
-        this.shapes.push(square_01);
-
-        // Creation BlackHole : x, y, l, w
-        const BlackHole_01 = new BlackHole(200, 300, 45);
-        this.shapes.push(BlackHole_01);
-
-        this.numberElement = this.shapes.length;
-        server.emit(EventGame.gameImage, this.shapes);   
-    }
-
-    startingGame(server : Server) : void {
-        if (this.shapes.length > this.numberElement ) {
+        if (game.shapes.length > game.numberElement ) {
             console.log("Partie deja en cours");
         }
         else {
-            if (this.shapes.length === 0 )
-                this.shapes.push(this.player1.racket);
+            if (game.shapes.length === 0 )
+                game.shapes.push(game.p1.racket);
             console.log("starting game !");
 
             // Creation bullet
             // x, y, r, v, f, a
             let bullet_01 = new Bullet(200, 200, 5, 3, 30, 3.14 );
-            this.shapes.push(bullet_01);
+            game.shapes.push(bullet_01);
 
+            // TODO
+            // emit to roomId
+            server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
 
-            server.emit(EventGame.gameImage, this.shapes);
-
-            this.startMoving(server, bullet_01);
+            this.startMoving(server, game, bullet_01);
 
         }
     }
 
-    stopGame(server : Server) : void {
-        if (this.shapes.length <= this.numberElement ) {
+    stopGame(server : Server, game : Game) : void {
+
+        if (game.shapes.length <= game.numberElement ) {
             console.log("la partie n'a pas commence !");
             return null;
         }
@@ -181,43 +162,44 @@ export class GameService {
             //console.log(this.shapes.length);
             //console.log(this.shapes[2]);//
 
-            clearInterval(this.frequencyInterval);
-            clearInterval(this.bulletInterval);
-            this.shapes.splice(this.numberElement);
+            clearInterval(game.frequencyInterval);
+            clearInterval(game.bulletInterval);
+            game.shapes.splice(game.numberElement);
 
-            console.log(this.shapes);
-            console.log("size shapes: ", this.shapes.length);
-            server.emit(EventGame.gameImage, this.shapes);
+            console.log(game.shapes);
+            console.log("size shapes: ", game.shapes.length);
+            server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
         }
     }
 
-    mouvementGame(server : Server, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
-        let tmpYmin : number = y - this.player1.racket.length / 2; // tmpY = haut de la racket
-        let tmpYmax : number = y + this.player1.racket.length / 2; // tmpY = bas de la racket      
+    mouvementGame(server : Server, game : Game, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
+
+        let tmpYmin : number = y - game.p1.racket.length / 2; // tmpY = haut de la racket
+        let tmpYmax : number = y + game.p1.racket.length / 2; // tmpY = bas de la racket      
         
         // console.log("client   :", client.data.userId);
         // Player 1
-        if (client.data.userId === this.player1.id) {
+        if (client.data.userId === game.p1.id) {
             if (tmpYmin < 0) // si haut racket trop haut
-                this.player1.racket.pos.y = 0;
-            else if (tmpYmax > this.field.height) // si haut racket trop bas
-                this.player1.racket.pos.y = this.field.height - this.player1.racket.length;
+                game.p1.racket.pos.y = 0;
+            else if (tmpYmax > game.field.height) // si haut racket trop bas
+                game.p1.racket.pos.y = game.field.height - game.p1.racket.length;
             else
-                this.player1.racket.pos.y = tmpYmin;
+                game.p1.racket.pos.y = tmpYmin;
         }
         
         // Player 2
-        if (client.data.userId === this.player2.id) {
+        if (client.data.userId === game.p2.id) {
             if (tmpYmin < 0) // si haut racket trop haut
-                this.player2.racket.pos.y = 0;
-            else if (tmpYmax > this.field.height) // si haut racket trop bas
-                this.player2.racket.pos.y = this.field.height - this.player2.racket.length;
+                game.p2.racket.pos.y = 0;
+            else if (tmpYmax > game.field.height) // si haut racket trop bas
+                game.p2.racket.pos.y = game.field.height - game.p2.racket.length;
             else
-                this.player2.racket.pos.y = tmpYmin;
+                game.p2.racket.pos.y = tmpYmin;
         }
 
-        if (client.data.userId === this.player2.id || client.data.userId === this.player1.id)
-            server.emit(EventGame.gameImage, this.shapes);
+        if (client.data.userId === game.p2.id || client.data.userId === game.p1.id)
+            server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
 
     }
 
@@ -225,24 +207,24 @@ export class GameService {
     |* Interne functon *|
     \* *************** */
 
-    startMoving(server: Server, bullet: Bullet) {
-        if (this.bulletInterval)
-            clearInterval(this.bulletInterval);
+    startMoving(server: Server, game : Game, bullet: Bullet) {
+        if (game.bulletInterval)
+            clearInterval(game.bulletInterval);
       
         let delay = 1000 / bullet.f;
         console.log("delay = ", delay, " bullet.r * Math.cos(bullet.a) = " ,bullet.r * Math.cos(bullet.a));
       
 
         // Start the interval to increment to all bullet.f every second
-        this.frequencyInterval = setInterval(() => {
-            bullet.f += this.speed;
+        game.frequencyInterval = setInterval(() => {
+            bullet.f += game.speed;
             console.log("bullet frequency: ", bullet.f);
         }, 1000);
 
 
         const intervalFunction = () => {
             // Check if bullet got collisionwith element if collision bullet.a will change
-            this.checkCollision(bullet);
+            this.checkCollision(game, bullet);
         
             // Change bullet.pos with new value
             bullet.pos.x += bullet.v * Math.cos(bullet.a);
@@ -251,42 +233,48 @@ export class GameService {
         //console.log(`position = (${bullet.pos.x}.${bullet.pos.y})`);
         
             // send shapes[] to front
-            server.emit(EventGame.gameImage, this.shapes);
+            server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
         
             // Recalculate the delay based on the new frequency
             delay = 1000 / bullet.f;
         
             // Clear the previous interval and create a new one with the updated delay
-            clearInterval(this.bulletInterval);
-            this.bulletInterval = setInterval(intervalFunction, delay);
+            clearInterval(game.bulletInterval);
+            game.bulletInterval = setInterval(intervalFunction, delay);
         };
       
         // Set the first interval
-        this.bulletInterval = setInterval(intervalFunction, delay);
+        game.bulletInterval = setInterval(intervalFunction, delay);
     }
       
-    checkScoring(bullet : Bullet) : void {
+    checkScoring(game : Game, bullet : Bullet) : void {
         // si scoring retirer bullet qui a marque de la partie
         // si plus de bullet en jeux en remettre une pour le joueur qui a perdu ou inverse
 
-        if (bullet.pos.x + bullet.r > this.field.width) {
-            this.player2.score++;
+        if (bullet.pos.x + bullet.r > game.field.width) {
+            game.p2.score++;
         } else if (bullet.pos.x - bullet.r < 0) {
-            this.player1.score++;
+            game.p1.score++;
         }
+
+        // TODO
+        // Faire remise en jeu de la bibille
     }
 
-    checkCollision(bullet : Bullet) : void {
+    checkCollision(game : Game, bullet : Bullet) : void {
         // Vérifier si la balle touche les murs horizontaux
-        if (bullet.pos.y + bullet.r > this.field.height || bullet.pos.y - bullet.r < 0)
+        if (bullet.pos.y + bullet.r > game.field.height || bullet.pos.y - bullet.r < 0)
             bullet.a = -bullet.a;
+
+        // Check bullet hit vertical wall
+        this.checkScoring(game, bullet);
             
         // Check if bullet hit an other shape
         // collision activate with Square and Circle
         // no collision between bullet (or himself)
-        console.log(this.shapes.length, this.shapes);
-        for (let i = 0; i < this.shapes.length; i++) {
-            const shape = this.shapes[i];
+        console.log(game.shapes.length, game.shapes);
+        for (let i = 0; i < game.shapes.length; i++) {
+            const shape = game.shapes[i];
             // Mettre optimisation check si radius bullet et radius shape no hit
             // === >
             if (shape instanceof Circle || shape instanceof BlackHole) {

@@ -8,7 +8,8 @@ import * as fs from "fs";
 @ApiTags('games')
 @Controller('game')
 export class GameController {
-    constructor(private readonly gameService: GameService, private readonly lobbyService: LobbyService) {}
+    constructor(private readonly gameService: GameService,
+                private readonly lobbyService: LobbyService) {}
 
     // plutot faire /game amene sur lobby.html
     // recherche game
@@ -35,6 +36,7 @@ export class GameController {
 
         if (isNaN(numId) || numId >= this.lobbyService.nbGame || numId < 0) { // unvalid id or unexistant game
             //erreur 404 game existe pas
+            // peut etre rediriger vers /game ?
             res.sendStatus(404);
         } else {
             // game exist but maybe end or in course

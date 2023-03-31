@@ -33,14 +33,41 @@ export class GameGateway {
   // generate bullet and game start
   StartingMessage(client: any, payload: any) : void {
     console.log("gateway : start game");
-    this.gameService.startingGame(this.server);
+
+    // get game by gameid from client
+    const gameId = Number(client.data.ingame); // string to number
+
+      const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+      const game = this.lobbyService.games[indexGame];
+
+      console.log("----------------------");
+      console.log(gameId);
+      console.log(indexGame);
+      console.log(this.lobbyService.games);
+      console.log("----------------------");
+
+    this.gameService.startingGame(this.server, game);
   }
 
   @SubscribeMessage(EventGame.gameEnd)
   // Destroy all bullet
   EndingMessage(client: any, payload: any) : void {
     console.log("gateway : end");
-    this.gameService.stopGame(this.server);
+
+    // get game by gameid from client
+    const gameId = Number(client.data.ingame); // string to number
+
+      const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+      const game = this.lobbyService.games[indexGame];
+
+      console.log("----------------------");
+      console.log(gameId);
+      console.log(indexGame);
+      console.log(this.lobbyService.games);
+      console.log("----------------------");
+
+
+    this.gameService.stopGame(this.server, game);
   }
 
   // socket.emit("Mouvement", {roomId : room, data : data});
@@ -49,14 +76,45 @@ export class GameGateway {
     // send new coord
     console.log("MouvementMessage");
 
-    this.gameService.mouvementGame(this.server, client, payload.data.x, payload.data.y);
+    // get game by gameid from client
+    const gameId = Number(client.data.ingame); // string to number
+
+      const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+      const game = this.lobbyService.games[indexGame];
+
+      console.log("----------------------");
+      console.log(gameId);
+      console.log(indexGame);
+      console.log(this.lobbyService.games);
+      console.log("----------------------");
+
+    this.gameService.mouvementGame(this.server, game, client, payload.data.x, payload.data.y);
   }
 
   // When Client connect to socket server
   @SubscribeMessage(EventGame.playerJoinGame)
-  JoinGameMessage(client: any, payload: {room : string, msg : string}) : void {
+  JoinGameMessage(client: any, payload: {roomId : string, msg : string}) : void {
     console.log(`Gateway : player has join game`);
-    this.gameService.joinGame(this.server, client, payload);
+
+
+    // get game by gameid from client
+      const gameId = Number(client.data.ingame); // string to number
+
+
+
+
+      const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+      const game = this.lobbyService.games[indexGame];
+
+      console.log(client.data);
+      console.log("----------------------");
+      console.log(gameId); // non def
+      console.log(indexGame); // -1
+      console.log(this.lobbyService.games);
+      console.log("----------------------");
+
+
+    this.gameService.joinGame(this.server, game, client, payload);
   }
 
   /* ***** *\

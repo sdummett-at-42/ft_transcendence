@@ -2,15 +2,13 @@ import { Injectable, Inject } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { Response } from 'express';
 import * as fs from "fs";
-import { Player, Game } from '../entities/game.entities';
-import { GameService } from '../game.service';
+import { Player, Game, Square, Circle, BlackHole } from '../entities/game.entities';
 import { GameGateway } from '../game.gateway'
+import { EventGame } from '../game-event.enum';
 
 @Injectable()
 export class LobbyService {
-    constructor(private readonly gameService: GameService,
-                private readonly gameGateway: GameGateway,
-                ) {}
+    constructor(private readonly gameGateway: GameGateway) {}
 
     nbGame : number = 0;
     users : Player[] = [];
@@ -139,9 +137,14 @@ export class LobbyService {
             // console.log("Player 1:", p1);
             // console.log("Player 2:", p2);
             
-            this.gameService.initGame(this.gameGateway.server, game);
+            this.initGame(this.gameGateway.server, game);
             // send to player join game's url
             //this.gameGateway.server
+
+            console.log("+++++++++++++");
+            console.log(this.games);
+            console.log("+++++++++++++");
+
             this.gameGateway.server.to(p1.socket).to(p2.socket).emit("goInGame", game.id);
 
     // const redirect = `${this.req.protocol}://${this.req.hostname}/game/${game.id}`;
@@ -153,4 +156,56 @@ export class LobbyService {
     // controller check si game existe
     //  1 = get Game
     //  0 = 404
+
+
+
+
+
+
+
+
+    // TODO
+    // maybe pass user to get his skin ?
+    // need map too
+    // Add 2 player
+    initGame(server : Server, game : Game) {
+        // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
+        // on count pour numberElement lors reset/scoring
+
+        console.log("-------------");
+        console.log("----Game:", game);
+        console.log("-------------");
+
+        if (game.shapes.length != 0)
+            return ;
+
+        // this.player1 = game.p1;
+        // this.player2 = game.p2;
+
+        const distwall = 10;
+        game.p1.racket = new Square(distwall , 200, 84, 5);
+        game.p2.racket = new Square(game.field.width - distwall , 200, 84, 5);
+
+
+        game.shapes.push(game.p1.racket);
+        game.shapes.push(game.p2.racket);
+
+        // TODO
+        // definir la map dans init map de service et pas in game
+
+        // Creation Circle : x, y, r
+        const circle_01 = new Circle(200, 100, 30);
+        game.shapes.push(circle_01);
+
+        // Creation square : x, y, l, w
+        const square_01 = new Square(400, 240, 50, 100);
+        game.shapes.push(square_01);
+
+        // Creation BlackHole : x, y, l, w
+        const BlackHole_01 = new BlackHole(200, 300, 45);
+        game.shapes.push(BlackHole_01);
+
+        game.numberElement = game.shapes.length;
+        server.emit(EventGame.gameImage, game.shapes);   
+    }
 }

@@ -116,18 +116,19 @@ export class Field {
 export class Game {
     id : number;
     roomId : string;
-
     p1 : Player;
     p2 : Player;
 
     field : Field; // size
     shapes : Shape[] = [];
 
-    bulletInterval: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
-    frequencyInterval: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
+    bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
+    frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
 
     numberElement? : number;
-    speed? : number;
+    speed : number;
+
+    gameDone : Boolean = false; // true = fini
 
     constructor(id : number, p1 : Player, p2 : Player) {
         this.id = id;
@@ -136,5 +137,6 @@ export class Game {
         this.p2 = p2;
 
         this.field = new Field(400, 800);
+        this.speed = 5;
     }
 }
