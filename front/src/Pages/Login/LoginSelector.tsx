@@ -24,9 +24,10 @@ export default function LoginSelector() {
 
         const hashedPassword = bcrypt.hashSync(password, salt);
 
-        fetch('http://localhost:3001/auth/local/login', {
+        fetch('http://localhost:3001/auth/local', {
             method: 'POST',
             body: JSON.stringify({
+                auth: "LOGIN",
                 username: username,
                 password: hashedPassword,
             }),

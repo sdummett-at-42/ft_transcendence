@@ -1,8 +1,40 @@
-import React from "react";
+import React, { useRef } from "react";
 import "./CreateAccount.css"
 import Logo42 from "../../../assets/42_Logo.png"
+import bcrypt from "bcryptjs"
+import { faArrowDownUpAcrossLine } from "@fortawesome/free-solid-svg-icons";
+
+const salt = bcrypt.genSaltSync(10);
 
 export default function CreateAccount() {
+
+    const usernameInputRef = useRef();
+    const emailInputRef =useRef();
+    const passwordInputRef = useRef();
+
+    function handleLoginForm() {
+        const username = usernameInputRef.current.value;
+        const email = emailInputRef.current.value;
+        const password = passwordInputRef.current.value;
+
+        if (!username || !password || ! email) {
+            console.log("No username/password/email provided");
+            return;
+        }
+
+        const hashedPassword = bcrypt.hashSync(password, salt);
+
+        fetch('http://localhost:3001/auth/local', {
+            method: 'POST',
+            body: JSON.stringify({
+                auth: "REGISTER",
+                username: username,
+                email: email,
+                password: hashedPassword,
+            }),
+        })
+    }
+
     return (
         <div className="LoginSelector-body">
             <div className="LoginSelector-card">
@@ -14,11 +46,12 @@ export default function CreateAccount() {
                     
                     <div className="LoginSelector-card-subtitle">
 
-                    <form method="post" action="http://localhost:3001/register/transcendence">
+                    <form>
                             <input
                                 className="LoginSelector-button LoginSelector-input"
                                 type="text"
                                 placeholder="Pseudonyme"
+                                ref={usernameInputRef}
                                 required
                             />
 
@@ -26,6 +59,7 @@ export default function CreateAccount() {
                                 className="LoginSelector-button LoginSelector-input"
                                 type="email"
                                 placeholder="Adresse mail"
+                                ref={emailInputRef}
                                 required
                             />
                 
@@ -33,6 +67,7 @@ export default function CreateAccount() {
                                 className="LoginSelector-button LoginSelector-input"
                                 type="password"
                                 placeholder="Mot de passe"
+                                ref={passwordInputRef}
                                 required
                             />
 
@@ -47,6 +82,9 @@ export default function CreateAccount() {
                                 className="LoginSelector-button LoginSelector-input LoginSelector-submit Button-submit-video"
                                 type="submit"
                                 value="Continuer"
+                                onClick={e => {
+                                    handleLoginForm();
+                                }}
                             />
 
                         </form>
