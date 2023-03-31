@@ -19,6 +19,19 @@ export class AuthService {
 		private readonly chat: ChatGateway,
 		private readonly httpService: HttpService) { }
 
+	async findUserByName(username: string) {
+		return await this.users.findByName(username);
+	}
+
+	async findUserByEmail(email: string) {
+		return await this.users.findOneUserByEmail(email);
+	}
+
+	async createUser(loginMethod: LoginMethod, email: string, username: string, password: string, image: { base64: string, mimeType:string }) {
+		return await this.users.createWithPasswd(loginMethod, email, username, password, image);
+
+	}
+
 	async downloadProfilePic(profilePicUrl: string, accessToken: string) {
 		const authHeader = { Authorization: `Bearer ${accessToken}` };
 		const { data, headers } = await firstValueFrom(
