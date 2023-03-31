@@ -20,6 +20,7 @@ export default function FollowingAccountCreation() {
         fetch('http://localhost:3001/users/me', {
             method: 'PATCH',
 			headers: { "Content-Type": "application/json" },
+			credentials: 'include',
             body: JSON.stringify({
                 name: username,
                 email: "xx",
