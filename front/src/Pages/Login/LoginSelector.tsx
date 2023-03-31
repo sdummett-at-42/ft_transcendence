@@ -1,11 +1,37 @@
-import React from "react";
+import React, { useRef } from "react";
 import "./LoginSelector.css"
 import { Link } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUser } from "@fortawesome/free-solid-svg-icons"
 import Logo42 from "../../assets/42_Logo.png"
+import bcrypt from "bcryptjs"
+
+const salt = bcrypt.genSaltSync(10);
 
 export default function LoginSelector() {
+
+    const usernameInputRef = useRef();
+    const passwordInputRef = useRef();
+
+    function handleLoginForm() {
+        const username = usernameInputRef.current.value;
+        const password = passwordInputRef.current.value;
+
+        if (!username || !password) {
+            console.log("No username or password provided");
+            return;
+        }
+
+        const hashedPassword = bcrypt.hashSync(password, salt);
+
+        fetch('http://localhost:3001/auth/local/login', {
+            method: 'POST',
+            body: JSON.stringify({
+                username: username,
+                password: hashedPassword,
+            }),
+        })
+    }
 
     return (
         <div className="LoginSelector-body">
@@ -23,25 +49,32 @@ export default function LoginSelector() {
 
                     <div className="LoginSelector-card-subtitle">
 
-                        <form method="post" action="http://localhost:3001/auth/transcendence">
+                        <form>
                             <input
                                 className="LoginSelector-button LoginSelector-input"
-                                type="email"
-                                placeholder="Adresse mail"
+                                type="text"
+                                placeholder="Pseudonyme"
+                                ref={usernameInputRef}
                                 required
                             />
                 
                             <input
                                 className="LoginSelector-button LoginSelector-input"
                                 type="password"
+                                minLength='8'
                                 placeholder="Mot de passe"
+                                ref={passwordInputRef}
                                 required
+                                autoComplete="off"
                             />
             
                             <input
                                 className="LoginSelector-button LoginSelector-input LoginSelector-submit"
                                 type="submit"
                                 value="Se connecter"
+                                onClick={e => {
+                                    handleLoginForm();
+                                }}
                             />
 
                         </form>
