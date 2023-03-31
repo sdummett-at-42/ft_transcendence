@@ -10,6 +10,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum LoginMethod {
+	FORTYTWO
+	LOCAL
+}
+
 model User {
 	id					Int					@id @default(autoincrement())
 	email				String				@unique
@@ -25,6 +30,8 @@ model User {
 	friends				Int[]
 	twofactorIsEnabled	Boolean				@default(false)
 	twofactorSecret		String?
+	password			String?
+	loginMethod			LoginMethod
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
 }

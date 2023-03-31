@@ -7,6 +7,7 @@ import { RedisService } from "../redis/redis.service";
 import { ChatGateway } from "../chat/chat.gateway";
 import { catchError, firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
+import { LoginMethod } from "@prisma/client";
 
 
 @Injectable()
@@ -17,6 +18,19 @@ export class AuthService {
 		private readonly redis: RedisService,
 		private readonly chat: ChatGateway,
 		private readonly httpService: HttpService) { }
+
+	async findUserByName(username: string) {
+		return await this.users.findByName(username);
+	}
+
+	async findUserByEmail(email: string) {
+		return await this.users.findOneUserByEmail(email);
+	}
+
+	async createUser(loginMethod: LoginMethod, email: string, username: string, password: string, image: { base64: string, mimeType:string }) {
+		return await this.users.createWithPasswd(loginMethod, email, username, password, image);
+
+	}
 
 	async downloadProfilePic(profilePicUrl: string, accessToken: string) {
 		const authHeader = { Authorization: `Bearer ${accessToken}` };
@@ -32,12 +46,12 @@ export class AuthService {
 		return { base64, mimeType };
 	}
 
-	async validateUser(email: string, username: string, profilePicUrl: string = null, accessToken: string = null) {
+	async validateUser(email: string, username: string, loginMethod: LoginMethod = LoginMethod.LOCAL, profilePicUrl: string = null, accessToken: string = null) {
 		const user = await this.users.findOneUserByEmail(email);
 		if (user)
 			return user;
 		const image = await this.downloadProfilePic(profilePicUrl, accessToken);
-		return await this.users.create(email, username, image);
+		return await this.users.create(loginMethod, email, username, image);
 	}
 
 	async findUser(id: number) {
