@@ -5,6 +5,7 @@ import { Strategy } from 'passport-custom';
 import { AuthService } from '../auth.service';
 import * as Joi from 'joi';
 import { LoginMethod } from "@prisma/client";
+import * as fs from 'fs';
 
 const PASSWORD_MIN = 16;
 const USERNAME_MIN = 3;
@@ -36,12 +37,9 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 	}
 
 	async handleLogin({ username, password }) {
-		console.log(`handleLogin()`);
 		const { error } = LoginSchema.validate({ username, password });
 		if (error)
 			throw new BadRequestException(error.message);
-		console.log(`username: ${username}`)
-		console.log(`password: ${password}`)
 
 		const user = await this.authService.findUserByName(username);
 		if (!user)
@@ -57,13 +55,9 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 	}
 
 	async handleRegister({ username, email, password }) {
-		console.log(`handleRegister()`);
 		const { error } = RegisterSchema.validate({ username, email, password });
 		if (error)
 			throw new BadRequestException(error.message);
-		console.log(`username: ${username}`)
-		console.log(`email   : ${email}`)
-		console.log(`password: ${password}`)
 
 		let user = await this.authService.findUserByEmail(email);
 		if (user)
@@ -78,9 +72,12 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 		// Send an email with an url containing the random string
 
 		// Create the endpoint that handle email confirmation
-		const image: { base64: string, mimeType: string } = {base64: "MOCKBASE64", mimeType: "MOCKMIMETYPE"};
+		const imageData = fs.readFileSync('./avatar.svg');
+		const image: { base64: string, mimeType: string } = {
+			base64: Buffer.from(imageData).toString('base64'),
+			mimeType: 'image/svg+xml'
+		};
 		return await this.authService.createUser(LoginMethod.LOCAL, email, username, password, image);
-		// return user;
 	}
 
 	async validate(req): Promise<any> {
@@ -91,7 +88,6 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 			throw new BadRequestException(error.message);
 
 		let user;
-		console.log(`auth: ${auth}`);
 		if (auth === REGISTER)
 			user = await this.handleRegister({ username, email, password });
 		else
