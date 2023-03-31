@@ -1,14 +1,14 @@
 import React, { useRef } from "react";
 import "./LoginSelector.css"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUser } from "@fortawesome/free-solid-svg-icons"
 import Logo42 from "../../assets/42_Logo.png"
-import bcrypt from "bcryptjs"
-
-const salt = bcrypt.genSaltSync(10);
+import { SHA256 } from "crypto-js"
 
 export default function LoginSelector() {
+
+    const naviguate = useNavigate();
 
     const usernameInputRef = useRef();
     const passwordInputRef = useRef();
@@ -22,7 +22,7 @@ export default function LoginSelector() {
             return;
         }
 
-        const hashedPassword = bcrypt.hashSync(password, salt);
+        const hashedPassword = SHA256(password).toString();
 
         fetch('http://localhost:3001/auth/local', {
             method: 'POST',
@@ -32,6 +32,12 @@ export default function LoginSelector() {
                 username: username,
                 password: hashedPassword,
             }),
+        })
+        .then(res => {
+            if (res.status == 201) {
+                naviguate("/home");
+                return;
+            }
         })
     }
 
@@ -45,7 +51,7 @@ export default function LoginSelector() {
 
                     <div className="LoginSelector-card-subtitle">
                         <div className="LoginSelector-card-subtitle-word">
-                            Chosissez votre methode de connexion:
+                            Choisissez votre methode de connexion:
                         </div>
                     </div>
 
@@ -72,7 +78,7 @@ export default function LoginSelector() {
             
                             <input
                                 className="LoginSelector-button LoginSelector-input LoginSelector-submit"
-                                type="submit"
+                                type="button"
                                 value="Se connecter"
                                 onClick={e => {
                                     handleLoginForm();

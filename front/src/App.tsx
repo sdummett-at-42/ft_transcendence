@@ -7,6 +7,7 @@ import Profile from "./Pages/Profile/Profile";
 import NotFound from "./Pages/Errors/NotFound";
 import Layout from "./Pages/Navbar/Layout";
 import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
+import FollowingAccountCreation from "./Pages/Login/CreateAccount/FollowingAccountCreation";
 // import TranscendenceLogin from "./Pages/Login/Transcendence/TranscendenceLogin";
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginSelector />} />
         <Route path="/register" element={<CreateAccount />} />
+        <Route path="/register/finalization" element={<FollowingAccountCreation />} />
         <Route path="/login/intra42" element={<LoginFortyTwo />} />
         {/* <Route path="/login/transcendence" element={<TranscendenceLogin />} /> */}
 

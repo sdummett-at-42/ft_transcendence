@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Navbar.css"
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo42 from "../../assets/42_Logo.png"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserGear } from "@fortawesome/free-solid-svg-icons"
@@ -8,6 +8,7 @@ import { faUserGear } from "@fortawesome/free-solid-svg-icons"
 export default function Navbar() {
 
     const [userData, setUserData] = useState(null);
+    const naviguate = useNavigate();
 
     useEffect(() => {
         fetchUserData();
@@ -22,7 +23,7 @@ export default function Navbar() {
             .then(res => {
                 // console.log(res);
                 if (res.status == 401) {
-                    window.location.href = "/unauthorized"
+                    naviguate("/unauthorized");
                     return;
                 }
                 return res.json();

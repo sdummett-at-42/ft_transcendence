@@ -1,18 +1,17 @@
 import React, { useRef } from "react";
 import "./CreateAccount.css"
 import Logo42 from "../../../assets/42_Logo.png"
-import bcrypt from "bcryptjs"
-import { Link } from "react-router-dom";
+import { SHA256 } from "crypto-js"
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
-
-const salt = bcrypt.genSaltSync(10);
 
 export default function CreateAccount() {
 
     const usernameInputRef = useRef();
     const emailInputRef =useRef();
     const passwordInputRef = useRef();
+    const naviguate = useNavigate();
 
     function handleLoginForm() {
         const username = usernameInputRef.current.value;
@@ -24,7 +23,7 @@ export default function CreateAccount() {
             return;
         }
 
-        const hashedPassword = bcrypt.hashSync(password, salt);
+        const hashedPassword = SHA256(password).toString();
 
         fetch('http://localhost:3001/auth/local', {
             method: 'POST',
@@ -36,6 +35,12 @@ export default function CreateAccount() {
                 password: hashedPassword,
             }),
         })
+        .then(res => {
+            if (res.status == 201) {
+                naviguate("/register/finalization");
+                return;
+            }
+        })
     }
 
     return (
@@ -43,7 +48,7 @@ export default function CreateAccount() {
             <div className="LoginSelector-card">
                 <div className="LoginSelector-card-content">
 
-                    <Link to="/" style={{color: 'white', textDecoration: 'none'}} id="Login-backward">
+                    <Link to="/register" style={{color: 'white', textDecoration: 'none'}} id="Login-backward">
                         <FontAwesomeIcon icon={faAnglesLeft} size="2x"/>
                     </Link>
 
@@ -87,7 +92,7 @@ export default function CreateAccount() {
             
                             <input
                                 className="LoginSelector-button LoginSelector-input LoginSelector-submit Button-submit-video"
-                                type="submit"
+                                type="button"
                                 value="Continuer"
                                 onClick={e => {
                                     handleLoginForm();
