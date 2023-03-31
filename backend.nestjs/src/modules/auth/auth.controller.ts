@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Delete, Body, Req, Request, Res, Response, UseGuards, HttpCode } from "@nestjs/common";
-import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import * as otplib from 'otplib';
 import * as qrcode from 'qrcode';
 import { AuthenticatedGuard } from "./utils/authenticated.guard";
@@ -8,6 +8,9 @@ import { AuthGuard } from "@nestjs/passport";
 import { OtpDto } from "./dto/otp.dto";
 import { AuthService } from "./auth.service";
 import { SecretQrCodeEntity } from "./utils/2fa.entity";
+import { LocalDto } from "./dto/local.dto";
+
+
 
 @Controller("auth")
 @ApiTags('auth')
@@ -16,8 +19,13 @@ export class AuthController {
 	constructor(private readonly auth: AuthService) { }
 
 	@Post('/local')
+	@HttpCode(201)
+	@ApiCreatedResponse({ description: 'Successfully register/log a user.'})
+	@ApiBadRequestResponse({ description: 'There is a problem with the payload or the password is wrong.'})
+	@ApiNotFoundResponse({ description: 'The username used to log the user isn\'t found.'})
+	@ApiConflictResponse({ description: 'email or username is already in use or the login method is not the one used when registered.'})
 	@UseGuards(AuthGuard('local'))
-	localRegister() {}
+	localRegister(@Body() dto: LocalDto) {}
 
 	// @Get('/local/forget')
 	// @UseGuards(AuthGuard('local'))

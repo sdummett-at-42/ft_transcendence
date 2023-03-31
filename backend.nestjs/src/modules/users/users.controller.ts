@@ -66,7 +66,7 @@ export class UsersController {
 	@Patch('me')
 	@HttpCode(200)
 	@UseGuards(ContentTypeGuard)
-	@ApiOkResponse({ type: UserEntity, description: 'Updates a user by id' })
+	@ApiOkResponse({ type: UserEntity, description: 'Updates current user' })
 	update(
 		@Body() updateUserDto: UpdateUserDto,
 		@Req() request,
