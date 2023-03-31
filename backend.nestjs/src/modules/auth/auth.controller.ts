@@ -15,7 +15,7 @@ export class AuthController {
 
 	constructor(private readonly auth: AuthService) { }
 
-	@Get('/local')
+	@Post('/local')
 	@UseGuards(AuthGuard('local'))
 	localRegister() {}
 
