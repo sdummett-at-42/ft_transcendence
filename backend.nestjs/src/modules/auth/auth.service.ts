@@ -7,6 +7,7 @@ import { RedisService } from "../redis/redis.service";
 import { ChatGateway } from "../chat/chat.gateway";
 import { catchError, firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
+import { LoginMethod } from "@prisma/client";
 
 
 @Injectable()
@@ -32,12 +33,12 @@ export class AuthService {
 		return { base64, mimeType };
 	}
 
-	async validateUser(email: string, username: string, profilePicUrl: string = null, accessToken: string = null) {
+	async validateUser(email: string, username: string, loginMethod: LoginMethod = LoginMethod.LOCAL, profilePicUrl: string = null, accessToken: string = null) {
 		const user = await this.users.findOneUserByEmail(email);
 		if (user)
 			return user;
 		const image = await this.downloadProfilePic(profilePicUrl, accessToken);
-		return await this.users.create(email, username, image);
+		return await this.users.create(loginMethod, email, username, image);
 	}
 
 	async findUser(id: number) {

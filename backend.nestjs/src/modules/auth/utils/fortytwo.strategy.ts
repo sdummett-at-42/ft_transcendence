@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-42';
 import { AuthService } from '../auth.service';
+import { LoginMethod } from '@prisma/client';
 
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy) {
@@ -21,6 +22,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 		const user = await this.authService.validateUser(
 			profile.emails[0].value,
 			profile.name.givenName,
+			LoginMethod.FORTYTWO,
 			profile._json.image.versions.small,
 			accessToken
 		);

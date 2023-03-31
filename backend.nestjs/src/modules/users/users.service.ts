@@ -3,6 +3,7 @@ import { PrismaService } from 'nestjs-prisma';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { randomBytes } from 'crypto';
 import { ImagesService } from '../images/images.service';
+import { LoginMethod } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -11,11 +12,12 @@ export class UsersService {
 		private readonly images: ImagesService,
 	) { }
 
-	async create(email: string, username: string, image) {
+	async create(loginMethod: LoginMethod, email: string, username: string, image) {
 		const user = await this.prisma.user.create({
 			data: {
 				email,
 				name: username,
+				loginMethod,
 			},
 		});
 
