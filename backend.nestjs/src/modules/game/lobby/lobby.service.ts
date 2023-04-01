@@ -189,6 +189,7 @@ export class LobbyService {
 
         game.shapes.push(game.p1.racket);
         game.shapes.push(game.p2.racket);
+        game.server = server;
 
         // TODO
         // definir la map dans init map de service et pas in game
@@ -197,9 +198,21 @@ export class LobbyService {
         const circle_01 = new Circle(200, 100, 30);
         game.shapes.push(circle_01);
 
-        // Creation square : x, y, l, w
-        const square_01 = new Square(400, 240, 50, 100);
-        game.shapes.push(square_01);
+        // // Creation square : x, y, l, w
+        // const square_01 = new Square(400, 240, 50, 100);
+        // game.shapes.push(square_01);
+
+        // // Creation square : x, y, l, w
+        // const square_02 = new Square(250, 50, 250, 200);
+        // game.shapes.push(square_02);
+
+        // // Creation square : x, y, l, w
+        // const square_03 = new Square(600, 25, 20, 10);
+        // game.shapes.push(square_03);
+
+        // // Creation square : x, y, l, w
+        // const square_04 = new Square(50, 120, 50, 100);
+        // game.shapes.push(square_04);
 
         // Creation BlackHole : x, y, l, w
         const BlackHole_01 = new BlackHole(200, 300, 45);
@@ -209,3 +222,6 @@ export class LobbyService {
         server.emit(EventGame.gameImage, game.shapes);   
     }
 }
+
+// TODO
+// Gros problem collision si bullet rentre par le coin

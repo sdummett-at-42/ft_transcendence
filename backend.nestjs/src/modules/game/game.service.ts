@@ -90,7 +90,7 @@ export class GameService {
 
             // socket.join(`game${gameId}`); // create room "game_id" utliser avec l'url /game/:id
         }
-        console.log("**************************");
+        console.log("**************************");//
 
 
 
@@ -138,7 +138,7 @@ export class GameService {
 
             // Creation bullet
             // x, y, r, v, f, a
-            let bullet_01 = new Bullet(200, 200, 5, 3, 30, 3.14 );
+            const bullet_01 = new Bullet(200, 200, 5, 3, 30, Math.PI );
             game.shapes.push(bullet_01);
 
             // TODO
@@ -166,8 +166,8 @@ export class GameService {
             clearInterval(game.bulletInterval);
             game.shapes.splice(game.numberElement);
 
-            console.log(game.shapes);
-            console.log("size shapes: ", game.shapes.length);
+            // console.log(game.shapes);
+            // console.log("size shapes: ", game.shapes.length);
             server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
         }
     }
@@ -187,7 +187,7 @@ export class GameService {
             else
                 game.p1.racket.pos.y = tmpYmin;
         }
-        
+
         // Player 2
         if (client.data.userId === game.p2.id) {
             if (tmpYmin < 0) // si haut racket trop haut
@@ -207,12 +207,12 @@ export class GameService {
     |* Interne functon *|
     \* *************** */
 
-    startMoving(server: Server, game : Game, bullet: Bullet) {
+    private startMoving(server: Server, game : Game, bullet: Bullet) {
         if (game.bulletInterval)
             clearInterval(game.bulletInterval);
       
         let delay = 1000 / bullet.f;
-        console.log("delay = ", delay, " bullet.r * Math.cos(bullet.a) = " ,bullet.r * Math.cos(bullet.a));
+        //console.log("delay = ", delay, " bullet.r * Math.cos(bullet.a) = " ,bullet.r * Math.cos(bullet.a));
       
 
         // Start the interval to increment to all bullet.f every second
@@ -225,7 +225,16 @@ export class GameService {
         const intervalFunction = () => {
             // Check if bullet got collisionwith element if collision bullet.a will change
             this.checkCollision(game, bullet);
-        
+
+            // TODO
+            // Faire remise en jeu de la bibille
+            const scorer = this.checkScoring(game, bullet)
+            if (scorer !== 0) {
+                if (scorer > 0)
+                    this.startNewBullet(game, scorer);
+                return;
+            }
+
             // Change bullet.pos with new value
             bullet.pos.x += bullet.v * Math.cos(bullet.a);
             bullet.pos.y += bullet.v * Math.sin(bullet.a);
@@ -242,37 +251,99 @@ export class GameService {
             clearInterval(game.bulletInterval);
             game.bulletInterval = setInterval(intervalFunction, delay);
         };
-      
+
         // Set the first interval
         game.bulletInterval = setInterval(intervalFunction, delay);
     }
+
+    private startNewBullet(game : Game, scorer : number) : void {
+        // delete bullet who score
+        // create new bullet to player who score/ get scored ?
+        // user click to send bullet (time to send or bullet go himself)
+        // don't stop timing game
+
+        // TODO Multi_ball
+        // delete la bullet precise
+
+
+        // Delete old bullet and interval
+        game.shapes.splice(game.numberElement);
+        clearInterval(game.frequencyInterval);
+        clearInterval(game.bulletInterval);
+
+        const r = 5;
+
+
+        let newX : number;
+        let newY : number;
+        let newA : number;
+
+        if (scorer === 1) {
+            newA = 0;
+            newX = game.p1.racket.pos.x + game.p1.racket.width + r + 1;
+            newY = game.p1.racket.pos.y + game.p1.racket.length / 2;
+        } else if (scorer === 2) {
+            newA = Math.PI;
+            newX = game.p2.racket.pos.x - r - 1;
+            newY = game.p2.racket.pos.y + game.p2.racket.length / 2;
+        }
+        
+        // Creation New bullet
+        // x, y, r, v, f, a
+        const bullet_01 = new Bullet(newX, newY, r, 3, 30, newA);
+        game.shapes.push(bullet_01);
+
+        game.server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+            
+        // TODO
+        // timer to clic
+        // sinon fin timer lance
+
+        this.startMoving(game.server, game, bullet_01);
+    }
       
-    checkScoring(game : Game, bullet : Bullet) : void {
+    private checkScoring(game : Game, bullet : Bullet) : number {
         // si scoring retirer bullet qui a marque de la partie
         // si plus de bullet en jeux en remettre une pour le joueur qui a perdu ou inverse
 
         if (bullet.pos.x + bullet.r > game.field.width) {
             game.p2.score++;
+            if (game.limitScoreBool === true && game.p2.score >= game.limitScore)
+                return (this.victoryByScore(game));
+            game.server.to(game.roomId).emit(EventGame.gameScore, game.p2);
+            return 2;
         } else if (bullet.pos.x - bullet.r < 0) {
             game.p1.score++;
+            if (game.limitScoreBool === true && game.p1.score >= game.limitScore)
+                return (this.victoryByScore(game));
+            game.server.to(game.roomId).emit(EventGame.gameScore, game.p1);
+            return 1;
+        } else {
+            return 0;
         }
-
-        // TODO
-        // Faire remise en jeu de la bibille
     }
 
-    checkCollision(game : Game, bullet : Bullet) : void {
+    private victoryByScore(game : Game) : number {
+        // Stop game
+        game.shapes.splice(game.numberElement);
+        clearInterval(game.frequencyInterval);
+        clearInterval(game.bulletInterval);
+
+        console.log("Test");
+        //game.server.to(game.roomId).emit(EventGame.gameScore, game.p1);
+        game.server.to(game.roomId).emit(EventGame.gameVictoryScore, {p1 : game.p1, p2 : game.p2});
+        return -1;
+    }
+
+    private checkCollision(game : Game, bullet : Bullet) {
         // Vérifier si la balle touche les murs horizontaux
         if (bullet.pos.y + bullet.r > game.field.height || bullet.pos.y - bullet.r < 0)
             bullet.a = -bullet.a;
-
-        // Check bullet hit vertical wall
-        this.checkScoring(game, bullet);
             
         // Check if bullet hit an other shape
         // collision activate with Square and Circle
         // no collision between bullet (or himself)
-        console.log(game.shapes.length, game.shapes);
+        //console.log(game.shapes.length, game.shapes);
         for (let i = 0; i < game.shapes.length; i++) {
             const shape = game.shapes[i];
             // Mettre optimisation check si radius bullet et radius shape no hit
@@ -288,10 +359,10 @@ export class GameService {
                         this.collisionCircle(bullet, shape);
                 }
             } else if (shape instanceof Square && this.checkInRange(bullet, shape)) { // Check if shape to far from bullet
-            console.log("Square in range !");
+            //onsole.log("Square in range !");
                 // check if collision with Square
                 if (this.checkInRangeSquare(bullet, shape)) {
-                    console.log("----------------------Collision with Square !:", i);
+                    console.log("--Collision with Square !:", i);
                     // Cas racket
                     if (i < 2) // i = 0 J1 | i = 1 j2
                         this.collisionRacket(bullet, shape);
@@ -302,7 +373,7 @@ export class GameService {
         }
     }
 
-    checkInRange(bullet : Bullet, square : Square) : Boolean {
+    private checkInRange(bullet : Bullet, square : Square) : Boolean {
         // Put square in circle
 
         // Get coord square's center
@@ -320,13 +391,13 @@ export class GameService {
         return false;
     }
 
-    checkInRangeSquare(bullet : Bullet, square : Square) : Boolean {
-        // // put bullet in square
+    private checkInRangeSquare(bullet : Bullet, square : Square) : Boolean {
+        // put bullet in square
         const minX : number = bullet.pos.x - bullet.r;
         const minY : number = bullet.pos.y - bullet.r;
         const bs = new Square(minX, minY, bullet.r * 2, bullet.r *2);
 
-        console.log("minX, MinY:", minX, minY);
+        //console.log("minX, MinY:", minX, minY);
         // check if collission bullet's square and sqare 
         if (this.checkInSquare(bs, square) || this.checkInSquare(square, bs))
             return true;
@@ -335,7 +406,7 @@ export class GameService {
     }
 
     //function check if square1 is in squre2
-    checkInSquare(square1 : Square, square2 : Square) : Boolean {
+    private checkInSquare(square1 : Square, square2 : Square) : Boolean {
         const s1_xl : number = square1.pos.x;
         const s1_xr : number = square1.pos.x + square1.width;
         const s1_yt : number = square1.pos.y;
@@ -345,8 +416,6 @@ export class GameService {
         const s2_xr : number = square2.pos.x + square2.width;
         const s2_yt : number = square2.pos.y;
         const s2_yb : number = square2.pos.y + square2.length;
-
-        console.log("xl, xr, yt, yb:", s1_xl, s1_xr, s1_yt, s1_yb);
 
         if (s1_xl <= s2_xr && s1_xr >= s2_xl && s1_yt <= s2_yb && s1_yb >= s2_yt) {
             return true;
@@ -364,7 +433,7 @@ export class GameService {
         return false;
     }
 
-    checkInRangeCircle(bullet : Bullet, circle : Circle | BlackHole) : Boolean {
+    private checkInRangeCircle(bullet : Bullet, circle : Circle | BlackHole) : Boolean {
         // check if collision with circle and bullet
         const dx : number = Math.pow(circle.pos.x - bullet.pos.x, 2);
         const dy : number = Math.pow(circle.pos.y - bullet.pos.y, 2);
@@ -375,7 +444,7 @@ export class GameService {
         return false;
     }
 
-    collisionRacket(bullet : Bullet, racket: Square) : void {
+    private collisionRacket(bullet : Bullet, racket: Square) : void {
         const centerX = racket.pos.x + racket.width / 2;
         const centerY = racket.pos.y + racket.length / 2;
         const deltaX = bullet.pos.x - centerX;
@@ -408,7 +477,7 @@ export class GameService {
         bullet.a = angle;
     }
 
-    collisionSquare(bullet : Bullet, square : Square) : void {
+    private collisionSquare(bullet : Bullet, square : Square) : void {
         let dx = Math.abs(bullet.pos.x - square.pos.x);
         // Set the corners of the rectangle based on the position of its top left corner, its width and its length
         const x1 = square.pos.x;
@@ -420,17 +489,56 @@ export class GameService {
         dx = Math.min(Math.abs(bullet.pos.x - x1), Math.abs(bullet.pos.x - x2));
         const dy = Math.min(Math.abs(bullet.pos.y - y1), Math.abs(bullet.pos.y - y2));
         
+        // TODO
+        // Upgrade collision with Square
+
+        console.log(bullet.pos.x, bullet.pos.y);
+        console.log(x1, x2);
+        console.log(y1, y2);
+
+        console.log("dx", dx);
+        console.log("dy", dy);
+
+        //console.log(dx, "<", dy, ":",dx < dy);
+
+        //dx = distance wall vertical
+        //dy = distance wall horizontaux
+
+
+        console.log("a1:", bullet.a);
         // Change bullet.a according to...
         if (dx < dy) {
-            // Collision with horizontal edge
+            // Collision with vertical edge
+            console.log("vertical");
             bullet.a = Math.PI - bullet.a;
         } else {
-            // Collision with vertical edge
-            bullet.a = 2 * Math.PI - bullet.a;
+            // Collision with horozontal edge
+            console.log("horizontal");
+            
+            const dytemp = Math.abs(bullet.pos.y - y1); // top
+            // cas bullet.a = 0 ou 3.14
+            if (bullet.a === 0) { // to right
+                if (dytemp === dy) { // if top square
+                    bullet.a = 5 * Math.PI / 4;
+                } else { // if bot square
+                    bullet.a = 3 * Math.PI / 4;
+                }
+            } else if (bullet.a === Math.PI || bullet.a === -Math.PI) { // to left
+                if (dytemp === dy) { // if top square
+                    bullet.a = 7 * Math.PI / 4;
+                } else { // if bot square
+                    bullet.a = Math.PI / 4;
+                }
+            } else {
+                bullet.a = -bullet.a;
+            }
         }
+        console.log("a2:", bullet.a);
+        console.log();
+
     }
 
-    collisionBlackHole(bullet : Bullet, bh : BlackHole) : void {
+    private collisionBlackHole(bullet : Bullet, bh : BlackHole) : void {
         const dx = bullet.pos.x - bh.pos.x;
         const dy = bullet.pos.y - bh.pos.y;
 
@@ -440,7 +548,7 @@ export class GameService {
         bullet.a = newAngle - Math.PI;
     }
 
-    collisionCircle(bullet : Bullet, circle : Circle) : void {
+    private collisionCircle(bullet : Bullet, circle : Circle) : void {
         // Collision angle
         const angle = Math.atan2(bullet.pos.y - circle.pos.y, bullet.pos.x - circle.pos.x);
         

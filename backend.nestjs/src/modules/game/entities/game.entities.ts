@@ -1,3 +1,5 @@
+import { Server } from 'socket.io';
+
 export interface Shape {
     type: string;
     pos: Coordonnee;
@@ -74,6 +76,8 @@ export class Player {
     name : string;
     elo : number;
     socket : string;
+
+    side?: number;
 //    eloTab : number[];
     //socket : string;
 
@@ -116,17 +120,27 @@ export class Field {
 export class Game {
     id : number;
     roomId : string;
+    server? : Server;
     p1 : Player;
     p2 : Player;
 
     field : Field; // size
     shapes : Shape[] = [];
 
-    bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
-    frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
+    // les mettre propres aux bullets ?
+    bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie -> a chaque passqge bullet se deplace
+    frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
+    speed : number;
 
     numberElement? : number;
-    speed : number;
+
+    // Limit score:
+    limitScoreBool: Boolean = true; // true == limit
+    limitScore: number = 1; 
+
+    // Limit timer:
+    limitTimerBool: Boolean = true ; // true == limit
+    limitTimer: number = 4 * 60 * 1000;// 4 min
 
     gameDone : Boolean = false; // true = fini
 
@@ -135,6 +149,9 @@ export class Game {
         this.roomId = "game" + id;
         this.p1 = p1;
         this.p2 = p2;
+
+        this.p1.side = 1;
+        this.p2.side = 2;
 
         this.field = new Field(400, 800);
         this.speed = 5;

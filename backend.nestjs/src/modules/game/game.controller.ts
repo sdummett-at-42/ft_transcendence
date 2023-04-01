@@ -1,12 +1,14 @@
-import { Controller , Get, Res, Param, HttpCode } from '@nestjs/common';
+import { Controller , Get, Res, Param, HttpCode , UseGuards} from '@nestjs/common';
 import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { GameService } from './game.service';
 import { LobbyService } from './lobby/lobby.service';
+import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
 import * as fs from "fs";
 
 @ApiTags('games')
 @Controller('game')
+@UseGuards(AuthenticatedGuard)
 export class GameController {
     constructor(private readonly gameService: GameService,
                 private readonly lobbyService: LobbyService) {}

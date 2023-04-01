@@ -37,14 +37,8 @@ export class GameGateway {
     // get game by gameid from client
     const gameId = Number(client.data.ingame); // string to number
 
-      const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
-      const game = this.lobbyService.games[indexGame];
-
-      console.log("----------------------");
-      console.log(gameId);
-      console.log(indexGame);
-      console.log(this.lobbyService.games);
-      console.log("----------------------");
+    const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+    const game = this.lobbyService.games[indexGame];
 
     this.gameService.startingGame(this.server, game);
   }
@@ -57,15 +51,8 @@ export class GameGateway {
     // get game by gameid from client
     const gameId = Number(client.data.ingame); // string to number
 
-      const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
-      const game = this.lobbyService.games[indexGame];
-
-      console.log("----------------------");
-      console.log(gameId);
-      console.log(indexGame);
-      console.log(this.lobbyService.games);
-      console.log("----------------------");
-
+    const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+    const game = this.lobbyService.games[indexGame];
 
     this.gameService.stopGame(this.server, game);
   }
@@ -79,14 +66,8 @@ export class GameGateway {
     // get game by gameid from client
     const gameId = Number(client.data.ingame); // string to number
 
-      const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
-      const game = this.lobbyService.games[indexGame];
-
-      console.log("----------------------");
-      console.log(gameId);
-      console.log(indexGame);
-      console.log(this.lobbyService.games);
-      console.log("----------------------");
+    const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+    const game = this.lobbyService.games[indexGame];
 
     this.gameService.mouvementGame(this.server, game, client, payload.data.x, payload.data.y);
   }

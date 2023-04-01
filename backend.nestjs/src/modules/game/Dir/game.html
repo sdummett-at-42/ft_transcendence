@@ -12,8 +12,12 @@
 </head>
 <body>
     <button id="startBtn" onclick="startGame()">Start Game</button>
+    <div id="p1">Player 1 = 0</div>
+    <div id="p2">Player 2 = 0</div>
     <br>
 	<canvas id="mapGame" width="800" height="400"> Désolé, votre navigateur ne prend pas en charge &lt;canvas&gt;. </canvas>
+
+    <div id="Windiv"></div>
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     
@@ -114,6 +118,27 @@
 
             console.log(data);
         });
+
+        socket.on('score', function(data) {
+            var divp1 = document.getElementById("p1");
+            var divp2 = document.getElementById("p2");
+            
+            const msg = `${data.name} : ${data.score}`;
+            if (data.side === 1)
+                divp1.innerHTML = msg;
+            else
+                divp2.innerHTML = msg;
+        })
+
+        socket.on('VictoryScore', function(data) {
+            var div = document.getElementById("Windiv");
+            
+            console.log("victoryscore");
+            if (data.p1.score > data.p2.score)
+                div.innerHTML = "Player 1 a explose Player2. Sale noon"
+            else
+                div.innerHTML = "Player 2 a explose Player1. Sale noob";
+        })
     </script>
 </body>
 </html>

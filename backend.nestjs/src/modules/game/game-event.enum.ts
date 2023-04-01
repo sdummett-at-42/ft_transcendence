@@ -10,6 +10,8 @@ export enum EventGame {
 
     //send
     gameImage = "image",
+    gameScore = "score",
+    gameVictoryScore = "VictoryScore",
 
     /* ****** *\
     |* Player *|
