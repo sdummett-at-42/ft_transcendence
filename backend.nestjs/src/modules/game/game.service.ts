@@ -228,6 +228,8 @@ export class GameService {
 
             // TODO
             // Faire remise en jeu de la bibille
+
+            // 0 : No score | 1 : P1 score | 2 : P2 score | -1 : Limit score
             const scorer = this.checkScoring(game, bullet)
             if (scorer !== 0) {
                 if (scorer > 0)
@@ -260,7 +262,7 @@ export class GameService {
         // delete bullet who score
         // create new bullet to player who score/ get scored ?
         // user click to send bullet (time to send or bullet go himself)
-        // don't stop timing game
+        // don't stop timing game or maybe yes
 
         // TODO Multi_ball
         // delete la bullet precise
@@ -288,6 +290,9 @@ export class GameService {
             newY = game.p2.racket.pos.y + game.p2.racket.length / 2;
         }
         
+        // TODO
+        // peut etre changer le nom de la bullet ? ou pas je pense que sa change rien
+
         // Creation New bullet
         // x, y, r, v, f, a
         const bullet_01 = new Bullet(newX, newY, r, 3, 30, newA);
@@ -296,10 +301,24 @@ export class GameService {
         game.server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
             
         // TODO
+        // get timer in game setting
         // timer to clic
         // sinon fin timer lance
 
+        const launchBulletTimer = setTimeout(() => {
+              // Player got X ms to launch bullet
+              this.startMoving(game.server, game, bullet_01);
+            }, 5000);
+
+        // ce code ci dessous appeler dans function appeler par gateway click
+
+        // if player click
+        // cancel setTimeout
+        // -----
+        clearTimeout(launchBulletTimer);
+
         this.startMoving(game.server, game, bullet_01);
+        // -----
     }
       
     private checkScoring(game : Game, bullet : Bullet) : number {
@@ -330,10 +349,73 @@ export class GameService {
         clearInterval(game.bulletInterval);
 
         console.log("Test");
-        //game.server.to(game.roomId).emit(EventGame.gameScore, game.p1);
-        game.server.to(game.roomId).emit(EventGame.gameVictoryScore, {p1 : game.p1, p2 : game.p2});
+        // TODO
+        // creer K facteur (nombre game)
+
+        this.newElo(game)
+
         return -1;
     }
+
+    private newElo(game : Game) : void {
+
+        let score1;
+        let score2;
+        if (game.p1.score > game.p2.score) {
+            score1 = 1;
+            score2 = 0;
+        }
+        else if (game.p1.score < game.p2.score) {
+            score1 = 0;
+            score2 = 1;
+        }
+        else {
+            score1 = 0.5;
+            score2 = 0.5;
+        }
+
+        // TODO
+        // change nombregame
+        this.calculateElo(game.p1.score, game.p2.score, score1, 5); // last = nb game jouer
+        this.calculateElo(game.p2.score, game.p2.score, score2, 5);
+    }
+
+    calculateElo(oldElo: number, opponentElo: number, score: number, gamesPlayed: number): number {
+        const k = this.getKFactor(gamesPlayed);
+        const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - oldElo) / 400));
+        const eloChange = k * (score - expectedScore);
+        const newElo = oldElo + eloChange;
+      
+        return Math.round(newElo);
+    }
+      
+    getKFactor(gamesPlayed: number): number {
+        if (gamesPlayed < 30)
+            return 40;
+        else if (gamesPlayed < 50)
+            return 20;
+        else
+            return 10;
+        
+    }
+      
+      
+      
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private checkCollision(game : Game, bullet : Bullet) {
         // Vérifier si la balle touche les murs horizontaux
