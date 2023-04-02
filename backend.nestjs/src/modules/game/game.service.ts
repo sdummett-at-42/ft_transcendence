@@ -141,8 +141,6 @@ export class GameService {
             const bullet_01 = new Bullet(200, 200, 5, 3, 30, Math.PI );
             game.shapes.push(bullet_01);
 
-            // TODO
-            // emit to roomId
             server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
 
             this.startMoving(server, game, bullet_01);
@@ -172,6 +170,8 @@ export class GameService {
         }
     }
 
+    // TODO
+    // Si une seule fenetre playable -> check socket et non id
     mouvementGame(server : Server, game : Game, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
 
         let tmpYmin : number = y - game.p1.racket.length / 2; // tmpY = haut de la racket
@@ -225,9 +225,6 @@ export class GameService {
         const intervalFunction = () => {
             // Check if bullet got collisionwith element if collision bullet.a will change
             this.checkCollision(game, bullet);
-
-            // TODO
-            // Faire remise en jeu de la bibille
 
             // 0 : No score | 1 : P1 score | 2 : P2 score | -1 : Limit score
             const scorer = this.checkScoring(game, bullet)
@@ -289,9 +286,6 @@ export class GameService {
             newX = game.p2.racket.pos.x - r - 1;
             newY = game.p2.racket.pos.y + game.p2.racket.length / 2;
         }
-        
-        // TODO
-        // peut etre changer le nom de la bullet ? ou pas je pense que sa change rien
 
         // Creation New bullet
         // x, y, r, v, f, a
@@ -349,8 +343,6 @@ export class GameService {
         clearInterval(game.bulletInterval);
 
         console.log("Test");
-        // TODO
-        // creer K facteur (nombre game)
 
         this.newElo(game)
 
@@ -375,7 +367,7 @@ export class GameService {
         }
 
         // TODO
-        // change nombregame
+        // change nombregame (facteur K)
         this.calculateElo(game.p1.score, game.p2.score, score1, 5); // last = nb game jouer
         this.calculateElo(game.p2.score, game.p2.score, score2, 5);
     }

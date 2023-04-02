@@ -12,6 +12,8 @@ export class LobbyService {
 
     BaseThreshold = 1000 / 100;
 
+    // TODO
+    // recuper par la DB
     nbGame : number = 0;
     users : { player : Player, threshold : number}[] = [];
     games : Game[] = [];
