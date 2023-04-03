@@ -1,19 +1,26 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
+import { RedisService } from 'src/modules/redis/redis.service';
 import { Response } from 'express';
 import * as fs from "fs";
 import { Player, Game, Square, Circle, BlackHole } from '../entities/game.entities';
 import { GameGateway } from '../game.gateway'
 import { EventGame } from '../game-event.enum';
+import { GameService } from '../game.service';
 
 @Injectable()
 export class LobbyService {
-    constructor(private readonly gameGateway: GameGateway) {}
+    constructor(private readonly gameGateway: GameGateway,
+                private readonly redis: RedisService) {}
 
     BaseThreshold = 1000 / 100;
 
     // TODO
     // recuper par la DB
+    // Suppr joueur Q if deco
+
+
+
     nbGame : number = 0;
     users : { player : Player, threshold : number}[] = [];
     games : Game[] = [];
@@ -132,7 +139,9 @@ export class LobbyService {
             // create game with p1 && p2, generate map && game
             // when done
             
-            console.log("lobbyCreateGame:" , p1, p2);
+            //console.log("lobbyCreateGame:" , p1, p2);
+
+
             // Create game and push in games[]
             const game = new Game(this.nbGame++, p1.player, p2.player);
             this.games.push(game);
@@ -158,7 +167,13 @@ export class LobbyService {
             console.log(this.games);
             console.log("+++++++++++++");
 
-            this.gameGateway.server.to(p1.player.socket).to(p2.player.socket).emit("goInGame", game.id);
+            const p1Socket = p1.player.socket;
+            const p2Socket = p2.player.socket;
+
+            p1.player.socket = undefined;
+            p2.player.socket = undefined;
+
+            this.gameGateway.server.to(p1Socket).to(p2Socket).emit("goInGame", game.id);
 
     // const redirect = `${this.req.protocol}://${this.req.hostname}/game/${game.id}`;
     //const redirect = "http://localhost:3001/game/" + game.id;
@@ -234,7 +249,143 @@ export class LobbyService {
         game.numberElement = game.shapes.length;
         server.emit(EventGame.gameImage, game.shapes);   
     }
-}
 
-// TODO
-// Gros problem collision si bullet rentre par le coin
+
+
+    /* *************** *\
+    |* connect functon *|
+    \* *************** */
+
+    async handleConnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
+		if (socket.handshake.headers.cookie == undefined) {
+			console.debug("Session cookie wasn't provided. Disconnecting socket.");
+			socket.emit(EventGame.NotConnected, {
+				timestamp: new Date().toISOString(),
+				message: `No session cookie provided`,
+			});
+            console.log("handleConnection no session cookie");
+			socket.disconnect()
+			return null;
+		}
+		const sessionHash = socket.handshake.headers.cookie.slice(16).split(".")[0];
+		const session = await this.redis.getSession(sessionHash);
+		if (session === null) {
+			console.debug("User isn't logged in");
+			socket.emit(EventGame.NotConnected, {
+				timestamp: new Date().toISOString(),
+				message: `User isn't logged in.`,
+			});
+            console.log("handleConnection not logged");
+			socket.disconnect()
+			return null;
+		}
+        console.log("handleConnection: connected");
+		socket.emit(EventGame.IsConnected, {
+			timestamp: new Date().toISOString(),
+			message: `Socket successfully connected.`
+		});
+
+        const allData = JSON.parse(session).passport.user;
+        const userId = JSON.parse(session).passport.user.id;
+		socket.data.userId = userId;
+
+        socket.data.name = allData.name;
+        socket.data.elo = allData.elo;
+        socket.data.socket = socket.id;
+
+        console.log("data: ",  socket.data.socket);
+        console.log("socketid: ",  socket.id);
+
+        // TODO
+        // check si avec https j'ai encore acces a headers.referer
+
+        //console.log("user : ", JSON.parse(session).passport.user);
+        console.log("socket:", socket.handshake.headers.referer);
+        const gameId = socket.handshake.headers.referer.split('/').pop();
+        console.log("**************************");
+        if (gameId === "game") { // not in game
+            console.log("socket in: /game");
+            socket.join(`game`);
+        } else {
+            //TODO
+            // check if game exist| ingame| finish
+            socket.data.ingame = gameId;
+            
+            const index = this.games.findIndex(games => games.id === Number(gameId));
+            const game : Game = this.games[index];
+
+            if (game === undefined || game.p1.id === undefined || game.p2.id === undefined)
+                return null;
+
+            // if in game at player pause his game
+            if (game.p1.id === userId) // p1 deco
+                return {game : game, id :game.p1.id};
+            if (game.p2.id === userId) // p2 deco
+                return {game : game, id :game.p2.id};
+        }
+        return null;
+	}
+
+
+
+    /* ****************** *\
+    |* disconnect functon *|
+    \* ****************** */
+
+    async handleDisconnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
+        if (socket.handshake.headers.cookie == undefined) {
+            console.debug("Session cookie wasn't provided. Disconnecting socket.");
+            socket.emit(EventGame.NotConnected, {
+                timestamp: new Date().toISOString(),
+                message: `No session cookie provided`,
+            });
+            console.log("handleConnection no session cookie");
+            socket.disconnect()
+            return null;
+        }
+        const sessionHash = socket.handshake.headers.cookie.slice(16).split(".")[0];
+        const session = await this.redis.getSession(sessionHash);
+        if (session === null) {
+            console.debug("User isn't logged in");
+            socket.emit(EventGame.NotConnected, {
+                timestamp: new Date().toISOString(),
+                message: `User isn't logged in.`,
+            });
+            console.log("handleConnection not logged");
+            socket.disconnect()
+            return null;
+        }
+
+        const userId = JSON.parse(session).passport.user.id;
+
+
+        // TODO
+        // check si avec https j'ai encore acces a headers.referer
+
+        const gameId = socket.handshake.headers.referer.split('/').pop();
+
+        if (gameId === "game") { // not in game
+            console.log("socket in: /game");
+        } else {
+            //TODO
+            // check if game exist| ingame| finish
+
+            const index = this.games.findIndex(games => games.id === Number(gameId));
+            const game : Game = this.games[index];
+
+            if (game === undefined || game.p1.id === undefined || game.p2.id === undefined)
+                return null;
+
+            // if in game at player pause his game
+            if (game.p1.socket === socket.id) { // p1 deco
+                return {game : game, id :game.p1.id};
+            }
+            if (game.p2.socket === socket.id) { // p2 deco
+                return {game : game, id :game.p2.id};
+            }
+
+        }
+        return null;
+    }
+
+}

@@ -19,14 +19,20 @@ export class GameGateway {
   @WebSocketServer() server: Server;
 
   // Connection
-  handleConnection(socket: Socket) {
+  async handleConnection(socket: Socket) {
     console.log('New client connected game:', socket.id);
-    this.gameService.handleConnection(socket);
+    const res = await this.lobbyService.handleConnection(socket);
+    if (res !== null)
+      this.gameService.resumeGame(res.game, res.id);
   }
-//
+
   // Disconnection
-  handleDisconnect(socket: Socket) {
-    console.log(`Client disconnected game: ${socket.id}\n`);
+  async handleDisconnect(socket: Socket) {
+    console.log(`Client disconnected game: ${socket.id}`);
+    // return any or {game : Game, id : number}
+    const res = await this.lobbyService.handleDisconnection(socket);
+    if (res !== null)
+      this.gameService.pauseGame(res.game, res.id);
   }
 
   @SubscribeMessage(EventGame.gameStart)
@@ -39,6 +45,9 @@ export class GameGateway {
 
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
+
+    if (game === undefined)
+      return ;
 
     this.gameService.startingGame(this.server, game);
   }
@@ -53,6 +62,9 @@ export class GameGateway {
 
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
+
+    if (game === undefined)
+      return ;
 
     this.gameService.stopGame(this.server, game);
   }
@@ -69,6 +81,9 @@ export class GameGateway {
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
 
+    if (game === undefined)
+      return ;
+
     this.gameService.mouvementGame(this.server, game, client, payload.data.x, payload.data.y);
   }
 
@@ -79,20 +94,22 @@ export class GameGateway {
 
 
     // get game by gameid from client
-      const gameId = Number(client.data.ingame); // string to number
+    const gameId = Number(client.data.ingame); // string to number
 
 
 
 
-      const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
-      const game = this.lobbyService.games[indexGame];
+    const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+    const game = this.lobbyService.games[indexGame];
+    if (game === undefined)
+      return ;
 
-      console.log(client.data);
-      console.log("----------------------");
-      console.log(gameId); // non def
-      console.log(indexGame); // -1
-      console.log(this.lobbyService.games);
-      console.log("----------------------");
+    console.log(client.data);
+    console.log("----------------------");
+    console.log(gameId); // non def
+    console.log(indexGame); // -1
+    console.log(this.lobbyService.games);
+    console.log("----------------------");
 
 
     this.gameService.joinGame(this.server, game, client, payload);

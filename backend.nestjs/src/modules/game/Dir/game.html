@@ -11,6 +11,7 @@
 	</style>
 </head>
 <body>
+    <div id="divTimer"> Timer </div>
     <button id="startBtn" onclick="startGame()">Start Game</button>
     <div id="p1">Player 1 = 0</div>
     <div id="p2">Player 2 = 0</div>
@@ -138,6 +139,12 @@
                 div.innerHTML = "Player 1 a explose Player2. Sale noon"
             else
                 div.innerHTML = "Player 2 a explose Player1. Sale noob";
+        })
+
+        socket.on('gameTimer', function(data) {
+            var div = document.getElementById("divTimer");
+
+            div.innerHTML = `Time : ${data}`;
         })
     </script>
 </body>

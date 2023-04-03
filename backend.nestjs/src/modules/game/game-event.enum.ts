@@ -12,6 +12,7 @@ export enum EventGame {
     gameImage = "image",
     gameScore = "score",
     gameVictoryScore = "VictoryScore",
+    gameTimer = "gameTimer",
 
     /* ****** *\
     |* Player *|

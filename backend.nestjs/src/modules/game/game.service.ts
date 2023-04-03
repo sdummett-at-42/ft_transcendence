@@ -9,7 +9,6 @@ import { LobbyService } from './lobby/lobby.service';
 @Injectable()
 export class GameService {
     constructor(private readonly redis: RedisService,
-                //private readonly lobbyService: LobbyService
                 ) { }
 
     // numberElement = 2;
@@ -25,77 +24,6 @@ export class GameService {
     // player1 : Player;
     // player2 : Player;
 
-    /* ************************** *\
-    |* connect disconnect functon *|
-    \* ************************** */
-
-    async handleConnection(socket : Socket) {
-		if (socket.handshake.headers.cookie == undefined) {
-			console.debug("Session cookie wasn't provided. Disconnecting socket.");
-			socket.emit(EventGame.NotConnected, {
-				timestamp: new Date().toISOString(),
-				message: `No session cookie provided`,
-			});
-            console.log("handleConnection no session cookie");
-			socket.disconnect()
-			return;
-		}
-		const sessionHash = socket.handshake.headers.cookie.slice(16).split(".")[0];
-		const session = await this.redis.getSession(sessionHash);
-		if (session === null) {
-			console.debug("User isn't logged in");
-			socket.emit(EventGame.NotConnected, {
-				timestamp: new Date().toISOString(),
-				message: `User isn't logged in.`,
-			});
-            console.log("handleConnection not logged");
-			socket.disconnect()
-			return;
-		}
-        console.log("handleConnection: connected");
-		socket.emit(EventGame.IsConnected, {
-			timestamp: new Date().toISOString(),
-			message: `Socket successfully connected.`
-		});
-
-        const allData = JSON.parse(session).passport.user;
-        const userId = JSON.parse(session).passport.user.id;
-		socket.data.userId = userId;
-
-        socket.data.name = allData.name;
-        socket.data.elo = allData.elo;
-        socket.data.socket = socket.id;
-
-        console.log("data: ",  socket.data.socket);
-        console.log("socketid: ",  socket.id);
-
-        // TODO
-        // check si avec https j'ai encore acces a headers.referer
-
-        //console.log("user : ", JSON.parse(session).passport.user);
-        console.log("socket:", socket.handshake.headers.referer);
-        const gameId = socket.handshake.headers.referer.split('/').pop();
-        console.log("**************************");
-        if (gameId === "game") { // not in game
-            console.log("socket in: /game");
-            socket.join(`game`);
-        } else {
-            //TODO
-            // check if game exist| ingame| finish
-            console.log("socket in: /game/qqch");
-
-            console.log(`gameId:`, gameId);
-            socket.data.ingame = gameId;
-            // console.log(`game${gameId}`);
-
-            // socket.join(`game${gameId}`); // create room "game_id" utliser avec l'url /game/:id
-        }
-        console.log("**************************");//
-
-
-
-	}
-
     /* ******************* *\
     |* input/entry functon *|
     \* ******************* */
@@ -106,8 +34,11 @@ export class GameService {
     //      yes = modifier player en question
     //      non = spectateur
     // si oui ajouter ou ecraser le socket ?
+
+    // un seul socket joueur
+    // attendre les 2 joueurs present
+
     joinGame(server: Server, game : Game, client : Socket, payload : {roomId : string, msg : string}) {
-        
         client.join(payload.roomId);
 
         console.log(payload);
@@ -124,28 +55,135 @@ export class GameService {
         if (client.data.userId === game.p2.id) { // c'est le joueur 2
             game.p2.socket = client.data.socket;
         }
+        console.log("joingame");
+        server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+
+        // When 2 player are here start game
+        if (game.p1.socket != undefined && game.p2.socket != undefined)
+            this.startingGame(server, game);
     }
 
     startingGame(server : Server, game : Game) : void {
+        // TODO
+        // ajouter lancement timer game
+        // chaque passage emit image (60 ou 140 emit/sec)
 
         if (game.shapes.length > game.numberElement ) {
             console.log("Partie deja en cours");
         }
         else {
-            if (game.shapes.length === 0 )
-                game.shapes.push(game.p1.racket);
             console.log("starting game !");
 
-            // Creation bullet
-            // x, y, r, v, f, a
-            const bullet_01 = new Bullet(200, 200, 5, 3, 30, Math.PI );
-            game.shapes.push(bullet_01);
+            // Bullet start side player 1
+            this.startNewBullet(game, 1);
 
-            server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+            // TODO
+            // start interval game here
+            // temp max atteint = fin game
+            // pause = pause compteur
+            game.dateStart =  new Date();
 
-            this.startMoving(server, game, bullet_01);
+            let elapsedTime : number;
+            const delay = 1000 / 60 // 60 emit sec
+            game.gameInterval = setInterval(() => {
+                if (game.pause === true) { // game in pause
+                    // if player 1 pause
+                    const dateActual = new Date().getTime();
+
+
+                    // je veux check si un joueur a consommer sa duree total de pause
+                    // stocker duree total pause joueur dans resume
+
+                    // si p1Pause && limit pause depasser = victoire forfait
+                    if (game.pauseP1 === true)
+                        game.pauseP1Time += dateActual - game.pauseP1Start.getTime();
+                    // if player 2 pause
+                    if (game.pauseP2 === true)
+                        game.pauseP1Time += dateActual - game.pauseP2Start.getTime();
+
+                } else { // game not in pause
+                    // check game timer end
+                    elapsedTime = Math.floor((new Date().getTime() - game.dateStart.getTime() - game.pauseTotalTime) / 1000);
+                    // send date
+                    
+                    // send image to all in room
+                    //
+                }
+                server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+                server.to(game.roomId).emit(EventGame.gameTimer, elapsedTime);
+                
+
+
+            }, delay);
+
 
         }
+    }
+
+    pauseGame(game : Game, idPause : number) : void {
+        // cas deco : socket undefine
+        // cas pause manuel : socket define but action emit
+
+        // manual and deco
+        // 2 if if player game alone ?
+        if (idPause === game.p1.id) {
+            game.pauseP1 = true;
+            game.pauseP1Start = new Date();
+        }
+        if (idPause === game.p2.id) {
+            game.pauseP2 = true;
+            game.pauseP2Start = new Date();
+        }
+
+        if (game.pause === false)
+            game.pauseStart = new Date();
+        game.pause = true;
+
+        // TODO
+        // stop bullet
+        clearInterval(game.frequencyInterval);
+        clearInterval(game.bulletInterval);
+
+        // this.startMoving(game.server, game, bullet_01);
+    }
+
+    resumeGame(game : Game, idResume : number) : void {
+        if (!game.pause)
+            return ;
+        // TODO
+        // cas reco d'une deco
+        // cas fin pause manuel
+        // recuperer temp deco du joueur
+
+        const actualDate : number = new Date().getTime();
+        // if 2 player are ready
+        if (idResume === game.p1.id) {
+            game.pauseP1 = false;
+            game.pauseP1Time += actualDate - game.pauseP1Start.getTime();
+        } else if (idResume === game.p2.id) {
+            game.pauseP2 = false;
+            game.pauseP1Time += actualDate - game.pauseP1Start.getTime();
+        }
+        
+        // All player aren't in pause
+        if (!game.pauseP1 && !game.pauseP2) {
+            game.pause = false;
+            game.pauseTotalTime += actualDate - game.pauseStart.getTime();
+
+            // TODO
+            // decompte 3 2 1 reprise ?
+
+            game.shapes.forEach((shape) => {
+                if (shape instanceof Bullet)
+                    this.startMoving(game.server, game, shape);
+            })
+        }
+
+
+        // a retirer ? et calculer le temps de pause total a la reprise ?
+        // dans resume
+        // duree total pause += fin pause - debut pause
+                    
     }
 
     stopGame(server : Server, game : Game) : void {
@@ -164,6 +202,8 @@ export class GameService {
             clearInterval(game.bulletInterval);
             game.shapes.splice(game.numberElement);
 
+            clearInterval(game.gameInterval);
+
             // console.log(game.shapes);
             // console.log("size shapes: ", game.shapes.length);
             server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
@@ -172,6 +212,8 @@ export class GameService {
 
     // TODO
     // Si une seule fenetre playable -> check socket et non id
+    // si plusieurs fenetre playable -> check id
+
     mouvementGame(server : Server, game : Game, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
 
         let tmpYmin : number = y - game.p1.racket.length / 2; // tmpY = haut de la racket
@@ -179,7 +221,7 @@ export class GameService {
         
         // console.log("client   :", client.data.userId);
         // Player 1
-        if (client.data.userId === game.p1.id) {
+        if (client.data.socket === game.p1.socket) {
             if (tmpYmin < 0) // si haut racket trop haut
                 game.p1.racket.pos.y = 0;
             else if (tmpYmax > game.field.height) // si haut racket trop bas
@@ -189,7 +231,7 @@ export class GameService {
         }
 
         // Player 2
-        if (client.data.userId === game.p2.id) {
+        if (client.data.socket === game.p2.socket) {
             if (tmpYmin < 0) // si haut racket trop haut
                 game.p2.racket.pos.y = 0;
             else if (tmpYmax > game.field.height) // si haut racket trop bas
@@ -198,8 +240,10 @@ export class GameService {
                 game.p2.racket.pos.y = tmpYmin;
         }
 
-        if (client.data.userId === game.p2.id || client.data.userId === game.p1.id)
-            server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+        // TODO
+        // inute emit in intervalgame
+        // if (client.data.socketid === game.p2.socket || client.data.socketid === game.p1.socket)
+        //     server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
 
     }
 
@@ -241,7 +285,7 @@ export class GameService {
         //console.log(`position = (${bullet.pos.x}.${bullet.pos.y})`);
         
             // send shapes[] to front
-            server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+            //server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
         
             // Recalculate the delay based on the new frequency
             delay = 1000 / bullet.f;
@@ -255,7 +299,7 @@ export class GameService {
         game.bulletInterval = setInterval(intervalFunction, delay);
     }
 
-    private startNewBullet(game : Game, scorer : number) : void {
+    private startNewBullet(game : Game, side : number) : void {
         // delete bullet who score
         // create new bullet to player who score/ get scored ?
         // user click to send bullet (time to send or bullet go himself)
@@ -277,11 +321,11 @@ export class GameService {
         let newY : number;
         let newA : number;
 
-        if (scorer === 1) {
+        if (side === 1) {
             newA = 0;
             newX = game.p1.racket.pos.x + game.p1.racket.width + r + 1;
             newY = game.p1.racket.pos.y + game.p1.racket.length / 2;
-        } else if (scorer === 2) {
+        } else if (side === 2) {
             newA = Math.PI;
             newX = game.p2.racket.pos.x - r - 1;
             newY = game.p2.racket.pos.y + game.p2.racket.length / 2;
@@ -342,9 +386,11 @@ export class GameService {
         clearInterval(game.frequencyInterval);
         clearInterval(game.bulletInterval);
 
-        console.log("Test");
+        console.log("++++++ VICTOIRE");
 
         this.newElo(game)
+
+        game.server.to(game.roomId).emit(EventGame.gameVictoryScore, {p1 : game.p1, p2 : game.p2})
 
         return -1;
     }
@@ -395,17 +441,6 @@ export class GameService {
       
       
       
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -127,22 +127,44 @@ export class Game {
     field : Field; // size
     shapes : Shape[] = [];
 
+    // gameInterval
+    gameInterval?: NodeJS.Timeout;
+
+    // Game is paused
+    pause : Boolean = false;
+    pauseP1 : Boolean = false;
+    pauseP2 : Boolean = false;
+
+    pauseStart?: Date;
+    pauseP1Start?: Date;
+    pauseP2Start?: Date;
+
+    pauseP1Time : number = 0;
+    pauseP2Time : number = 0;
+    pauseTotalTime : number = 0;
+
+
+    // Game date
+    dateStart?: Date;
+
     // les mettre propres aux bullets ?
     bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie -> a chaque passqge bullet se deplace
     frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
     speed : number;
 
+    // number of obstacle + racket
     numberElement? : number;
 
     // Limit score:
     limitScoreBool: Boolean = true; // true == limit
-    limitScore: number = 1; 
+    limitScore: number = 3; 
 
     // Limit timer:
     limitTimerBool: Boolean = true ; // true == limit
     limitTimer: number = 4 * 60 * 1000;// 4 min
 
-    gameDone : Boolean = false; // true = fini
+    // Game finish or not
+    gameDone : Boolean = false; // true = finish
 
     constructor(id : number, p1 : Player, p2 : Player) {
         this.id = id;
