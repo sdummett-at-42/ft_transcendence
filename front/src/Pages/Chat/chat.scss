@@ -79,9 +79,14 @@ body {
   .about {
     padding-left: 8px;
   }
+  .name{
+    color: #ffffff;
+    font-weight: bold;
+    font-size: larger;
+  }
   
   .status {
-    color: $gray;
+    color: darkgrey;
   }
   button {
     border-radius: 3px;
@@ -129,6 +134,7 @@ body {
     .chat-with {
       font-weight: bold;
       font-size: 16px;
+      color: #2b6dbe;
     }
     
     .chat-num-messages {
@@ -155,6 +161,9 @@ body {
     border-bottom: 2px solid white;
     overflow-y: scroll;
     height: 575px;
+    .message-data-name{
+      color: #0b0b0b;
+    }
     
     .message-data {
       margin-bottom: 15px;

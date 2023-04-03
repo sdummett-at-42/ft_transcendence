@@ -1,19 +1,25 @@
 import React, { FC } from 'react';
 import {messageList} from './data'
 import "./chat.css"
-//import styles from './Message.module.css';
-
-// interface MessageProps {}
-
-// const Message: FC<MessageProps> = () => (
-//   <div className={styles.Message}>
-//     Message Component
-//   </div>
-// );
+import {Socket } from "socket.io-client";
 import { useState, useEffect } from 'react';
 
-export default function Message(props) {
+interface MessageProps {
+  socket: Socket;
+  selectedList : (list: string) => void;
+
+}
+
+export default function Message(props:MessageProps) {
   const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    if (props.socket) {
+      props.socket.on("roomMsgHistReceived", (payload) => {console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
+      setMessages(payload.msgHist);
+    });
+    }
+  }, [props.socket]);
 
   const item = messageList.map(each => (
     <div  >
@@ -21,15 +27,6 @@ export default function Message(props) {
       <small className="text-end">{each.createtime}</small>
     </div>
   ));
-
-  // useEffect(() => {
-  //   if (props.chatroomId) {
-  //     // Fetch messages for the selected chatroom
-  //     fetch(`/api/chatrooms/${props.chatroomId}/messages`)
-  //       .then(response => response.json())
-  //       .then(data => setMessages(data));
-  //   }
-  // }, [props.chatroomId]);
 
   return (
 //     <div  >
@@ -41,11 +38,11 @@ export default function Message(props) {
 //     </div>
 <div className="chat">
 <div className="chat-header clearfix">
-  <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01_green.jpg" alt="avatar" />
-  
   <div className="chat-about">
-    <div className="chat-with">Chat with Vincent Porter</div>
-    <div className="chat-num-messages">already 1 902 messages</div>
+    <div className="chat-with">Chatroom</div>
+    <div className="chat-num-messages">1000 members</div>
+    <button>Join</button>
+    <button>Leave</button>
   </div>
   <i className="fa fa-star"></i>
 </div> 

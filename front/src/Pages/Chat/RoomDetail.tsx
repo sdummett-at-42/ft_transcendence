@@ -5,15 +5,25 @@ import { faMessageSlash} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Setting from './Setting';
 import { useState, useEffect } from 'react';
+import { io, Socket } from "socket.io-client";
 
-<FontAwesomeIcon icon={faBan} />
-interface RoomDetailProps {}
+interface RoomDetailProps {
+  socket: Socket;
+}
 
 const RoomDetail: FC<RoomDetailProps> = () => {
   const [show, setShow] = useState(false);
   const close = () => {
     setShow(false);
   };
+  // const handleSettingChange = (event) => {
+
+  //   const { name, value } = event.target;
+  //   setFormData({
+  //     ...formData,
+  //     [name]: value
+  //   });
+  // };
  return (
   <div className="chatinfo">
       <div className="chat-info-header clearfix">

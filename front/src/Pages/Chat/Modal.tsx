@@ -4,58 +4,79 @@ import { useState } from 'react';
 
 import "./chat.scss"
 
-export default function Modal({ isVisible, title, content, footer, onClose }) {
-    // const keydownHandler = ({ key }) => {
-    //     console.log("This one gets called because of the button click");
-    //   switch (key) {
-    //     case 'Escape':
-    //       onClose();
-    //       break;
-    //     default:
-    //   }
-    // };
+import { Socket } from "socket.io-client";
+
+interface ModalProps {
+  socket: Socket;
+  isVisible: Boolean;
+  onClose:() => void;
+  footer: React.ReactNode;
+}
+
+export default function Modal( props: ModalProps) {
+  const [formData, setFormData] = useState({
+    roomName: "",
+    visibility: "",
+    password : "",
+  });
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+    const handleSubmit = (event) => {
+      console.log(formData);
+      event.preventDefault();
+      props.socket.emit("createRoom", formData);
+    };
+
+    const showdata = (event) => {
+      if (props.socket) {
+        props.socket.emit("getRoomsList");
+        props.socket.on("roomsListReceived", (payload) => console.log(`The payload iswww: ${JSON.stringify(payload)}`));
+      }
+    };
   
-    // useEffect(() => {
-    //   document.addEventListener('keydown', keydownHandler);
-    //   return () => document.removeEventListener('keydown', keydownHandler);
-    // });
-  
-    return !isVisible ? null: (
-      <div className="modal" onClick={onClose}>
+    return !props.isVisible ? null: (
+      <div className="modal" onClick={props.onClose}>
         <div className="modal-dialog" onClick={e => e.stopPropagation()}>
           <div className="modal-header">
             <h3 className="modal-title">Create a new Chat Room</h3>
-            <span className="modal-close" onClick={onClose}>
+            <span className="modal-close" onClick={props.onClose}>
               &times;
             </span>
           </div>
           <div className="modal-body">
             <div className="modal-content">
-            <form>
+            <form onSubmit={handleSubmit}>
+            <button onClick={showdata}>hello</button>
             <div class="form-group">
                 <label for="inputChatRoomName">Chat Room Name</label>
-                <input type="text" className="form-control" id="nputChatRoomName" placeholder="Name" required />
+                <input type="text" className="form-control" name="roomName" placeholder="Name" required value={formData.name} onChange={handleInputChange} />
             </div>
             <div class="form-group col-md-4">
                 <label for="inputAccess">Accessibility</label>
-                <select id="inputAccess" className="form-control" required>
-                <option selected="selected">Public</option>
-                <option >Private</option>
+                <select name="visibility" className="form-control" required  value={formData.visibility} onChange={handleInputChange}>
+                <option selected="selected" value="public" >Public</option>
+                <option value="private">Private</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="inputPassword">Password</label>
-                <input type="text" className="form-control" id="inputPassword" placeholder="Password" />
+                <input type="text" className="form-control" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} />
             </div>
-            <div class="form-group">
+            {/* <div class="form-group">
                 <label for="inputInvitefriend">Invite your friend</label>
                 <input type="text" className="form-control" id="inputInviteFriend" placeholder="Name" />
-            </div>
+            </div> */}
             <button type="submit" class="btn btn-primary">Submit</button>
           </form>
           </div>
           </div>
-          {footer && <div className="modal-footer">{footer}</div>}
+          {props.footer && <div className="modal-footer">{props.footer}</div>}
         </div>
       </div>
     );
