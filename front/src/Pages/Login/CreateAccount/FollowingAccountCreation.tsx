@@ -1,19 +1,57 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./FollowingAccountCreation.css"
-import { Link, useNavigate } from "react-router-dom";
+import loadingGif from "../../../assets/Loading.mp4";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
 
 export default function FollowingAccountCreation() {
-
-    const usernameInputRef = useRef();
+    
+    const [image, setImage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const usernameInputRef = useRef(null);
     const naviguate = useNavigate();
+    const location = useLocation();
+    const myProps = location.state;
 
+    // Get a random image from Unsplash API
+    useEffect(() => {
+        async function fetchData() {
+            const response = await fetch('https://api.unsplash.com/photos/random', {
+                headers: {
+                    Authorization: 'Client-ID 1F4RENAqLD5f8pwS2FsG1M5hTEg-6KrKvB5hNp6tcJs'
+                }
+            });
+            const data = await response.json();
+            setImage(data.urls.regular);
+            setLoading(false);
+        }
+        fetchData();
+    }, []);
+
+    // Handle image upload
+    const handleImageChange = (e) => {
+        setLoading(true);
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+          setImage(reader.result);
+          setLoading(false);
+        };
+    };
+
+    // Handle form submit
     function handleLoginForm() {
         const username = usernameInputRef.current.value;
 
         if (!username) {
             console.log("No username provided");
+            return;
+        }
+
+        if (username.length < 3) {
+            console.log("Username is too short");
             return;
         }
 
@@ -23,12 +61,12 @@ export default function FollowingAccountCreation() {
 			credentials: 'include',
             body: JSON.stringify({
                 name: username,
-                email: "xx",
-                profilePicture: "https://sain-et-naturel.ouest-france.fr/wp-content/uploads/2022/01/face-test-1-1024x684.jpg"
+                email: JSON.stringify(myProps.email).slice(1, -1),
+                profilePicture: image,
             }),
         })
         .then(res => {
-            if (res.status == 200) {
+            if (res.status == 201) {
                 naviguate("/home");
                 return;
             }
@@ -40,11 +78,27 @@ export default function FollowingAccountCreation() {
             <div className="LoginSelector-card">
                 <div className="LoginSelector-card-content">
 
-                    <Link to="/" style={{color: 'white', textDecoration: 'none'}} id="Login-backward">
+                    <Link to="/register" style={{color: 'white', textDecoration: 'none'}} id="Login-backward">
                         <FontAwesomeIcon icon={faAnglesLeft} size="2x"/>
                     </Link>
 
                     <h3 className="LoginSelector-card-title">Choisissez votre photo de profile:</h3>
+
+                    <div id="Profil-image-wrapper">
+
+                    {loading ? (
+                        <video src={loadingGif} autoPlay loop muted className="Profil-image" />
+                        ) : (
+                        <div>{image && <img src={image} alt="Preview" className="Profil-image" />}</div>
+                    )}
+                        
+                        <input
+                            id="Profil-button"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            />
+                    </div>
                     
                     <div className="LoginSelector-card-subtitle">
 
@@ -53,6 +107,7 @@ export default function FollowingAccountCreation() {
                                 className="LoginSelector-button LoginSelector-input"
                                 type="text"
                                 placeholder="Pseudonyme"
+                                defaultValue={JSON.stringify(myProps.name).slice(1, -1)}
                                 ref={usernameInputRef}
                                 required
                             />
