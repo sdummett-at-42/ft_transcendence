@@ -26,7 +26,8 @@ export default function LoginSelector() {
 
         fetch('http://localhost:3001/auth/local', {
             method: 'POST',
-			headers: { "Content-Type": "application/json" },
+			headers: { "Content-Type": "application/json",
+                    },
             body: JSON.stringify({
                 auth: "LOGIN",
                 username: username,
@@ -61,7 +62,7 @@ export default function LoginSelector() {
                             <input
                                 className="LoginSelector-button LoginSelector-input"
                                 type="text"
-                                placeholder="Pseudonyme"
+                                placeholder="Nom d'utilisateur"
                                 ref={usernameInputRef}
                                 required
                             />

@@ -1,59 +1,56 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import "./CreateAccount.css"
 import Logo42 from "../../../assets/42_Logo.png"
 import { SHA256 } from "crypto-js"
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
+import Joi from "joi";
+
 
 export default function CreateAccount() {
-
+    
+    const schema = Joi.object({
+        username: Joi.string().min(3).required(),
+        email: Joi.string().email({ tlds: { allow: false } }).required(),
+        password: Joi.string().min(8).required(),
+        checkPassword: Joi.string().min(8).required(),
+    });
+    
     const usernameInputRef = useRef(null);
     const emailInputRef = useRef(null);
     const passwordInputRef = useRef(null);
     const checkpasswordInputRef = useRef(null)
+    const [errorMessages, setErrorMessages] = useState({});
     const naviguate = useNavigate();
 
     function handleLoginForm() {
 
         const username = usernameInputRef.current.value;
-        console.log(`username: ${username}`);
         const email = emailInputRef.current.value;
-        console.log(`email: ${email}`);
         const password = passwordInputRef.current.value;
-        console.log(`password: ${password}`);
         const checkPassword = checkpasswordInputRef.current.value;
-        console.log(`checkPassword: ${checkPassword}`);
 
-        if (!username || !email || !password || !checkPassword) {
-            if (!username)
-                console.log("No username provided");
-            else if (!email)
-                console.log("No email provided");
-            else if (!password)
-                console.log("No password provided");
-            else if (!checkPassword)
-                console.log("No checkPassword provided");
-            return;
-        }
-
-        if (username.length < 3) {
-            console.log("Username is too short");
-            return;
-        }
-
-        if (!email.includes("@") || !email.includes(".") || email.length < 5) {
-            console.log("Email is not valid");
-            return;
-        }
-
-        if (password.length < 8 || checkPassword.length < 8) {
-            console.log("Password is too short");
+        setErrorMessages(prevErrors => ({...prevErrors, username: "", email: "", password: "", checkPassword: ""}));
+        const { error } = schema.validate({ username, email, password, checkPassword });
+        if (error) {
+            const newError = {};
+            error.details.forEach(errorDetail => {
+                if (errorDetail.context.key === "username")
+                    newError[errorDetail.context.key] = "Nom d'utilisateur invalide";
+                else if (errorDetail.context.key === "email")
+                    newError[errorDetail.context.key] = "Email invalide";
+                else if (errorDetail.context.key === "password")
+                    newError[errorDetail.context.key] = "Mot de passe invalide";
+                else if (errorDetail.context.key === "checkPassword")
+                    newError[errorDetail.context.key] = "Mot de passe de vérification invalide";
+            });
+            setErrorMessages(prevErrors => ({...prevErrors, ...newError}));
             return;
         }
 
         if (password !== checkPassword) {
-            console.log("Password and checkPassword are not the same");            
+            setErrorMessages(prevErrors => ({...prevErrors, checkPassword: "Les mots de passe ne correspondent pas"}));         
             return;
         }
 
@@ -72,11 +69,22 @@ export default function CreateAccount() {
         .then(res => {
             if (res.status == 201) {
                 const myProps = { name: username, email: email };
-                console.log(`myProps: ${JSON.stringify(myProps.name)}`);
-                naviguate("/register/finalization", { state: myProps });
+                console.log("Account created");
+                // naviguate("/register/finalization", { state: myProps });
                 return;
             }
-        })
+            else if (res.status == 409) { // Conflict
+                const msg = res.json();
+                msg.then((msg) => {
+                    if (msg.message === "Username already registered.")
+                        setErrorMessages(prevErrors => ({...prevErrors, user: "Le nom d'utilisateur est déjà pris"}));
+                    else if (msg.message === "Email already registered.")
+                        setErrorMessages(prevErrors => ({...prevErrors, email: "L'email est déjà pris"}));
+                    return;
+                });
+
+            }
+        });
     }
 
     return (
@@ -98,12 +106,13 @@ export default function CreateAccount() {
                             <input
                                 className="LoginSelector-button LoginSelector-input"
                                 type="text"
-                                placeholder="Pseudonyme"
+                                placeholder="Nom d'utilisateur"
                                 minLength={3}
                                 ref={usernameInputRef}
                                 autoComplete="yes"
                                 required
                             />
+                            {errorMessages.username && <p className="LoginSelector-error">{errorMessages.username}</p>}
 
                             <input
                                 className="LoginSelector-button LoginSelector-input"
@@ -113,6 +122,7 @@ export default function CreateAccount() {
                                 ref={emailInputRef}
                                 required
                             />
+                            {errorMessages.email && <p className="LoginSelector-error">{errorMessages.email}</p>}
                 
                             <input
                                 className="LoginSelector-button LoginSelector-input"
@@ -122,6 +132,7 @@ export default function CreateAccount() {
                                 ref={passwordInputRef}
                                 required
                             />
+                            {errorMessages.password && <p className="LoginSelector-error">{errorMessages.password}</p>}
 
                             <input
                                 className="LoginSelector-button LoginSelector-input"
@@ -131,6 +142,7 @@ export default function CreateAccount() {
                                 placeholder="Confirmer"
                                 required
                             />
+                            {errorMessages.checkPassword && <p className="LoginSelector-error">{errorMessages.checkPassword}</p>}
             
                             <input
                                 className="LoginSelector-button LoginSelector-input LoginSelector-submit Button-submit-video"

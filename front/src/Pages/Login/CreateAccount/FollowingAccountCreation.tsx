@@ -20,7 +20,7 @@ export default function FollowingAccountCreation() {
             const response = await fetch('https://api.unsplash.com/photos/random', {
                 headers: {
                     Authorization: 'Client-ID 1F4RENAqLD5f8pwS2FsG1M5hTEg-6KrKvB5hNp6tcJs'
-                }
+                },
             });
             const data = await response.json();
             setImage(data.urls.regular);
