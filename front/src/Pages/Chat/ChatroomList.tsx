@@ -21,7 +21,7 @@ export default function ChatroomList(props: ChatroomListProps) {
         setChatrooms(payload.roomsList);
       });
         props.socket.on("roomCreated", (payload)=> {
-          setChatrooms([...chatrooms,payload]);
+          //ssetChatrooms([...chatrooms,payload]);
         // setChatrooms(payload.roomsList);
       });
 
