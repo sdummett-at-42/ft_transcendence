@@ -6,13 +6,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
 import Joi from "joi";
-
+import validEmail from "../../../assets/validEmail";
 
 export default function CreateAccount() {
     
     const schema = Joi.object({
-        username: Joi.string().min(3).required(),
-        email: Joi.string().email({ tlds: { allow: false } }).required(),
+        username: Joi.string().min(3).max(16).required(),
+        email: Joi.string().email({ tlds: { allow: validEmail } }).required(),
         password: Joi.string().min(8).required(),
         checkPassword: Joi.string().min(8).required(),
     });
@@ -31,8 +31,13 @@ export default function CreateAccount() {
         const password = passwordInputRef.current.value;
         const checkPassword = checkpasswordInputRef.current.value;
 
+        // Reset error messages
         setErrorMessages(prevErrors => ({...prevErrors, username: "", email: "", password: "", checkPassword: ""}));
+
+        // Validate input
         const { error } = schema.validate({ username, email, password, checkPassword });
+
+        // If error, display error message
         if (error) {
             const newError = {};
             error.details.forEach(errorDetail => {
@@ -49,11 +54,13 @@ export default function CreateAccount() {
             return;
         }
 
+        // Check if passwords match
         if (password !== checkPassword) {
             setErrorMessages(prevErrors => ({...prevErrors, checkPassword: "Les mots de passe ne correspondent pas"}));         
             return;
         }
 
+        // Hash password
         const hashedPassword = SHA256(password).toString();
 
         fetch('http://localhost:3001/auth/local', {
@@ -69,15 +76,14 @@ export default function CreateAccount() {
         .then(res => {
             if (res.status == 201) {
                 const myProps = { name: username, email: email };
-                console.log("Account created");
-                // naviguate("/register/finalization", { state: myProps });
+                naviguate("/register/finalization", { state: myProps });
                 return;
             }
             else if (res.status == 409) { // Conflict
                 const msg = res.json();
                 msg.then((msg) => {
                     if (msg.message === "Username already registered.")
-                        setErrorMessages(prevErrors => ({...prevErrors, user: "Le nom d'utilisateur est déjà pris"}));
+                        setErrorMessages(prevErrors => ({...prevErrors, username: "Le nom d'utilisateur est déjà pris"}));
                     else if (msg.message === "Email already registered.")
                         setErrorMessages(prevErrors => ({...prevErrors, email: "L'email est déjà pris"}));
                     return;

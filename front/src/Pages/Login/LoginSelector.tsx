@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import "./LoginSelector.css"
 import { Link, useNavigate } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -13,12 +13,22 @@ export default function LoginSelector() {
     const usernameInputRef = useRef();
     const passwordInputRef = useRef();
 
+    const [errorMessages, setErrorMessages] = useState({});
+
     function handleLoginForm() {
         const username = usernameInputRef.current.value;
         const password = passwordInputRef.current.value;
 
-        if (!username || !password) {
-            console.log("No username or password provided");
+        // Reset error messages
+        setErrorMessages(prevErrors => ({...prevErrors, username: "", password: "", login: ""}));
+        
+        if (!username || username.length < 3 || username.length > 16) {
+            setErrorMessages(prevErrors => ({...prevErrors, username: "Nom d'utilisateur invalide"}));
+            return;
+        }
+
+        if (!password || password.length < 8) {
+            setErrorMessages(prevErrors => ({...prevErrors, password: "Mot de passe invalide"}));
             return;
         }
 
@@ -37,6 +47,15 @@ export default function LoginSelector() {
         .then(res => {
             if (res.status == 201) {
                 naviguate("/home");
+                return;
+            }
+            else if (res.status == 400) {
+                setErrorMessages(prevErrors => ({...prevErrors, password: "Mot de passe incorrect"}));
+                setErrorMessages(prevErrors => ({...prevErrors, login: "Mot de passe oublié ?"}));
+                return;
+            }
+            else if (res.status == 404) {
+                setErrorMessages(prevErrors => ({...prevErrors, username: "Nom d'utilisateur incorrect"}));
                 return;
             }
         })
@@ -66,6 +85,7 @@ export default function LoginSelector() {
                                 ref={usernameInputRef}
                                 required
                             />
+                            {errorMessages.username && <p className="LoginSelector-error">{errorMessages.username}</p>}
                 
                             <input
                                 className="LoginSelector-button LoginSelector-input"
@@ -76,6 +96,7 @@ export default function LoginSelector() {
                                 required
                                 autoComplete="off"
                             />
+                            {errorMessages.password && <p className="LoginSelector-error">{errorMessages.password}</p>}
             
                             <input
                                 className="LoginSelector-button LoginSelector-input LoginSelector-submit"
@@ -85,6 +106,7 @@ export default function LoginSelector() {
                                     handleLoginForm();
                                 }}
                             />
+                            {errorMessages.login && <Link to="/forgotMail" className="LoginSelector-error">{errorMessages.login}</Link>}
 
                         </form>
 

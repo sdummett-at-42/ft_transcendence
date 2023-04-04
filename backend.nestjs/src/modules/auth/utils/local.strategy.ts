@@ -12,7 +12,7 @@ const USERNAME_MIN = 3;
 const USERNAME_MAX = 16;
 export const RegisterSchema = Joi.object({
 	username: Joi.string().min(USERNAME_MIN).max(USERNAME_MAX).required(),
-	email: Joi.string().email({ tlds: { allow: false } }).required(),
+	email: Joi.string().email().required(),
 	password: Joi.string().min(PASSWORD_MIN).required(),
 });
 
