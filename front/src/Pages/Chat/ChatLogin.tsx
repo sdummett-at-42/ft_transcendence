@@ -14,6 +14,7 @@ export default function ChatLogin() {
   const [selectedList, setSelectedList] = useState(null);
 
   const handleListClick = (list) => {
+    console.log("SELECT", list);
     setSelectedList(list);
     socket.emit("getRoomMsgHist", selectedList);
     console.log("handleListClick", list);

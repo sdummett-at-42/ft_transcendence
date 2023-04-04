@@ -57,7 +57,7 @@ export default function ChatroomList(props: ChatroomListProps) {
               </div>
             </li>
             {chatrooms.map(room => (
-              <li className="clearfix"  key={room.id} onClick={() => handleChatroomClick(room.id)}>       
+              <li className="clearfix"  key={room.id} onClick={() => handleChatroomClick(room.roomName)}>       
               <div className="about">
               <div className="name" >{room.roomName} </div>
               <div className="status">

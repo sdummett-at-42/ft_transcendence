@@ -44,7 +44,7 @@ export const connectSocket = () => {
   socket.on("roomCreated", function(payload) {
     console.log("roomCreated", payload)
   });
-  socket.on("roomNotCreated", (payload) => console.log(`noT CREATED The payload is: ${JSON.stringify(payload)}`));
+  // socket.on("roomNotCreated", (payload) => console.log(`noT CREATED The payload is: ${JSON.stringify(payload)}`));
   socket.on("roomNotUpdated", function(payload) {
     console.log("roomNotUpdated", payload)
   });

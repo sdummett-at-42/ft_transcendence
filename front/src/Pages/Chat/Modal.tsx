@@ -29,7 +29,14 @@ export default function Modal( props: ModalProps) {
       console.log(formData);
       event.preventDefault();
       props.socket.emit("createRoom", formData);
-      props.onClose();
+      props.socket.on("roomCreated",
+        props.onClose()
+      );
+    
+      props.socket.on("roomNotCreated", () => {
+        console.log("roomNotCreated");
+        alert("The room name already exists.");
+      });
     };
   
     return !props.isVisible ? null: (

@@ -12,12 +12,30 @@ interface MessageProps {
 
 export default function Message(props:MessageProps) {
   const [messages, setMessages] = useState([]);
+  const [showInput, setShowInput] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
+  const handleJoinRoom = (event) => {
+    setShowInput(true);
+      // props.socket.emit("joinRoom", payload);
+  };
+
+  const handleInputChange = (event) => {
+    setInputValue(event.target.value);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    // do something with inputValue
+    setShowInput(false);
+  };
 
   useEffect(() => {
     if (props.socket) {
       props.socket.on("roomMsgHistReceived", (payload) => {console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
       setMessages(payload.msgHist);
     });
+
     }
   }, [props.socket]);
 
@@ -31,13 +49,21 @@ export default function Message(props:MessageProps) {
   return (
 <div className="chat">
 <div className="chat-header clearfix">
-  <div className="chat-about">
-
-    <div className="chat-with">Chatroom</div>
-    <div className="chat-num-messages">1000 members</div>
+  <div className="chat-about container">
+    <div className="row">
+    <div className="chat-with col-2">Chatroom</div>
+    {/* <div className="chat-num-messages col-4">1000 members</div> */}
   </div>
-  <button >Join</button>
-    <button>Leave</button>
+  <button className="col-2" onClick={handleJoinRoom} >Join</button>
+  <button className="col-2">Leave</button>
+  {/* <input type="text" className="form-control" name="password" placeholder="Password" /> */}
+  {showInput && (
+        <form onSubmit={handleSubmit}>
+          <input className="col-10" type="text" placeholder="Password" value={inputValue} onChange={handleInputChange} />
+          <button className="col-2" type="submit">Submit</button>
+        </form>
+      )}
+    </div>
 </div> 
 
 <div className="chat-history">
