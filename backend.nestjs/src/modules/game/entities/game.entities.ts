@@ -48,12 +48,22 @@ export class Bullet implements Shape {
     a : number;         // direction
     // color or img
 
+    bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la bullet-> a chaque passqge bullet se deplace
+    frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
+    speed : number;
+
     constructor(x:number, y:number, r:number, v:number, f:number, a:number) {
         this.pos = new Coordonnee(x, y);
         this.r = r;
         this.v = v;
         this.f = f;
         this.a = a;
+
+        this.speed = 5;
+
+        // IDEA
+        // speed init aleatoire 30-60 ?
+        // idem pour f mais entre 5 et 10 ?
     }
 }
 
@@ -83,6 +93,9 @@ export class Player {
 
     score : number = 0;
     racket? : Square;
+
+    // if player got relaunch bullet
+    relaunchBulletBool = false;
     
     // player 1 or 2 ?
     // id, name etc....
@@ -134,23 +147,27 @@ export class Game {
     pause : Boolean = false;
     pauseP1 : Boolean = false;
     pauseP2 : Boolean = false;
-
+    // when pause start
     pauseStart?: Date;
     pauseP1Start?: Date;
     pauseP2Start?: Date;
-
+    // how much time is spend on pause
     pauseP1Time : number = 0;
     pauseP2Time : number = 0;
     pauseTotalTime : number = 0;
+    // number of times activate
+    pauseP1Max : number = 0;
+    pauseP2Max : number = 0;
+    pauseTotalMax : number = 5;
 
 
     // Game date
     dateStart?: Date;
 
     // les mettre propres aux bullets ?
-    bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie -> a chaque passqge bullet se deplace
-    frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
-    speed : number;
+    // bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie -> a chaque passqge bullet se deplace
+    // frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
+    // speed : number;
 
     // number of obstacle + racket
     numberElement? : number;
@@ -159,9 +176,14 @@ export class Game {
     limitScoreBool: Boolean = true; // true == limit
     limitScore: number = 3; 
 
-    // Limit timer:
+    // Limit pause time:
+    limitPauseTimerBool: Boolean = true; // true == limit
+    limitPauseTimer: number = 10000; // droit a x ms de pause
+
+    // Limit game timer:
     limitTimerBool: Boolean = true ; // true == limit
-    limitTimer: number = 4 * 60 * 1000;// 4 min
+     limitTimer: number = 4 * 60 * 1000;// 4 min
+    //limitTimer: number = 5000;// 5 sec
 
     // Game finish or not
     gameDone : Boolean = false; // true = finish
@@ -176,6 +198,6 @@ export class Game {
         this.p2.side = 2;
 
         this.field = new Field(400, 800);
-        this.speed = 5;
+        //this.speed = 5;
     }
 }

@@ -23,6 +23,7 @@ export enum EventGame {
     playerJoinGame = "joinGame",
     playerJoinQueue = "joinQueue",
     playerLeaveQueue = "leaveQueue",
+    playerClickCanvas = "clickCanvas",
 
     //send
 

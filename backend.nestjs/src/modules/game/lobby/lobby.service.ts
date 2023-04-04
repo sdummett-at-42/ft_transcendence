@@ -293,22 +293,23 @@ export class LobbyService {
         socket.data.elo = allData.elo;
         socket.data.socket = socket.id;
 
-        console.log("data: ",  socket.data.socket);
-        console.log("socketid: ",  socket.id);
+        // console.log("data: ",  socket.data.socket);
+        // console.log("socketid: ",  socket.id);
 
         // TODO
         // check si avec https j'ai encore acces a headers.referer
 
-        //console.log("user : ", JSON.parse(session).passport.user);
-        console.log("socket:", socket.handshake.headers.referer);
+        // console.log("user : ", JSON.parse(session).passport.user);
+        // console.log("socket:", socket.handshake.headers.referer);
         const gameId = socket.handshake.headers.referer.split('/').pop();
-        console.log("**************************");
+        // console.log("**************************");
         if (gameId === "game") { // not in game
             console.log("socket in: /game");
             socket.join(`game`);
         } else {
             //TODO
             // check if game exist| ingame| finish
+            console.log("connect in game");
             socket.data.ingame = gameId;
             
             const index = this.games.findIndex(games => games.id === Number(gameId));
@@ -318,10 +319,11 @@ export class LobbyService {
                 return null;
 
             // if in game at player pause his game
-            if (game.p1.id === userId) // p1 deco
-                return {game : game, id :game.p1.id};
-            if (game.p2.id === userId) // p2 deco
-                return {game : game, id :game.p2.id};
+            if (game.p1.id === userId) // p1 connec
+                return {game : game, id : game.p1.id};
+            if (game.p2.id === userId) // p2 connect
+                return {game : game, id : game.p2.id};
+            return {game : game, id : userId}; // spec connect
         }
         return null;
 	}
@@ -365,10 +367,15 @@ export class LobbyService {
         const gameId = socket.handshake.headers.referer.split('/').pop();
 
         if (gameId === "game") { // not in game
-            console.log("socket in: /game");
+            console.log("disconnect socket in: /game");
+            // check is player is in Q
+            const index = this.users.findIndex(users => users.player.id === userId);
+            if (index !== -1)
+                this.users.splice(index, 1);
         } else {
             //TODO
             // check if game exist| ingame| finish
+            console.log("disconnect in game/:id");
 
             const index = this.games.findIndex(games => games.id === Number(gameId));
             const game : Game = this.games[index];
@@ -383,6 +390,7 @@ export class LobbyService {
             if (game.p2.socket === socket.id) { // p2 deco
                 return {game : game, id :game.p2.id};
             }
+            // else spec
 
         }
         return null;

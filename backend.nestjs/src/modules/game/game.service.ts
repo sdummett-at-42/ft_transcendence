@@ -38,6 +38,9 @@ export class GameService {
     // un seul socket joueur
     // attendre les 2 joueurs present
 
+    //TODO
+    // faire une fonction qui check si la game est termine pour bloquer les inputs
+
     joinGame(server: Server, game : Game, client : Socket, payload : {roomId : string, msg : string}) {
         client.join(payload.roomId);
 
@@ -64,10 +67,6 @@ export class GameService {
     }
 
     startingGame(server : Server, game : Game) : void {
-        // TODO
-        // ajouter lancement timer game
-        // chaque passage emit image (60 ou 140 emit/sec)
-
         if (game.shapes.length > game.numberElement ) {
             console.log("Partie deja en cours");
         }
@@ -76,13 +75,9 @@ export class GameService {
 
             // Bullet start side player 1
             this.startNewBullet(game, 1);
-
             // TODO
-            // start interval game here
             // temp max atteint = fin game
-            // pause = pause compteur
             game.dateStart =  new Date();
-
             let elapsedTime : number;
             const delay = 1000 / 60 // 60 emit sec
             game.gameInterval = setInterval(() => {
@@ -95,25 +90,33 @@ export class GameService {
                     // stocker duree total pause joueur dans resume
 
                     // si p1Pause && limit pause depasser = victoire forfait
-                    if (game.pauseP1 === true)
-                        game.pauseP1Time += dateActual - game.pauseP1Start.getTime();
+                    if (game.pauseP1 === true) {
+                        const check : number = game.pauseP1Time + dateActual - game.pauseP1Start.getTime();
+                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer) {
+                            this.victoryByGiveUpLimitMax(game, 2);
+                            return ;
+                        }
+                    }
                     // if player 2 pause
-                    if (game.pauseP2 === true)
-                        game.pauseP1Time += dateActual - game.pauseP2Start.getTime();
+                    if (game.pauseP2 === true) {
+                        const check : number = game.pauseP2Time + dateActual - game.pauseP2Start.getTime();;
+                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer) {
+                            this.victoryByGiveUpLimitMax(game, 1);
+                            return ;
+                        }
+                    }
 
                 } else { // game not in pause
                     // check game timer end
-                    elapsedTime = Math.floor((new Date().getTime() - game.dateStart.getTime() - game.pauseTotalTime) / 1000);
-                    // send date
-                    
-                    // send image to all in room
-                    //
+                    elapsedTime = Math.floor(new Date().getTime() - game.dateStart.getTime() - game.pauseTotalTime);
+                    // check Limit timer
+                    if (game.limitTimerBool === true && elapsedTime >= game.limitTimer) {
+                        this.victoryByScore(game);
+                        return ;
+                    }
                 }
                 server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
                 server.to(game.roomId).emit(EventGame.gameTimer, elapsedTime);
-                
-
-
             }, delay);
 
 
@@ -128,10 +131,20 @@ export class GameService {
         // 2 if if player game alone ?
         if (idPause === game.p1.id) {
             game.pauseP1 = true;
+            game.pauseP1Max ++;
+            if (game.pauseP1Max >= game.pauseTotalMax) {
+                this.victoryByGiveUpLimitMax(game, 2);
+                return ;
+            }
             game.pauseP1Start = new Date();
         }
         if (idPause === game.p2.id) {
             game.pauseP2 = true;
+            game.pauseP2Max ++;
+            if (game.pauseP2Max >= game.pauseTotalMax) {
+                this.victoryByGiveUpLimitMax(game, 1);
+                return ;
+            }
             game.pauseP2Start = new Date();
         }
 
@@ -140,29 +153,30 @@ export class GameService {
         game.pause = true;
 
         // TODO
-        // stop bullet
-        clearInterval(game.frequencyInterval);
-        clearInterval(game.bulletInterval);
-
-        // this.startMoving(game.server, game, bullet_01);
+        // stop bullet all
+        game.shapes.forEach((shape) => {
+            if (shape instanceof Bullet) {
+                clearInterval(shape.frequencyInterval);
+                clearInterval(shape.bulletInterval);
+            }
+        })
     }
 
     resumeGame(game : Game, idResume : number) : void {
         if (!game.pause)
             return ;
+
         // TODO
-        // cas reco d'une deco
         // cas fin pause manuel
-        // recuperer temp deco du joueur
 
         const actualDate : number = new Date().getTime();
         // if 2 player are ready
-        if (idResume === game.p1.id) {
+        if (idResume === game.p1.id && game.pauseP1Start) {
             game.pauseP1 = false;
             game.pauseP1Time += actualDate - game.pauseP1Start.getTime();
-        } else if (idResume === game.p2.id) {
+        } else if (idResume === game.p2.id && game.pauseP2Start) {
             game.pauseP2 = false;
-            game.pauseP1Time += actualDate - game.pauseP1Start.getTime();
+            game.pauseP2Time += actualDate - game.pauseP2Start.getTime();
         }
         
         // All player aren't in pause
@@ -177,15 +191,10 @@ export class GameService {
                 if (shape instanceof Bullet)
                     this.startMoving(game.server, game, shape);
             })
-        }
-
-
-        // a retirer ? et calculer le temps de pause total a la reprise ?
-        // dans resume
-        // duree total pause += fin pause - debut pause
-                    
+        }             
     }
 
+    // stop all interval et clear all bullet
     stopGame(server : Server, game : Game) : void {
 
         if (game.shapes.length <= game.numberElement ) {
@@ -193,26 +202,24 @@ export class GameService {
             return null;
         }
         else {
-            console.log("Fin de la partie !");//
-//
-            //console.log(this.shapes.length);
-            //console.log(this.shapes[2]);//
+            console.log("Fin de la partie !");
 
-            clearInterval(game.frequencyInterval);
-            clearInterval(game.bulletInterval);
+            // Stop all interval bullet
+            game.shapes.forEach((shape) => {
+                if (shape instanceof Bullet) {
+                    clearInterval(shape.frequencyInterval);
+                    clearInterval(shape.bulletInterval);
+                }
+            })
+            // and clear all element add after init
             game.shapes.splice(game.numberElement);
 
+            // Stop game's interval
             clearInterval(game.gameInterval);
 
-            // console.log(game.shapes);
-            // console.log("size shapes: ", game.shapes.length);
             server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
         }
     }
-
-    // TODO
-    // Si une seule fenetre playable -> check socket et non id
-    // si plusieurs fenetre playable -> check id
 
     mouvementGame(server : Server, game : Game, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
 
@@ -239,12 +246,25 @@ export class GameService {
             else
                 game.p2.racket.pos.y = tmpYmin;
         }
+    }
 
-        // TODO
-        // inute emit in intervalgame
-        // if (client.data.socketid === game.p2.socket || client.data.socketid === game.p1.socket)
-        //     server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+    clickGame(game : Game, client : Socket) : void {
+        // get first bullet (only 1 bullet when relaunch)
+        const bullet : Shape = game.shapes.find(shape => shape instanceof Bullet)
 
+        if (bullet === undefined || !(bullet instanceof Bullet))
+            return ;
+
+        // Player 1
+        if (client.data.socket === game.p1.socket && game.p1.relaunchBulletBool === true) {
+            game.p1.relaunchBulletBool = false;
+            this.startMoving(game.server, game, bullet);
+        }
+        // Player 2
+        if (client.data.socket === game.p2.socket && game.p2.relaunchBulletBool === true) {
+            game.p2.relaunchBulletBool = false;
+            this.startMoving(game.server, game, bullet);
+        }
     }
 
     /* *************** *\
@@ -252,18 +272,16 @@ export class GameService {
     \* *************** */
 
     private startMoving(server: Server, game : Game, bullet: Bullet) {
-        if (game.bulletInterval)
-            clearInterval(game.bulletInterval);
       
         let delay = 1000 / bullet.f;
         //console.log("delay = ", delay, " bullet.r * Math.cos(bullet.a) = " ,bullet.r * Math.cos(bullet.a));
       
-
         // Start the interval to increment to all bullet.f every second
-        game.frequencyInterval = setInterval(() => {
-            bullet.f += game.speed;
-            console.log("bullet frequency: ", bullet.f);
+        bullet.frequencyInterval = setInterval(() => {
+            // bullet.f += bullet.speed;
+            // console.log("bullet frequency: ", bullet.f);
         }, 1000);
+
 
 
         const intervalFunction = () => {
@@ -273,30 +291,23 @@ export class GameService {
             // 0 : No score | 1 : P1 score | 2 : P2 score | -1 : Limit score
             const scorer = this.checkScoring(game, bullet)
             if (scorer !== 0) {
-                if (scorer > 0)
-                    this.startNewBullet(game, scorer);
+                this.deleteBullet(game, bullet);
+                this.startNewBullet(game, scorer);
                 return;
             }
-
             // Change bullet.pos with new value
             bullet.pos.x += bullet.v * Math.cos(bullet.a);
             bullet.pos.y += bullet.v * Math.sin(bullet.a);
-        
-        //console.log(`position = (${bullet.pos.x}.${bullet.pos.y})`);
-        
-            // send shapes[] to front
-            //server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
-        
+                
             // Recalculate the delay based on the new frequency
             delay = 1000 / bullet.f;
         
             // Clear the previous interval and create a new one with the updated delay
-            clearInterval(game.bulletInterval);
-            game.bulletInterval = setInterval(intervalFunction, delay);
+            clearInterval(bullet.bulletInterval);
+            bullet.bulletInterval = setInterval(intervalFunction, delay);
         };
-
         // Set the first interval
-        game.bulletInterval = setInterval(intervalFunction, delay);
+        // bullet.bulletInterval = setInterval(intervalFunction, delay);
     }
 
     private startNewBullet(game : Game, side : number) : void {
@@ -307,12 +318,7 @@ export class GameService {
 
         // TODO Multi_ball
         // delete la bullet precise
-
-
-        // Delete old bullet and interval
-        game.shapes.splice(game.numberElement);
-        clearInterval(game.frequencyInterval);
-        clearInterval(game.bulletInterval);
+        // creer balle relance jsute debut game et quand plsu de bullet sur terrain
 
         const r = 5;
 
@@ -325,10 +331,12 @@ export class GameService {
             newA = 0;
             newX = game.p1.racket.pos.x + game.p1.racket.width + r + 1;
             newY = game.p1.racket.pos.y + game.p1.racket.length / 2;
+            game.p1.relaunchBulletBool = true;
         } else if (side === 2) {
             newA = Math.PI;
             newX = game.p2.racket.pos.x - r - 1;
             newY = game.p2.racket.pos.y + game.p2.racket.length / 2;
+            game.p2.relaunchBulletBool = true;
         }
 
         // Creation New bullet
@@ -336,27 +344,35 @@ export class GameService {
         const bullet_01 = new Bullet(newX, newY, r, 3, 30, newA);
         game.shapes.push(bullet_01);
 
-        game.server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+        //game.server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
             
         // TODO
         // get timer in game setting
         // timer to clic
         // sinon fin timer lance
 
-        const launchBulletTimer = setTimeout(() => {
-              // Player got X ms to launch bullet
-              this.startMoving(game.server, game, bullet_01);
-            }, 5000);
+        // const launchBulletTimer = setTimeout(() => {
+        //         // Player got X ms to launch bullet
+        //         if (side === 1)
+        //             game.p1.relaunchBulletBool = false;
+        //         else if (side === 2)
+        //             game.p2.relaunchBulletBool = false;
+        //         this.startMoving(game.server, game, bullet_01);
+        //     }, 5000);
 
-        // ce code ci dessous appeler dans function appeler par gateway click
+    // clearInterval(launchBulletTimer);
+    this.startMoving(game.server, game, bullet_01);
 
-        // if player click
-        // cancel setTimeout
-        // -----
-        clearTimeout(launchBulletTimer);
+    }
 
-        this.startMoving(game.server, game, bullet_01);
-        // -----
+    private deleteBullet(game : Game, bullet : Bullet) : void {
+        const index = game.shapes.findIndex(shape => shape instanceof Bullet && 
+                                                shape.bulletInterval === bullet.bulletInterval)
+        if (index === -1)
+            return;
+        game.shapes.splice(index, 1);
+        clearInterval(bullet.frequencyInterval);
+        clearInterval(bullet.bulletInterval);
     }
       
     private checkScoring(game : Game, bullet : Bullet) : number {
@@ -381,41 +397,59 @@ export class GameService {
     }
 
     private victoryByScore(game : Game) : number {
-        // Stop game
-        game.shapes.splice(game.numberElement);
-        clearInterval(game.frequencyInterval);
-        clearInterval(game.bulletInterval);
+        // stop game
+        this.stopGame(game.server, game);
 
-        console.log("++++++ VICTOIRE");
+        console.log("++++++ VICTOIRE ABANDON");
 
-        this.newElo(game)
+        // get who win
+        let scoreP1;
+        let scoreP2;
+        if (game.p1.score > game.p2.score) {
+            scoreP1 = 1;
+            scoreP2 = 0;
+        }
+        else if (game.p1.score < game.p2.score) {
+            scoreP1 = 0;
+            scoreP2 = 1;
+        }
+        else {
+            scoreP1 = 0.5;
+            scoreP2 = 0.5;
+        }
 
+        // calcul new elo
+        this.newElo(game, scoreP1, scoreP2)
+
+        // send to front type of victory
         game.server.to(game.roomId).emit(EventGame.gameVictoryScore, {p1 : game.p1, p2 : game.p2})
-
         return -1;
     }
 
-    private newElo(game : Game) : void {
+    private victoryByGiveUpLimitMax(game : Game, winner : number) : void {
+        // stop game
+        this.stopGame(game.server, game);
 
-        let score1;
-        let score2;
-        if (game.p1.score > game.p2.score) {
-            score1 = 1;
-            score2 = 0;
-        }
-        else if (game.p1.score < game.p2.score) {
-            score1 = 0;
-            score2 = 1;
-        }
-        else {
-            score1 = 0.5;
-            score2 = 0.5;
-        }
+        // winner == 1 -> player 1 win
+        // winner == 2 -> player 2 win
+
+        console.log("++++++ VICTOIRE ABANDON");
+        // get who win + calcul new elo
+        if (winner === 1) // p1 win
+            this.newElo(game, 1, 0);
+        else if (winner === 2) // p2 win
+            this.newElo(game, 0, 1);
 
         // TODO
+        // change to gamevictoryGiveup
+        game.server.to(game.roomId).emit(EventGame.gameVictoryScore, {p1 : game.p1, p2 : game.p2})
+    }
+
+    private newElo(game : Game, scoreP1 : number, scoreP2 : number) : void {
+        // TODO
         // change nombregame (facteur K)
-        this.calculateElo(game.p1.score, game.p2.score, score1, 5); // last = nb game jouer
-        this.calculateElo(game.p2.score, game.p2.score, score2, 5);
+        this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, 5); // last = nb game jouer
+        this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, 5);
     }
 
     calculateElo(oldElo: number, opponentElo: number, score: number, gamesPlayed: number): number {
