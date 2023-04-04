@@ -29,21 +29,20 @@ const RoomDetail: FC<RoomDetailProps> = () => {
       <div className="chat-info-header clearfix">
       <div className='chat-info-title'>Room Info</div>
         <div className='chat-info-subtitle'>Accessibility</div>
-        <button  onClick={() => {
+        {/* <button  onClick={() => {
           setShow(true);}} >Change</button>
           <Setting         isVisible={show}
-            title="Modal Title"
-            content={<p>Add your content here</p>}
+            socket={socket}
             footer={<button>Cancel</button>}
-            onClose={() => setShow(false)} />
+            onClose={() => setShow(false)} /> */}
             <div className='chat-info-subtitle'>Public</div>
             <div className='chat-info-subtitle'>Invite a friend</div>
             <input placeholder="Name"></input>
             <i className="fa fa-plus" aria-hidden="true"></i>
-           <FontAwesomeIcon icon={faPlus} size="1.5x"/>
+           <FontAwesomeIcon icon={faPlus} size="2x"/>
            <div className='chat-info-subtitle'>Ban a Member</div>
            <input placeholder="Name"></input>
-           <FontAwesomeIcon icon={faBan} size="1.5x"/>
+           <FontAwesomeIcon icon={faBan} size="2x"/>
            <div className='chat-info-subtitle'>Mute a Member</div>
            <input placeholder="Name"></input>
            <FontAwesomeIcon icon={faVolumeXmark} />

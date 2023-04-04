@@ -1,17 +1,39 @@
 import React from 'react';
 import { useRef, useEffect } from "react";
 import { useState } from 'react';
+import { Socket } from "socket.io-client";
 
 import "./chat.scss"
+interface SettingProps {
+  socket: Socket;
+  isVisible: Boolean;
+  onClose:() => void;
+  footer: React.ReactNode;
+}
 
-export default function Setting({ isVisible, title, content, footer, onClose }) {
+// export default function Setting( props: SettingProps) {
+//   const [formData, setFormData] = useState({
+//     roomName: "",
+//     visibility: "",
+//     password : "",
+//   });
 
-    return !isVisible ? null: (
-      <div className="modal" onClick={onClose}>
+//   const handleInputChange = (event) => {
+//     const { name, value } = event.target;
+//     setFormData({
+//       ...formData,
+//       [name]: value
+//     });
+//   };
+
+export default function Setting(props: SettingProps) {
+
+    return !props.isVisible ? null: (
+      <div className="modal" onClick={props.onClose}>
         <div className="modal-dialog" onClick={e => e.stopPropagation()}>
           <div className="modal-header">
             <h3 className="modal-title">Setting</h3>
-            <span className="modal-close" onClick={onClose}>
+            <span className="modal-close" onClick={props.onClose}>
               &times;
             </span>
           </div>
@@ -33,7 +55,7 @@ export default function Setting({ isVisible, title, content, footer, onClose }) 
           </form>
           </div>
           </div>
-          {footer && <div className="modal-footer">{footer}</div>}
+          {props.footer && <div className="modal-footer">{props.footer}</div>}
         </div>
       </div>
     );

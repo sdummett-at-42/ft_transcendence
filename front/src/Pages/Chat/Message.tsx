@@ -29,22 +29,15 @@ export default function Message(props:MessageProps) {
   ));
 
   return (
-//     <div  >
-//     <div>{item}</div>
-//     <div className="input-group mb-3">
-//   <input type="text" className="form-control" placeholder="send a message..." aria-describedby="button-addon2 " />
-//   <button className="btn btn-outline-secondary" type="button" id="button-addon2">Send</button>
-// </div>
-//     </div>
 <div className="chat">
 <div className="chat-header clearfix">
   <div className="chat-about">
+
     <div className="chat-with">Chatroom</div>
     <div className="chat-num-messages">1000 members</div>
-    <button>Join</button>
-    <button>Leave</button>
   </div>
-  <i className="fa fa-star"></i>
+  <button >Join</button>
+    <button>Leave</button>
 </div> 
 
 <div className="chat-history">
@@ -106,9 +99,6 @@ export default function Message(props:MessageProps) {
 <div className="chat-message clearfix">
             <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="3"></textarea>
                     
-            <i className="fa fa-file-o"></i> &nbsp;&nbsp;&nbsp;
-            <i className="fa fa-file-image-o"></i>
-            
             <button>Send</button>
     
           </div>

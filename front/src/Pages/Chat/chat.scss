@@ -126,18 +126,21 @@ body {
     }
     
     .chat-about {
-      float: left;
       padding-left: 10px;
       margin-top: 6px;
     }
     
     .chat-with {
+      float: left;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 20px;
       color: #2b6dbe;
     }
     
     .chat-num-messages {
+      float: left;
+      padding-left: 5%;
+      font-size: 14px;
       color: $gray;
     }
     
@@ -153,6 +156,21 @@ body {
     }
     .form-control{
       color: black;
+    }
+
+    button {
+      float: right;
+      color: rgb(103, 89, 89);
+      font-size: 16px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      background: #fefefe;
+      
+      &:hover {
+        color: darken($blue, 7%);
+      }
     }
   }
   
@@ -377,7 +395,7 @@ body {
 .modal-dialog {
   width: 100%;
   max-width: 550px;
-  background: white;
+  background: rgb(255, 255, 255);
   position: relative;
   margin: 0 20px;
   max-height: calc(100vh - 40px);
@@ -419,7 +437,7 @@ body {
   color: black;
   overflow: auto;
   input{
-    background-color: #f2f2f2;
+    background-color: #2965cc;
     border-radius: 3px;
     border: none;
   }

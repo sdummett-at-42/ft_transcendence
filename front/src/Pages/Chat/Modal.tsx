@@ -1,9 +1,7 @@
 import React from 'react';
 import { useRef, useEffect } from "react";
 import { useState } from 'react';
-
 import "./chat.scss"
-
 import { Socket } from "socket.io-client";
 
 interface ModalProps {
@@ -16,7 +14,7 @@ interface ModalProps {
 export default function Modal( props: ModalProps) {
   const [formData, setFormData] = useState({
     roomName: "",
-    visibility: "",
+    visibility: "public",
     password : "",
   });
 
@@ -31,13 +29,7 @@ export default function Modal( props: ModalProps) {
       console.log(formData);
       event.preventDefault();
       props.socket.emit("createRoom", formData);
-    };
-
-    const showdata = (event) => {
-      if (props.socket) {
-        props.socket.emit("getRoomsList");
-        props.socket.on("roomsListReceived", (payload) => console.log(`The payload iswww: ${JSON.stringify(payload)}`));
-      }
+      props.onClose();
     };
   
     return !props.isVisible ? null: (
@@ -52,7 +44,6 @@ export default function Modal( props: ModalProps) {
           <div className="modal-body">
             <div className="modal-content">
             <form onSubmit={handleSubmit}>
-            <button onClick={showdata}>hello</button>
             <div class="form-group">
                 <label for="inputChatRoomName">Chat Room Name</label>
                 <input type="text" className="form-control" name="roomName" placeholder="Name" required value={formData.name} onChange={handleInputChange} />
@@ -60,7 +51,7 @@ export default function Modal( props: ModalProps) {
             <div class="form-group col-md-4">
                 <label for="inputAccess">Accessibility</label>
                 <select name="visibility" className="form-control" required  value={formData.visibility} onChange={handleInputChange}>
-                <option selected="selected" value="public" >Public</option>
+                <option value="public" >Public</option>
                 <option value="private">Private</option>
                 </select>
             </div>

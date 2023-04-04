@@ -17,21 +17,30 @@ export default function ChatroomList(props: ChatroomListProps) {
     };
     useEffect(() => {
       if (props.socket) {
-        props.socket.on("roomsListReceived", (payload) => {console.log(`roomsListReceived: ${JSON.stringify(payload)}`);
+        props.socket.on("roomsListReceived", (payload) => {console.log(`NEW: ${JSON.stringify(payload)}`);
         setChatrooms(payload.roomsList);
       });
-        props.socket.on("roomJoined", (payload) => {console.log(`roomJoined: ${JSON.stringify(payload)}`);
-        // setChatrooms(payload);
+        props.socket.on("roomCreated", (payload)=> {
+          setChatrooms([...chatrooms,payload]);
+        // setChatrooms(payload.roomsList);
       });
+
       }
-    }, [props.socket]);
+    }, [props.socket, chatrooms]);
     function handleChatroomClick(chatroomId) {
       props.onListClick(chatroomId);
     }
+    const showdata = (event) => {
+      if (props.socket) {
+        props.socket.emit("getRoomsList");
+        props.socket.on("roomsListReceived", (payload) => console.log(`The payload iswww: ${JSON.stringify(payload)}`));
+      }
+    };
 
   return (
     <div className="people-list" id="people-list">
             <div className="search">
+            <button onClick={showdata}>Data</button>
             <button  onClick={() => {
           setShow(true);}} >Create a New ChatRoom</button>
           <Modal         isVisible={show}
