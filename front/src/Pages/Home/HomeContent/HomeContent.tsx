@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import "./HomeContent.css"
 import { Link } from "react-router-dom"
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
@@ -11,7 +11,7 @@ export default function HomeContent() {
         <div className="HomeContent">
             <video src={homeVideo} autoPlay loop muted className="HomeContent-video"/>
             <div className="HomeContent-text">
-                Play the mighty pong !
+                Jouer a Pong !
                 <Link to="/game" style={{textDecoration: 'none', color: 'whitesmoke'}}>
                     <FontAwesomeIcon icon={faPlay} size="4x" />
                 </Link>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Navbar.css"
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo42 from "../../assets/42_Logo.png"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserGear } from "@fortawesome/free-solid-svg-icons"
@@ -8,6 +8,7 @@ import { faUserGear } from "@fortawesome/free-solid-svg-icons"
 export default function Navbar() {
 
     const [userData, setUserData] = useState(null);
+    const naviguate = useNavigate();
 
     useEffect(() => {
         fetchUserData();
@@ -18,8 +19,16 @@ export default function Navbar() {
         const response = await fetch("http://localhost:3001/users/me", {
             credentials: 'include',
             method: "GET"
-        });
-        const data = await response.json();
+        })
+            .then(res => {
+                // console.log(res);
+                if (res.status == 401) {
+                    naviguate("/unauthorized");
+                    return;
+                }
+                return res.json();
+            });
+        const data = await response;
         setUserData(data);
     };
 
@@ -27,7 +36,7 @@ export default function Navbar() {
     return (
         <nav className="Navbar-nav">
             <div className="Navbar-nav-section" id="Navbar-left">
-                <Link to="/home"><img className="Login-invert-effect Navbar-logo" src={Logo42} alt="Logo-ecole-42" /></Link>
+                <Link to="/home"><img className="LoginSelector-invert-effect Navbar-logo" src={Logo42} alt="Logo-ecole-42" /></Link>
                 <Link to="/game" style={{textDecoration: 'none', color: 'whitesmoke'}}>
                     Pong
                 </Link>
@@ -43,12 +52,9 @@ export default function Navbar() {
                 <div>
                     {userData && (
                         <div id="Navbar-profil">
-                            <img id="Navbar-profil-picture" className="Navbar-logo" src={userData.profilPicture} alt="myProfilePicture" />
+                            <img id="Navbar-profil-picture" className="Navbar-logo" src={userData.profilePicture} alt="myProfilePicture" />
                             <div id="Navbar-profil-name">
                                 {userData.name}
-                            </div>
-                            <div id="Navbar-profil-elo">
-                                elo: {userData.elo}
                             </div>
                         </div>
                     )}

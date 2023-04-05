@@ -15,6 +15,14 @@ export class AuthController {
 
 	constructor(private readonly auth: AuthService) { }
 
+	@Post('/local')
+	@UseGuards(AuthGuard('local'))
+	localRegister() {}
+
+	// @Get('/local/forget')
+	// @UseGuards(AuthGuard('local'))
+	// localForget() {}
+
 	// After trying to log using oauth method if 2fa is enabled
 	// this endpoint will validate the otp needed
 	@UseGuards(AuthGuard('2fa'))
