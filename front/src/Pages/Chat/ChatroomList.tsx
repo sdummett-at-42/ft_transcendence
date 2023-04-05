@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback} from 'react';
 import Modal from "./Modal";
 import { io, Socket } from "socket.io-client";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -15,19 +15,19 @@ export default function ChatroomList(props: ChatroomListProps) {
     const close = () => {
       setShow(false);
     };
-    useEffect(() => {
-      if (props.socket) {
-        props.socket.on("roomsListReceived", (payload) => {console.log(`NEW: ${JSON.stringify(payload)}`);
-        setChatrooms(payload.roomsList);
-      });
-        props.socket.on("roomCreated", (payload)=> {
-          //ssetChatrooms([...chatrooms,payload]);
-        // setChatrooms(payload.roomsList);
-      });
 
-      }
-    }, [props.socket, chatrooms]);
-    function handleChatroomClick(chatroomId) {
+    const handleRoomCreated = useCallback((payload) => {
+      setChatrooms((prevChatrooms) => [...prevChatrooms, payload]);
+    }, [chatrooms]);
+
+    const handleRoomDeleted = useCallback((payload) => {
+      // console.log("LEAVE", payload);
+      setChatrooms((prevChatrooms) => {
+        return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
+      });
+    }, [chatrooms]);
+
+    const handleChatroomClick = (chatroomId)=> {
       props.onListClick(chatroomId);
     }
     const showdata = (event) => {
@@ -37,8 +37,31 @@ export default function ChatroomList(props: ChatroomListProps) {
       }
     };
 
+    useEffect(() => {
+      if (props.socket) {
+        props.socket.on("roomsListReceived", (payload) => {
+          console.log(`NEW: ${JSON.stringify(payload)}`);
+          setChatrooms(payload.roomsList);
+        });
+        props.socket.on("roomCreated", handleRoomCreated);
+        props.socket.on("roomJoined", handleRoomCreated);
+        props.socket.on("roomLeft", handleRoomDeleted );
+      return () => {
+          // Log the event listeners to the console
+          props.socket.off("roomsListReceived", (payload) => {
+            console.log(`NEW: ${JSON.stringify(payload)}`);
+            setChatrooms(payload.roomsList);
+          });
+          props.socket.off("roomLeft", handleRoomDeleted);
+          props.socket.off("roomJoined", handleRoomCreated);
+          props.socket.off("roomCreated", handleRoomCreated);
+      };}
+    }, [props.socket]);
+
+
   return (
     <div className="people-list" id="people-list">
+
             <div className="search">
             <button onClick={showdata}>Data</button>
             <button  onClick={() => {

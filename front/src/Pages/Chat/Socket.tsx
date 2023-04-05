@@ -21,10 +21,6 @@ export const connectSocket = () => {
   });
   socket.on("roomsListReceived", (payload) => console.log(`The payload is: ${JSON.stringify(payload)}`));
 
-
-  socket.on("connect", () => {
-    console.log("Connected to server!");
-  });
   socket.on("disconnect", () => {
     console.log("Disconnected from server!");
   });
@@ -41,9 +37,9 @@ export const connectSocket = () => {
   socket.on("roomMsgNotReceived", function(payload) {
     console.log("roomMsgNotReceived", payload)
   });
-  socket.on("roomCreated", function(payload) {
-    console.log("roomCreated", payload)
-  });
+  // socket.on("roomCreated", function(payload) {
+  //   console.log("roomCreated", payload)
+  // });
   // socket.on("roomNotCreated", (payload) => console.log(`noT CREATED The payload is: ${JSON.stringify(payload)}`));
   socket.on("roomNotUpdated", function(payload) {
     console.log("roomNotUpdated", payload)

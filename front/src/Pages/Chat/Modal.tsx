@@ -11,34 +11,45 @@ interface ModalProps {
   footer: React.ReactNode;
 }
 
-export default function Modal( props: ModalProps) {
-  const [formData, setFormData] = useState({
-    roomName: "",
-    visibility: "public",
-    password : "",
-  });
-
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({
-      ...formData,
-      [name]: value
+export default function Modal(props: ModalProps) {
+    const [formData, setFormData] = useState({
+      roomName: "",
+      visibility: "public",
+      password : "",
     });
-  };
-    const handleSubmit = (event) => {
-      console.log(formData);
-      event.preventDefault();
-      props.socket.emit("createRoom", formData);
-      props.socket.on("roomCreated",
-        props.onClose()
-      );
-    
-      props.socket.on("roomNotCreated", () => {
-        console.log("roomNotCreated");
-        alert("The room name already exists.");
+
+    const handleInputChange = (event) => {
+      const { name, value } = event.target;
+      setFormData({
+        ...formData,
+        [name]: value
       });
     };
-  
+
+    const handleSubmit = (event) => {
+      event.preventDefault();
+      console.log("test")
+      props.socket.emit("createRoom", formData);
+    };
+
+    useEffect(() => {
+      if (props.socket) {
+        props.socket.on("roomCreated",
+          props.onClose()
+        );
+        props.socket.on("roomNotCreated", () => {
+          console.log("roomNotCreated");
+          alert("The room name already exists.");
+        });
+      }
+      return () => {
+        if (props.socket) {
+          props.socket.off('roomCreated');
+          props.socket.off('roomNotCreated');
+        }
+      };
+    }, [props.socket]);
+
     return !props.isVisible ? null: (
       <div className="modal" onClick={props.onClose}>
         <div className="modal-dialog" onClick={e => e.stopPropagation()}>
@@ -51,18 +62,18 @@ export default function Modal( props: ModalProps) {
           <div className="modal-body">
             <div className="modal-content">
             <form onSubmit={handleSubmit}>
-            <div class="form-group">
+            <div className="form-group">
                 <label for="inputChatRoomName">Chat Room Name</label>
                 <input type="text" className="form-control" name="roomName" placeholder="Name" required value={formData.name} onChange={handleInputChange} />
             </div>
-            <div class="form-group col-md-4">
+            <div className="form-group col-md-4">
                 <label for="inputAccess">Accessibility</label>
                 <select name="visibility" className="form-control" required  value={formData.visibility} onChange={handleInputChange}>
                 <option value="public" >Public</option>
                 <option value="private">Private</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div className="form-group">
                 <label for="inputPassword">Password</label>
                 <input type="text" className="form-control" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} />
             </div>
@@ -70,7 +81,7 @@ export default function Modal( props: ModalProps) {
                 <label for="inputInvitefriend">Invite your friend</label>
                 <input type="text" className="form-control" id="inputInviteFriend" placeholder="Name" />
             </div> */}
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" className="btn btn-primary">Submit</button>
           </form>
           </div>
           </div>
