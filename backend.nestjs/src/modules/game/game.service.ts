@@ -76,7 +76,6 @@ export class GameService {
             // Bullet start side player 1
             this.startNewBullet(game, 1);
 
-            this.startNewBullet(game, 2);
             // TODO
             // temp max atteint = fin game
             game.dateStart =  new Date();
@@ -162,12 +161,18 @@ export class GameService {
 
         // TODO
         // stop bullet all
-        game.shapes.forEach((shape) => {
-            if (shape instanceof Bullet) {
-                clearInterval(shape.bulletInterval);
-                shape.bulletInterval = undefined;
-            }
-        })
+        // game.shapes.forEach((shape, index) => {
+        //     if (game.shapes[index] instanceof Bullet){
+        
+
+        //     }
+        // })
+
+        clearInterval(game.bulletInterval);
+        game.bulletInterval = undefined;
+
+
+
         clearInterval(game.frequencyInterval);
         game.frequencyInterval = undefined;
     }
@@ -217,14 +222,20 @@ export class GameService {
             console.log("Fin de la partie !");
 
             // Stop all interval bullet
-            game.shapes.forEach((shape) => {
-                if (shape instanceof Bullet) {
-                    clearInterval(game.frequencyInterval);
-                    clearInterval(shape.bulletInterval);
-                    game.frequencyInterval = undefined;
-                    shape.bulletInterval = undefined;
-                }
-            })
+            // game.shapes.forEach((shape, index) => {
+            //     if (game.shapes[index] instanceof Bullet){
+            //         clearInterval(game.bulletInterval);
+            //         game.bulletInterval = undefined;
+            //     }
+            // })
+
+            clearInterval(game.bulletInterval);
+            game.bulletInterval = undefined;
+
+
+            clearInterval(game.frequencyInterval);
+            game.frequencyInterval = undefined;
+            
             // and clear all element add after init
             game.shapes.splice(game.numberElement);
 
@@ -250,6 +261,9 @@ export class GameService {
                 game.p1.racket.pos.y = game.field.height - game.p1.racket.length;
             else
                 game.p1.racket.pos.y = tmpYmin;
+            if (game.p1.relaunchBulletBool) {
+                this.setBulletRelaunch(game, game.p1.racket);
+            }
         }
 
         // Player 2
@@ -260,6 +274,9 @@ export class GameService {
                 game.p2.racket.pos.y = game.field.height - game.p2.racket.length;
             else
                 game.p2.racket.pos.y = tmpYmin;
+            if (game.p2.relaunchBulletBool) {
+                this.setBulletRelaunch(game, game.p2.racket);
+            }
         }
     }
 
@@ -312,8 +329,11 @@ export class GameService {
 
 
         const intervalFunction = () => {
-            console.log("Start moving : intervalFunction");
-            game.shapes.forEach((shape) => {
+            // console.log("Start moving : intervalFunction");
+
+            // TODO
+            // retirer forEachif mono bullet
+            game.shapes.forEach((shape, index) => {
                 if (shape instanceof Bullet) {
                     // Check if bullet got collisionwith element if collision bullet.a will change
                     this.checkCollision(game, shape);
@@ -333,16 +353,16 @@ export class GameService {
                     // Recalculate the delay based on the new frequency
                     delay = 1000 / shape.f;
                     
-                    // Clear the previous interval and create a new one with the updated delay
-                    clearInterval(shape.bulletInterval);
-                    shape.bulletInterval = setInterval(intervalFunction, delay);
+                    // Clear the previous interval and create a new one with the updated delay                    
+                    clearInterval(game.bulletInterval);
+                    game.bulletInterval = setInterval(intervalFunction, delay);
                 }})
-        };
+            };
+
         // Set the interval to move bullet if not define
-        const shape : Shape = game.shapes.find(shape => shape instanceof Bullet && shape.pos === bullet.pos);
-            
-        if (shape instanceof Bullet && shape.bulletInterval === undefined)
-            shape.bulletInterval = setInterval(intervalFunction, delay);
+        if (game.bulletInterval === undefined) {
+            game.bulletInterval = setInterval(intervalFunction, delay);
+        }
     }
 
     private startNewBullet(game : Game, side : number) : void {
@@ -386,16 +406,15 @@ export class GameService {
         // timer to clic
         // sinon fin timer lance
 
-        // game.launchBulletTimer = setTimeout(() => {
-        //         // Player got X ms to launch bullet
-        //         if (side === 1)
-        //             game.p1.relaunchBulletBool = false;
-        //         else if (side === 2)
-        //             game.p2.relaunchBulletBool = false;
-        //         this.startMoving(game.server, game, bullet_01);
-        //     }, 5000);
+        game.launchBulletTimer = setTimeout(() => {
+                // Player got X ms to launch bullet
+                if (side === 1)
+                    game.p1.relaunchBulletBool = false;
+                else if (side === 2)
+                    game.p2.relaunchBulletBool = false;
+                this.startMoving(game.server, game, bullet_01);
+            }, 5000);
 
-    this.startMoving(game.server, game, bullet_01);
     
     // clearInterval(launchBulletTimer);
     //this.startMoving(game.server, game, bullet_01);
@@ -408,17 +427,13 @@ export class GameService {
                                             bullet.pos === bullet.pos)
         if (index === -1)
             return;
-        const shape = game.shapes[index];
-        if (!(shape instanceof Bullet))
-            return;
-        clearInterval(shape.bulletInterval);
-        shape.bulletInterval = undefined;
+
         game.shapes.splice(index, 1);
         // if 0 bullet stop bulletinterval
-        if (game.shapes.findIndex(shape => shape instanceof Bullet) === -1) {
-            clearInterval(game.frequencyInterval);
-            game.frequencyInterval = undefined;
-        }
+        clearInterval(game.bulletInterval);
+        game.bulletInterval = undefined;
+        clearInterval(game.frequencyInterval);
+        game.frequencyInterval = undefined;
     }
       
     private checkScoring(game : Game, bullet : Bullet) : number {
@@ -634,36 +649,62 @@ export class GameService {
     }
 
     private collisionRacket(bullet : Bullet, racket: Square) : void {
-        const centerX = racket.pos.x + racket.width / 2;
-        const centerY = racket.pos.y + racket.length / 2;
-        const deltaX = bullet.pos.x - centerX;
-        const deltaY = bullet.pos.y - centerY;
-        let angle = Math.atan2(deltaY, deltaX);
-        console.log(angle);
+        // const centerX = racket.pos.x + racket.width / 2;
+        // const centerY = racket.pos.y + racket.length / 2;
+        // const deltaX = bullet.pos.x - centerX;
+        // const deltaY = bullet.pos.y - centerY;
+        // let angle = Math.atan2(deltaY, deltaX);
+        // console.log(angle);
 
         // if angle to acute
-        if (angle >= 1.1 && angle <= 2.2) { // top 
-            if (angle < 1.6) { // left
-                angle = 1.1
-                bullet.pos.x += bullet.r;
-            }
-            else {// right
-                angle = 2.2
-                bullet.pos.x -= bullet.r;
-            }
-        }
-        else if (angle <= -1.1 && angle >= -2.2) { // bot
-        if (angle > -1.6) {// left
-            angle = -1.1
-                bullet.pos.x += bullet.r;
-            }
-            else { //right
-                angle = -2.2
-                bullet.pos.x -= bullet.r;
-            }
-        }
-        // change bullet.a
-        bullet.a = angle;
+        const pi3 = Math.PI / 3;
+        const pi2 = Math.PI / 2
+
+        const pi3o = 2 * Math.PI /3
+        // if (angle >= pi3 && angle <= pi3o) { // top 
+        //     if (angle < pi2) { // left
+        //         angle = pi3
+        //         bullet.pos.x += bullet.r;
+        //     }
+        //     else {// right
+        //         angle = pi3o
+        //         bullet.pos.x -= bullet.r;
+        //     }
+        // }
+        // else if (angle < -pi3 && angle >= -pi3o) { // bot
+        // if (angle > -pi2) {// left
+        //     angle = -pi3
+        //         bullet.pos.x += bullet.r;
+        //     }
+        //     else { //right
+        //         angle = -pi3o
+        //         bullet.pos.x -= bullet.r;
+        //     }
+        // }
+        // // change bullet.a
+        // bullet.a = angle;
+
+        //----------------------------
+        // TODO decoupe la racket en 7 morceau ?
+        // renvoi entre PI / 3 et - (PI / 3)
+
+// faire en %
+// ymin = 0%
+// ymax = 100%
+// yin + len / 2 = 50 %
+    const pourcentbullet = ((bullet.pos.y - racket.pos.y) / racket.length) * 100;
+    // avec pourcentbullet savoir ou se trouve le pourcentage
+    // de notre fourchette d'angle 
+    const angleFinal = (pourcentbullet / 100) * pi3o - pi3;
+    bullet.a = angleFinal;
+
+
+// ypos = 
+
+        // decouper racket en X morceau
+        // faire (PI/3) 2 en X morceau
+        // voir dans quelle session la balle est
+        // bullet.a = angle session - PI/3
     }
 
     private collisionSquare(bullet : Bullet, square : Square) : void {
@@ -750,5 +791,16 @@ export class GameService {
 
         // Change bullet.a
         bullet.a = reflectionAngle;
+    }
+
+    private setBulletRelaunch(game : Game, racket : Square) : void {
+        const index = game.shapes.findIndex( (shape) => shape instanceof Bullet);
+        if (index === -1)
+            return ;
+        
+        let temp = game.shapes[index] as Bullet;
+        temp.pos.y = racket.pos.y + racket.length / 2;
+        this.collisionRacket(temp, racket);
+
     }
 }

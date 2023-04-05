@@ -43,7 +43,7 @@ export class GameGateway {
   /* **** *\
   |* game *|
   \* **** */
-//
+
   @SubscribeMessage(EventGame.gameStart)
   // generate bullet and game start
   StartingMessage(client: any, payload: any) : void {
@@ -78,7 +78,8 @@ export class GameGateway {
 
   // socket.emit("Mouvement", {roomId : room, data : data});
   @SubscribeMessage(EventGame.playerMouvement)
-  MouvementMessage(client: any, payload: {roomId : number, data : Coordonnee}) : void {    console.log("MouvementMessage");
+  MouvementMessage(client: any, payload: {roomId : number, data : Coordonnee}) : void {
+    //console.log("MouvementMessage");
 
     // get game by gameid from client
     const gameId = Number(client.data.ingame); // string to number

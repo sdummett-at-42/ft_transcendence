@@ -51,8 +51,7 @@ export class Bullet implements Shape {
     a : number;         // direction
     // color or img
 
-    bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la bullet-> a chaque passqge bullet se deplace
-    // frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
+    // bulletInterval?: NodeJS.Timeout | undefined; // stocker ID de l'intervalle de la bullet-> a chaque passqge bullet se deplace
     speed : number;
 
     constructor(x:number, y:number, r:number, v:number, f:number, a:number) {
@@ -169,7 +168,7 @@ export class Game {
     dateStart?: Date;
 
     // les mettre propres aux bullets ?
-    // bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie -> a chaque passqge bullet se deplace
+    bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie -> a chaque passqge bullet se deplace
     frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
     // speed : number;
 
