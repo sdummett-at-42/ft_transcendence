@@ -93,6 +93,28 @@ export default function Profile() {
         })
     }
 
+    function handle2fa() {
+        fetch('http://localhost:3001/auth/2fa/generate', {
+            method: 'GET',
+            headers: { "Content-Type": "application/json" },
+            credentials: 'include',
+        })
+        .then(res => {
+            console.log(res);
+            if (res.status == 401) {
+                naviguate("/unauthorized");
+                return;
+            }
+            else if (res.status == 400) {
+                return;
+            }
+            else if (res.status == 200) {
+                console.log("2fa enabled");
+            }
+            return res.json();
+        })
+    }
+
     return (
         <div className="Profile-body">
             <div className="Profile-card">
@@ -140,11 +162,17 @@ export default function Profile() {
                     </form>
 
                     <div className="2fa">
-                        <input
-                            className="LoginSelector-button LoginSelector-input LoginSelector-submit Profil-2fa-button"
-                            type="button"
-                            value="Activer la double authentification"
-                        />
+                        Activer la double authentification
+                        <label class="Profil-switch">
+                        <input className="Profil-input"
+                            type="checkbox"
+                            onClick={e => {
+                                handle2fa();
+                            }}
+                            />
+                        <span class="Profil-slider Profil-round"></span>
+                        </label>
+                        
                     </div>
 
                 </div>
