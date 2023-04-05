@@ -38,6 +38,7 @@ export default function LoginSelector() {
             method: 'POST',
 			headers: { "Content-Type": "application/json",
                     },
+            credentials: 'include',
             body: JSON.stringify({
                 auth: "LOGIN",
                 username: username,
@@ -51,7 +52,7 @@ export default function LoginSelector() {
             }
             else if (res.status == 400) {
                 setErrorMessages(prevErrors => ({...prevErrors, password: "Mot de passe incorrect"}));
-                setErrorMessages(prevErrors => ({...prevErrors, login: "Mot de passe oublié ?"}));
+                // setErrorMessages(prevErrors => ({...prevErrors, login: "Mot de passe oublié ?"}));
                 return;
             }
             else if (res.status == 404) {
@@ -106,7 +107,7 @@ export default function LoginSelector() {
                                     handleLoginForm();
                                 }}
                             />
-                            {errorMessages.login && <Link to="/forgotMail" className="LoginSelector-error">{errorMessages.login}</Link>}
+                            {/* {errorMessages.login && <Link to="/forgotMail" className="LoginSelector-error">{errorMessages.login}</Link>} */}
 
                         </form>
 
@@ -123,10 +124,10 @@ export default function LoginSelector() {
 
                     <div className="LoginSelector-card-subtitle">
                         <div className="LoginSelector-card-subtitle-word">
-                            Pas de compte ?
+                            Vous n'avez pas de compte ?
                         </div>
                         <Link className="LoginSelector-card-subtitle-word" to="/register">
-                            Creer un compte
+                            Inscrivez-vous
                         </Link>
                     </div>
 

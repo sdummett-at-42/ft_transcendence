@@ -66,6 +66,7 @@ export default function CreateAccount() {
         fetch('http://localhost:3001/auth/local', {
             method: 'POST',
 			headers: { "Content-Type": "application/json" },
+            credentials: 'include',
             body: JSON.stringify({
                 auth: "REGISTER",
                 username: username,
@@ -145,15 +146,15 @@ export default function CreateAccount() {
                                 type="password"
                                 minLength={8}
                                 ref={checkpasswordInputRef}
-                                placeholder="Confirmer"
+                                placeholder="Confirmer le mot de passe"
                                 required
                             />
                             {errorMessages.checkPassword && <p className="LoginSelector-error">{errorMessages.checkPassword}</p>}
             
                             <input
-                                className="LoginSelector-button LoginSelector-input LoginSelector-submit Button-submit-video"
+                                className="LoginSelector-button LoginSelector-input LoginSelector-submit"
                                 type="button"
-                                value="Continuer"
+                                value="Creer un compte"
                                 onClick={e => {
                                     handleLoginForm();
                                 }}

@@ -2,8 +2,6 @@ import React, { useRef, useState, useEffect } from "react";
 import "./FollowingAccountCreation.css"
 import loadingGif from "../../../assets/Loading.mp4";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
 
 export default function FollowingAccountCreation() {
     
@@ -66,7 +64,7 @@ export default function FollowingAccountCreation() {
             }),
         })
         .then(res => {
-            if (res.status == 201) {
+            if (res.status == 200) {
                 naviguate("/home");
                 return;
             }
@@ -78,11 +76,7 @@ export default function FollowingAccountCreation() {
             <div className="LoginSelector-card">
                 <div className="LoginSelector-card-content">
 
-                    <Link to="/register" style={{color: 'white', textDecoration: 'none'}} id="Login-backward">
-                        <FontAwesomeIcon icon={faAnglesLeft} size="2x"/>
-                    </Link>
-
-                    <h3 className="LoginSelector-card-title">Choisissez votre photo de profile:</h3>
+                    <h3 className="LoginSelector-card-title">Personnalisez votre photo de profile:</h3>
 
                     <div id="Profil-image-wrapper">
 
@@ -113,7 +107,7 @@ export default function FollowingAccountCreation() {
                             />
             
                             <input
-                                className="LoginSelector-button LoginSelector-input LoginSelector-submit Button-submit-video"
+                                className="LoginSelector-button LoginSelector-input LoginSelector-submit"
                                 type="button"
                                 value="Valider"
                                 onClick={e => {
@@ -122,6 +116,14 @@ export default function FollowingAccountCreation() {
                             />
 
                         </form>
+
+                    <Link to="/home" style={{color: 'white', textDecoration: 'none'}}>
+                        <input
+                            className="LoginSelector-button LoginSelector-input LoginSelector-submit Profil-skip-button"
+                            type="button"
+                            value="Passer"
+                        />
+                    </Link>
     
                     </div>
 

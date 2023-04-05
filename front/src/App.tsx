@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import LoginSelector from "./Pages/Login/LoginSelector";
-import ForgotMail from "./Pages/Login/forgotMail/ForgotMail";
+// import ForgotMail from "./Pages/Login/forgotMail/ForgotMail";
 import LoginFortyTwo from "./Pages/Login/FortyTwoLogin/LoginFortyTwo"
 import CreateAccount from "./Pages/Login/CreateAccount/CreateAccount"
 import FollowingAccountCreation from "./Pages/Login/CreateAccount/FollowingAccountCreation";
@@ -18,7 +18,7 @@ function App() {
         <Route path="/" element={<LoginSelector />} />
         <Route path="/register" element={<CreateAccount />} />
         <Route path="/register/finalization" element={<FollowingAccountCreation />} />
-        <Route path="/forgotMail" element={<ForgotMail />} />
+        {/* <Route path="/forgotMail" element={<ForgotMail />} /> */}
         <Route path="/login/intra42" element={<LoginFortyTwo />} />
 
         <Route path="/home" element={<Layout children={<Home />} />} />

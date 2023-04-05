@@ -1,0 +1,24 @@
+.Profile-body {
+    color: white;
+    min-height: 100vmin;
+    min-width: 100vmin;
+    display: flex;
+    justify-content: center;
+    margin-top: 10vmin;
+}
+
+.Profile-card {
+    display: grid;
+    justify-content: center;
+    width: 45%;
+    height: 80vmin;
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    background-color: rgb(10, 10, 10);
+}
+
+.Profile-card-title {
+    font-size: 3vmin;
+    margin-bottom: 2vmin;
+}
