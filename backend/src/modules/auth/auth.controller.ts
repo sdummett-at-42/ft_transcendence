@@ -15,6 +15,14 @@ export class AuthController {
 
 	constructor(private readonly auth: AuthService) { }
 
+	@Post('/local')
+	@UseGuards(AuthGuard('local'))
+	localRegister() {}
+
+	// @Get('/local/forget')
+	// @UseGuards(AuthGuard('local'))
+	// localForget() {}
+
 	// After trying to log using oauth method if 2fa is enabled
 	// this endpoint will validate the otp needed
 	@UseGuards(AuthGuard('2fa'))
@@ -60,11 +68,12 @@ export class AuthController {
 			if (err) {
 				console.log('Login Failed');
 			}
-			res.send({
-				message: "Logged successfully.",
-				twofactorEnabled: false,
-				twofactorValidated: false,
-			})
+			// res.send({
+			// 	message: "Logged successfully.",
+			// 	twofactorEnabled: false,
+			// 	twofactorValidated: false,
+			// })
+			res.status(200).redirect("http://localhost:5173/home")
 		});
 	}
 
@@ -192,5 +201,6 @@ export class AuthController {
 			twofactorEnabled: true,
 			twofactorValidated: false,
 		});
+		res.status(302).redirect("http://localhost:5173/home")
 	}
 }

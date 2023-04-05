@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
 
   postgres:
@@ -12,7 +13,7 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
-      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+      - 5432:5432
     networks:
       - backend
 
@@ -42,7 +43,7 @@ services:
     volumes:
       - ./backend/src:/app/src
     ports:
-      - ${APP_PORT}:${APP_PORT}
+      - 3001:3001
     networks:
       - backend
 
@@ -51,9 +52,18 @@ services:
     restart: always
     container_name: cache
     ports:
-      - ${REDIS_PORT}:${REDIS_PORT}
+      - 7777:7777
     networks:
       - backend
+
+  front:
+    build: ./front
+    restart: always
+    container_name: frontend
+    volumes:
+      - ./front/src:/app/src
+    ports:
+      - "5173:5173"
 
 volumes:
   postgres:

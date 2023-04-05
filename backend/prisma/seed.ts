@@ -1,11 +1,13 @@
 import { PrismaService } from "nestjs-prisma";
+import { LoginMethod } from "@prisma/client";
 
 const prisma = new PrismaService();
 async function main() {
 
 	const fs = require('fs');
-	const imageBuffer = fs.readFileSync('./default-profile-picture.png');
-	const imageBase64 = imageBuffer.toString('base64');
+	// const imageBuffer = fs.readFileSync('./default-profile-picture.png');
+	// const imageBase64 = imageBuffer.toString('base64');
+	const imageBase64 = "ABC";
 
 	// Default user
 	const defaultUser = await prisma.user.upsert({
@@ -14,7 +16,8 @@ async function main() {
 		create: {
 			id: 0,
 			email: "default",
-			name: "default-user"
+			name: "default-user",
+			loginMethod: LoginMethod.LOCAL,
 		}
 	})
 	await prisma.user.update({
@@ -41,6 +44,7 @@ async function main() {
 		create: {
 			email: "alice@prisma.io",
 			name: "Alice",
+			loginMethod: LoginMethod.LOCAL,
 		}
 	})
 	await prisma.user.update({
@@ -67,6 +71,7 @@ async function main() {
 		create: {
 			email: "bob@prisma.io",
 			name: "Bob",
+			loginMethod: LoginMethod.LOCAL,
 		}
 	})
 	await prisma.user.update({
@@ -108,6 +113,7 @@ async function main() {
 		create: {
 			email: "charlie@prisma.io",
 			name: "Charlie",
+			loginMethod: LoginMethod.LOCAL,
 		}
 	})
 	await prisma.user.update({
@@ -128,34 +134,34 @@ async function main() {
 	})
 
 	// Friend request
-	const BobAddCharlie = await prisma.friend.upsert({
-		where: {
-			userId_friendId: {
-				userId: bob.id,
-				friendId: charlie.id
-			}
-		},
-		update: {},
-		create: {
-			user: { connect: { id: bob.id } },
-			friend: { connect: { id: charlie.id } },
-		}
-	})
+	// const BobAddCharlie = await prisma.friend.upsert({
+	// 	where: {
+	// 		userId_friendId: {
+	// 			userId: bob.id,
+	// 			friendId: charlie.id
+	// 		}
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		user: { connect: { id: bob.id } },
+	// 		friend: { connect: { id: charlie.id } },
+	// 	}
+	// })
 
-	// Friend request
-	const BobAddAlice = await prisma.friend.upsert({
-		where: {
-			userId_friendId: {
-				userId: bob.id,
-				friendId: alice.id
-			}
-		},
-		update: {},
-		create: {
-			user: { connect: { id: bob.id } },
-			friend: { connect: { id: alice.id } },
-		}
-	})
+	// // Friend request
+	// const BobAddAlice = await prisma.friend.upsert({
+	// 	where: {
+	// 		userId_friendId: {
+	// 			userId: bob.id,
+	// 			friendId: alice.id
+	// 		}
+	// 	},
+	// 	update: {},
+	// 	create: {
+	// 		user: { connect: { id: bob.id } },
+	// 		friend: { connect: { id: alice.id } },
+	// 	}
+	// })
 
 	// const CharlieAddBob = await prisma.friend.upsert({
 	// 	where: { userId_friendId: {
@@ -168,21 +174,21 @@ async function main() {
 	// 	}
 	// })
 
-	const findAllFriends = await prisma.friend.findMany({
-		where: { userId: bob.id },
-		select: {
-			friend: {
-				select: {
-					id: true,
-					name: true,
-					profilePicture: true,
-					elo: true
+	// const findAllFriends = await prisma.friend.findMany({
+	// 	where: { userId: bob.id },
+	// 	select: {
+	// 		friend: {
+	// 			select: {
+	// 				id: true,
+	// 				name: true,
+	// 				profilePicture: true,
+	// 				elo: true
 
-				}
-			}
-		},
-	})
-	console.log(findAllFriends)
+	// 			}
+	// 		}
+	// 	},
+	// })
+	// console.log(findAllFriends)
 
 	// const AliceSendRequestToMe = await prisma.friendRequest.upsert({
 	// 	where: {

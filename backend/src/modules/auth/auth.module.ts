@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from 'nestjs-prisma';
@@ -10,6 +11,7 @@ import { AuthService } from './auth.service';
 import { TwoFactorStrategy } from './utils/2fa.strategy';
 import { FortyTwoStrategy } from './utils/fortytwo.strategy';
 import { GoogleStrategy } from './utils/google.strategy';
+import { LocalStrategy } from './utils/local.strategy';
 import { SessionSerializer } from './utils/Serializer';
 
 @Module({
@@ -19,10 +21,12 @@ import { SessionSerializer } from './utils/Serializer';
 		PassportModule.register({ session: true}),
 		RedisModule,
 		ChatModule,
+		HttpModule,
 	],
 	controllers: [AuthController],
 	providers: [
 		FortyTwoStrategy,
+		LocalStrategy,
 		GoogleStrategy,
 		TwoFactorStrategy,
 		SessionSerializer,

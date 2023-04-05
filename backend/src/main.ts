@@ -14,7 +14,8 @@ async function bootstrap() {
 	const config = app.get(ConfigService);
 
 	// Enable cors
-	app.enableCors();
+	app.enableCors({origin: 'http://localhost:5173', credentials: true});
+	
 
 	// Session
 	const RedisStore = connectRedis(session);
@@ -27,7 +28,8 @@ async function bootstrap() {
 			resave: false,
 			cookie: {
 				maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-			}
+				httpOnly: false,
+			},
 		}));
 
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));

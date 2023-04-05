@@ -5,6 +5,10 @@ import { ConfigService } from "@nestjs/config";
 import * as crypto from 'crypto';
 import { RedisService } from "../redis/redis.service";
 import { ChatGateway } from "../chat/chat.gateway";
+import { catchError, firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import { LoginMethod } from "@prisma/client";
+
 
 @Injectable()
 export class AuthService {
@@ -12,13 +16,42 @@ export class AuthService {
 		private readonly users: UsersService,
 		private readonly config: ConfigService,
 		private readonly redis: RedisService,
-		private readonly chat: ChatGateway) { }
+		private readonly chat: ChatGateway,
+		private readonly httpService: HttpService) { }
 
-	async validateUser(email: string) {
+	async findUserByName(username: string) {
+		return await this.users.findByName(username);
+	}
+
+	async findUserByEmail(email: string) {
+		return await this.users.findOneUserByEmail(email);
+	}
+
+	async createUser(loginMethod: LoginMethod, email: string, username: string, password: string, image: { base64: string, mimeType:string }) {
+		return await this.users.createWithPasswd(loginMethod, email, username, password, image);
+
+	}
+
+	async downloadProfilePic(profilePicUrl: string, accessToken: string) {
+		const authHeader = { Authorization: `Bearer ${accessToken}` };
+		const { data, headers } = await firstValueFrom(
+			this.httpService.get(profilePicUrl, { headers: authHeader, responseType: 'arraybuffer' }).pipe(
+				catchError((error) => {
+					throw `An error happened: ${error}`;
+				}),
+			),
+		);
+		const base64 = Buffer.from(data).toString('base64');
+		const mimeType = headers['content-type'];
+		return { base64, mimeType };
+	}
+
+	async validateUser(email: string, username: string, loginMethod: LoginMethod = LoginMethod.LOCAL, profilePicUrl: string = null, accessToken: string = null) {
 		const user = await this.users.findOneUserByEmail(email);
 		if (user)
 			return user;
-		return await this.users.create(email);
+		const image = await this.downloadProfilePic(profilePicUrl, accessToken);
+		return await this.users.create(loginMethod, email, username, image);
 	}
 
 	async findUser(id: number) {
@@ -38,7 +71,7 @@ export class AuthService {
 	}
 
 	// Generate 2FA ID with user ID
-	generate2faId(obj: {userId: number, email: string}): string {
+	generate2faId(obj: { userId: number, email: string }): string {
 		const key = this.config.get('SESSION_SECRET').slice(0, 32);
 		const iv = crypto.randomBytes(16);
 		const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -48,7 +81,7 @@ export class AuthService {
 	}
 
 	// Decrypt 2FA ID to get user ID
-	decrypt2faId(sessionId: string): {userId: number, email: string} {
+	decrypt2faId(sessionId: string): { userId: number, email: string } {
 		const key = this.config.get('SESSION_SECRET').slice(0, 32);
 		const iv = Buffer.from(sessionId.slice(0, 32), 'hex');
 		const encrypted = sessionId.slice(32);
