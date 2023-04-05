@@ -7,10 +7,9 @@ export default function Profile() {
 
     const [image, setImage] = useState('');
     const [loading, setLoading] = useState(true);
-    const usernameInputRef = useRef(null);
-
-
     const [userData, setUserData] = useState(null);
+    const [errorMessages, setErrorMessages] = useState({});
+    const usernameInputRef = useRef(null);
     const naviguate = useNavigate();
 
     useEffect(() => {
@@ -51,6 +50,7 @@ export default function Profile() {
 
     // Handle form submit
     function handleLoginForm() {
+        setErrorMessages(prevErrors => ({...prevErrors, username: ""}));
         const username = usernameInputRef.current.value;
 
         if (!username) {
@@ -74,9 +74,20 @@ export default function Profile() {
             }),
         })
         .then(res => {
+            console.log(res);
             if (res.status == 401) {
                 naviguate("/unauthorized");
                 return;
+            }
+            else if (res.status == 400) {
+                return;
+            }
+            else if (res.status == 409) {
+                setErrorMessages(prevErrors => ({...prevErrors, username: "Le nom d'utilisateur est déjà pris"}));
+                return;
+            }
+            else if (res.status == 200) {
+                window.location.reload();
             }
             return res.json();
         })
@@ -115,6 +126,7 @@ export default function Profile() {
                             ref={usernameInputRef}
                             required
                         />
+                        {errorMessages.username && <p className="LoginSelector-error">{errorMessages.username}</p>}
 
                         <input
                             className="LoginSelector-button LoginSelector-input LoginSelector-submit"
@@ -129,7 +141,7 @@ export default function Profile() {
 
                     <div className="2fa">
                         <input
-                            className="LoginSelector-button LoginSelector-input LoginSelector-submit Profil-skip-button"
+                            className="LoginSelector-button LoginSelector-input LoginSelector-submit Profil-2fa-button"
                             type="button"
                             value="Activer la double authentification"
                         />

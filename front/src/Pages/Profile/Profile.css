@@ -4,14 +4,13 @@
     min-width: 100vmin;
     display: flex;
     justify-content: center;
-    margin-top: 10vmin;
 }
 
 .Profile-card {
     display: grid;
     justify-content: center;
     width: 45%;
-    height: 80vmin;
+    height: 100%;
     padding: 10px 20px;
     border-radius: 10px;
     box-sizing: border-box;
@@ -21,4 +20,9 @@
 .Profile-card-title {
     font-size: 3vmin;
     margin-bottom: 2vmin;
+}
+
+.Profil-2fa-button:hover {
+    transition: background-color 300ms;
+    background-color: rgb(3, 169, 244);
 }
