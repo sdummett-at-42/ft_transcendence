@@ -110,7 +110,7 @@ FRONTEND		:= $(SRCS)/frontend
 
 # Flags
 ################################################################################
-UP				:= up --build -d
+UP				:= up --build #-d
 DOWN			:= down
 REMOVEALL		:= --rmi all --remove-orphans -v
 
