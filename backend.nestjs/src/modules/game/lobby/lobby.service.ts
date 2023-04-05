@@ -309,7 +309,7 @@ export class LobbyService {
         } else {
             //TODO
             // check if game exist| ingame| finish
-            console.log("connect in game");
+            console.log("socket in: /game/:id");
             socket.data.ingame = gameId;
             
             const index = this.games.findIndex(games => games.id === Number(gameId));

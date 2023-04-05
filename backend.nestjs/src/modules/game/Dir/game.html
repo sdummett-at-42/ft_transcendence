@@ -41,7 +41,7 @@
         const mapjeu = document.getElementById('mapGame');
         const ctx = mapjeu.getContext("2d");
         mapjeu.addEventListener("mousemove", updateGame); // catch on mouse's mouvement
-        // mapjeu.addEventListener("click", updateGame);
+        mapjeu.addEventListener("mousedown", clickGame); // catach on click
 
         // Mouvement souris player in canvas
         function updateGame(event) {
@@ -52,6 +52,12 @@
 
             const data = {x: x, y: y};
             socket.emit("Mouvement", {roomId : room, data : data});
+        }
+
+        // Mouvement souris player in canvas
+        function clickGame(event) {
+            console.log("click canvas");
+            socket.emit("clickCanvas", room);
         }
 
         function startGame() {

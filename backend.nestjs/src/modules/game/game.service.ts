@@ -70,16 +70,20 @@ export class GameService {
         if (game.shapes.length > game.numberElement ) {
             console.log("Partie deja en cours");
         }
-        else {
+        else if (game.gameInterval === undefined) {
             console.log("starting game !");
 
             // Bullet start side player 1
             this.startNewBullet(game, 1);
+
+            this.startNewBullet(game, 2);
             // TODO
             // temp max atteint = fin game
             game.dateStart =  new Date();
             let elapsedTime : number;
             const delay = 1000 / 60 // 60 emit sec
+
+            // console.log("StartingGame : pre setInterval");
             game.gameInterval = setInterval(() => {
                 if (game.pause === true) { // game in pause
                     // if player 1 pause
@@ -118,6 +122,7 @@ export class GameService {
                 server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
                 server.to(game.roomId).emit(EventGame.gameTimer, elapsedTime);
             }, delay);
+            // console.log("StartingGame : sub setInterval");
 
 
         }
@@ -127,6 +132,7 @@ export class GameService {
         // cas deco : socket undefine
         // cas pause manuel : socket define but action emit
 
+        console.log("PauseGame");
         // manual and deco
         // 2 if if player game alone ?
         if (idPause === game.p1.id) {
@@ -148,18 +154,22 @@ export class GameService {
             game.pauseP2Start = new Date();
         }
 
-        if (game.pause === false)
+        if (game.pause === false) {
             game.pauseStart = new Date();
-        game.pause = true;
+            game.pause = true;
+            clearTimeout(game.launchBulletTimer);
+        }
 
         // TODO
         // stop bullet all
         game.shapes.forEach((shape) => {
             if (shape instanceof Bullet) {
-                clearInterval(shape.frequencyInterval);
                 clearInterval(shape.bulletInterval);
+                shape.bulletInterval = undefined;
             }
         })
+        clearInterval(game.frequencyInterval);
+        game.frequencyInterval = undefined;
     }
 
     resumeGame(game : Game, idResume : number) : void {
@@ -168,6 +178,7 @@ export class GameService {
 
         // TODO
         // cas fin pause manuel
+        console.log("resume game");
 
         const actualDate : number = new Date().getTime();
         // if 2 player are ready
@@ -178,7 +189,7 @@ export class GameService {
             game.pauseP2 = false;
             game.pauseP2Time += actualDate - game.pauseP2Start.getTime();
         }
-        
+
         // All player aren't in pause
         if (!game.pauseP1 && !game.pauseP2) {
             game.pause = false;
@@ -186,6 +197,7 @@ export class GameService {
 
             // TODO
             // decompte 3 2 1 reprise ?
+            // si oui changer actualDate
 
             game.shapes.forEach((shape) => {
                 if (shape instanceof Bullet)
@@ -197,18 +209,20 @@ export class GameService {
     // stop all interval et clear all bullet
     stopGame(server : Server, game : Game) : void {
 
-        if (game.shapes.length <= game.numberElement ) {
-            console.log("la partie n'a pas commence !");
-            return null;
-        }
-        else {
+        // if (game.shapes.length <= game.numberElement ) {
+        //     console.log("la partie n'a pas commence !");
+        //     return null;
+        // }
+        // else {
             console.log("Fin de la partie !");
 
             // Stop all interval bullet
             game.shapes.forEach((shape) => {
                 if (shape instanceof Bullet) {
-                    clearInterval(shape.frequencyInterval);
+                    clearInterval(game.frequencyInterval);
                     clearInterval(shape.bulletInterval);
+                    game.frequencyInterval = undefined;
+                    shape.bulletInterval = undefined;
                 }
             })
             // and clear all element add after init
@@ -216,9 +230,10 @@ export class GameService {
 
             // Stop game's interval
             clearInterval(game.gameInterval);
+            game.gameInterval = undefined;
 
             server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
-        }
+        // }
     }
 
     mouvementGame(server : Server, game : Game, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
@@ -252,17 +267,19 @@ export class GameService {
         // get first bullet (only 1 bullet when relaunch)
         const bullet : Shape = game.shapes.find(shape => shape instanceof Bullet)
 
-        if (bullet === undefined || !(bullet instanceof Bullet))
+        if (game.pause == true || bullet === undefined || !(bullet instanceof Bullet))
             return ;
 
         // Player 1
         if (client.data.socket === game.p1.socket && game.p1.relaunchBulletBool === true) {
             game.p1.relaunchBulletBool = false;
+            clearTimeout(game.launchBulletTimer);
             this.startMoving(game.server, game, bullet);
         }
         // Player 2
         if (client.data.socket === game.p2.socket && game.p2.relaunchBulletBool === true) {
             game.p2.relaunchBulletBool = false;
+            clearTimeout(game.launchBulletTimer);
             this.startMoving(game.server, game, bullet);
         }
     }
@@ -272,42 +289,60 @@ export class GameService {
     \* *************** */
 
     private startMoving(server: Server, game : Game, bullet: Bullet) {
-      
+        console.log("Start moving : begin");
         let delay = 1000 / bullet.f;
         //console.log("delay = ", delay, " bullet.r * Math.cos(bullet.a) = " ,bullet.r * Math.cos(bullet.a));
       
+        // TODO
+        // add in bullet Boolean isMoving, set false
+        // when call in start moving pass true ?
+
         // Start the interval to increment to all bullet.f every second
-        bullet.frequencyInterval = setInterval(() => {
-            // bullet.f += bullet.speed;
-            // console.log("bullet frequency: ", bullet.f);
-        }, 1000);
+        if (game.frequencyInterval === undefined) {
+                game.frequencyInterval = setInterval(() => {
+                    // console.log("Start moving : bullet freq");
+                    game.shapes.forEach((shape) => {
+                        if (shape instanceof Bullet) {
+                            shape.f += shape.speed;
+                            console.log("bullet frequency: ", bullet.f);
+                        }})
+                }, 1000);
+        }
 
 
 
         const intervalFunction = () => {
-            // Check if bullet got collisionwith element if collision bullet.a will change
-            this.checkCollision(game, bullet);
-
-            // 0 : No score | 1 : P1 score | 2 : P2 score | -1 : Limit score
-            const scorer = this.checkScoring(game, bullet)
-            if (scorer !== 0) {
-                this.deleteBullet(game, bullet);
-                this.startNewBullet(game, scorer);
-                return;
-            }
-            // Change bullet.pos with new value
-            bullet.pos.x += bullet.v * Math.cos(bullet.a);
-            bullet.pos.y += bullet.v * Math.sin(bullet.a);
-                
-            // Recalculate the delay based on the new frequency
-            delay = 1000 / bullet.f;
-        
-            // Clear the previous interval and create a new one with the updated delay
-            clearInterval(bullet.bulletInterval);
-            bullet.bulletInterval = setInterval(intervalFunction, delay);
+            console.log("Start moving : intervalFunction");
+            game.shapes.forEach((shape) => {
+                if (shape instanceof Bullet) {
+                    // Check if bullet got collisionwith element if collision bullet.a will change
+                    this.checkCollision(game, shape);
+                    
+                    // 0 : No score | 1 : P1 score | 2 : P2 score | -1 : Limit score
+                    const scorer = this.checkScoring(game, shape)
+                    if (scorer !== 0) {
+                        this.deleteBullet(game, shape);
+                        if (scorer > 0)
+                            this.startNewBullet(game, scorer);
+                        return;
+                    }
+                    // Change bullet.pos with new value
+                    shape.pos.x += shape.v * Math.cos(shape.a);
+                    shape.pos.y += shape.v * Math.sin(shape.a);
+                    
+                    // Recalculate the delay based on the new frequency
+                    delay = 1000 / shape.f;
+                    
+                    // Clear the previous interval and create a new one with the updated delay
+                    clearInterval(shape.bulletInterval);
+                    shape.bulletInterval = setInterval(intervalFunction, delay);
+                }})
         };
-        // Set the first interval
-        // bullet.bulletInterval = setInterval(intervalFunction, delay);
+        // Set the interval to move bullet if not define
+        const shape : Shape = game.shapes.find(shape => shape instanceof Bullet && shape.pos === bullet.pos);
+            
+        if (shape instanceof Bullet && shape.bulletInterval === undefined)
+            shape.bulletInterval = setInterval(intervalFunction, delay);
     }
 
     private startNewBullet(game : Game, side : number) : void {
@@ -351,7 +386,7 @@ export class GameService {
         // timer to clic
         // sinon fin timer lance
 
-        // const launchBulletTimer = setTimeout(() => {
+        // game.launchBulletTimer = setTimeout(() => {
         //         // Player got X ms to launch bullet
         //         if (side === 1)
         //             game.p1.relaunchBulletBool = false;
@@ -360,19 +395,30 @@ export class GameService {
         //         this.startMoving(game.server, game, bullet_01);
         //     }, 5000);
 
-    // clearInterval(launchBulletTimer);
     this.startMoving(game.server, game, bullet_01);
+    
+    // clearInterval(launchBulletTimer);
+    //this.startMoving(game.server, game, bullet_01);
 
     }
 
     private deleteBullet(game : Game, bullet : Bullet) : void {
+        // console.log("delete bullet");
         const index = game.shapes.findIndex(shape => shape instanceof Bullet && 
-                                                shape.bulletInterval === bullet.bulletInterval)
+                                            bullet.pos === bullet.pos)
         if (index === -1)
             return;
+        const shape = game.shapes[index];
+        if (!(shape instanceof Bullet))
+            return;
+        clearInterval(shape.bulletInterval);
+        shape.bulletInterval = undefined;
         game.shapes.splice(index, 1);
-        clearInterval(bullet.frequencyInterval);
-        clearInterval(bullet.bulletInterval);
+        // if 0 bullet stop bulletinterval
+        if (game.shapes.findIndex(shape => shape instanceof Bullet) === -1) {
+            clearInterval(game.frequencyInterval);
+            game.frequencyInterval = undefined;
+        }
     }
       
     private checkScoring(game : Game, bullet : Bullet) : number {
@@ -381,15 +427,15 @@ export class GameService {
 
         if (bullet.pos.x + bullet.r > game.field.width) {
             game.p2.score++;
+            game.server.to(game.roomId).emit(EventGame.gameScore, game.p2);
             if (game.limitScoreBool === true && game.p2.score >= game.limitScore)
                 return (this.victoryByScore(game));
-            game.server.to(game.roomId).emit(EventGame.gameScore, game.p2);
             return 2;
         } else if (bullet.pos.x - bullet.r < 0) {
             game.p1.score++;
+            game.server.to(game.roomId).emit(EventGame.gameScore, game.p1);
             if (game.limitScoreBool === true && game.p1.score >= game.limitScore)
                 return (this.victoryByScore(game));
-            game.server.to(game.roomId).emit(EventGame.gameScore, game.p1);
             return 1;
         } else {
             return 0;
@@ -400,7 +446,7 @@ export class GameService {
         // stop game
         this.stopGame(game.server, game);
 
-        console.log("++++++ VICTOIRE ABANDON");
+        console.log("++++++ VICTOIRE SCORE");
 
         // get who win
         let scoreP1;
@@ -494,7 +540,7 @@ export class GameService {
             if (shape instanceof Circle || shape instanceof BlackHole) {
                 // check if collision with circle
                 if (this.checkInRangeCircle(bullet, shape)) {
-                    console.log("Collision with Cercle !");
+                    // console.log("Collision with Cercle !");
                     // Get new angle bullet
                     if (shape instanceof BlackHole)
                         this.collisionBlackHole(bullet, shape);
@@ -505,7 +551,7 @@ export class GameService {
             //onsole.log("Square in range !");
                 // check if collision with Square
                 if (this.checkInRangeSquare(bullet, shape)) {
-                    console.log("--Collision with Square !:", i);
+                    // console.log("--Collision with Square !:", i);
                     // Cas racket
                     if (i < 2) // i = 0 J1 | i = 1 j2
                         this.collisionRacket(bullet, shape);
@@ -635,17 +681,21 @@ export class GameService {
         // TODO
         // Upgrade collision with Square
 
-        console.log(bullet.pos.x, bullet.pos.y);
-        console.log(x1, x2);
-        console.log(y1, y2);
+        // console.log(bullet.pos.x, bullet.pos.y);
+        // console.log(x1, x2);
+        // console.log(y1, y2);
 
-        console.log("dx", dx);
-        console.log("dy", dy);
+        // console.log("dx", dx);
+        // console.log("dy", dy);
 
         //console.log(dx, "<", dy, ":",dx < dy);
 
         //dx = distance wall vertical
         //dy = distance wall horizontaux
+
+        // TODO
+        // check if dx && dy < bullet.r ou petit poru detecter coin
+        // appliquer collision cercle
 
 
         console.log("a1:", bullet.a);

@@ -1,5 +1,8 @@
 import { Server } from 'socket.io';
 
+// TODO
+// check si front peut aussi instance of SHAPE
+
 export interface Shape {
     type: string;
     pos: Coordonnee;
@@ -49,7 +52,7 @@ export class Bullet implements Shape {
     // color or img
 
     bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la bullet-> a chaque passqge bullet se deplace
-    frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
+    // frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
     speed : number;
 
     constructor(x:number, y:number, r:number, v:number, f:number, a:number) {
@@ -142,6 +145,7 @@ export class Game {
 
     // gameInterval
     gameInterval?: NodeJS.Timeout;
+    launchBulletTimer?: NodeJS.Timeout;
 
     // Game is paused
     pause : Boolean = false;
@@ -166,7 +170,7 @@ export class Game {
 
     // les mettre propres aux bullets ?
     // bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie -> a chaque passqge bullet se deplace
-    // frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
+    frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
     // speed : number;
 
     // number of obstacle + racket
@@ -178,11 +182,11 @@ export class Game {
 
     // Limit pause time:
     limitPauseTimerBool: Boolean = true; // true == limit
-    limitPauseTimer: number = 10000; // droit a x ms de pause
+    limitPauseTimer: number = 10 * 1000; // droit a x ms de pause
 
     // Limit game timer:
     limitTimerBool: Boolean = true ; // true == limit
-     limitTimer: number = 4 * 60 * 1000;// 4 min
+    limitTimer: number = 4 * 60 * 1000;// 4 min
     //limitTimer: number = 5000;// 5 sec
 
     // Game finish or not
@@ -198,6 +202,6 @@ export class Game {
         this.p2.side = 2;
 
         this.field = new Field(400, 800);
-        //this.speed = 5;
+        // this.speed = 5;
     }
 }

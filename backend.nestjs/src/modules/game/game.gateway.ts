@@ -43,7 +43,7 @@ export class GameGateway {
   /* **** *\
   |* game *|
   \* **** */
-
+//
   @SubscribeMessage(EventGame.gameStart)
   // generate bullet and game start
   StartingMessage(client: any, payload: any) : void {
@@ -94,6 +94,7 @@ export class GameGateway {
 
   @SubscribeMessage(EventGame.playerClickCanvas)
   ClickCanvasMessage(client: any) : void {
+    console.log("click");
     // get game by gameid from client
     const gameId = Number(client.data.ingame);
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
