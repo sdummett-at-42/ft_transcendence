@@ -1,0 +1,35 @@
+.LoginSelector-card:hover > .LoginSelector-card-content > .FortyTwoLogin-center > .LoginSelector-card-subtitle > .LoginSelector-card-subtitle-word {  
+    opacity: 1;
+    transform: translateY(0%);
+    transition: opacity 0ms, transform 200ms cubic-bezier(.90, .06, .15, .90);
+}
+
+.FortyTwoLogin-center {
+    padding-top: 15%;
+}
+
+.FortyTwoLogin-button {
+    cursor:pointer;
+    border-radius: 0.5vmin;
+    margin-top: 2vmin;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border: 1px solid #00b9bb;
+    color: white;
+    text-decoration: none;
+    background-color: transparent;
+}
+
+.FortyTwoLogin-button:hover {
+    transition: background-color 300ms;
+    background-color: #00b9bb;
+}
+
+.FortyTwoLogin-button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    gap: 1.5rem;
+}

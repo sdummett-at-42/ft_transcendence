@@ -28,10 +28,10 @@ export class ImagesController {
 
 	@Patch(':id')
 	@HttpCode(200)
-	@UseGuards(BodySizeGuard)
+	//@UseGuards(BodySizeGuard)
 	@UseInterceptors(FileInterceptor('file'))
 	@ApiOkResponse({ description: 'Updates the image.' })
-	@ApiPayloadTooLargeResponse({ description: 'The file is too large. The maximum file size is 2KB' })
+	//@ApiPayloadTooLargeResponse({ description: 'The file is too large. The maximum file size is 2KB' })
 	@ApiBadRequestResponse({ description: 'Invalid file type. It must be a PNG or JPEG file.' })
 	@ApiUnauthorizedResponse({ description: 'You are not authorized to update this image' })
 	async updateImage(@UploadedFile() file: any, @Param('id', ParseIntPipe) id: number, @Req() request) {

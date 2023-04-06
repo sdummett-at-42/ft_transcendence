@@ -3,6 +3,7 @@ import { PrismaService } from 'nestjs-prisma';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { randomBytes } from 'crypto';
 import { ImagesService } from '../images/images.service';
+import { LoginMethod } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -11,15 +12,46 @@ export class UsersService {
 		private readonly images: ImagesService,
 	) { }
 
-	async create(email: string, username: string, image) {
+	async create(loginMethod: LoginMethod, email: string, username: string, image: { base64: string, mimeType: string }) {
 		const user = await this.prisma.user.create({
 			data: {
 				email,
 				name: username,
+				loginMethod,
 			},
 		});
 
 		// const defaultImage = await this.images.findOneImage(0);
+		await this.images.create(
+			image.base64,
+			image.mimeType,
+			user.name,
+			user.id,
+		);
+		return this.prisma.user.update({
+			where: { id: user.id },
+			data: {
+				profilePicture: `http://localhost:3001/images/${user.id}`,
+			},
+			select: {
+				id: true,
+				name: true,
+				profilePicture: true,
+				elo: true,
+			},
+		});
+	}
+
+	async createWithPasswd(loginMethod: LoginMethod, email: string, username: string, password: string, image: { base64: string, mimeType: string }) {
+		const user = await this.prisma.user.create({
+			data: {
+				email,
+				name: username,
+				password,
+				loginMethod,
+			},
+		});
+
 		await this.images.create(
 			image.base64,
 			image.mimeType,
@@ -87,6 +119,10 @@ export class UsersService {
 
 	findOneUserByEmail(email: string) {
 		return this.prisma.user.findUnique({ where: { email } });
+	}
+
+	findByName(name: string) {
+		return this.prisma.user.findUnique({ where: { name } });
 	}
 
 	updateUser(id: number, updateUserDto: UpdateUserDto) {

@@ -1,0 +1,60 @@
+.Navbar-logo {
+    width: 5vmin;
+    height: 5vmin;
+}
+
+.Navbar-nav {
+    display: flex;
+    top: 0;
+    font-size: large;
+}
+
+.Navbar-nav > .Navbar-nav-section {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+#Navbar-left {
+    justify-content: space-around;
+    flex-basis: calc(100% * (1 / 8));
+    text-decoration: none;
+    color: whitesmoke;
+}
+
+#Navbar-mid {
+    border-right: 1px solid rgb(255, 255, 255, 0.1);
+    flex-basis: calc(100% * (5 / 8));
+    justify-content: space-around;
+    text-decoration: none;
+    color: whitesmoke;
+}
+
+#Navbar-right {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+    color: whitesmoke;
+    text-decoration: none;
+}
+
+#Navbar-profil {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#Navbar-profil-picture {
+    height: 5vmin;
+    width: 5vmin;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+#Navbar-option {
+    margin-left: 3rem;
+
+}
