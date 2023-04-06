@@ -41,7 +41,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage(Event.createRoom)
 	async onCreateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
-		console.log("times");
+		// console.log("times");
 		if (dto === undefined) {
 			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;

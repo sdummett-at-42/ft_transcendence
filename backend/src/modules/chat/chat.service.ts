@@ -12,7 +12,7 @@ const EXPIRATION_TIME = 2 * 24 * 60 * 60;
 export class ChatService {
 
 	// NOTE: When server sends message to the room, we should replace ${userId} with the pseudo of the user instead.
-	constructor(private readonly redis: RedisService, private readonly prisma: PrismaService) { }
+	constructor(private readonly redis: RedisService, private readonly prisma: PrismaService) {	 }
 
 	async afterInit() {
 		// Delete all the rooms afterInit ?
@@ -1395,8 +1395,7 @@ export class ChatService {
 
 	async getRoomsList(socket, dto, server) {
 		const roomsList = [];
-		const roomNames = await this.redis.getRoomNames();
-
+		const roomNames = await this.redis.getRoomNames();	
 		await Promise.all(roomNames.map(async (roomName) => {
 			if (await this.redis.getRoomVisibility(roomName) == "public") {
 				let isProtected = false;
@@ -1409,7 +1408,6 @@ export class ChatService {
 				});
 			}
 		}));
-
 		console.debug(`Sending public rooms to user ${socket.data.userId}`);
 		socket.emit(Event.roomsListReceived, {
 			roomsList,

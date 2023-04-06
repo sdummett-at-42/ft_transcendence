@@ -40,13 +40,17 @@ export default function ChatroomList(props: ChatroomListProps) {
     const handleChatroomClick = (chatroomId)=> {
       props.onListClick(chatroomId);
     }
-    const showdata = (event) => {
-      if (props.socket) {
-        props.socket.emit("getRoomsList");
-      }
-    };
+    // const showdata = (event) => {
+    //   if (props.socket) {
+    //     props.socket.emit("getRoomsList");
+    //   }
+    // };
 
     // Init
+    useEffect(() => {
+      props.socket.emit("getRoomsList");
+      console.log("bonjour!");
+    }, []);
     useEffect(() => {
       if (props.socket) {
         console.log("The socket exists")
@@ -77,7 +81,6 @@ export default function ChatroomList(props: ChatroomListProps) {
   return (
     <div className="people-list" id="people-list">
             <div className="search">
-            <button onClick={showdata}>Data</button>
             <button  onClick={() => {
           setShow(true);}} >Create a New ChatRoom</button>
           <Modal         isVisible={show}

@@ -24,19 +24,22 @@ export default function ChatLogin() {
   }
 
   useEffect(() => {
+    console.log("connect")
     const socket = connectSocket();
     setSocket(socket);
-    socket.emit("getRoomsList");
     return () => {
       disconnectSocket();
     };
   }, []);
-
+    if (!socket) {
+      return <div>Connecting to server...</div>;
+    }
     return (
       <div >
         <div className="containerhere clearfix">
           <div className="row">
           <ChatroomList socket={socket}  onListClick={handleListClick} />
+          {selectedList ? <RoomDetail socket={socket} selectedList={selectedList} /> : <Message socket={socket} selectedList={selectedList} />}
           {/* <Message socket={socket} selectedList={selectedList} />
           <RoomDetail socket={socket} selectedList={selectedList}/> */}
       </div>
