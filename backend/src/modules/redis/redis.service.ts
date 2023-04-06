@@ -365,6 +365,8 @@ export class RedisService {
 	async getDmList(userId:number): Promise<number[]> {
 		return new Promise((resolve, reject) => {
 			this.client.get(`user:${userId}:dms`, (err, reply) => {
+				if (!reply)
+					resolve([]);
 				resolve(JSON.parse(reply));
 			});
 		})
