@@ -1,3 +1,4 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React from "react";
 import { useState , useEffect } from 'react';
 import { Socket } from "socket.io-client";
@@ -36,8 +37,8 @@ export default function ChatLogin() {
         <div className="containerhere clearfix">
           <div className="row">
           <ChatroomList socket={socket}  onListClick={handleListClick} />
-          <Message socket={socket} selectedList={selectedList} />
-          <RoomDetail socket={socket} selectedList={selectedList}/>
+          {/* <Message socket={socket} selectedList={selectedList} />
+          <RoomDetail socket={socket} selectedList={selectedList}/> */}
       </div>
       </div>
     </div>

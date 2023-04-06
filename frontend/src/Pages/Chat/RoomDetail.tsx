@@ -26,7 +26,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   };
   
   // Usage:
-  // For inputInvite
+  // // For inputInvite
   // handleInputChange(setInputInvite, inputValue);
   
   // // For inputBan
@@ -60,7 +60,7 @@ export default function RoomDetail(props: RoomDetailProps) {
             selectedList = {props.selectedList }/>
             <div className='chat-info-subtitle'>Public</div>
             <div className='chat-info-subtitle'>Invite a friend</div>
-            <input placeholder="Name" ></input>
+            <input placeholder="Name" value={inputInvite} onChange={(event) => handleInputChange(setInputInvite, event.target.value)}></input>
             <i className="fa fa-plus" aria-hidden="true"></i>
            <FontAwesomeIcon icon={faPlus} />
            <div className='chat-info-subtitle'>Ban a Member</div>

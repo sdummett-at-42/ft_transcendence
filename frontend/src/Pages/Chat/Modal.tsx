@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { useState } from 'react';
 import "./chat.scss"
 import { Socket } from "socket.io-client";
@@ -32,11 +32,13 @@ export default function Modal(props: ModalProps) {
       props.socket.emit("createRoom", formData);
     };
 
+    const handleCloseAfterRoomCreated = useCallback((payload) => {
+      props.onClose()
+    }, []);
+
     useEffect(() => {
       if (props.socket) {
-        props.socket.on("roomCreated",
-          props.onClose()
-        );
+        props.socket.on("roomCreated", handleCloseAfterRoomCreated);
         props.socket.on("roomNotCreated", () => {
           console.log("roomNotCreated");
           alert("The room name already exists.");
@@ -44,7 +46,7 @@ export default function Modal(props: ModalProps) {
       }
       return () => {
         if (props.socket) {
-          props.socket.off('roomCreated');
+          props.socket.off('roomCreated', handleCloseAfterRoomCreated);
           props.socket.off('roomNotCreated');
         }
       };
@@ -63,22 +65,22 @@ export default function Modal(props: ModalProps) {
             <div className="modal-content">
             <form onSubmit={handleSubmit}>
             <div className="form-group">
-                <label for="inputChatRoomName">Chat Room Name</label>
+                <label htmlFor="inputChatRoomName">Chat Room Name</label>
                 <input type="text" className="form-control" name="roomName" placeholder="Name" required value={formData.name} onChange={handleInputChange} />
             </div>
             <div className="form-group col-md-4">
-                <label for="inputAccess">Accessibility</label>
+                <label htmlFor="inputAccess">Accessibility</label>
                 <select name="visibility" className="form-control" required  value={formData.visibility} onChange={handleInputChange}>
                 <option value="public" >Public</option>
                 <option value="private">Private</option>
                 </select>
             </div>
             <div className="form-group">
-                <label for="inputPassword">Password</label>
+                <label htmlFor="inputPassword">Password</label>
                 <input type="text" className="form-control" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} />
             </div>
             {/* <div class="form-group">
-                <label for="inputInvitefriend">Invite your friend</label>
+                <label htmlFor="inputInvitefriend">Invite your friend</label>
                 <input type="text" className="form-control" id="inputInviteFriend" placeholder="Name" />
             </div> */}
             <button type="submit" className="btn btn-primary">Submit</button>

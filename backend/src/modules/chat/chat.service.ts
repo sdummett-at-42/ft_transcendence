@@ -128,6 +128,7 @@ export class ChatService {
 		await this.redis.setRoomPassword(dto.roomName, await argon2.hash(dto.password), JSON.stringify(isProtected));
 		await this.redis.setUserRoom(socket.data.userId, dto.roomName);
 
+		console.log("Je passe la dedans");
 		socket.emit(Event.roomCreated, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
@@ -138,6 +139,7 @@ export class ChatService {
 		sockets.forEach((value, key) => {
 			if (value.data.userId === socket.data.userId) {
 				value.join(dto.roomName)
+				console.log("Je passe ici");
 				value.emit(Event.roomJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),

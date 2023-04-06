@@ -81,7 +81,6 @@ export default function Message(props:MessageProps) {
     );
   });
   
-
   useEffect(() => {
     if (props.socket) {
       props.socket.on("roomMsgHistReceived", (payload) => {console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
