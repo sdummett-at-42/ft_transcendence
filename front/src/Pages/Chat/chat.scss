@@ -9,12 +9,12 @@ $gray: #92959E;
 //   box-sizing: border-box;
 // }
 
-body {
-  background: #0b0b0b;
-  font: 14px/20px "Lato", Arial, sans-serif;
-  padding: 40px 0;
-  color: white;
-}
+// body {
+//   background: #0b0b0b;
+//   font: 14px/20px "Lato", Arial, sans-serif;
+//   padding: 40px 0;
+//   color: white;
+// }
 
 .containerhere {
   // overflow: auto;
@@ -22,10 +22,15 @@ body {
   justify-content: space-evenly;
   margin: 0 auto;
   height: 90vh;
-  // width: 120vh;
+  //  width: 120vh;
   background: #444753;
   border-radius: 5px;
+  .row{
+    width: 100%;
+  }
 }
+
+
 
 .people-list {
   // width:260px;

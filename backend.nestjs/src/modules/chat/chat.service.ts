@@ -103,7 +103,7 @@ export class ChatService {
 		}
 		return memberList;
 	}
-
+	//test
 	async createRoom(socket, dto: CreateRoomDto, server) {
 		const room = await this.redis.getRoom(dto.roomName);
 		if (room.length > 0) {

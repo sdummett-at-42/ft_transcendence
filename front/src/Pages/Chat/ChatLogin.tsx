@@ -14,6 +14,7 @@ export default function ChatLogin() {
   const [selectedList, setSelectedList] = useState(null);
 
   const handleListClick = (list) => {
+    console.log("List:",list);
     setSelectedList(list);
     const payload = {
       roomName: selectedList,
@@ -36,7 +37,7 @@ export default function ChatLogin() {
           <div className="row">
           <ChatroomList socket={socket}  onListClick={handleListClick} />
           <Message socket={socket} selectedList={selectedList} />
-          <RoomDetail socket={socket}/>
+          <RoomDetail socket={socket} selectedList={selectedList}/>
       </div>
       </div>
     </div>

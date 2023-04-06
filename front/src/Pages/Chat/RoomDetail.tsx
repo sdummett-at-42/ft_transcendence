@@ -9,13 +9,35 @@ import { io, Socket } from "socket.io-client";
 
 interface RoomDetailProps {
   socket: Socket;
+  selectedList : string;
 }
 
-const RoomDetail: FC<RoomDetailProps> = () => {
+export default function RoomDetail(props: RoomDetailProps) {
   const [show, setShow] = useState(false);
+  const [inputInvite, setInputInvite] = useState("");
+  const [inputBan, setInputBan] = useState("");
+  const [inputMute, setInputMute] = useState("");
+  const [inputKick, setInputKick] = useState("");
   const close = () => {
     setShow(false);
   };
+  const handleInputChange = (setState, value) => {
+    setState(value);
+  };
+  
+  // Usage:
+  // For inputInvite
+  // handleInputChange(setInputInvite, inputValue);
+  
+  // // For inputBan
+  // handleInputChange(setInputBan, inputValue);
+  
+  // // For inputMute
+  // handleInputChange(setInputMute, inputValue);
+  
+  // // For inputKick
+  // handleInputChange(setInputKick, inputValue);
+
   // const handleSettingChange = (event) => {
 
   //   const { name, value } = event.target;
@@ -29,20 +51,21 @@ const RoomDetail: FC<RoomDetailProps> = () => {
       <div className="chat-info-header clearfix">
       <div className='chat-info-title'>Room Info</div>
         <div className='chat-info-subtitle'>Accessibility</div>
-        {/* <button  onClick={() => {
+        <button  onClick={() => {
           setShow(true);}} >Change</button>
           <Setting         isVisible={show}
-            socket={socket}
+            socket={props.socket}
             footer={<button>Cancel</button>}
-            onClose={() => setShow(false)} /> */}
+            onClose={() => setShow(false)} 
+            selectedList = {props.selectedList }/>
             <div className='chat-info-subtitle'>Public</div>
             <div className='chat-info-subtitle'>Invite a friend</div>
-            <input placeholder="Name"></input>
+            <input placeholder="Name" ></input>
             <i className="fa fa-plus" aria-hidden="true"></i>
-           <FontAwesomeIcon icon={faPlus} size="2x"/>
+           <FontAwesomeIcon icon={faPlus} />
            <div className='chat-info-subtitle'>Ban a Member</div>
            <input placeholder="Name"></input>
-           <FontAwesomeIcon icon={faBan} size="2x"/>
+           <FontAwesomeIcon icon={faBan} />
            <div className='chat-info-subtitle'>Mute a Member</div>
            <input placeholder="Name"></input>
            <FontAwesomeIcon icon={faVolumeXmark} />
@@ -113,4 +136,3 @@ const RoomDetail: FC<RoomDetailProps> = () => {
  );
 }
 
-export default RoomDetail;

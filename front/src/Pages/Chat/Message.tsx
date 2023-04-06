@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 interface MessageProps {
   socket: Socket;
-  selectedList : (list: string) => void;
+  selectedList : string;
 
 }
 export default function Message(props:MessageProps) {

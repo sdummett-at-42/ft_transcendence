@@ -54,9 +54,9 @@ export default function ChatroomList(props: ChatroomListProps) {
           });
           props.socket.off("roomLeft", handleRoomDeleted);
           props.socket.off("roomJoined", handleRoomCreated);
-          props.socket.off("roomCreated", handleRoomCreated);
+          // props.socket.off("roomCreated", handleRoomCreated);
       };}
-    }, [props.socket]);
+    }, [props.socket, handleRoomDeleted]);
 
 
   return (

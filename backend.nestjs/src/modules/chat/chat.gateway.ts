@@ -13,6 +13,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	constructor(private readonly chat: ChatService) { }
 
+	async onModuleInit() {
+		this.server.disconnectSockets();
+	}
+
 	async afterInit(server: Server) {
 		await this.chat.afterInit();
 	}
@@ -37,6 +41,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage(Event.createRoom)
 	async onCreateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
+		console.log("times");
 		if (dto === undefined) {
 			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
