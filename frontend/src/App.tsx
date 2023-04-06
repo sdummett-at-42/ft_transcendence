@@ -9,11 +9,8 @@ import Profile from "./Pages/Profile/Profile";
 import NotFound from "./Pages/Errors/NotFound";
 import Layout from "./Pages/Navbar/Layout";
 import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
-<<<<<<< HEAD:front/src/App.tsx
 // import TranscendenceLogin from "./Pages/Login/Transcendence/TranscendenceLogin";
 import ChatLogin from "./Pages/Chat/ChatLogin";
-=======
->>>>>>> origin/main:frontend/src/App.tsx
 
 function App() {
 
