@@ -569,7 +569,7 @@ export class GameService {
                     // console.log("--Collision with Square !:", i);
                     // Cas racket
                     if (i < 2) // i = 0 J1 | i = 1 j2
-                        this.collisionRacket(bullet, shape);
+                        this.collisionRacket(game, bullet, shape);
                     else // Square on map
                         this.collisionSquare(bullet, shape);
                 }
@@ -648,63 +648,41 @@ export class GameService {
         return false;
     }
 
-    private collisionRacket(bullet : Bullet, racket: Square) : void {
-        // const centerX = racket.pos.x + racket.width / 2;
-        // const centerY = racket.pos.y + racket.length / 2;
-        // const deltaX = bullet.pos.x - centerX;
-        // const deltaY = bullet.pos.y - centerY;
-        // let angle = Math.atan2(deltaY, deltaX);
-        // console.log(angle);
+    private collisionRacket(game : Game, bullet : Bullet, racket: Square) : void {
+    // if angle to acute
+    const pi3 = Math.PI / 3;
+    const pi2 = Math.PI / 2
+    const pi3o = 2 * Math.PI /3
 
-        // if angle to acute
-        const pi3 = Math.PI / 3;
-        const pi2 = Math.PI / 2
-
-        const pi3o = 2 * Math.PI /3
-        // if (angle >= pi3 && angle <= pi3o) { // top 
-        //     if (angle < pi2) { // left
-        //         angle = pi3
-        //         bullet.pos.x += bullet.r;
-        //     }
-        //     else {// right
-        //         angle = pi3o
-        //         bullet.pos.x -= bullet.r;
-        //     }
-        // }
-        // else if (angle < -pi3 && angle >= -pi3o) { // bot
-        // if (angle > -pi2) {// left
-        //     angle = -pi3
-        //         bullet.pos.x += bullet.r;
-        //     }
-        //     else { //right
-        //         angle = -pi3o
-        //         bullet.pos.x -= bullet.r;
-        //     }
-        // }
-        // // change bullet.a
-        // bullet.a = angle;
-
-        //----------------------------
-        // TODO decoupe la racket en 7 morceau ?
-        // renvoi entre PI / 3 et - (PI / 3)
-
-// faire en %
-// ymin = 0%
-// ymax = 100%
-// yin + len / 2 = 50 %
+    // Where is bullet on our racket
     const pourcentbullet = ((bullet.pos.y - racket.pos.y) / racket.length) * 100;
-    // avec pourcentbullet savoir ou se trouve le pourcentage
-    // de notre fourchette d'angle 
+
+    // change direction from where is bullet on racket 
     const angleFinal = (pourcentbullet / 100) * pi3o - pi3;
-    bullet.a = angleFinal;
+    if (bullet.a > Math.PI)
+        bullet.a -= Math.PI * 2;
+    else if (bullet.a < -Math.PI)
+        bullet.a += Math.PI * 2;
 
+    // console.log(`(${pourcentbullet} / 100) * ${pi3o} - ${pi3} = ${angleFinal}`);
 
-// ypos = 
+    // console.log("angle :", bullet.a);
+    // console.log("angle%:", bullet.a % Math.PI);
+    // console.log("pi2 :", pi2);
+    // console.log("-pi2:", -pi2);
 
-        // decouper racket en X morceau
-        // faire (PI/3) 2 en X morceau
-        // voir dans quelle session la balle est
-        // bullet.a = angle session - PI/3
+    // check if bullet is part left or right map
+    if (bullet.pos.x > game.field.width / 2) { // bullet go right
+        bullet.a = angleFinal;
+        if (angleFinal < 0)
+            bullet.a = (pi2 - angleFinal) + pi2;
+        else
+            bullet.a = (-pi2 - angleFinal) - pi2;
+    }
+    else // bullet go left
+        bullet.a = angleFinal;
+    console.log("angleF:", bullet.a);
+    console.log();
     }
 
     private collisionSquare(bullet : Bullet, square : Square) : void {
@@ -800,7 +778,7 @@ export class GameService {
         
         let temp = game.shapes[index] as Bullet;
         temp.pos.y = racket.pos.y + racket.length / 2;
-        this.collisionRacket(temp, racket);
+        this.collisionRacket(game, temp, racket);
 
     }
 }
