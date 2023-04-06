@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Profile.css";
 import loadingGif from "../../assets/Loading.mp4";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
 
@@ -93,26 +93,66 @@ export default function Profile() {
         })
     }
 
+    function encodeToPNG(base64Image: string): string {
+        const canvas = document.createElement('canvas');
+        const img = new Image();
+        img.src = `data:image/jpeg;base64,${base64Image}`;
+      
+        return new Promise((resolve, reject) => {
+          img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('Failed to get 2D context of canvas'));
+              return;
+            }
+            ctx.drawImage(img, 0, 0);
+            try {
+              const pngDataUrl = canvas.toDataURL('image/png');
+              resolve(pngDataUrl);
+            } catch (err) {
+              reject(err);
+            }
+          };
+      
+          img.onerror = (err) => {
+            reject(err);
+          };
+        });
+      }
+
+    const [switchOn, setSwitchOn] = useState(true);
+
     function handle2fa() {
-        fetch('http://localhost:3001/auth/2fa/generate', {
-            method: 'GET',
-            headers: { "Content-Type": "application/json" },
-            credentials: 'include',
-        })
-        .then(res => {
-            console.log(res);
-            if (res.status == 401) {
-                naviguate("/unauthorized");
-                return;
-            }
-            else if (res.status == 400) {
-                return;
-            }
-            else if (res.status == 200) {
-                console.log("2fa enabled");
-            }
-            return res.json();
-        })
+        setSwitchOn(!switchOn);
+        console.log(switchOn);
+        if (switchOn) {
+            fetch('http://localhost:3001/auth/2fa/generate', {
+                method: 'GET',
+                headers: { "Content-Type": "application/json" },
+                credentials: 'include',
+            })
+            .then(res => {
+                console.log(res);
+                if (res.status == 401) {
+                    naviguate("/unauthorized");
+                    return;
+                }
+                else if (res.status == 400) {
+                    return;
+                }
+                else if (res.status == 200) {
+                    const DoubleFA = res.json();
+                    console.log(DoubleFA);
+                    // encodeToPNG(DoubleFA);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log(data);
+            })
+        }
     }
 
     return (
@@ -163,14 +203,14 @@ export default function Profile() {
 
                     <div className="2fa">
                         Activer la double authentification
-                        <label class="Profil-switch">
+                        <label className="Profil-switch">
                         <input className="Profil-input"
                             type="checkbox"
                             onClick={e => {
                                 handle2fa();
                             }}
                             />
-                        <span class="Profil-slider Profil-round"></span>
+                        <span className="Profil-slider Profil-round"></span>
                         </label>
                         
                     </div>

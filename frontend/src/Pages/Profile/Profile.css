@@ -29,6 +29,8 @@
 
 .Profil-switch {
     position: relative;
+    margin-left: 1vmin;
+    margin-top: 2vmin;
     display: inline-block;
     width: 60px;
     height: 34px;
