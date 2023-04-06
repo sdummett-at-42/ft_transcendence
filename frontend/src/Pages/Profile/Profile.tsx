@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import "./Profile.css";
 import loadingGif from "../../assets/Loading.mp4";
 import { useNavigate } from "react-router-dom";
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function Profile() {
 
@@ -93,48 +94,18 @@ export default function Profile() {
         })
     }
 
-    function encodeToPNG(base64Image: string): string {
-        const canvas = document.createElement('canvas');
-        const img = new Image();
-        img.src = `data:image/jpeg;base64,${base64Image}`;
-      
-        return new Promise((resolve, reject) => {
-          img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              reject(new Error('Failed to get 2D context of canvas'));
-              return;
-            }
-            ctx.drawImage(img, 0, 0);
-            try {
-              const pngDataUrl = canvas.toDataURL('image/png');
-              resolve(pngDataUrl);
-            } catch (err) {
-              reject(err);
-            }
-          };
-      
-          img.onerror = (err) => {
-            reject(err);
-          };
-        });
-      }
-
-    const [switchOn, setSwitchOn] = useState(true);
+    const [switchOn, setSwitchOn] = useState(false);
+    const [DoubleFaImage, setDoubleFaImage] = useState("");
 
     function handle2fa() {
         setSwitchOn(!switchOn);
-        console.log(switchOn);
-        if (switchOn) {
+        if (!switchOn) {
             fetch('http://localhost:3001/auth/2fa/generate', {
                 method: 'GET',
                 headers: { "Content-Type": "application/json" },
                 credentials: 'include',
             })
             .then(res => {
-                console.log(res);
                 if (res.status == 401) {
                     naviguate("/unauthorized");
                     return;
@@ -143,15 +114,18 @@ export default function Profile() {
                     return;
                 }
                 else if (res.status == 200) {
-                    const DoubleFA = res.json();
-                    console.log(DoubleFA);
-                    // encodeToPNG(DoubleFA);
+                    return res.json();
                 }
-                return res.json();
             })
             .then(data => {
-                console.log(data);
+                let base64 = data.base64Qrcode;
+                base64 = base64.split(',').pop();
+                console.log(base64);
+                setDoubleFaImage(base64);
             })
+        }
+        else {
+            // setDoubleFaImage(null);
         }
     }
 
@@ -159,7 +133,7 @@ export default function Profile() {
         <div className="Profile-body">
             <div className="Profile-card">
 
-                <h3 className="LoginSelector-card-title">Modifiez votre profile:</h3>
+                <h3 className="LoginSelector-card-title">Modifiez votre profil:</h3>
 
                 <div id="Profil-image-wrapper">
 
@@ -214,6 +188,7 @@ export default function Profile() {
                         </label>
                         
                     </div>
+                    {switchOn && <div><QRCodeSVG value={DoubleFaImage} /></div>}
 
                 </div>
             </div>

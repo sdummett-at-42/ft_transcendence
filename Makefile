@@ -158,7 +158,7 @@ clean:			getenv
 				$(DCOMPOSE) -f $(SRCS)/$(DCOMPOSEFILE) \
 					--env-file $(SRCS)/$(ENVFILE) $(DOWN) $(REMOVEALL)	
 				$(REMOVE) $(NAME)
-				$(REMOVE) $(SRCS)/.env*
+				# $(REMOVE) $(SRCS)/.env*
 
 .PHONY:			fclean
 fclean:			clean cleandocker cleannode

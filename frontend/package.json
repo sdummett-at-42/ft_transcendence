@@ -19,6 +19,7 @@
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.1.1",
     "joi": "^17.9.1",
+    "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hover-video-player": "^10.0.0",
