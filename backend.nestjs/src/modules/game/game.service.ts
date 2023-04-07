@@ -8,21 +8,13 @@ import { LobbyService } from './lobby/lobby.service';
 
 @Injectable()
 export class GameService {
-    constructor(private readonly redis: RedisService,
-                ) { }
-
-    // numberElement = 2;
-    // speed = 5;
+    constructor(private readonly redis: RedisService) { }
 
     //field = new Field(400, 800);
     //shapes : Shape[] = [];
     //bulletInterval: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
     //frequencyInterval: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
 
-    //x:number, y:number, height:number, width:number)
-    // a pofiner plus tard pour le set up des positions
-    // player1 : Player;
-    // player2 : Player;
 
     /* ******************* *\
     |* input/entry functon *|
