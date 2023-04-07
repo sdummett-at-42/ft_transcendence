@@ -25,7 +25,8 @@
     <script>
         // faire que le client se connecte sur /game/:idgame
         const id = window.location.pathname.split('/')[2];
-        const socket = io(`ws://localhost:3001/game`);
+        const socket = io(`/game`);
+        // const socket = io(`ws://localhost:3001/game`);
         const room = "game" + id;
 
         console.log(socket);

@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { Shape, Square , Bullet, Circle, Coordonnee , Player, Field, BlackHole, Game } from './entities/game.entities';
+import { Shape, Square , Bullet, Circle, BlackHole, Game } from './entities/game.entities';
 import { GameGateway } from './game.gateway';
 import { RedisService } from 'src/modules/redis/redis.service';
 import { EventGame } from './game-event.enum';
-import { LobbyService } from './lobby/lobby.service';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class GameService {
-    constructor(private readonly redis: RedisService) { }
+    constructor(private readonly redis: RedisService,
+        private readonly prisma: PrismaService
+    ) { }
 
     //field = new Field(400, 800);
     //shapes : Shape[] = [];
@@ -501,11 +503,12 @@ export class GameService {
     private newElo(game : Game, scoreP1 : number, scoreP2 : number) : void {
         // TODO
         // change nombregame (facteur K)
-        this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, 5); // last = nb game jouer
-        this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, 5);
+        
+        this.updateElo(game.p1.id ,this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, 5)); // last = nb game jouer
+        this.updateElo(game.p2.id ,this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, 5));
     }
 
-    calculateElo(oldElo: number, opponentElo: number, score: number, gamesPlayed: number): number {
+    private calculateElo(oldElo: number, opponentElo: number, score: number, gamesPlayed: number): number {
         const k = this.getKFactor(gamesPlayed);
         const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - oldElo) / 400));
         const eloChange = k * (score - expectedScore);
@@ -514,7 +517,7 @@ export class GameService {
         return Math.round(newElo);
     }
       
-    getKFactor(gamesPlayed: number): number {
+    private getKFactor(gamesPlayed: number): number {
         if (gamesPlayed < 30)
             return 40;
         else if (gamesPlayed < 50)
@@ -522,6 +525,16 @@ export class GameService {
         else
             return 10;
         
+    }
+
+    private async updateElo(id : number, newElo : number){
+        const users = await this.prisma.user.findMany()
+        console.log("Pre modif", users);
+
+        const user = await this.prisma.user.update({
+            where: { id },
+            data: { elo: newElo },
+          });
     }
       
       
@@ -641,40 +654,40 @@ export class GameService {
     }
 
     private collisionRacket(game : Game, bullet : Bullet, racket: Square) : void {
-    // if angle to acute
-    const pi3 = Math.PI / 3;
-    const pi2 = Math.PI / 2
-    const pi3o = 2 * Math.PI /3
+        // if angle to acute
+        const pi3 = Math.PI / 3;
+        const pi2 = Math.PI / 2
+        const pi3o = 2 * Math.PI /3
 
-    // Where is bullet on our racket
-    const pourcentbullet = ((bullet.pos.y - racket.pos.y) / racket.length) * 100;
+        // Where is bullet on our racket
+        const pourcentbullet = (bullet.pos.y - racket.pos.y) / racket.length;
 
-    // change direction from where is bullet on racket 
-    const angleFinal = (pourcentbullet / 100) * pi3o - pi3;
-    if (bullet.a > Math.PI)
-        bullet.a -= Math.PI * 2;
-    else if (bullet.a < -Math.PI)
-        bullet.a += Math.PI * 2;
+        // change direction from where is bullet on racket 
+        const angleFinal = pourcentbullet * pi3o - pi3;
+        if (bullet.a > Math.PI)
+            bullet.a -= Math.PI * 2;
+        else if (bullet.a < -Math.PI)
+            bullet.a += Math.PI * 2;
 
-    // console.log(`(${pourcentbullet} / 100) * ${pi3o} - ${pi3} = ${angleFinal}`);
+        // console.log(`(${pourcentbullet} / 100) * ${pi3o} - ${pi3} = ${angleFinal}`);
 
-    // console.log("angle :", bullet.a);
-    // console.log("angle%:", bullet.a % Math.PI);
-    // console.log("pi2 :", pi2);
-    // console.log("-pi2:", -pi2);
+        // console.log("angle :", bullet.a);
+        // console.log("angle%:", bullet.a % Math.PI);
+        // console.log("pi2 :", pi2);
+        // console.log("-pi2:", -pi2);
 
-    // check if bullet is part left or right map
-    if (bullet.pos.x > game.field.width / 2) { // bullet go right
-        bullet.a = angleFinal;
-        if (angleFinal < 0)
-            bullet.a = (pi2 - angleFinal) + pi2;
-        else
-            bullet.a = (-pi2 - angleFinal) - pi2;
-    }
-    else // bullet go left
-        bullet.a = angleFinal;
-    console.log("angleF:", bullet.a);
-    console.log();
+        // check if bullet is part left or right map
+        if (bullet.pos.x > game.field.width / 2) { // bullet go right
+            bullet.a = angleFinal;
+            if (angleFinal < 0)
+                bullet.a = (pi2 - angleFinal) + pi2;
+            else
+                bullet.a = (-pi2 - angleFinal) - pi2;
+        }
+        else // bullet go left
+            bullet.a = angleFinal;
+        console.log("angleF:", bullet.a);
+        console.log();
     }
 
     private collisionSquare(bullet : Bullet, square : Square) : void {
@@ -766,11 +779,12 @@ export class GameService {
     private setBulletRelaunch(game : Game, racket : Square) : void {
         const index = game.shapes.findIndex( (shape) => shape instanceof Bullet);
         if (index === -1)
-            return ;
-        
+            return ;  
         let temp = game.shapes[index] as Bullet;
-        temp.pos.y = racket.pos.y + racket.length / 2;
+        // Get pourcent racket.y on field.y
+        const pourcentRacket = 1 - ((racket.pos.y + racket.length / 2) / game.field.height );
+        // Place Bullet on racket from pourcent
+        temp.pos.y = (pourcentRacket * racket.length) + racket.pos.y;
         this.collisionRacket(game, temp, racket);
-
     }
 }
