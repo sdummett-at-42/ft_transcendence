@@ -1,8 +1,8 @@
 import React, { FC } from 'react';
-import {messageList} from './data'
-import "./chat.css"
 import {Socket } from "socket.io-client";
 import { useState, useEffect, useCallback } from 'react';
+import "./chat.css"
+import "./chat.scss"
 
 interface MessageProps {
   socket: Socket;

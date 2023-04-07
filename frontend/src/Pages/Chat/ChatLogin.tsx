@@ -10,7 +10,6 @@ import { socket } from "./Socket";
 
 export default function ChatLogin() {
   const [selectedList, setSelectedList] = useState(null);
-  const [isConnected, setIsConnected] = useState(socket.connected);
   const handleListClick = (list) => {
     console.log("List:",list);
     setSelectedList(list);
@@ -20,14 +19,12 @@ export default function ChatLogin() {
     socket.emit("getRoomMsgHist", payload);
   }
     useEffect(() => {
-      function onConnect() {
-        setIsConnected(true);
-        console.log("connected socekt!");
+      function onConnect(payload) {
+        console.log("connected socket!");
       }
   
       function onDisconnect() {
-        setIsConnected(false);
-        console.log("connected socekt not");
+        console.log("connected socket NOT");
       }
   
       socket.on('connect', onConnect);
@@ -37,7 +34,7 @@ export default function ChatLogin() {
         socket.off('connect', onConnect);
         socket.off('disconnect', onDisconnect);
       };
-    }, []);
+    }, [socket]);
 
     if (!socket) {
       return <div>Connecting to server...</div>;
@@ -47,7 +44,6 @@ export default function ChatLogin() {
         <div className="containerhere clearfix">
           <div className="row">
           <ChatroomList socket={socket}  onListClick={handleListClick} />
-          {/* {selectedList ? <RoomDetail socket={socket} selectedList={selectedList} /> : <Message socket={socket} selectedList={selectedList} />} */}
           <Message socket={socket} selectedList={selectedList} />
           <RoomDetail socket={socket} selectedList={selectedList}/>
       </div>

@@ -34,7 +34,7 @@ body {
   width: 100%;
   flex-basis: calc(100% * (3/16));
   float: left;
-  overflow-y: scroll;
+ 
   
   .search {
     padding: 20px;
@@ -80,6 +80,7 @@ body {
   
   .about {
     padding-left: 8px;
+    overflow-y: auto;
   }
   .name{
     color: #ffffff;

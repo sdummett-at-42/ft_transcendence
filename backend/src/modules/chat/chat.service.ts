@@ -61,6 +61,7 @@ export class ChatService {
 		for (const room of userRooms)
 			socket.join(room);
 
+		console.log("CONNECTION??")
 		socket.emit(Event.connected, {
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
