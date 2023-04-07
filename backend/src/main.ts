@@ -15,7 +15,6 @@ async function bootstrap() {
 
 	// Enable cors
 	app.enableCors({origin: 'http://localhost:5173', credentials: true});
-	
 
 	// Session
 	const RedisStore = connectRedis(session);

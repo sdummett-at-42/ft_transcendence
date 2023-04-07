@@ -1,11 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./FriendsList.css"
 import { Link } from "react-router-dom"
 import { faComments } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchBar from "./SearchBar/SearchBar";
+import { socket } from "../../../assets/Socket";
 
 export default function FriendsList() {
+
+    // const [isConnected, setIsConnected] = useState(socket.connected);
+
+    // useEffect(() => {
+    //     function onConnect() {
+    //         setIsConnected(true);
+    //         console.log("connected socekt!");
+    //     }
+      
+    //     function onDisconnect() {
+    //         setIsConnected(false);
+    //         console.log("connected socekt not");
+    //     }
+      
+    //     socket.on('connect', onConnect);
+    //     socket.on('disconnect', onDisconnect);
+
+    //     return () => {
+    //         socket.off('connect', onConnect);
+    //         socket.off('disconnect', onDisconnect);
+    //     };
+    // }, []);
 
     const [friends, setFriends] = useState(null);
     const [friendsPending, setFriendsPending] = useState(null);

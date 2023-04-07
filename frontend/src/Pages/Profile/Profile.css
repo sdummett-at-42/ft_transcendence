@@ -4,6 +4,7 @@
     min-width: 100vmin;
     display: flex;
     justify-content: center;
+    overflow-y: scroll;
 }
 
 .Profile-card {

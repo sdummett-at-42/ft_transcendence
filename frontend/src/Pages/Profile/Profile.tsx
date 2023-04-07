@@ -95,7 +95,7 @@ export default function Profile() {
     }
 
     const [switchOn, setSwitchOn] = useState(false);
-    const [DoubleFaImage, setDoubleFaImage] = useState("");
+    const [pngBase64, setPngBase64] = useState("");
 
     function handle2fa() {
         setSwitchOn(!switchOn);
@@ -118,14 +118,8 @@ export default function Profile() {
                 }
             })
             .then(data => {
-                let base64 = data.base64Qrcode;
-                base64 = base64.split(',').pop();
-                console.log(base64);
-                setDoubleFaImage(base64);
+                setPngBase64(data.base64Qrcode);
             })
-        }
-        else {
-            // setDoubleFaImage(null);
         }
     }
 
@@ -188,7 +182,8 @@ export default function Profile() {
                         </label>
                         
                     </div>
-                    {switchOn && <div><QRCodeSVG value={DoubleFaImage} /></div>}
+
+                    {(switchOn && pngBase64) && <img src={pngBase64} alt="base64 image" />}
 
                 </div>
             </div>
