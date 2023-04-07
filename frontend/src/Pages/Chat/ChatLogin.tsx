@@ -18,6 +18,17 @@ export default function ChatLogin() {
     }
     socket.emit("getRoomMsgHist", payload);
   }
+  const handleLeaveRoom = () => {
+      const confirmed = window.confirm("Are you sure you want leave this room?");
+      if (confirmed) {
+        console.log("good bye~~~~", selectedList);
+        const payload = {
+          roomName : selectedList,
+        }
+        socket.emit("leaveRoom", payload);
+        setSelectedList("");
+      }
+  };
     useEffect(() => {
       function onConnect(payload) {
         console.log("connected socket!");
@@ -44,7 +55,7 @@ export default function ChatLogin() {
         <div className="containerhere clearfix">
           <div className="row">
           <ChatroomList socket={socket}  onListClick={handleListClick} />
-          <Message socket={socket} selectedList={selectedList} />
+          <Message socket={socket} selectedList={selectedList} onQuit={handleLeaveRoom} />
           <RoomDetail socket={socket} selectedList={selectedList}/>
       </div>
       </div>

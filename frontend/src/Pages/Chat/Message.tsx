@@ -7,6 +7,7 @@ import "./chat.scss"
 interface MessageProps {
   socket: Socket;
   selectedList : string;
+  onQuit: () => void;
 
 }
 export default function Message(props:MessageProps) {
@@ -25,15 +26,8 @@ export default function Message(props:MessageProps) {
     }
     props.socket.emit("joinRoom", payload);
   };
-  const handleLeaveRoom = (event) => {
-    const confirmed = window.confirm("Are you sure you want leave this room?");
-    if (confirmed) {
-      console.log("good bye~~~~", props.selectedList);
-      const payload = {
-        roomName : props.selectedList,
-      }
-      props.socket.emit("leaveRoom", payload);
-    }
+  const handleQuit = () => {
+    props.onQuit();
   };
 
   const handleInputChange = (event) => {
@@ -62,24 +56,28 @@ export default function Message(props:MessageProps) {
     setMessageList((prevme) => [...prevme, payload]);
   },[messageList]);
 
-  const item = messageList.map((each) => {
-    const date = new Date(each.timestamp);
-    const hour = date.getHours().toString().padStart(2, '0');
-    const minute = date.getMinutes().toString().padStart(2, '0');
-    const second = date.getSeconds().toString().padStart(2, '0');
-    if (props.selectedList == null) {
-      return null;
-    }
-    return (
-      <li>
-        <div className="message-data">
-          <span className="message-data-name"> From : {each.userId}</span>
-          <span className="message-data-time">{hour}:{minute}:{second}</span>
-        </div>
-        <div className="message my-message">{each.message}</div>
-      </li>
-    );
-  });
+  useEffect(() => {
+    const item = messageList.map((each) => {
+      const date = new Date(each.timestamp);
+      const hour = date.getHours().toString().padStart(2, '0');
+      const minute = date.getMinutes().toString().padStart(2, '0');
+      const second = date.getSeconds().toString().padStart(2, '0');
+      if (props.selectedList == null) {
+        return null;
+      }
+      return (
+        <li>
+          <div className="message-data">
+            <span className="message-data-name"> From : {each.userId}</span>
+            <span className="message-data-time">{hour}:{minute}:{second}</span>
+          </div>
+          <div className="message my-message">{each.message}</div>
+        </li>
+      );
+    });
+    return item;
+  },[props.selectedList, , messageList] )
+
   
   useEffect(() => {
     if (props.socket) {
@@ -110,7 +108,7 @@ export default function Message(props:MessageProps) {
     {/* <div className="chat-num-messages col-4">1000 members</div> */}
   </div>
   <button className="col-2" onClick={handleJoinRoom} >Join</button>
-  <button className="col-2" onClick={handleLeaveRoom}>Leave</button>
+  <button className="col-2" onClick={handleQuit}>Leave</button>
   {/* <input type="text" className="form-control" name="password" placeholder="Password" /> */}
   {showInput && (
         <form onSubmit={handleJoinSubmit}>
