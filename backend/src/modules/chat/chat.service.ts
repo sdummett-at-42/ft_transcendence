@@ -1395,9 +1395,9 @@ export class ChatService {
 
 	async getRoomsList(socket, dto, server) {
 		const roomsList = [];
-		console.debug("here0");
+		// console.debug("here0");
 		const roomNames = await this.redis.getRoomNames();
-		console.debug("here1");
+		// console.debug("here1");
 		await Promise.all(roomNames.map(async (roomName) => {
 			if (await this.redis.getRoomVisibility(roomName) == "public") {
 				let isProtected = false;

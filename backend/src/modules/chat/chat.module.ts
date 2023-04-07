@@ -8,7 +8,7 @@ import { FileController } from "./file.controller";
 @Module({
 	imports: [RedisModule, PrismaModule],
 	controllers: [FileController],
-	providers: [ChatService, ChatGateway],
-	exports: [ChatService, ChatGateway],
+	providers: [ChatService],
+	exports: [ChatService],
 })
 export class ChatModule {}
