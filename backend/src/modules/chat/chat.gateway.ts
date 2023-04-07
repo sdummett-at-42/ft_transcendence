@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { Event } from './chat-event.enum';
 
 @Injectable()
-@WebSocketGateway({ namespace: 'chat' })
+@WebSocketGateway({ cors: true, namespace: 'chat' })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	server: Server;

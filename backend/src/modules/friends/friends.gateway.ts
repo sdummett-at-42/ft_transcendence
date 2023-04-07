@@ -5,7 +5,7 @@ import { RedisService } from '../redis/redis.service';
 import { FriendsService } from './friends.service';
 
 @Injectable()
-@WebSocketGateway({ namespace: 'friends' })
+@WebSocketGateway({ cors: true,  namespace: 'friends' })
 export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
 	constructor(
