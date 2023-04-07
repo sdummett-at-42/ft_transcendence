@@ -36,21 +36,21 @@ export default function Modal(props: ModalProps) {
       props.onClose()
     }, []);
 
-    useEffect(() => {
-      if (props.socket) {
-        props.socket.on("roomCreated", handleCloseAfterRoomCreated);
-        props.socket.on("roomNotCreated", () => {
-          console.log("roomNotCreated");
-          alert("The room name already exists.");
-        });
-      }
-      return () => {
-        if (props.socket) {
-          props.socket.off('roomCreated', handleCloseAfterRoomCreated);
-          props.socket.off('roomNotCreated');
-        }
-      };
-    }, [props.socket]);
+    // useEffect(() => {
+    //   if (props.socket) {
+    //     props.socket.on("roomCreated", handleCloseAfterRoomCreated);
+    //     props.socket.on("roomNotCreated", () => {
+    //       console.log("roomNotCreated");
+    //       alert("The room name already exists.");
+    //     });
+    //   }
+    //   return () => {
+    //     if (props.socket) {
+    //       props.socket.off('roomCreated', handleCloseAfterRoomCreated);
+    //       props.socket.off('roomNotCreated');
+    //     }
+    //   };
+    // }, [props.socket]);
 
     return !props.isVisible ? null: (
       <div className="modal" onClick={props.onClose}>

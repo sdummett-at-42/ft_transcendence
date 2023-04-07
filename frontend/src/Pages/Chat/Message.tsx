@@ -125,7 +125,7 @@ export default function Message(props:MessageProps) {
   <ul>
     <li className="clearfix">
       <div className="message-data align-right">
-        <span className="message-data-time" >10:10 AM, Today{console.log("props",props.selectedList)}</span>
+        <span className="message-data-time" >10:10 AM, Today</span>
         <span className="message-data-name" >Olia</span> 
       </div>
       <div className="message other-message float-right">Hi Vincent</div>

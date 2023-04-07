@@ -24,9 +24,12 @@ export default function ChatroomList(props: ChatroomListProps) {
       setChatrooms((prevChatrooms) => [...prevChatrooms, {protected: false, roomName: payload.roomName}]);
     }, []);
 
+    let count = 0;
     const handleRoomsListReceived = useCallback((payload) => {
       console.log(`NEW: ${JSON.stringify(payload)}`);
       setChatrooms(payload.roomsList);
+      count++;
+      console.log(`roomCreated event received ${count} times`);
     }, []);
 
     const handleRoomDeleted = useCallback((payload) => {
@@ -51,6 +54,13 @@ export default function ChatroomList(props: ChatroomListProps) {
       props.socket.emit("getRoomsList");
       console.log("bonjour!");
     }, []);
+//     useEffect(() => {
+//   props.socket.on("roomsListReceived", handleRoomsListReceived);
+
+//   return () => {
+//     props.socket.off("roomsListReceived", handleRoomsListReceived);
+//   };
+// }, []);
     useEffect(() => {
       if (props.socket) {
         console.log("The socket exists")
@@ -75,7 +85,7 @@ export default function ChatroomList(props: ChatroomListProps) {
           props.socket.off("roomJoined", handleRoomJoined);
           props.socket.off("roomLeft", handleRoomDeleted);
       }}
-    }, [props.socket, handleRoomDeleted, handleRoomCreated, handleRoomJoined, handleRoomsListReceived]);
+    }, []);
 
   // Render
   return (
