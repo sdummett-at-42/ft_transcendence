@@ -1,3 +1,5 @@
+import { useState } from "react";
+import UserContext from "./context/UserContext";
 import { Routes, Route } from "react-router-dom";
 import LoginSelector from "./Pages/Login/LoginSelector";
 // import ForgotMail from "./Pages/Login/forgotMail/ForgotMail";
@@ -12,21 +14,25 @@ import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
 
 function App() {
 
+  const [user, setUser] = useState(null);
+
   return (
     <div className="App">
-      <Routes>
-        <Route path="/" element={<LoginSelector />} />
-        <Route path="/register" element={<CreateAccount />} />
-        <Route path="/register/finalization" element={<FollowingAccountCreation />} />
-        {/* <Route path="/forgotMail" element={<ForgotMail />} /> */}
-        <Route path="/login/intra42" element={<LoginFortyTwo />} />
+      <UserContext.Provider value={{ user, setUser }}>
+        <Routes>
+          <Route path="/" element={<LoginSelector />} />
+          <Route path="/register" element={<CreateAccount />} />
+          <Route path="/register/finalization" element={<FollowingAccountCreation />} />
+          {/* <Route path="/forgotMail" element={<ForgotMail />} /> */}
+          <Route path="/login/intra42" element={<LoginFortyTwo />} />
 
-        <Route path="/home" element={<Layout children={<Home />} />} />
-        {/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
-        <Route path='/profil/:id' element={<Layout children={<Profile />} />} />
-        <Route path='/unauthorized' element={<Unauthorized />} />
-        {/* <Route path='/*' element={<Layout children={<NotFound />} />} /> */}
-      </Routes>
+          <Route path="/home" element={<Layout children={<Home />} />} />
+          {/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
+          <Route path='/profil/:id' element={<Layout children={<Profile />} />} />
+          <Route path='/unauthorized' element={<Unauthorized />} />
+          <Route path='/*' element={<Layout children={<NotFound />} />} />
+        </Routes>
+      </UserContext.Provider>
     </div>
   );
 }

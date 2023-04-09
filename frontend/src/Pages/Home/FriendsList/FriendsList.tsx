@@ -1,56 +1,36 @@
 import React, { useState, useEffect } from "react";
 import "./FriendsList.css"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom";
 import { faComments } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchBar from "./SearchBar/SearchBar";
 
 export default function FriendsList() {
 
-    const [friends, setFriends] = useState(null);
+    const navigate = useNavigate();
+    const [friends, setFriends] = useState([]);
     const [friendsPending, setFriendsPending] = useState(null);
 
     const addFriend = async (friend) => {
-
-        await fetch("http://localhost:3001/friends/requests", {
-            method: "POST",
-            credentials: "include",
-            body: friend
+        const getUser = await fetch("http://localhost:3001/users", {
+            credentials: 'include',
+            method: 'GET'
         })
-
-        await fetch("http://localhost:3001/friends", {
-            method: "GET",
-            credentials: "include"
-        })
-            .then((response) => response.json())
-            .then(json => {
-                const results = json.filter((user) => {
-                    return (
-                        friend &&
-                        user &&
-                        friend === user.name
-                    );
-                })
-                setFriends(results);
-                console.log(results);
+            .then(res => {
+                if (res.status == 401) {
+                    navigate("/unauthorized");
+                }
+                else if (res.status == 200) {
+                    return res.json();
+                }
+            })
+            .then(res => {
+                const dataFriend = res.filter(element => element.name === friend);
+                return dataFriend.at(0);
             });
-        
-        await fetch("http://localhost:3001/friends/requests/sended", {
-            method: "GET",
-            credentials: "include"
-        })
-            .then((response) => response.json())
-            .then(json => {
-                const results = json.filter((user) => {
-                    return (
-                        friend &&
-                        user &&
-                        friend === user.name
-                    );
-                })
-                setFriendsPending(results);
-                console.log(results);
-        });
+
+        console.log(getUser);
+        setFriends([...friends, getUser]);
     }
 
     return (
@@ -64,17 +44,22 @@ export default function FriendsList() {
             <div className="FriendsList-list">
                 <div className="FriendsList-user">
                     {friends && (
-                        <div key={friends.id}>
+                        friends.forEach(element => {
+                            return (
+
+                                <div key={element.id}>
                             <div className="FriendsList-profil-picture">
-                                {friends.profilPicture}
+                                {element.profilPicture}
                             </div>
                             <div className="FriendsList-name">
-                                {friends.name}
+                                {element.name}
                             </div>
                             <div className="FriendsList-state">
                                 {/* Status de l'utilisateur (online - offline) */}
                             </div>
                         </div>
+                            );
+                        })
                     )}
                 </div>
                 <div className="FriendsList-user-pending">

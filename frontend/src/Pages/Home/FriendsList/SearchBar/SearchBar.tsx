@@ -1,16 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import UserContext from "../../../../context/UserContext";
 import './SearchBar.css';
+import { useNavigate } from "react-router-dom";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function SearchBar(props) {
 
+    const { user } = useContext(UserContext);
+    const navigate = useNavigate();
     const [input, setInput] = useState("");
     const [results, setResults] = useState([]);
 
     // use to send the request to the user
     const sendFriendRequest = ({input}) => {
-        console.log(input);
         props.onAddFriend(input);
         setInput('');
         fetchData('');
@@ -22,19 +25,28 @@ export default function SearchBar(props) {
             method: "GET",
             credentials: "include"
         })
+            .then (response => {
+                if (response.status == 401) {
+                    navigate("/unauthorized");
+                }
+                else if (response.status == 200) {
+                    return response;
+                }
+            })
             .then((response) => response.json())
             .then(json => {
-                const result = json.filter((user) => {
+                const result = json.filter((dataUser) => {
                     return (
                         value &&
-                        user &&
-                        user.name &&
-                        user.name.toLowerCase().includes(value.toLowerCase()) &&
-                        value !== user.name
+                        dataUser &&
+                        dataUser.name &&
+                        dataUser.name.toLowerCase().includes(value.toLowerCase()) &&
+                        value !== dataUser.name &&
+                        !dataUser.name.toLowerCase().includes(user.name.toLowerCase())
                     );
                 })
                 setResults(result);
-                console.log(`SearchBar: ${result}`);
+                // console.log(`SearchBar: ${result}`);
             });
     }
 

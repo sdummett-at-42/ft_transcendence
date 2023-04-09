@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "./Navbar.css"
 import { Link, useNavigate } from "react-router-dom";
 import Logo42 from "../../assets/42_Logo.png"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserGear } from "@fortawesome/free-solid-svg-icons"
+import UserContext from "../../context/UserContext"
 
 export default function Navbar() {
 
-    const [userData, setUserData] = useState(null);
+    const { user, setUser } = useContext(UserContext);
     const naviguate = useNavigate();
 
     useEffect(() => {
@@ -29,7 +30,7 @@ export default function Navbar() {
                 return res.json();
             });
         const data = await response;
-        setUserData(data);
+        setUser(data);
     };
 
 
@@ -50,11 +51,11 @@ export default function Navbar() {
 
             <div className="Navbar-nav-section" id="Navbar-right">
                 <div>
-                    {userData && (
+                    {user && (
                         <div id="Navbar-profil">
-                            <img id="Navbar-profil-picture" className="Navbar-logo" src={userData.profilePicture} alt="myProfilePicture" />
+                            <img id="Navbar-profil-picture" className="Navbar-logo" src={user.profilePicture} alt="myProfilePicture" />
                             <div id="Navbar-profil-name">
-                                {userData.name}
+                                {user.name}
                             </div>
                         </div>
                     )}
