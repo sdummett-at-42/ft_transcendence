@@ -1,24 +1,27 @@
-.Profile-body {
+.Profil-body {
     color: white;
-    min-height: 100vmin;
-    min-width: 100vmin;
-    display: flex;
-    justify-content: center;
-    overflow-y: scroll;
+    height: 100%;
+    width: 100%;
 }
 
-.Profile-card {
+.Profile-background-video {
+    background-size: cover;
+    background-position: center;
+}
+
+.Profil-card {
     display: grid;
     justify-content: center;
-    width: 45%;
-    height: 100%;
+    margin-top: 5vh;
+    width: 50%;
+    height: 95vh;
     padding: 10px 20px;
     border-radius: 10px;
     box-sizing: border-box;
     background-color: rgb(121, 69, 69);
 }
 
-.Profile-card-title {
+.Profil-card-title {
     font-size: 3vmin;
     margin-bottom: 2vmin;
 }

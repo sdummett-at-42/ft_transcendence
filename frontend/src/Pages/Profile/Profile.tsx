@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Profile.css";
 import loadingGif from "../../assets/Loading.mp4";
+import profileVideo from "../../assets/Profile-background-slow.mp4" 
 import { useNavigate } from "react-router-dom";
-import { QRCodeSVG } from 'qrcode.react';
 
 export default function Profile() {
 
@@ -124,8 +124,9 @@ export default function Profile() {
     }
 
     return (
-        <div className="Profile-body">
-            <div className="Profile-card">
+        <div className="Profil-body">
+            <video src={profileVideo} autoPlay loop muted className="Profile-background-video" />
+            <div className="Profil-card">
 
                 <h3 className="LoginSelector-card-title">Modifiez votre profil:</h3>
 

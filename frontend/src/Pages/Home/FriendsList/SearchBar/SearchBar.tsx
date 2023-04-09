@@ -8,7 +8,6 @@ export default function SearchBar(props) {
     const [input, setInput] = useState("");
     const [results, setResults] = useState([]);
 
-
     // use to send the request to the user
     const sendFriendRequest = ({input}) => {
         console.log(input);

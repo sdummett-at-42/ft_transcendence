@@ -49,10 +49,8 @@
     overflow-y: auto;
 }
 
-
 .SearchBar-search-result {
     padding: 10px 20px;
-    font-family: Helvetica, sans-serif;
 }
 
 .SearchBar-search-result:hover {

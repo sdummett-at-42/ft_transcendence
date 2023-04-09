@@ -86,7 +86,6 @@
   
 .LoginSelector-card-title,
 .LoginSelector-card-subtitle {
-    font-family: "Anek Latin", sans-serif;
     font-weight: 400;
     margin: 0px;
 }
@@ -178,7 +177,6 @@
 
 .LoginSelector-button > .LoginSelector-button-content > .LoginSelector-button-text {
     flex-grow: 1;
-    font-family: 'Verdana', Geneva, Tahoma, sans-serif;
 }
 
 .LoginSelector-create-account {
