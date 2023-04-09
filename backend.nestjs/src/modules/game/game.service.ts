@@ -435,15 +435,15 @@ export class GameService {
         // si plus de bullet en jeux en remettre une pour le joueur qui a perdu ou inverse
 
         if (bullet.pos.x + bullet.r > game.field.width) {
-            game.p2.score++;
-            game.server.to(game.roomId).emit(EventGame.gameScore, game.p2);
-            if (game.limitScoreBool === true && game.p2.score >= game.limitScore)
-                return (this.victoryByScore(game));
-            return 2;
-        } else if (bullet.pos.x - bullet.r < 0) {
             game.p1.score++;
             game.server.to(game.roomId).emit(EventGame.gameScore, game.p1);
             if (game.limitScoreBool === true && game.p1.score >= game.limitScore)
+                return (this.victoryByScore(game));
+            return 2;
+        } else if (bullet.pos.x - bullet.r < 0) {
+            game.p2.score++;
+            game.server.to(game.roomId).emit(EventGame.gameScore, game.p2);
+            if (game.limitScoreBool === true && game.p2.score >= game.limitScore)
                 return (this.victoryByScore(game));
             return 1;
         } else {
