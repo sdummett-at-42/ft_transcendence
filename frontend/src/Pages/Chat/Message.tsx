@@ -16,6 +16,7 @@ export default function Message(props:MessageProps) {
   const [inputValue, setInputValue] = useState("");
   const [message, setMessage]= useState("");
   const [ifShowMessage, setIfShowMessage] = useState(false);
+  const [item, setItem] = useState([]);
 
   const handleJoinRoom = (event) => {
     setShowInput(true);
@@ -28,6 +29,7 @@ export default function Message(props:MessageProps) {
   };
   const handleQuit = () => {
     props.onQuit();
+    setMessageList([]);
   };
 
   const handleInputChange = (event) => {
@@ -48,16 +50,17 @@ export default function Message(props:MessageProps) {
       message: message,
     }
     props.socket.emit("sendRoomMsg",payload);
+    setMessage("");
   };
 
   const handleMessages = useCallback((payload) => {
     console.log("payload", payload);
-    console.log("messageList", messageList);
     setMessageList((prevme) => [...prevme, payload]);
   },[messageList]);
 
   useEffect(() => {
-    const item = messageList.map((each) => {
+    console.log("messageList", messageList);
+    setItem(messageList.map((each) => {
       const date = new Date(each.timestamp);
       const hour = date.getHours().toString().padStart(2, '0');
       const minute = date.getMinutes().toString().padStart(2, '0');
@@ -65,7 +68,8 @@ export default function Message(props:MessageProps) {
       if (props.selectedList == null) {
         return null;
       }
-      return (
+      else {
+        return (
         <li>
           <div className="message-data">
             <span className="message-data-name"> From : {each.userId}</span>
@@ -74,8 +78,8 @@ export default function Message(props:MessageProps) {
           <div className="message my-message">{each.message}</div>
         </li>
       );
-    });
-    return item;
+    }})
+    );
   },[props.selectedList, , messageList] )
 
   
@@ -140,7 +144,7 @@ export default function Message(props:MessageProps) {
 
 </div>
   <div className="chat-message clearfix">
-    <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="2" onChange={handleMessageChange}></textarea>      
+    <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="2" value={message} onChange={handleMessageChange}></textarea>      
     <button onClick={handleSendMessage} >Send</button>
   </div>
 </div>
