@@ -8,7 +8,7 @@ interface MessageProps {
   socket: Socket;
   selectedList : string;
   onQuit: () => void;
-
+  UserId:Number;
 }
 export default function Message(props:MessageProps) {
   const [messageList, setMessageList] = useState([]);
@@ -65,17 +65,25 @@ export default function Message(props:MessageProps) {
       const hour = date.getHours().toString().padStart(2, '0');
       const minute = date.getMinutes().toString().padStart(2, '0');
       const second = date.getSeconds().toString().padStart(2, '0');
+      let className1 = "message-data";
+      let className2 = "message";
       if (props.selectedList == null) {
         return null;
       }
       else {
+        if (each.userId === props.UserId) {
+          className1 += " align-right";
+          className2 += " other-message float-right";
+        } else {
+          className2 += " my-message"; 
+        }
         return (
         <li>
-          <div className="message-data">
+          <div className={className1}>
             <span className="message-data-name"> From : {each.userId}</span>
             <span className="message-data-time">{hour}:{minute}:{second}</span>
           </div>
-          <div className="message my-message">{each.message}</div>
+          <div className={className2}>{each.message}</div>
         </li>
       );
     }})

@@ -10,6 +10,7 @@ import { socket } from "./Socket";
 
 export default function ChatLogin() {
   const [selectedList, setSelectedList] = useState(null);
+  const [userId, setUserId] = useState(0);
   const handleListClick = (list) => {
     console.log("List:",list);
     setSelectedList(list);
@@ -29,6 +30,23 @@ export default function ChatLogin() {
         setSelectedList("");
       }
   };
+  useEffect(()=>{
+    console.log("here????");
+    const fetchData = async () => {
+
+      await fetch("http://localhost:3001/users/me", {
+          method: "GET",
+          credentials: "include"
+      })
+          .then((response) => response.json())
+          .then(json => {
+              setUserId(json.id);
+              console.log("SearchBar:",  typeof(json.id));
+          });
+    };
+    fetchData();
+  }, []);
+
     useEffect(() => {
       function onConnect(payload) {
         console.log("connected socket!");
@@ -55,7 +73,7 @@ export default function ChatLogin() {
         <div className="containerhere clearfix">
           <div className="row">
           <ChatroomList socket={socket}  onListClick={handleListClick} />
-          <Message socket={socket} selectedList={selectedList} onQuit={handleLeaveRoom} />
+          <Message socket={socket} selectedList={selectedList} onQuit={handleLeaveRoom} UserId = {userId}/>
           <RoomDetail socket={socket} selectedList={selectedList}/>
       </div>
       </div>
