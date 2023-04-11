@@ -17,18 +17,32 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
 	async afterInit(server: any) {}
 
+	private extractString(inputString: string): string {
+		if (!inputString)
+			return '';
+
+		const prefix = 's:';
+		const suffix = '.';
+		const startIndex = inputString.indexOf(prefix);
+		const endIndex = inputString.indexOf(suffix, startIndex + prefix.length);
+
+		if (startIndex !== -1 && endIndex !== -1)
+			return inputString.substring(startIndex + prefix.length, endIndex);
+		return '';
+	}
+
 	// If first connected socket, send 'friendConnected' to all the friends
 	async handleConnection(@ConnectedSocket() socket) {
-		if (socket.handshake.headers.cookie == undefined) {
+		if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
-			socket.emit('notConnected', { // Event to report here
+			socket.emit('notConnected', {
 				timestamp: new Date().toISOString(),
 				message: `No session cookie provided`,
 			});
 			socket.disconnect()
 			return;
 		}
-		const sessionHash = socket.handshake.headers.cookie.slice(16).split(".")[0];
+		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
 		if (session === null) {
 			console.debug("User isn't logged in");
@@ -43,10 +57,13 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		const userId = JSON.parse(session).passport.user.id;
 		socket.data.userId = userId;
 
+		
 		const userRooms = await this.redis.getUserRooms(userId);
 		for (const room of userRooms)
 			socket.join(room);
-
+		
+		console.log(`Handle connection: ${userId}`);
+		
 		socket.emit('connected', { // Event to report here
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
@@ -91,9 +108,12 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
 	async sendFriendRequest(requesterId: number, receiverId: number) {
 		const sockets = await this.server.fetchSockets();
+		console.log(`nb current sockets: ${sockets.length} `);
 		const receiverSocketIds = Object.entries(sockets)
-		.filter(([key, value]) => receiverId === value.data.userId)
-		.map(([key, value]) => value.id);
+			.filter(([key, value]) => { console.log(`~ID: ${value.data.userId}`); return receiverId === value.data.userId})
+			.map(([key, value]) => { console.log(`ID: ${value.data.userId}`); return value.id});
+			
+		console.log(receiverSocketIds);
 
 		if (receiverSocketIds.length > 0)
 			this.server.to(receiverSocketIds).emit('friendRequestReceived', { id: requesterId }); // Event to report here

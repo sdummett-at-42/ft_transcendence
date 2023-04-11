@@ -1,5 +1,3 @@
-import { useState } from "react";
-import UserContext from "./context/UserContext";
 import { Routes, Route } from "react-router-dom";
 import LoginSelector from "./Pages/Login/LoginSelector";
 // import ForgotMail from "./Pages/Login/forgotMail/ForgotMail";
@@ -14,11 +12,8 @@ import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
 
 function App() {
 
-  const [user, setUser] = useState(null);
-
   return (
     <div className="App">
-      <UserContext.Provider value={{ user, setUser }}>
         <Routes>
           <Route path="/" element={<LoginSelector />} />
           <Route path="/register" element={<CreateAccount />} />
@@ -32,7 +27,6 @@ function App() {
           <Route path='/unauthorized' element={<Unauthorized />} />
           <Route path='/*' element={<Layout children={<NotFound />} />} />
         </Routes>
-      </UserContext.Provider>
     </div>
   );
 }

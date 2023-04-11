@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Logo42 from "../../assets/42_Logo.png"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserGear } from "@fortawesome/free-solid-svg-icons"
-import UserContext from "../../context/UserContext"
+import { UserContext } from "../../context/UserContext"
 
 export default function Navbar() {
 
@@ -22,7 +22,6 @@ export default function Navbar() {
             method: "GET"
         })
             .then(res => {
-                // console.log(res);
                 if (res.status == 401) {
                     naviguate("/unauthorized");
                     return;

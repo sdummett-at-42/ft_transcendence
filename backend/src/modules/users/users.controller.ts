@@ -25,7 +25,7 @@ import { UserMeEntity } from './entities/userme.entity';
 @UseGuards(AuthenticatedGuard)
 @ApiTags('users')
 export class UsersController {
-	constructor(private readonly users: UsersService, private readonly chat: ChatGateway) { }
+	constructor(private readonly users: UsersService) { }
 
 	@Get()
 	@HttpCode(200)
@@ -46,7 +46,7 @@ export class UsersController {
 	@ApiNoContentResponse({ type: UserEntity, description: 'Deletes the current user' })
 	async deleteMe(@Request() req) {
 		const user = await this.users.removeUser(req.user.id);
-		this.chat.disconnectUserSockets(req.user.id);
+		// this.chat.disconnectUserSockets(req.user.id);
 		req.logout((err) => {
 			return user;
 		});

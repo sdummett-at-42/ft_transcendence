@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import UserContext from "../../../../context/UserContext";
+import { UserContext } from "../../../../context/UserContext";
 import './SearchBar.css';
 import { useNavigate } from "react-router-dom";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
@@ -46,7 +46,6 @@ export default function SearchBar(props) {
                     );
                 })
                 setResults(result);
-                // console.log(`SearchBar: ${result}`);
             });
     }
 
