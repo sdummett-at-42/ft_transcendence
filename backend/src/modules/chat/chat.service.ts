@@ -218,6 +218,7 @@ export class ChatService {
 	}
 
 	async joinRoom(socket, dto: JoinRoomDto, server) {
+		console.log("here??");
 		const userId: string = socket.data.userId.toString();
 
 		const room = await this.redis.getRoom(dto.roomName);
@@ -298,8 +299,9 @@ export class ChatService {
 		const sockets = server.sockets.sockets;
 		sockets.forEach((value, key) => {
 			if (value.data.userId === socket.data.userId) {
+				console.log(value.data.userId);
 				value.join(dto.roomName)
-				value.join(Event.roomJoined, {
+				socket.emit(Event.roomJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),
 					message: `You have joined room ${dto.roomName}.`,

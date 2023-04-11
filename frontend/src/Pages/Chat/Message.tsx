@@ -18,15 +18,15 @@ export default function Message(props:MessageProps) {
   const [ifShowMessage, setIfShowMessage] = useState(false);
   const [item, setItem] = useState([]);
 
-  const handleJoinRoom = (event) => {
-    setShowInput(true);
-    console.log("selectedList", props.selectedList);
-    const payload = {
-      roomName : props.selectedList,
-      password : inputValue
-    }
-    props.socket.emit("joinRoom", payload);
-  };
+  // const handleJoinRoom = (event) => {
+  //   setShowInput(true);
+  //   console.log("selectedList", props.selectedList);
+  //   const payload = {
+  //     roomName : props.selectedList,
+  //     password : inputValue
+  //   }
+  //   props.socket.emit("joinRoom", payload);
+  // };
   const handleQuit = () => {
     props.onQuit();
     setMessageList([]);
@@ -54,7 +54,7 @@ export default function Message(props:MessageProps) {
   };
 
   const handleMessages = useCallback((payload) => {
-    console.log("payload", payload);
+    console.log("setMessageList", payload);
     setMessageList((prevme) => [...prevme, payload]);
   },[messageList]);
 
@@ -111,7 +111,7 @@ export default function Message(props:MessageProps) {
     <div className="chat-with col-2">Chatroom : {props.selectedList}</div>
     {/* <div className="chat-num-messages col-4">1000 members</div> */}
   </div>
-  <button className="col-2" onClick={handleJoinRoom} >Join</button>
+  {/* <button className="col-2" onClick={handleJoinRoom} >Join</button> */}
   <button className="col-2" onClick={handleQuit}>Leave</button>
   {/* <input type="text" className="form-control" name="password" placeholder="Password" /> */}
   {showInput && (

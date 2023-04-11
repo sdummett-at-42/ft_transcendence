@@ -4,6 +4,7 @@ import Modal from "./Modal";
 import { io, Socket } from "socket.io-client";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock} from '@fortawesome/free-solid-svg-icons';
+import RoomJoin from './RoomJoin';
 
 interface ChatroomListProps {
   socket: Socket;
@@ -12,7 +13,8 @@ interface ChatroomListProps {
 export default function ChatroomList(props: ChatroomListProps) {
     // States
     const [chatrooms, setChatrooms] = useState([]);
-    const [show, setShow] = useState(false);
+    const [showAddRoom, setShowAddRoom] = useState(false);
+    const [showJoinRoom, setShowJoinRoom] = useState(false);
 
     // Event handlers
     const handleRoomCreated = useCallback((payload) => {
@@ -20,16 +22,25 @@ export default function ChatroomList(props: ChatroomListProps) {
     }, []);
 
     const handleRoomJoined = useCallback((payload) => {
-      console.log("joined", payload);
-      setChatrooms((prevChatrooms) => [...prevChatrooms, {protected: false, roomName: payload.roomName}]);
+      console.log("HERE joined", payload);
+      setChatrooms((prevChatrooms) => [...prevChatrooms, {roomName: payload.roomName}]);
+
     }, []);
 
-    let count = 0;
+    // const handleRoomsList = useCallback((payload) => {
+    //   // console.log(`ROOMRECEIVE: ${JSON.stringify(payload)}`);
+    //   // setChatrooms(payload.roomsList);
+    // }, []);
+
     const handleRoomsListReceived = useCallback((payload) => {
-      console.log(`NEW: ${JSON.stringify(payload)}`);
-      setChatrooms(payload.roomsList);
-      count++;
-      console.log(`roomCreated event received ${count} times`);
+      console.log(`ROOMRECEIVE: ${JSON.stringify(payload)}`);
+      setChatrooms(payload.rooms.map(room => ({ roomName: room })));
+      console.log("chat rooms:", chatrooms);
+    }, []);
+    const handleDMRoomsListReceived = useCallback((payload) => {
+      console.log(`ROOMDM: ${JSON.stringify(payload)}`);
+      setChatrooms((prevChatrooms) => [...prevChatrooms, ...payload.dms.map(room => ({ roomName: room }))]);
+      console.log("chat rooms2:", chatrooms);
     }, []);
 
     const handleRoomDeleted = useCallback((payload) => {
@@ -43,73 +54,82 @@ export default function ChatroomList(props: ChatroomListProps) {
     const handleChatroomClick = (chatroomId)=> {
       props.onListClick(chatroomId);
     }
-    const showdata = (event) => {
-      if (props.socket) {
-        props.socket.emit("getRoomsList");
-      }
-    };
 
     // Init
     useEffect(() => {
-      props.socket.emit("getRoomsList");
-      console.log("bonjour!");
+      // props.socket.emit("getRoomsList");
+      props.socket.emit("getUserRooms");
+      props.socket.emit("getDmsList");
     }, []);
     useEffect(() => {
       if (props.socket) {
-        console.log("The socket exists")
-        props.socket.on("roomsListReceived",handleRoomsListReceived);
+        // console.log("The socket exists")
+        // props.socket.on("roomsListReceived",handleRoomsList);
+        props.socket.on("userRooms",handleRoomsListReceived);
+        props.socket.on("dmsList",handleDMRoomsListReceived);
         props.socket.on("roomCreated", handleRoomCreated);
         props.socket.on("roomJoined", handleRoomJoined);
         props.socket.on("roomLeft", handleRoomDeleted );
-        console.log("received");
-        console.log(props.socket.listeners("roomsListReceived"));
-        console.log("created");
-        console.log(props.socket.listeners("roomCreated"));
+        // console.log("received");
+        // console.log(props.socket.listeners("roomsListReceived"));
+        // console.log("created");
+        // console.log(props.socket.listeners("roomCreated"));
         console.log("joined");
         console.log(props.socket.listeners("roomJoined"));
-        console.log("left");
-        console.log(props.socket.listeners("roomLeft"));
-        console.log("fake");
-        console.log(props.socket.listeners("fakeEvent"));
+        // console.log("left");
+        // console.log(props.socket.listeners("roomLeft"));
+        // console.log("fake");
+        // console.log(props.socket.listeners("fakeEvent"));
       return () => {
           // Log the event listeners to the console
-          props.socket.off("roomsListReceived", handleRoomsListReceived);
+          // props.socket.off("roomsListReceived", handleRoomsList);
+          props.socket.off("userRooms",handleRoomsListReceived);
+          props.socket.off("dmsList",handleDMRoomsListReceived);
           props.socket.off("roomCreated", handleRoomCreated);
           props.socket.off("roomJoined", handleRoomJoined);
           props.socket.off("roomLeft", handleRoomDeleted);
       }}
-    }, [props.socket]);
+    }, [props.socket, handleRoomJoined]);
 
   // Render
   return (
     <div className="people-list" id="people-list">
-            <div className="search">
-            <button onClick={showdata}>Show data</button>
-            <button  onClick={() => {
-          setShow(true);}} >Create a New ChatRoom</button>
-          <Modal         isVisible={show}
+            <div className="row">
+            <div className="search col">
+            {/* <button onClick={showdata}>Show data</button> */}
+            <button  onClick={() => {setShowAddRoom(true);}} >New Room</button>
+          <Modal   isVisible={showAddRoom}
             footer={<button>Cancel</button>}
-            onClose={() => setShow(false)} 
+            onClose={() => setShowAddRoom(false)} 
             socket={props.socket}/>
             </div>
-          <ul className="list">
-            <li className="clearfix">       
-              <div className="about">
-                <div className="name">Group A</div>
-                <div className="status"> Private <FontAwesomeIcon icon={faLock} /></div>
-              </div>
-            </li>
+            <div className="search col">
+            <button onClick={() => {setShowJoinRoom(true);}}>Join Room</button>
+          <RoomJoin isVisible={showJoinRoom}
+            footer={<button>Cancel</button>}
+            onClose={() => setShowJoinRoom(false)} 
+            socket={props.socket}/>
+            </div>
+                <ul className="list">
+                  <li className="clearfix">       
+                    <div className="about">
+                    <div className="name">Group A</div>
+                    <div className="status"> Private <FontAwesomeIcon icon={faLock} /></div>
+                    </div>
+                  </li>
             {chatrooms.map(room => (
               <li className="clearfix"  key={room.roomName} onClick={() => handleChatroomClick(room.roomName)}>       
               <div className="about">
-              <div className="name" >{room.roomName} </div>
+              <div className="name" >{room.roomName} 
+              </div>
               <div className="status">
-                  <i className="fa fa-circle online"></i> online
+                  <i className="fa fa-circle online"></i> Protected <FontAwesomeIcon icon={faLock} />
                   </div>
               </div>
             </li>
             ))}
           </ul>
+          </div>
         </div>
   );
 }

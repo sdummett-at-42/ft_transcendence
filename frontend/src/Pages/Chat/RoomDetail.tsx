@@ -21,13 +21,10 @@ export default function RoomDetail(props: RoomDetailProps) {
   const close = () => {
     setShow(false);
   };
-  const handleInputChange = (setState, value) => {
-    setState(value);
-  };
-  
-  // Usage:
-  // // For inputInvite
-  // handleInputChange(setInputInvite, inputValue);
+
+  const handleInvite =()=>{
+
+  }
   
   // // For inputBan
   // handleInputChange(setInputBan, inputValue);
@@ -60,18 +57,17 @@ export default function RoomDetail(props: RoomDetailProps) {
             selectedList = {props.selectedList }/>
             <div className='chat-info-subtitle'>Public</div>
             <div className='chat-info-subtitle'>Invite a friend</div>
-            <input placeholder="Name" value={inputInvite} onChange={(event) => handleInputChange(setInputInvite, event.target.value)}></input>
-            <i className="fa fa-plus" aria-hidden="true"></i>
-           <FontAwesomeIcon icon={faPlus} />
+            <input placeholder="Name" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)}/>
+            <FontAwesomeIcon icon={faPlus} onClick={handleInvite}/>
            <div className='chat-info-subtitle'>Ban a Member</div>
-           <input placeholder="Name"></input>
+           <input placeholder="Name" ></input>
            <FontAwesomeIcon icon={faBan} />
            <div className='chat-info-subtitle'>Mute a Member</div>
            <input placeholder="Name"></input>
-           <FontAwesomeIcon icon={faVolumeXmark} />
+           <FontAwesomeIcon icon={faVolumeXmark}/>
            <div className='chat-info-subtitle'>Kick a Member</div>
            <input placeholder="Name"></input>
-           <FontAwesomeIcon icon={faPersonRunning} />
+           <FontAwesomeIcon icon={faPersonRunning}/>
            {/* <FontAwesomeIcon icon={faKickstarterK} size="1.5x"/> */}
       </div>
       <div className="chat-info-header clearfix">
