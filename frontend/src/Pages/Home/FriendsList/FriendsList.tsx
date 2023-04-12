@@ -5,17 +5,92 @@ import { faComments } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import SearchBar from "./SearchBar/SearchBar";
 import { UserContext } from "../../../context/UserContext";
+import Friend from "./FriendUser/Friend";
 
 export default function FriendsList() {
 
+    type UserData = {
+        name: string;
+        id: number;
+        profilePicture: string;
+        elo: number;
+    }
+
     const navigate = useNavigate();
     const { user, friendSocketRef } = useContext(UserContext);
-    const [friends, setFriends] = useState([]);
-    const [friendsPending, setFriendsPending] = useState(null);
+
+    const [friends, setFriends] = useState<UserData[]>([]);
+    const [friendsPending, setFriendsPending] = useState<UserData[]>([]);
+
+    useEffect(() => {
+        async function getAllFriends() {
+            // Get all friends of the user from the database and set the state
+            const ListOfFriends = await fetch("http://localhost:3001/friends", {
+                credentials: 'include',
+                method: 'GET'
+            })
+                .then(res => {
+                    if (res.status == 401) {
+                        navigate("/unauthorized");
+                    }
+                    else if (res.status == 200) {
+                        return res.json();
+                }});
+
+            // console.log(`Friend in database: `);
+            // console.log(ListOfFriends);
+            setFriends(ListOfFriends);
+        } 
+
+        async function getAllPendingFriends() {
+            // Get all pending friends of the user from the database and set the state
+            const ReceivedPendingFriends = await fetch("http://localhost:3001/friends/requests/received", {
+                credentials: 'include',
+                method: 'GET'
+            })
+                .then(res => {
+                    if (res.status == 401) {
+                        navigate("/unauthorized");
+                    }
+                    else if (res.status == 200) {
+                        return res.json();
+                }});
+        
+            const SentPendingFriends = await fetch("http://localhost:3001/friends/requests/sended", {
+                credentials: 'include',
+                method: 'GET'
+            })
+                .then(res => {
+                    if (res.status == 401) {
+                        navigate("/unauthorized");
+                    }
+                    else if (res.status == 200) {
+                        return res.json();
+                }});
+
+            // console.log(`Pending friends in database: `);
+            // console.log(ReceivedPendingFriends);
+            setFriendsPending(ReceivedPendingFriends);
+            // console.log(SentPendingFriends);
+            setFriendsPending(prevFriendsPending => [...prevFriendsPending, ...SentPendingFriends]);
+        }
+        getAllFriends();
+        getAllPendingFriends();
+    }, []);
 
     const handleFriendRequest = (data) => {
         console.log(data);
-        // update front
+        fetch("http://localhost:3001/friends/requests", {
+            credentials: 'include',
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "friendId": data.id
+            }),
+        });
+        console.log("friend request received");
     }
 
     useEffect(() => {
@@ -24,7 +99,12 @@ export default function FriendsList() {
         friendSocketRef
     ]);
 
+
+    const [isShaking, setIsShaking] = useState(false);
+
     const addFriend = async (friend) => {
+
+        // Check if user is valid and if not, shake the search bar
         const getUser = await fetch("http://localhost:3001/users", {
             credentials: 'include',
             method: 'GET'
@@ -41,13 +121,14 @@ export default function FriendsList() {
                 const dataFriend = res.filter(element => element.name === friend);
                 return dataFriend.at(0);
             });
+        if (!getUser || getUser.id === user.id) {
+            console.log("user not found");
+            setIsShaking(true);
+            setTimeout(() => { setIsShaking(false) }, 1000);
+            return;
+        }
 
-        // Check si getUser est valide
-
-        console.log(`My id: ${user.id}`);
-        console.log(`Friend request id: ${getUser.id}`);
-
-
+        // Send friend request
         await fetch("http://localhost:3001/friends/requests", {
             method: 'POST',
             credentials: 'include',
@@ -63,13 +144,10 @@ export default function FriendsList() {
                     navigate("/unauthorized");
                 }
                 else if (res.status == 200) {
-                    return res.json();
+                    console.log("friend request sent");
+                    setFriendsPending([...friendsPending, getUser]);
                 }
             })
-            .then(res => {
-                // console.log(res);
-                // update front
-            });
 
     }
 
@@ -78,44 +156,17 @@ export default function FriendsList() {
             <div className="FriendsList-title">
                 Liste d'amis
             </div>
-            <div className="FriendsList-search-bar-container">
+            <div className={`FriendsList-search-bar-container ${isShaking ? "shake" : ""}`}>
                 <SearchBar onAddFriend={addFriend} />
             </div>
             <div className="FriendsList-list">
                 <div className="FriendsList-user">
-                    {/* {friends && (
-                        friends.forEach(element => {
-                            return (
-
-                                <div key={element.id}>
-                            <div className="FriendsList-profil-picture">
-                                {element.profilPicture}
-                            </div>
-                            <div className="FriendsList-name">
-                                {element.name}
-                            </div>
-                            <div className="FriendsList-state">
-                                // Status de l'utilisateur (online - offline)
-                            </div>
-                        </div>
-                            );
-                        })
-                    )} */}
+                    {friends && (friends.map((friend) => {
+                        return <Friend key={friend.id} props={friend} />
+                        }))};
                 </div>
                 <div className="FriendsList-user-pending">
-                    {/* {friendsPending && (
-                        <div key={friendsPending.id}>
-                            <div className="FriendsList-profil-picture">
-                                {friendsPending.profilPicture}
-                            </div>
-                            <div className="FriendsList-name">
-                                {friendsPending.name}
-                            </div>
-                            <div className="FriendsList-state">
-                                // Status de l'utilisateur (online - offline)
-                            </div>
-                        </div>
-                    )} */}
+                    {/* {friendsPending && (<Friend props={friendsPending} />)}; */}
                 </div>
             </div>
             <Link to="/message" className="FriendsList-messages" style={{textDecoration: 'none', color: 'whitesmoke'}}>
