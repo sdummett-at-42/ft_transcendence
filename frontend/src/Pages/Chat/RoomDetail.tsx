@@ -4,12 +4,15 @@ import { faBan, faPlus, faVolumeXmark, faPersonRunning} from '@fortawesome/free-
 import { faMessageSlash} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Setting from './Setting';
-import { useState, useEffect } from 'react';
+import { useState, useEffect , useCallback} from 'react';
 import { io, Socket } from "socket.io-client";
+import { createContext, useContext } from "react";
+import { DatabaseContext } from './ChatLogin';
 
 interface RoomDetailProps {
   socket: Socket;
   selectedList : string;
+  onUpdate:() =>void;
 }
 
 export default function RoomDetail(props: RoomDetailProps) {
@@ -18,31 +21,66 @@ export default function RoomDetail(props: RoomDetailProps) {
   const [inputBan, setInputBan] = useState("");
   const [inputMute, setInputMute] = useState("");
   const [inputKick, setInputKick] = useState("");
+  const database = useContext(DatabaseContext);
   const close = () => {
     setShow(false);
   };
 
-  const handleInvite =()=>{
+  const findInDatabase = (name)=>{
+    let user = database.find((user) => user.name === name);
 
+    if (user === undefined) {
+      props.onUpdate();
+      setTimeout(() => {
+        user = database.find((user) => user.name === name);
+        if (user === undefined) {
+          console.log("user is still undefined");
+        } else {
+          console.log("user found: ", user);
+        }
+      }, 1000);
+    } else {
+      console.log("user found: ", user);
+    }
+    return user.id;
   }
-  
-  // // For inputBan
-  // handleInputChange(setInputBan, inputValue);
-  
-  // // For inputMute
-  // handleInputChange(setInputMute, inputValue);
-  
-  // // For inputKick
-  // handleInputChange(setInputKick, inputValue);
 
-  // const handleSettingChange = (event) => {
+  const handleInvite =()=>{
+    let userId = findInDatabase(inputInvite);
+    const payload ={
+      roomName: props.selectedList,
+      userId: userId,
+    }
+    props.socket.emit("inviteUser", payload);
+  }
 
-  //   const { name, value } = event.target;
-  //   setFormData({
-  //     ...formData,
-  //     [name]: value
-  //   });
-  // };
+  const  handleInvited = useCallback((payload) =>{
+      console.log("INVITEING,",payload);
+      const confirmed = window.confirm(payload.message + "Would you like to join it?");
+      if (confirmed) {
+        console.log("Join by inviting");
+        const payloadNew = {
+          roomName : payload.roomName,
+          password : ""
+
+        }
+        props.socket.emit("joinRoom", payloadNew);
+      }
+    
+  }, [])
+
+  useEffect(() => {
+      if (props.socket) {
+        props.socket.on("invited", handleInvited);
+      }
+      return () => {
+        if (props.socket) {
+          props.socket.off("invited", handleInvited);
+        }
+      };
+  }, [props.socket]);
+
+
  return (
   <div className="chatinfo">
       <div className="chat-info-header clearfix">

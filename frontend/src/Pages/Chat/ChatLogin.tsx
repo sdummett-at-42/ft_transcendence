@@ -7,10 +7,43 @@ import RoomDetail from "./RoomDetail";
 import "./chat.css"
 import "./chat.scss"
 import { socket } from "./Socket";
+import { createContext, useContext } from "react";
+
+export const DatabaseContext = createContext();
 
 export default function ChatLogin() {
   const [selectedList, setSelectedList] = useState(null);
   const [userId, setUserId] = useState(0);
+  const [database, setDatabase] = useState([]);
+  const [shouldUpdateDatabase, setShouldUpdateDatabase] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+
+      await fetch("http://localhost:3001/users/", {
+          method: "GET",
+          credentials: "include"
+      })
+          .then((response) => response.json())
+          .then(json => {
+              setDatabase(json);
+          });
+    };
+    fetchData();
+    // console.log("database", database);
+  }, [socket]);
+
+  const handleUpdateDatabase = async () => {
+    await fetch("http://localhost:3001/users/", {
+          method: "GET",
+          credentials: "include"
+      })
+          .then((response) => response.json())
+          .then(json => {
+              setDatabase(json);
+          });
+  };
+
   const handleListClick = (list) => {
     console.log("List:",list);
     setSelectedList(list);
@@ -30,6 +63,17 @@ export default function ChatLogin() {
         setSelectedList("");
       }
   };
+  
+  const handleChildComponentUpdate = () => {
+    setShouldUpdateDatabase(true);
+  };
+
+  useEffect(() => {
+    if (shouldUpdateDatabase) {
+      handleUpdateDatabase();
+    }
+  }, [shouldUpdateDatabase]);
+
   useEffect(()=>{
     console.log("here????");
     const fetchData = async () => {
@@ -72,9 +116,11 @@ export default function ChatLogin() {
       <div >
         <div className="containerhere clearfix">
           <div className="row">
-          <ChatroomList socket={socket}  onListClick={handleListClick} />
-          <Message socket={socket} selectedList={selectedList} onQuit={handleLeaveRoom} UserId = {userId}/>
-          <RoomDetail socket={socket} selectedList={selectedList}/>
+            <DatabaseContext.Provider value={database}>
+              <ChatroomList socket={socket}  onListClick={handleListClick} />
+              <Message socket={socket} selectedList={selectedList} onQuit={handleLeaveRoom} UserId = {userId} onUpdate={handleChildComponentUpdate}/>
+              <RoomDetail socket={socket} selectedList={selectedList} onUpdate={handleChildComponentUpdate}/>
+            </DatabaseContext.Provider>
       </div>
       </div>
     </div>

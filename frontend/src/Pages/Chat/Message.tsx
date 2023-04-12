@@ -1,15 +1,19 @@
 import React, { FC } from 'react';
 import {Socket } from "socket.io-client";
 import { useState, useEffect, useCallback } from 'react';
+import { createContext, useContext } from "react";
 import "./chat.css"
 import "./chat.scss"
+import { DatabaseContext } from './ChatLogin';
 
 interface MessageProps {
   socket: Socket;
   selectedList : string;
   onQuit: () => void;
   UserId:Number;
+  onUpdate:() =>void;
 }
+
 export default function Message(props:MessageProps) {
   const [messageList, setMessageList] = useState([]);
   const [showInput, setShowInput] = useState(false);
@@ -17,16 +21,8 @@ export default function Message(props:MessageProps) {
   const [message, setMessage]= useState("");
   const [ifShowMessage, setIfShowMessage] = useState(false);
   const [item, setItem] = useState([]);
+  const database = useContext(DatabaseContext);
 
-  // const handleJoinRoom = (event) => {
-  //   setShowInput(true);
-  //   console.log("selectedList", props.selectedList);
-  //   const payload = {
-  //     roomName : props.selectedList,
-  //     password : inputValue
-  //   }
-  //   props.socket.emit("joinRoom", payload);
-  // };
   const handleQuit = () => {
     props.onQuit();
     setMessageList([]);
@@ -52,10 +48,19 @@ export default function Message(props:MessageProps) {
     props.socket.emit("sendRoomMsg",payload);
     setMessage("");
   };
+  const handleMessageAuto= useCallback((payload)=>{
+    setMessageList((prevme) => [...prevme, {
+      roomName: "",
+      userId : -1,
+      timestamp: new Date().toISOString(),
+      message : payload.message
+    }]);
+  },[]);
 
   const handleMessages = useCallback((payload) => {
     console.log("setMessageList", payload);
-    setMessageList((prevme) => [...prevme, payload]);
+    // if(payload.userId != -1)
+      setMessageList((prevme) => [...prevme, payload]);
   },[messageList]);
 
   useEffect(() => {
@@ -71,6 +76,10 @@ export default function Message(props:MessageProps) {
         return null;
       }
       else {
+        const user = database.find((user) => user.id === each.userId);
+        if (user == undefined)
+          console.log("user undefine");
+        const username = user ? user.name : each.userId;
         if (each.userId === props.UserId) {
           className1 += " align-right";
           className2 += " other-message float-right";
@@ -78,35 +87,32 @@ export default function Message(props:MessageProps) {
           className2 += " my-message"; 
         }
         return (
-        <li>
-          <div className={className1}>
-            <span className="message-data-name"> From : {each.userId}</span>
-            <span className="message-data-time">{hour}:{minute}:{second}</span>
-          </div>
-          <div className={className2}>{each.message}</div>
-        </li>
+          <li className="clearfix">
+            <div className={className1}>
+              <span className="message-data-name"> {each.userId == -1 ? "" : "From : " + {username}}</span>
+              <span className="message-data-time">{hour}:{minute}:{second}</span>
+            </div>
+              {each.userId == -1? <div className={className2}>{each.message}</div> : <p> {each.message}</p>}
+          </li>
       );
     }})
     );
   },[props.selectedList, , messageList] )
-
   
   useEffect(() => {
     if (props.socket) {
       props.socket.on("roomMsgHistReceived", (payload) => {console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
-      setMessageList(payload.msgHist);
-      console.log("payload.msgHist", payload.msgHist);
-    });
-      props.socket.on("roomJoined", ()=>{
-        console.log ("roomJoined\n");
-    });
+      setMessageList(payload.msgHist);});
+      props.socket.on("roomJoined", ()=>{console.log ("roomJoined\n");});
       props.socket.on("roomMsgReceived", handleMessages);
+      props.socket.on("userInvited", handleMessageAuto);
     }
     return () => {
       if (props.socket) {
         props.socket.off("roomMsgHistReceived");
         props.socket.off("roomJoined");
         props.socket.off("roomMsgReceived", handleMessages);
+        props.socket.off("userInvited", handleMessageAuto);
       }
     };
   }, [props.socket]);

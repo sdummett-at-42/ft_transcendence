@@ -21,14 +21,16 @@ export default function RoomJoin(props: RoomJoinProps) {
       password : "",
     });
 
-     const handleJoinRoom = () => {
+  const handleJoinRoom = () => {
       const payload={
         roomName: roomName,
         password: password,
       }
-      console.log("handleJoinRoom", payload);
-      props.socket.emit("joinRoom",payload);
-    };
+    console.log("handleJoinRoom", payload);
+    props.socket.emit("joinRoom",payload);
+    setRoomName("");
+    setPassword("");
+  };
 
   const handleCloseAfterRoomCreated = useCallback((payload) => {
     console.log("roomJoined", payload);
