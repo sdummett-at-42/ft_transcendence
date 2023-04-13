@@ -20,6 +20,7 @@ import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
 import { ContentTypeGuard } from '../../shared/content-type.guard';
 import { ChatGateway } from '../chat/chat.gateway';
 import { UserMeEntity } from './entities/userme.entity';
+import { AchievementEntity } from './entities/achievements.entity';
 
 @Controller('users')
 @UseGuards(AuthenticatedGuard)
@@ -72,5 +73,22 @@ export class UsersController {
 		@Req() request,
 	) {
 		return this.users.updateUser(request.user.id, updateUserDto);
+	}
+
+	@Get(':id/achievements')
+	@HttpCode(200)
+	@ApiOkResponse({ type: AchievementEntity, description: 'Return an achievements array of an user.'})
+	async getUserAchievements(@Param('id', ParseIntPipe) id: number) {
+		const user = await this.users.findOneUserById(id);
+		if (!user)
+			throw new NotFoundException(`User with id ${id} does not exist.`);
+		return this.users.getAchievements(id);
+	}
+
+	@Get('me/achievements')
+	@HttpCode(200)
+	@ApiOkResponse({ type: AchievementEntity, description: 'Return an achievements array of the current user.'})
+	async getMyAchievements(@Request() req) {
+		return this.users.getAchievements(req.user.id);
 	}
 }

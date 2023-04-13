@@ -32,6 +32,7 @@ model User {
 	twofactorSecret		String?
 	password			String?
 	loginMethod			LoginMethod
+	achievements		Achievement[]
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
 }
@@ -67,4 +68,11 @@ model Image {
 	ownerId				Int					@unique
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
+}
+
+model Achievement {
+	id					Int					@id @default(autoincrement())
+	name				String				@unique
+	description			String
+	users				User[]
 }

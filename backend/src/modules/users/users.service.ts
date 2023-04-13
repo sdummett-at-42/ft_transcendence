@@ -192,4 +192,11 @@ export class UsersService {
 		}
 		return name;
 	}
+
+	async getAchievements(id: number) {
+		return await this.prisma.user.findUnique({
+			where: { id },
+			select: { achievements: true},
+		})
+	}
 }
