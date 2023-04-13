@@ -41,7 +41,7 @@ export class UsersController {
 		return this.users.findOneUserByIdWithEmail(req.user.id);
 	}
 
-	@Delete('me/delete')
+	@Delete('me')
 	@HttpCode(204)
 	@ApiNoContentResponse({ type: UserEntity, description: 'Deletes the current user' })
 	async deleteMe(@Request() req) {
