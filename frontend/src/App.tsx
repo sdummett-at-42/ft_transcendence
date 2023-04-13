@@ -9,6 +9,7 @@ import Profile from "./Pages/Profile/Profile";
 import NotFound from "./Pages/Errors/NotFound";
 import Layout from "./Pages/Navbar/Layout";
 import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
+import InitAchievements from "./Pages/Achievements/Achievements";
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
           {/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
           <Route path='/profil/:id' element={<Layout children={<Profile />} />} />
           <Route path='/unauthorized' element={<Unauthorized />} />
+		  <Route path='/achievements' element={<InitAchievements />} />
           <Route path='/*' element={<Layout children={<NotFound />} />} />
         </Routes>
     </div>

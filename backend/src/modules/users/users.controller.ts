@@ -75,6 +75,13 @@ export class UsersController {
 		return this.users.updateUser(request.user.id, updateUserDto);
 	}
 
+	@Get('me/achievements')
+	@HttpCode(200)
+	@ApiOkResponse({ type: AchievementEntity, description: 'Return an achievements array of the current user.'})
+	async getMyAchievements(@Request() req) {
+		return this.users.getAchievements(req.user.id);
+	}
+
 	@Get(':id/achievements')
 	@HttpCode(200)
 	@ApiOkResponse({ type: AchievementEntity, description: 'Return an achievements array of an user.'})
@@ -83,12 +90,5 @@ export class UsersController {
 		if (!user)
 			throw new NotFoundException(`User with id ${id} does not exist.`);
 		return this.users.getAchievements(id);
-	}
-
-	@Get('me/achievements')
-	@HttpCode(200)
-	@ApiOkResponse({ type: AchievementEntity, description: 'Return an achievements array of the current user.'})
-	async getMyAchievements(@Request() req) {
-		return this.users.getAchievements(req.user.id);
 	}
 }
