@@ -143,41 +143,19 @@ export default function Message(props:MessageProps) {
   }, [props.socket]);
 
   return (
+    props.selectedList ? (
 <div className="chat">
 <div className="chat-header clearfix">
   <div className="chat-about container">
     <div className="row">
-    <div className="chat-with col-2">Chatroom : {props.selectedList}</div>
-    {/* <div className="chat-num-messages col-4">1000 members</div> */}
-  </div>
-  {/* <button className="col-2" onClick={handleJoinRoom} >Join</button> */}
-  <button className="col-2" onClick={handleQuit}>Leave</button>
-  {/* <input type="text" className="form-control" name="password" placeholder="Password" /> */}
-  {showInput && (
-        <form onSubmit={handleJoinSubmit}>
-          <input className="col-10" type="text" placeholder="Password" value={inputValue} onChange={handleInputChange} />
-          <button className="col-2" type="submit">Submit</button>
-        </form>
-      )}
+      <div className="chat-with col-6">Chatroom : {props.selectedList}</div>
+    </div>
+      <button className="col-2" onClick={handleQuit}>Leave</button>
     </div>
 </div> 
 
 <div className="chat-history">
   <ul>
-    <li className="clearfix">
-      <div className="message-data align-right">
-        <span className="message-data-time" >10:10 AM, Today</span>
-        <span className="message-data-name" >Olia</span> 
-      </div>
-      <div className="message other-message float-right">Hi Vincent</div>
-    </li> 
-    <li>
-      <div className="message-data">
-        <span className="message-data-name"> Vincent</span>
-        <span className="message-data-time">10:12 AM, Today</span>
-      </div>
-      <div className="message my-message">Are we meeting today?</div>
-    </li>
     {item}
   </ul>
 
@@ -186,6 +164,6 @@ export default function Message(props:MessageProps) {
     <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="2" value={message} onChange={handleMessageChange}></textarea>      
     <button onClick={handleSendMessage} >Send</button>
   </div>
-</div>
+</div>):<div className="chat"> <h4>Choose a room to view messages</h4></div> 
   );
 }

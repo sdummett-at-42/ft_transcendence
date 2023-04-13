@@ -52,6 +52,10 @@ export default function RoomDetail(props: RoomDetailProps) {
 
   const handleInvite =()=>{
     let userId = findInDatabase(inputInvite);
+    if (userId == 0){
+      alert("User not found. Please try again.");
+      return ;
+    }
     const payload ={
       roomName: props.selectedList,
       userId: userId,
@@ -64,33 +68,30 @@ export default function RoomDetail(props: RoomDetailProps) {
       setMessage(payload.message);
       setRoomNameInvite(payload.roomName);
       console.log("RoomName", );
-      setShowConfirm(true);
-      // const confirmed = window.confirm(payload.message + "Would you like to join it?");
-      // if (confirmed) {
-      //   console.log("Join by inviting");
-      //   const payloadNew = {
-      //     roomName : payload.roomName,
-      //     password : ""
-
-      //   }
-      //   props.socket.emit("joinRoom", payloadNew);
-      // }
-    
+      setShowConfirm(true);    
   }, [])
+
+  const handleNotInvite = useCallback((payload) =>{
+    console.log("not inviting,",payload);
+    alert(payload.message);  
+}, [])
 
   useEffect(() => {
       if (props.socket) {
         props.socket.on("invited", handleInvited);
+        props.socket.on("userNotInvited", handleNotInvite);
       }
       return () => {
         if (props.socket) {
           props.socket.off("invited", handleInvited);
+          props.socket.off("userNotInvited", handleNotInvite);
         }
       };
   }, [props.socket]);
 
 
  return (
+  props.selectedList ? (
   <div className="chatinfo">
       <div className="chat-info-header clearfix">
       <div className='chat-info-title'>Room Info :{props.selectedList}</div>
@@ -187,7 +188,7 @@ export default function RoomDetail(props: RoomDetailProps) {
             {/* <button>Play</button><button>Message</button><button>Block</button> */}
             
       </div>
-  </div>
+  </div>) : <div className="chatinfo" ></div>
  );
 }
 

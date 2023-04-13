@@ -70,8 +70,12 @@ export default function Setting(props: SettingProps) {
                 </select>
             </div>
             <div className="form-group">
-                <label htmlFor="inputPassword">Password</label>
+                <label htmlFor="inputPassword">Password (To remove the password, simply leave the password field blank.)</label>
                 <input type="text" className="form-control" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} />
+            </div>
+            <div className="form-group">
+                <label htmlFor="inputAdmin">New Administrator</label>
+                <input type="text" className="form-control" name="Name" placeholder="Name"  />
             </div>
             <div className="modal-form">
             <button type="submit">Submit</button>
