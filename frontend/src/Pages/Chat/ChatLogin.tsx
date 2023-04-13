@@ -31,7 +31,7 @@ export default function ChatLogin() {
     };
     fetchData();
     // console.log("database", database);
-  }, [socket]);
+  }, []);
 
   const handleUpdateDatabase = async () => {
     await fetch("http://localhost:3001/users/", {
@@ -41,7 +41,7 @@ export default function ChatLogin() {
           .then((response) => response.json())
           .then(json => {
               setDatabase(json);
-          });
+      });
   };
 
   const handleListClick = (list) => {
@@ -102,10 +102,12 @@ export default function ChatLogin() {
   
       socket.on('connect', onConnect);
       socket.on('disconnect', onDisconnect);
+      socket.on("memberListUpdated", handleUpdateDatabase );
   
       return () => {
         socket.off('connect', onConnect);
         socket.off('disconnect', onDisconnect);
+        socket.on("memberListUpdated", handleUpdateDatabase );
       };
     }, [socket]);
 
@@ -117,7 +119,7 @@ export default function ChatLogin() {
         <div className="containerhere clearfix">
           <div className="row">
             <DatabaseContext.Provider value={database}>
-              <ChatroomList socket={socket}  onListClick={handleListClick} />
+              <ChatroomList socket={socket}  onListClick={handleListClick} onUpdate={handleChildComponentUpdate}/>
               <Message socket={socket} selectedList={selectedList} onQuit={handleLeaveRoom} UserId = {userId} onUpdate={handleChildComponentUpdate}/>
               <RoomDetail socket={socket} selectedList={selectedList} onUpdate={handleChildComponentUpdate}/>
             </DatabaseContext.Provider>

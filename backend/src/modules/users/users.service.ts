@@ -28,6 +28,7 @@ export class UsersService {
 			user.name,
 			user.id,
 		);
+
 		return this.prisma.user.update({
 			where: { id: user.id },
 			data: {

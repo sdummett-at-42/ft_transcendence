@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { useState, useEffect, useCallback} from 'react';
-import Modal from "./Modal";
+import RoomCreate from "./RoomCreate";
 import { io, Socket } from "socket.io-client";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock} from '@fortawesome/free-solid-svg-icons';
@@ -9,6 +9,7 @@ import RoomJoin from './RoomJoin';
 interface ChatroomListProps {
   socket: Socket;
   onListClick : (list: string) => void;
+  onUpdate:() =>void;
 }
 export default function ChatroomList(props: ChatroomListProps) {
     // States
@@ -24,7 +25,7 @@ export default function ChatroomList(props: ChatroomListProps) {
     const handleRoomJoined = useCallback((payload) => {
       console.log("HERE joined", payload);
       setChatrooms((prevChatrooms) => [...prevChatrooms, {roomName: payload.roomName}]);
-
+      props.onUpdate();
     }, []);
 
     // const handleRoomsList = useCallback((payload) => {
@@ -98,8 +99,7 @@ export default function ChatroomList(props: ChatroomListProps) {
             <div className="search col">
             {/* <button onClick={showdata}>Show data</button> */}
             <button  onClick={() => {setShowAddRoom(true);}} >New Room</button>
-          <Modal   isVisible={showAddRoom}
-            footer={<button>Cancel</button>}
+          <RoomCreate   isVisible={showAddRoom}
             onClose={() => setShowAddRoom(false)} 
             socket={props.socket}/>
             </div>

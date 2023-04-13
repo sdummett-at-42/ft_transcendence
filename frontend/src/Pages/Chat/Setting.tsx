@@ -8,7 +8,6 @@ interface SettingProps {
   socket: Socket,
   isVisible: Boolean,
   onClose:() => void,
-  footer: React.ReactNode,
   selectedList :string,
 
 }
@@ -55,7 +54,7 @@ export default function Setting(props: SettingProps) {
       <div className="modal" onClick={props.onClose}>
         <div className="modal-dialog" onClick={e => e.stopPropagation()}>
           <div className="modal-header">
-            <h3 className="modal-title">Setting</h3>
+            <h3 className="modal-title">Setting:{props.selectedList}</h3>
             <span className="modal-close" onClick={props.onClose}>
               &times;
             </span>
@@ -63,22 +62,24 @@ export default function Setting(props: SettingProps) {
           <div className="modal-body">
             <div className="modal-content">
             <form onSubmit={handleSubmit}>
-            <div class="form-group col-md-4">
-                <label for="inputAccess">Accessibility</label>
+            <div className ="form-group col-md-4">
+                <label htmlFor="inputAccess">Accessibility</label>
                 <select name="visibility" className="form-control" required  value={formData.visibility} onChange={handleInputChange}>
                 <option value="public" >Public</option>
                 <option value="private">Private</option>
                 </select>
             </div>
             <div className="form-group">
-                <label for="inputPassword">Password</label>
+                <label htmlFor="inputPassword">Password</label>
                 <input type="text" className="form-control" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} />
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <div className="modal-form">
+            <button type="submit">Submit</button>
+            <button onClick={props.onClose}>Cancel</button>
+              </div>
           </form>
           </div>
           </div>
-          {props.footer && <div className="modal-footer">{props.footer}</div>}
         </div>
       </div>
     );

@@ -8,6 +8,7 @@ import { useState, useEffect , useCallback} from 'react';
 import { io, Socket } from "socket.io-client";
 import { createContext, useContext } from "react";
 import { DatabaseContext } from './ChatLogin';
+import InvitedConfirm from './InvitedConfirm';
 
 interface RoomDetailProps {
   socket: Socket;
@@ -22,28 +23,32 @@ export default function RoomDetail(props: RoomDetailProps) {
   const [inputMute, setInputMute] = useState("");
   const [inputKick, setInputKick] = useState("");
   const database = useContext(DatabaseContext);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [message, setMessage] = useState("");
+  const [roomNameInvite, setRoomNameInvite] = useState("");
+  const [userId, setUserId] = useState(0);
   const close = () => {
     setShow(false);
   };
 
-  const findInDatabase = (name)=>{
-    let user = database.find((user) => user.name === name);
-
-    if (user === undefined) {
-      props.onUpdate();
-      setTimeout(() => {
-        user = database.find((user) => user.name === name);
-        if (user === undefined) {
-          console.log("user is still undefined");
-        } else {
-          console.log("user found: ", user);
-        }
-      }, 1000);
-    } else {
-      console.log("user found: ", user);
-    }
-    return user.id;
-  }
+  const findInDatabase = (name) => {
+      let user = database.find((user) => user.name === name);
+      if (user === undefined) {
+        props.onUpdate();
+        const interval = setInterval(() => {
+          user = database.find((user) => user.name === name);
+          if (user !== undefined) {
+            clearInterval(interval);
+            setUserId(user.id);
+            alert("Can not find the user, please try again.");
+          }
+        }, 1000);
+      } else {
+        setUserId(user.id);
+      }
+    return userId;
+  };
+  
 
   const handleInvite =()=>{
     let userId = findInDatabase(inputInvite);
@@ -56,16 +61,20 @@ export default function RoomDetail(props: RoomDetailProps) {
 
   const  handleInvited = useCallback((payload) =>{
       console.log("INVITEING,",payload);
-      const confirmed = window.confirm(payload.message + "Would you like to join it?");
-      if (confirmed) {
-        console.log("Join by inviting");
-        const payloadNew = {
-          roomName : payload.roomName,
-          password : ""
+      setMessage(payload.message);
+      setRoomNameInvite(payload.roomName);
+      console.log("RoomName", );
+      setShowConfirm(true);
+      // const confirmed = window.confirm(payload.message + "Would you like to join it?");
+      // if (confirmed) {
+      //   console.log("Join by inviting");
+      //   const payloadNew = {
+      //     roomName : payload.roomName,
+      //     password : ""
 
-        }
-        props.socket.emit("joinRoom", payloadNew);
-      }
+      //   }
+      //   props.socket.emit("joinRoom", payloadNew);
+      // }
     
   }, [])
 
@@ -84,28 +93,40 @@ export default function RoomDetail(props: RoomDetailProps) {
  return (
   <div className="chatinfo">
       <div className="chat-info-header clearfix">
-      <div className='chat-info-title'>Room Info</div>
+      <div className='chat-info-title'>Room Info :{props.selectedList}</div>
         <div className='chat-info-subtitle'>Accessibility</div>
         <button  onClick={() => {
           setShow(true);}} >Change</button>
           <Setting         isVisible={show}
             socket={props.socket}
-            footer={<button>Cancel</button>}
             onClose={() => setShow(false)} 
             selectedList = {props.selectedList }/>
+          <InvitedConfirm isVisible={showConfirm}
+            RoomName={roomNameInvite}
+            onClose={() => setShowConfirm(false)} 
+            socket={props.socket}
+            message = {message}/>
             <div className='chat-info-subtitle'>Public</div>
             <div className='chat-info-subtitle'>Invite a friend</div>
+            <div className="chat-info-form">
             <input placeholder="Name" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)}/>
-            <FontAwesomeIcon icon={faPlus} onClick={handleInvite}/>
+            <button onClick={handleInvite}><FontAwesomeIcon icon={faPlus} /></button>
+            </div>
            <div className='chat-info-subtitle'>Ban a Member</div>
+           <div className="chat-info-form">
            <input placeholder="Name" ></input>
-           <FontAwesomeIcon icon={faBan} />
+           <button><FontAwesomeIcon icon={faBan} /></button>
+           </div>
            <div className='chat-info-subtitle'>Mute a Member</div>
-           <input placeholder="Name"></input>
-           <FontAwesomeIcon icon={faVolumeXmark}/>
+           <div className="chat-info-form">
+            <input placeholder="Name"></input>
+           <button><FontAwesomeIcon icon={faVolumeXmark}/></button>
+           </div>
            <div className='chat-info-subtitle'>Kick a Member</div>
-           <input placeholder="Name"></input>
-           <FontAwesomeIcon icon={faPersonRunning}/>
+           <div className="chat-info-form">
+            <input placeholder="Name"></input>
+           <button><FontAwesomeIcon icon={faPersonRunning}/></button>
+           </div>
            {/* <FontAwesomeIcon icon={faKickstarterK} size="1.5x"/> */}
       </div>
       <div className="chat-info-header clearfix">

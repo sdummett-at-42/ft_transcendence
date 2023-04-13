@@ -1,34 +1,29 @@
+
 import React from 'react';
 import { useRef, useEffect, useCallback } from "react";
 import { useState } from 'react';
 import "./chat.scss"
 import { Socket } from "socket.io-client";
 
-interface RoomJoinProps {
+
+interface InvitedConfirmProps {
   socket: Socket;
   isVisible: Boolean;
   onClose:() => void;
-  footer: React.ReactNode;
+  message:string;
+  RoomName :string;
 }
-
-export default function RoomJoin(props: RoomJoinProps) {
-  const [roomName, setRoomName] = useState("");
+export default function InvitedConfirm(props: InvitedConfirmProps) {
   const [password, setPassword] = useState("");
-  // const [waring, setWarning] = useState("");
-    const [formData, setFormData] = useState({
-      roomName: "",
-      visibility: "public",
-      password : "",
-    });
 
   const handleJoinRoom = () => {
+    console.log("Room", props.RoomName)
       const payload={
-        roomName: roomName,
+        roomName: props.RoomName,
         password: password,
       }
     console.log("handleJoinRoom", payload);
     props.socket.emit("joinRoom",payload);
-    setRoomName("");
     setPassword("");
   };
 
@@ -75,21 +70,14 @@ export default function RoomJoin(props: RoomJoinProps) {
         <div className="modal" onClick={props.onClose}>
           <div className="modal-dialog" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Join Room</h3>
+              <h5 className="modal-title">{props.message}</h5>
               <span className="modal-close" onClick={props.onClose}>
               &times;
               </span>
             </div>
           <div className="modal-body">
-            <div className="modal-content">
-            <label htmlFor="roomName">Room Name</label>
-            <input
-              type="text"
-              id="roomName"
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
-              required
-            />
+          <div className="modal-content">
+            <h6>Would you like to join it? </h6>
             <label htmlFor="password">Password</label>
             <input
               type="password"
@@ -102,7 +90,7 @@ export default function RoomJoin(props: RoomJoinProps) {
             <button onClick={handleJoinRoom}>Join</button>
             <button onClick={props.onClose}>Cancel</button>
             </div>
-          </div>
+            </div>
           </div>
         </div>
       </div>)}
@@ -110,3 +98,5 @@ export default function RoomJoin(props: RoomJoinProps) {
       
     );
   };
+
+  

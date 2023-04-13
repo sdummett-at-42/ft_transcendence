@@ -4,14 +4,14 @@ import { useState } from 'react';
 import "./chat.scss"
 import { Socket } from "socket.io-client";
 
-interface ModalProps {
+interface RoomCreatProps {
   socket: Socket;
   isVisible: Boolean;
   onClose:() => void;
-  footer: React.ReactNode;
+  // footer: React.ReactNode;
 }
 
-export default function Modal(props: ModalProps) {
+export default function RoomCreate(props: RoomCreatProps) {
     const [formData, setFormData] = useState({
       roomName: "",
       visibility: "public",
@@ -77,17 +77,21 @@ export default function Modal(props: ModalProps) {
             </div>
             <div className="form-group">
                 <label htmlFor="inputPassword">Password</label>
-                <input type="text" className="form-control" name="password" placeholder="Password" value={formData.password} onChange={handleInputChange} />
+                <input type="text" className="form-control" name="password" placeholder="Optional" value={formData.password} onChange={handleInputChange} />
             </div>
             {/* <div class="form-group">
                 <label htmlFor="inputInvitefriend">Invite your friend</label>
                 <input type="text" className="form-control" id="inputInviteFriend" placeholder="Name" />
             </div> */}
-            <button type="submit" className="btn btn-primary">Submit</button>
+            <div className="modal-form">
+            <button type="submit">Submit</button>
+            <button onClick={props.onClose}>Cancel</button>
+              </div>
+           
           </form>
+          
           </div>
           </div>
-          {props.footer && <div className="modal-footer">{props.footer}</div>}
         </div>
       </div>
     );

@@ -22,6 +22,7 @@ export default function Message(props:MessageProps) {
   const [ifShowMessage, setIfShowMessage] = useState(false);
   const [item, setItem] = useState([]);
   const database = useContext(DatabaseContext);
+  const [userId, setUserId] = useState("");
 
   const handleQuit = () => {
     props.onQuit();
@@ -64,6 +65,11 @@ export default function Message(props:MessageProps) {
   },[messageList]);
 
   useEffect(() => {
+    // refersh context
+    props.onUpdate();
+  }, [messageList]);
+
+  useEffect(() => {
     console.log("messageList", messageList);
     setItem(messageList.map((each) => {
       const date = new Date(each.timestamp);
@@ -76,28 +82,47 @@ export default function Message(props:MessageProps) {
         return null;
       }
       else {
-        const user = database.find((user) => user.id === each.userId);
-        if (user == undefined)
-          console.log("user undefine");
-        const username = user ? user.name : each.userId;
-        if (each.userId === props.UserId) {
-          className1 += " align-right";
-          className2 += " other-message float-right";
-        } else {
-          className2 += " my-message"; 
+        let username;
+        if (each.userId === -1){
+          username = "Notification";
+        }
+        else {
+          let user = database.find((user) => user.id === each.userId);
+          if (user === undefined) {
+            console.log("here??")
+            props.onUpdate();
+            const interval = setInterval(() => {
+            user = database.find((user) => user.id === each.userId);
+            if (user !== undefined) {
+                clearInterval(interval);
+                // username = each.userId;
+                console.log("user underfine");
+                }
+            }, 1000);
+          } else {
+            username = user.name
+            // console.log("here", username);
+          }
+          if (each.userId === props.UserId) {
+            className1 += " align-right";
+            className2 += " other-message float-right";
+          } else {
+            className2 += " my-message"; 
+          }
         }
         return (
+          
           <li className="clearfix">
             <div className={className1}>
-              <span className="message-data-name"> {each.userId == -1 ? "" : "From : " + {username}}</span>
+              <span className="message-data-name">  {username}</span>
               <span className="message-data-time">{hour}:{minute}:{second}</span>
             </div>
-              {each.userId == -1? <div className={className2}>{each.message}</div> : <p> {each.message}</p>}
+              <div className={className2}>{each.message}</div>
           </li>
-      );
+        );
     }})
     );
-  },[props.selectedList, , messageList] )
+  },[props.selectedList, messageList, database] )
   
   useEffect(() => {
     if (props.socket) {

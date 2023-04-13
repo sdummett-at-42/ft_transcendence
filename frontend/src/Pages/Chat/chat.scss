@@ -30,6 +30,7 @@ body {
     width: 100%;
     flex-basis: calc(100% * (3/16));
     float: left;
+    overflow: auto;
     .search {
         padding: 20px;
     }
@@ -169,7 +170,7 @@ body {
             padding-left: 6px;
         }
         .message {
-            color: white;
+            color: rgb(4, 4, 4);
             padding: 5px 10px;
             line-height: 26px;
             font-size: 16px;
@@ -255,8 +256,13 @@ body {
         .chat-info-subtitle {
             font-weight: bold;
             font-size: 14px;
-            text-align: justify;
+            text-align: start;
             padding: 5px;
+        }
+        .chat-info-form{
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         input {
             margin-left: 5px;
@@ -282,6 +288,7 @@ body {
             }
         }
         button {
+            border-radius: 3px;
             float: right;
             color: $blue;
             font-size: 16px;
@@ -350,6 +357,12 @@ body {
     background-color: rgba(0, 0, 0, 0.25);
     animation-name: appear;
     animation-duration: 300ms;
+    .modal-form{
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 5px;
+    }
 }
 
 .modal-dialog {
@@ -376,15 +389,14 @@ body {
     align-items: center;
     padding: 1rem;
 }
-
+.modal-title{
+    color: black;
+}
 .modal-header {
-    border-bottom: 1px solid #dbdbdb;
+    border-bottom: 1px solid #b4a9a9;
     justify-content: space-between;
 }
 
-.modal-footer {
-    border-top: 1px solid #dbdbdb;
-}
 
 .modal-close {
     cursor: pointer;
