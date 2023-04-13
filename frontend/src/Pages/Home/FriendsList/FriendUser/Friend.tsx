@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "./Friend.css";
-import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMessage } from "@fortawesome/free-solid-svg-icons";
+import { faMessage, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
-export default function Friend(key, props) {
+export default function Friend(props) {
  
-    const FriendId = key.current;
-    const navigate = useNavigate();
-
-    // console.log(props);
-
     type UserData = {
         name: string;
         id: number;
@@ -19,38 +13,24 @@ export default function Friend(key, props) {
     }
 
     const [friend, setFriend] = useState<UserData>();
-
     useEffect(() => {
-        async function FindUserWithId(id: number) {
-            console.log("FindUserWithId");
-            console.log(id);
-            const getUser = await fetch("http://localhost:3001/users", {
-                credentials: 'include',
-                method: 'GET'
-            })
-            .then(res => {
-                if (res.status == 401) {
-                    navigate("/unauthorized");
-                }
-                else if (res.status == 200) {
-                    return res.json();
-                }
-            })
-            .then(res => {
-                const dataFriend = res.filter(element => console.log(element.id == id));
-                console.log(dataFriend);
-                return dataFriend.at(0);
-            });
-            setFriend(getUser);
-            // console.log(getUser);
-        }
-        console.log(FriendId);
-        FindUserWithId(FriendId);
-    }, []);
+        setFriend(props.props.receiver);
+    }, [props.props.receiver]);
 
   return (
-    <div className="friend">
-        {friend && ({friend})}
+    <div>
+        {friend && (
+            <div className="friend__info">
+                <img src={friend.profilePicture} alt="profilePicture" className="Friend-profile-picture" />
+                <h4>{friend.name}</h4>
+                <button>
+                    <FontAwesomeIcon icon={faMessage} />
+                </button>
+                <button>
+                    <FontAwesomeIcon icon={faEllipsisVertical} />
+                </button>
+            </div>
+        )}
     </div>
   );
 }

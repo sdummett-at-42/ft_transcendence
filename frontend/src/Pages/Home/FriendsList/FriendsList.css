@@ -31,13 +31,6 @@
     height: 85vmin;
 }
 
-.FriendsList-user {
-    display: flex;
-    text-align: center;
-    justify-content: center;
-    color: whitesmoke;
-}
-
 .FriendsList-messages {
     position: fixed;
     border: 1px solid #d1a23a;
