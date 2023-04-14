@@ -22,12 +22,12 @@ export default function FriendsList() {
     const { user, friendSocketRef } = useContext(UserContext);
 
     // Store all friends of the user
-    const [friends, setFriends] = useState<UserData[]>([]);
+    const [friends, setFriends] = useState([]);
     // Store all received friend requests of the user
-    const [friendsPending, setFriendsPending] = useState<UserData[]>([]);
+    const [friendsPending, setFriendsPending] = useState([]);
     // Store all sent friend requests of the user
-    const [friendsRequests, setFriendsRequests] = useState<UserData[]>([]);
-
+    const [friendsRequests, setFriendsRequests] = useState([]);
+    
     // Fetch all friends of the user
     useEffect(() => {
         async function getFriends() {
@@ -43,7 +43,6 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-
             setFriends(ListOfFriends);
         } 
 
@@ -60,7 +59,6 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-
                 setFriendsPending(ReceivedPendingFriends);
             }
 
@@ -77,8 +75,7 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-
-            setFriendsRequests(SentPendingFriends);
+                setFriendsRequests(SentPendingFriends);
         }
 
         getFriends();
@@ -87,7 +84,6 @@ export default function FriendsList() {
     }, []);
 
     const handleFriendRequest = (data) => {
-        console.log(data);
         async function getPendingFriends() {
             // Get all received friend requests of the user from the database and set the state
             const ReceivedPendingFriends = await fetch("http://localhost:3001/friends/requests/received", {
@@ -101,15 +97,18 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-
-                setFriendsPending(ReceivedPendingFriends);
+            const transformedData = ReceivedPendingFriends.map(friend => ({
+                id: friend.sender.id,
+                name: friend.sender.name,
+                profilePicture: friend.sender.profilePicture,
+                elo: friend.sender.elo
+            }));
+            setFriendsPending(transformedData);
             }
         getPendingFriends();
-        console.log("friend request received");
-    }
+    };
 
     const handleFriendRequestAccepted = (data) => {
-        console.log(data);
         async function getFriends() {
             // Get all friends of the user from the database and set the state
             const ListOfFriends = await fetch("http://localhost:3001/friends", {
@@ -126,35 +125,61 @@ export default function FriendsList() {
             setFriends(ListOfFriends);
         }
         getFriends();
-        console.log("friend request accepted");
-    }
+    };
+
+    const handleFriendRequestCanceled = (data) => {
+        async function getRequestFriends() {
+            // Get all sended friend requests of the user from the database and set the state
+            const SentPendingFriends = await fetch("http://localhost:3001/friends/requests/sended", {
+                credentials: 'include',
+                method: 'GET'
+            })
+                .then(res => {
+                    if (res.status == 401) {
+                        navigate("/unauthorized");
+                    }
+                    return res.json();
+                });
+            setFriendsRequests(SentPendingFriends);
+        }
+        getRequestFriends();
+    };
 
     const handleFriendConnected = (data) => {
-        console.log(data);
-        console.log("friend connected");
-    }
+    };
 
     const handleFriendDisconnected = (data) => {
-        console.log(data);
-        console.log("friend disconnected");
-    }
+    };
 
     // Handle the socket events
     useEffect(() => {
+
         friendSocketRef.current.on('friendRequestReceived', handleFriendRequest);
         friendSocketRef.current.on('friendRequestAccepted', handleFriendRequestAccepted);
+        friendSocketRef.current.on('friendRequestCanceled', handleFriendRequestCanceled);
         friendSocketRef.current.on('friendConnected', handleFriendConnected);
         friendSocketRef.current.on('friendDisconnected', handleFriendDisconnected);
-    }, [handleFriendRequest,
-        friendSocketRef
-    ]);
 
+        return () => {
+            friendSocketRef.current.off('friendRequestReceived', handleFriendRequest);
+            friendSocketRef.current.off('friendRequestAccepted', handleFriendRequestAccepted);
+            friendSocketRef.current.off('friendRequestCanceled', handleFriendRequestCanceled);
+            friendSocketRef.current.off('friendConnected', handleFriendConnected);
+            friendSocketRef.current.off('friendDisconnected', handleFriendDisconnected);
+        };
+    }, [
+        handleFriendRequest,
+        handleFriendRequestAccepted,
+        handleFriendRequestCanceled,
+        handleFriendConnected,
+        handleFriendDisconnected,
+        friendSocketRef]);
 
     const [isShaking, setIsShaking] = useState(false);
 
     // Handle the search bar input
-    const addFriend = async (friend) => {
-        // Check if user is valid and if not, shake the search bar
+    const addFriend = async (friend:string) => {
+        // Fetch the user list from the database and filter the user that matches the input
         const getUser = await fetch("http://localhost:3001/users", {
             credentials: 'include',
             method: 'GET'
@@ -171,13 +196,16 @@ export default function FriendsList() {
                 const dataFriend = res.filter(element => element.name === friend);
                 return dataFriend.at(0);
             });
-        if (!getUser || getUser.id === user.id || friendsRequests.some(friend => friend.id === getUser.id) || friends.some(friend => friend.id === getUser.id)) {
+
+        // Check if the user is already a friend or if the user is already in the friend request list or if the user is the current user
+        if (!getUser || getUser.id === user.id || friendsRequests.some(friend => friend.receiver.id === getUser.id) || friends.some(id => id === getUser.id)) {
             setIsShaking(true);
             setTimeout(() => { setIsShaking(false) }, 1000);
             return;
         }
 
-        if (friendsPending.some(friend => friend.id === getUser.id)) {
+        // Check if the user is already in the pending friend request list
+        if (friendsPending.some(friend => friend.sender.id === getUser.id)) {
             AcceptFriend(getUser);
             return;
         }
@@ -197,14 +225,13 @@ export default function FriendsList() {
                 if (res.status == 401) {
                     navigate("/unauthorized");
                 }
-                else if (res.status == 200) {
-                    console.log("friend request sent");
+                else if (res.status == 201) {
                     setFriendsRequests([...friendsRequests, getUser]);
                 }
-            })
+            });
     }
 
-    const AcceptFriend = async (friend) => {
+    const AcceptFriend = async (friend:UserData) => {
         await fetch("http://localhost:3001/friends/requests", {
             credentials: 'include',
             method: 'PATCH',
@@ -226,9 +253,8 @@ export default function FriendsList() {
             })
     }
 
-    const RefusedFriend = async (friend) => {
-        console.log(friend);
-        await fetch("http://localhost:3001/friends/requests", {
+    const RefusedFriend = async (friend:UserData) => {
+        await fetch("http://localhost:3001/friends/requests/received", {
             credentials: 'include',
             method: 'DELETE',
             headers: {
@@ -242,35 +268,32 @@ export default function FriendsList() {
                 if (res.status == 401) {
                     navigate("/unauthorized");
                 }
-                else if (res.status == 200) {
-                    console.log("friend request refused");
+                else if (res.status == 204) {
                     setFriendsPending(friendsPending.filter(friendPending => friendPending.id !== friend.id));
                 }
             })
     }
 
     const CancelRequest = async (friend:UserData) => {
-        console.log(friend);
-        // await fetch("http://localhost:3001/friends/requests", {
-        //     credentials: 'include',
-        //     method: 'DELETE',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify({
-        //         "friendId": friend.id
-        //     }),
-        // })
-        //     .then(res => {
-        //         if (res.status == 401) {
-        //             navigate("/unauthorized");
-        //         }
-        //         else if (res.status == 200) {
-        //             console.log("friend request canceled");
-        //         }
-        //     }
-        //     )
-        setFriendsRequests(friendsRequests.filter(friendRequests => friendRequests.id !== friend.id));
+        await fetch("http://localhost:3001/friends/requests/sended", {
+            credentials: 'include',
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "friendId": friend.id
+            }),
+        })
+            .then(res => {
+                if (res.status == 401) {
+                    navigate("/unauthorized");
+                }
+                else if (res.status == 204) {
+                    setFriendsRequests(friendsRequests.filter(friendRequests => friendRequests.id !== friend.id));
+                }
+            }
+            )
     }
 
     return (
@@ -283,16 +306,16 @@ export default function FriendsList() {
             </div>
             <div className="FriendsList-list">
                 <div>
-                    {friends && (friends.map((friend, index) => {
+                    {friends.map((friend, index) => {
                         return (
                             <div key={index}>
                                 <Friend props={friend} />
                             </div>
                             );
-                        }))}
+                        })}
                 </div>
                 <div>
-                    {friendsPending && (friendsPending.map((friend, index) => {
+                    {friendsPending.map((friend, index) => {
                         return (
                             <div key={index}>
                                 <ReceivedFriend
@@ -302,10 +325,10 @@ export default function FriendsList() {
                                 />
                             </div>
                             );
-                        }))}
+                        })}
                 </div>
                 <div>
-                    {friendsRequests && (friendsRequests.map((friend, index) => {
+                    {friendsRequests.map((friend, index) => {
                         return (
                             <div key={index}>
                                 <SendedFriend
@@ -314,7 +337,7 @@ export default function FriendsList() {
                                 />
                             </div>
                             );
-                        }))}
+                        })}
                 </div>
             </div>
             <Link to="/message" className="FriendsList-messages" style={{textDecoration: 'none', color: 'whitesmoke'}}>

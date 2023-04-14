@@ -20,10 +20,8 @@ export default function SendedFriend(props) {
 
     const CancelRequest = (friend) => {
         // Cancel the friend request
-        console.log(friend);
         props.onCancelRequest(friend);
     }
-
 
   return (
     <div>

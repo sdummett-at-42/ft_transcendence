@@ -15,13 +15,16 @@ export default function ReceivedFriend(props) {
     const [friend, setFriend] = useState<UserData>();
 
     useEffect(() => {
-        setFriend(props.props.receiver);
-    }, [props.props.receiver]);
+        setFriend(props.props.sender);
+    }, [props.props.sender]);
 
+    const AcceptFriend = (friend) => {
+        // Accept the friend request
+        props.onAcceptFriend(friend);
+    }
 
     const DeclineFriend = (friend) => {
         // Decline the friend request
-        console.log(friend);
         props.onDeclineFriend(friend);
     }
 
@@ -33,7 +36,7 @@ export default function ReceivedFriend(props) {
                 <h4>{friend.name}</h4>
                 <button
                     className="PendingFriend-button PendingFriend-Validate"
-                    onClick={() => props.onAcceptFriend(friend)}
+                    onClick={() => AcceptFriend(friend)}
                 >
                     <FontAwesomeIcon icon={faCheck} size="lg" id="PendingFriend-Validate-icon"/>
                 </button>
