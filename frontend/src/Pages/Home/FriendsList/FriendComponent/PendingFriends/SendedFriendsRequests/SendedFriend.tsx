@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import "./PendingFriend.css";
+import "./SendedFriend.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-export default function PendingFriend(props) {
+export default function SendedFriend(props) {
 
     type UserData = {
         name: string;
@@ -18,19 +18,26 @@ export default function PendingFriend(props) {
         setFriend(props.props.receiver);
     }, [props.props.receiver]);
 
+    const CancelRequest = (friend) => {
+        // Cancel the friend request
+        console.log(friend);
+        props.onCancelRequest(friend);
+    }
+
+
   return (
     <div>
         {friend && (
             <div className="friend__info">
                 <img src={friend.profilePicture} alt="Photo de profil" className="Friend-profile-picture" />
                 <h4>{friend.name}</h4>
+                <div>
+                    <FontAwesomeIcon icon={faClock} size="lg" id="PendingFriend-Validate-icon"/>
+                </div>
                 <button
-                    className="PendingFriend-button PendingFriend-Validate"
-                    onClick={() => props.onAcceptFriend(friend)}
+                    className="PendingFriend-button PendingFriend-Declined"
+                    onClick={() => CancelRequest(friend)}
                 >
-                    <FontAwesomeIcon icon={faCheck} size="lg" id="PendingFriend-Validate-icon"/>
-                </button>
-                <button className="PendingFriend-button PendingFriend-Declined">
                     <FontAwesomeIcon icon={faXmark} size="lg" id="PendingFriend-Declined-icon"/>
                 </button>
             </div>
