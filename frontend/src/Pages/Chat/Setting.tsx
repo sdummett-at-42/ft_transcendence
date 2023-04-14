@@ -26,6 +26,16 @@ export default function Setting(props: SettingProps) {
     props.socket.emit("updateRoom", payload);
   }
 
+  const handleAddAdmin = ()=>{
+
+    const payload = {
+      roomName : props.roomName,
+      userId : ""
+    }
+    props.socket.emit("addRoomAdmin", payload);
+    console.log("change sent");
+  }
+
   useEffect(() => {
     if (props.socket) {
       props.socket.on("roomUpdated",
@@ -72,7 +82,7 @@ export default function Setting(props: SettingProps) {
                 <label htmlFor="inputAdmin">New Administrator</label>
                 <input type="text" className="form-control" name="Name" placeholder="Name" value={admin} onChange={(e) => setAdmin(e.target.value)} />
               </div>
-              <div className=" d-flex justify-content-end"> <button>Add</button></div>
+              <div className=" d-flex justify-content-end" onClick={handleAddAdmin}> <button>Add</button></div>
             <div className="modal-form">
             <button onClick={props.onClose}>Cancel</button>
               </div>

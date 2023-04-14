@@ -78,11 +78,9 @@ const handleNotInvite = useCallback((payload) =>{
 
 const handleCheckIfAdmin = useCallback((payload)=>{
   console.log(" handleCheckIfAdmin", payload)
-    const room = payload.find((r) => r.roomName === props.roomName);
-    if (room) {
-        if (props.UserId === room.memberList.owner || room.memberList.admins.includes(props.UserId))
-            setIfAdmin(true);
-    }
+  if (props.UserId === payload.memberList.owner || payload.memberList.admins.includes(props.UserId))
+      setIfAdmin(true);
+
 },[props.UserId, props.roomName, setIfAdmin, ifAdmin])
 
   useEffect(() => {
