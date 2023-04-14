@@ -60,15 +60,28 @@ export class FriendsController {
 		return friendRequest;
 	}
 
-	@Delete('requests')
+	@Delete('requests/received')
 	@HttpCode(204)
 	@UseGuards(ContentTypeGuard)
-	@ApiNoContentResponse({ type: UserEntity, description: 'Declines a friend request' })
+	@ApiNoContentResponse({ type: UserEntity, description: 'Declines a received friend request' })
 	async declineFriendRequest(
 		@Req() request ,
 		@Body('friendId') friendId: number,
 	) {
-		return this.friendRequest.declineFriendRequest(request.user.id, friendId);
+		return this.friendRequest.removeFriendRequest(request.user.id, friendId);
+	}
+
+	@Delete('requests/sended')
+	@HttpCode(204)
+	@UseGuards(ContentTypeGuard)
+	@ApiNoContentResponse({ type: UserEntity, description: 'Remove a sent friend request' })
+	async removeFriendRequest(
+		@Req() request ,
+		@Body('friendId') friendId: number,
+	) {
+		const friendRequest = await this.friendRequest.removeFriendRequest(friendId, request.user.id);
+		this.friendGateway.cancelFriendRequest(request.user.id, friendId);
+		return friendRequest;
 	}
 
 	@Get('requests/sended')
