@@ -12,7 +12,7 @@ import { createContext, useContext } from "react";
 export const DatabaseContext = createContext();
 
 export default function ChatLogin() {
-  const [selectedList, setSelectedList] = useState(null);
+  const [roomName, setRoomName] = useState(null);
   const [userId, setUserId] = useState(0);
   const [database, setDatabase] = useState([]);
   const [shouldUpdateDatabase, setShouldUpdateDatabase] = useState(false);
@@ -46,21 +46,20 @@ export default function ChatLogin() {
 
   const handleListClick = (list) => {
     console.log("List:",list);
-    setSelectedList(list);
+    setRoomName(list);
     const payload = {
-      roomName: selectedList,
+      roomName: roomName,
     }
     socket.emit("getRoomMsgHist", payload);
   }
   const handleLeaveRoom = () => {
       const confirmed = window.confirm("Are you sure you want leave this room?");
       if (confirmed) {
-        console.log("good bye~~~~", selectedList);
         const payload = {
-          roomName : selectedList,
+          roomName : roomName,
         }
         socket.emit("leaveRoom", payload);
-        setSelectedList("");
+        setRoomName("");
       }
   };
   
@@ -120,8 +119,8 @@ export default function ChatLogin() {
           <div className="row">
             <DatabaseContext.Provider value={database}>
               <ChatroomList socket={socket}  onListClick={handleListClick} onUpdate={handleChildComponentUpdate}/>
-              <Message socket={socket} selectedList={selectedList} onQuit={handleLeaveRoom} UserId = {userId} onUpdate={handleChildComponentUpdate}/>
-              <RoomDetail socket={socket} selectedList={selectedList} onUpdate={handleChildComponentUpdate}/>
+              <Message socket={socket} roomName={roomName} onQuit={handleLeaveRoom} UserId = {userId} onUpdate={handleChildComponentUpdate}/>
+              <RoomDetail socket={socket} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId = {userId}/>
             </DatabaseContext.Provider>
       </div>
       </div>
