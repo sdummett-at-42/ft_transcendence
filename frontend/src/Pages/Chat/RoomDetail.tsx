@@ -12,8 +12,9 @@ import InvitedConfirm from './InvitedConfirm';
 
 interface RoomDetailProps {
   socket: Socket;
-  selectedList : string;
+  roomName : string;
   onUpdate:() =>void;
+  UserId:Number;
 }
 
 export default function RoomDetail(props: RoomDetailProps) {
@@ -27,6 +28,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const [message, setMessage] = useState("");
   const [roomNameInvite, setRoomNameInvite] = useState("");
   const [userId, setUserId] = useState(0);
+  const [ifAdmin, setIfAdmin] = useState(false);
   const close = () => {
     setShow(false);
   };
@@ -57,51 +59,62 @@ export default function RoomDetail(props: RoomDetailProps) {
       return ;
     }
     const payload ={
-      roomName: props.selectedList,
+      roomName: props.roomName,
       userId: userId,
     }
     props.socket.emit("inviteUser", payload);
   }
 
   const  handleInvited = useCallback((payload) =>{
-      console.log("INVITEING,",payload);
       setMessage(payload.message);
       setRoomNameInvite(payload.roomName);
-      console.log("RoomName", );
       setShowConfirm(true);    
   }, [])
 
-  const handleNotInvite = useCallback((payload) =>{
+const handleNotInvite = useCallback((payload) =>{
     console.log("not inviting,",payload);
     alert(payload.message);  
 }, [])
+
+const handleCheckIfAdmin = useCallback((payload)=>{
+  console.log(" handleCheckIfAdmin", payload)
+    const room = payload.find((r) => r.roomName === props.roomName);
+    if (room) {
+        if (props.UserId === room.memberList.owner || room.memberList.admins.includes(props.UserId))
+            setIfAdmin(true);
+    }
+},[props.UserId, props.roomName, setIfAdmin, ifAdmin])
 
   useEffect(() => {
       if (props.socket) {
         props.socket.on("invited", handleInvited);
         props.socket.on("userNotInvited", handleNotInvite);
+        props.socket.on("memberListUpdated", handleCheckIfAdmin);
       }
       return () => {
         if (props.socket) {
           props.socket.off("invited", handleInvited);
           props.socket.off("userNotInvited", handleNotInvite);
+          props.socket.off("memberListUpdated", handleCheckIfAdmin);
         }
       };
-  }, [props.socket]);
+  }, [props.socket, handleInvited, handleNotInvite, handleCheckIfAdmin]);
 
 
  return (
-  props.selectedList ? (
+  props.roomName ? (
   <div className="chatinfo">
       <div className="chat-info-header clearfix">
-      <div className='chat-info-title'>Room Info :{props.selectedList}</div>
+      <div className='chat-info-title'>Room Info : {props.roomName}</div>
         <div className='chat-info-subtitle'>Accessibility</div>
+        {/* {ifAdmin? ( */}
         <button  onClick={() => {
           setShow(true);}} >Change</button>
+          {/* ) : null} */}
           <Setting         isVisible={show}
             socket={props.socket}
             onClose={() => setShow(false)} 
-            selectedList = {props.selectedList }/>
+            roomName = {props.roomName }/>
           <InvitedConfirm isVisible={showConfirm}
             RoomName={roomNameInvite}
             onClose={() => setShowConfirm(false)} 
@@ -113,7 +126,8 @@ export default function RoomDetail(props: RoomDetailProps) {
             <input placeholder="Name" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)}/>
             <button onClick={handleInvite}><FontAwesomeIcon icon={faPlus} /></button>
             </div>
-           <div className='chat-info-subtitle'>Ban a Member</div>
+            {/* {ifAdmin? ( */}
+            <><div className='chat-info-subtitle'>Ban a Member</div>
            <div className="chat-info-form">
            <input placeholder="Name" ></input>
            <button><FontAwesomeIcon icon={faBan} /></button>
@@ -127,7 +141,8 @@ export default function RoomDetail(props: RoomDetailProps) {
            <div className="chat-info-form">
             <input placeholder="Name"></input>
            <button><FontAwesomeIcon icon={faPersonRunning}/></button>
-           </div>
+           </div></>
+           {/* ) : null} */}
            {/* <FontAwesomeIcon icon={faKickstarterK} size="1.5x"/> */}
       </div>
       <div className="chat-info-header clearfix">

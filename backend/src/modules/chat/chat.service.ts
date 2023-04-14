@@ -1128,6 +1128,10 @@ export class ChatService {
 			timestamp: new Date().toISOString(),
 			message: `Room ${dto.roomName} has been updated.`,
 		})
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList: await this.getMemberList(dto.roomName),
+		});
 	}
 
 	async addRoomAdmin(socket, dto: AddRoomAdminDto, server) {

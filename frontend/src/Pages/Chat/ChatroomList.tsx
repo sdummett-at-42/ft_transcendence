@@ -23,7 +23,6 @@ export default function ChatroomList(props: ChatroomListProps) {
     }, []);
 
     const handleRoomJoined = useCallback((payload) => {
-      console.log("HERE joined", payload);
       setChatrooms((prevChatrooms) => [...prevChatrooms, {roomName: payload.roomName}]);
       props.onUpdate();
     }, []);
@@ -34,12 +33,11 @@ export default function ChatroomList(props: ChatroomListProps) {
     // }, []);
 
     const handleRoomsListReceived = useCallback((payload) => {
-      console.log(`ROOMRECEIVE: ${JSON.stringify(payload)}`);
       setChatrooms(payload.rooms.map(room => ({ roomName: room })));
       console.log("chat rooms:", chatrooms);
     }, []);
     const handleDMRoomsListReceived = useCallback((payload) => {
-      console.log(`ROOMDM: ${JSON.stringify(payload)}`);
+      // console.log(`ROOMDM: ${JSON.stringify(payload)}`);
       setChatrooms((prevChatrooms) => [...prevChatrooms, ...payload.dms.map(room => ({ roomName: room }))]);
       console.log("chat rooms2:", chatrooms);
     }, []);

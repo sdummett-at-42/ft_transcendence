@@ -8,7 +8,7 @@ import { DatabaseContext } from './ChatLogin';
 
 interface MessageProps {
   socket: Socket;
-  selectedList : string;
+  roomName: string;
   onQuit: () => void;
   UserId:Number;
   onUpdate:() =>void;
@@ -41,9 +41,8 @@ export default function Message(props:MessageProps) {
     setShowInput(false);
   };
   const handleSendMessage = (event) =>{
-    console.log("SEND~~~~");
     const payload = {
-      roomName: props.selectedList,
+      roomName: props.roomName,
       message: message,
     }
     props.socket.emit("sendRoomMsg",payload);
@@ -59,7 +58,6 @@ export default function Message(props:MessageProps) {
   },[]);
 
   const handleMessages = useCallback((payload) => {
-    console.log("setMessageList", payload);
     // if(payload.userId != -1)
       setMessageList((prevme) => [...prevme, payload]);
   },[messageList]);
@@ -71,14 +69,16 @@ export default function Message(props:MessageProps) {
 
   useEffect(() => {
     console.log("messageList", messageList);
-    setItem(messageList.map((each) => {
+    setItem(messageList.sort((a, b) => a.timestamp - b.timestamp)
+      .map((each) => {
       const date = new Date(each.timestamp);
       const hour = date.getHours().toString().padStart(2, '0');
       const minute = date.getMinutes().toString().padStart(2, '0');
       const second = date.getSeconds().toString().padStart(2, '0');
       let className1 = "message-data";
       let className2 = "message";
-      if (props.selectedList == null) {
+      if (props.roomName == null) {
+        console.log("props.roomName == nul")
         return null;
       }
       else {
@@ -122,7 +122,7 @@ export default function Message(props:MessageProps) {
         );
     }})
     );
-  },[props.selectedList, messageList, database] )
+  },[props.roomName, messageList, database] )
   
   useEffect(() => {
     if (props.socket) {
@@ -143,12 +143,12 @@ export default function Message(props:MessageProps) {
   }, [props.socket]);
 
   return (
-    props.selectedList ? (
+    props.roomName ? (
 <div className="chat">
 <div className="chat-header clearfix">
   <div className="chat-about container">
     <div className="row">
-      <div className="chat-with col-6">Chatroom : {props.selectedList}</div>
+      <div className="chat-with col-6">Chatroom : {props.roomName}</div>
     </div>
       <button className="col-2" onClick={handleQuit}>Leave</button>
     </div>
