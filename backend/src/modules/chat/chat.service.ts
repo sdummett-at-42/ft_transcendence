@@ -1647,6 +1647,7 @@ export class ChatService {
 	}
 
 	async getRoomMembers(socket, dto, server) {
+		console.log("dto.roomName",dto.roomName);
 		console.log(await this.getMemberList(dto.roomName))
 		socket.emit(Event.roomMembers, {
 			roomName: dto.roomName,

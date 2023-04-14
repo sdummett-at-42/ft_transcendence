@@ -51,7 +51,10 @@ export default function ChatroomList(props: ChatroomListProps) {
 
     // Render handlers
     const handleChatroomClick = (chatroomId)=> {
+      console.log("handleChatroomClick", chatroomId);
       props.onListClick(chatroomId);
+      props.socket.emit("getRoomMembers", { roomName:
+        chatroomId});
     }
 
     // Init

@@ -128,14 +128,14 @@ export default function Message(props:MessageProps) {
     if (props.socket) {
       props.socket.on("roomMsgHistReceived", (payload) => {console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
       setMessageList(payload.msgHist);});
-      props.socket.on("roomJoined", ()=>{console.log ("roomJoined\n");});
+      // props.socket.on("roomJoined", ()=>{console.log ("roomJoined\n");});
       props.socket.on("roomMsgReceived", handleMessages);
       props.socket.on("userInvited", handleMessageAuto);
     }
     return () => {
       if (props.socket) {
         props.socket.off("roomMsgHistReceived");
-        props.socket.off("roomJoined");
+        // props.socket.off("roomJoined");
         props.socket.off("roomMsgReceived", handleMessages);
         props.socket.off("userInvited", handleMessageAuto);
       }
@@ -148,7 +148,7 @@ export default function Message(props:MessageProps) {
 <div className="chat-header clearfix">
   <div className="chat-about container">
     <div className="row">
-      <div className="chat-with col-6">Chatroom : {props.roomName}</div>
+      <div className="chat-with col-6">Chatroom : {props.roomName}, {props.UserId}</div>
     </div>
       <button className="col-2" onClick={handleQuit}>Leave</button>
     </div>

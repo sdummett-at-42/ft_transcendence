@@ -106,7 +106,7 @@ export default function ChatLogin() {
       return () => {
         socket.off('connect', onConnect);
         socket.off('disconnect', onDisconnect);
-        socket.on("memberListUpdated", handleUpdateDatabase );
+        socket.off("memberListUpdated", handleUpdateDatabase );
       };
     }, [socket]);
 

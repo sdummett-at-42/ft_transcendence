@@ -14,7 +14,8 @@ interface RoomDetailProps {
   socket: Socket;
   roomName : string;
   onUpdate:() =>void;
-  UserId:Number;
+  UserId: Number;
+  
 }
 
 export default function RoomDetail(props: RoomDetailProps) {
@@ -29,6 +30,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const [roomNameInvite, setRoomNameInvite] = useState("");
   const [userId, setUserId] = useState(0);
   const [ifAdmin, setIfAdmin] = useState(false);
+  const [adminList, setAdminList] = useState([]);
   const close = () => {
     setShow(false);
   };
@@ -76,24 +78,43 @@ const handleNotInvite = useCallback((payload) =>{
     alert(payload.message);  
 }, [])
 
+const handleAdminList = useCallback((payload)=>{
+  console.log("handleAdminList",payload)
+  console.log("handleAdminList",props.UserId)
+  setAdminList(payload.memberList.admins);
+  console.log(adminList);
+  if (adminList.includes(props.UserId))
+  {
+    console.log("inside??")
+    setIfAdmin(true);
+  }
+},[])
 const handleCheckIfAdmin = useCallback((payload)=>{
   console.log(" handleCheckIfAdmin", payload)
-  if (props.UserId === payload.memberList.owner || payload.memberList.admins.includes(props.UserId))
-      setIfAdmin(true);
-
-},[props.UserId, props.roomName, setIfAdmin, ifAdmin])
+  if(payload.roomName !== props.roomName){
+    console.log("update not this room!");
+    return;
+  }
+  setAdminList(payload.memberList.admins);
+  if (adminList.includes(props.UserId))  
+    setIfAdmin(true);
+  else
+    setIfAdmin(false);
+},[props.UserId, props.roomName, ifAdmin, adminList])
 
   useEffect(() => {
       if (props.socket) {
         props.socket.on("invited", handleInvited);
         props.socket.on("userNotInvited", handleNotInvite);
         props.socket.on("memberListUpdated", handleCheckIfAdmin);
+        props.socket.on("roomMembers", handleAdminList);
       }
       return () => {
         if (props.socket) {
           props.socket.off("invited", handleInvited);
           props.socket.off("userNotInvited", handleNotInvite);
           props.socket.off("memberListUpdated", handleCheckIfAdmin);
+          props.socket.off("roomMembers", handleAdminList);
         }
       };
   }, [props.socket, handleInvited, handleNotInvite, handleCheckIfAdmin]);
@@ -103,12 +124,12 @@ const handleCheckIfAdmin = useCallback((payload)=>{
   props.roomName ? (
   <div className="chatinfo">
       <div className="chat-info-header clearfix">
-      <div className='chat-info-title'>Room Info : {props.roomName}</div>
+      <div className='chat-info-title'>Room Info : {props.roomName}, {props.UserId}</div>
         <div className='chat-info-subtitle'>Accessibility</div>
-        {/* {ifAdmin? ( */}
+        {ifAdmin? (
         <button  onClick={() => {
           setShow(true);}} >Change</button>
-          {/* ) : null} */}
+         ) : null}
           <Setting         isVisible={show}
             socket={props.socket}
             onClose={() => setShow(false)} 
@@ -124,7 +145,7 @@ const handleCheckIfAdmin = useCallback((payload)=>{
             <input placeholder="Name" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)}/>
             <button onClick={handleInvite}><FontAwesomeIcon icon={faPlus} /></button>
             </div>
-            {/* {ifAdmin? ( */}
+            {ifAdmin? (
             <><div className='chat-info-subtitle'>Ban a Member</div>
            <div className="chat-info-form">
            <input placeholder="Name" ></input>
@@ -140,8 +161,7 @@ const handleCheckIfAdmin = useCallback((payload)=>{
             <input placeholder="Name"></input>
            <button><FontAwesomeIcon icon={faPersonRunning}/></button>
            </div></>
-           {/* ) : null} */}
-           {/* <FontAwesomeIcon icon={faKickstarterK} size="1.5x"/> */}
+            ) : null}
       </div>
       <div className="chat-info-header clearfix">
         <div className='chat-info-memberlist'>Member List</div>
