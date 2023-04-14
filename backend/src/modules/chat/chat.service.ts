@@ -1641,4 +1641,12 @@ export class ChatService {
 		const dms = await this.redis.getDmList(socket.data.userId);
 		socket.emit(Event.dmsList, { dms });
 	}
+
+	async getRoomMembers(socket, dto, server) {
+		console.log(await this.getMemberList(dto.roomName))
+		socket.emit(Event.roomMembers, {
+			roomName: dto.roomName,
+			memberList: await this.getMemberList(dto.roomName),
+		});
+	}
 }

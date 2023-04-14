@@ -353,4 +353,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	onGetDmsList(@ConnectedSocket() socket) {
 		this.chat.getDmsList(socket, null, this.server);
 	}
+
+	@SubscribeMessage(Event.getRoomMembers)
+	onGetRoomMembers(@ConnectedSocket() socket, @MessageBody() dto) {
+		if (!dto || !dto.roomName) {
+			console.log("dto or dto.roomName undefined");
+			return;
+		}
+		this.chat.getRoomMembers(socket, dto, this.server);
+	}
 }
