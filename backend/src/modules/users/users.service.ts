@@ -82,6 +82,8 @@ export class UsersService {
 				name: true,
 				profilePicture: true,
 				elo: true,
+				matchLost: true,
+				matchWon: true,
 			},
 		});
 	}
