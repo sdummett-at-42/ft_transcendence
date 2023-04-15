@@ -4,51 +4,6 @@ import { LoginMethod } from "@prisma/client";
 const prisma = new PrismaService();
 async function main() {
 
-	/*/ Achievement creation occurs here /*/
-
-	await prisma.achievement.upsert({
-		where: { name: "Achievement number 1" },
-		update: {},
-		create: {
-			name: "Achievement number 1",
-			description: "This is the achievement, its the worst one."
-		}
-	})
-	await prisma.achievement.upsert({
-		where: { name: "Achievement blbla" },
-		update: {},
-		create: {
-			name: "Achievement blbla",
-			description: "Lorem opossum"
-		}
-	})
-	await prisma.achievement.upsert({
-		where: { name: "Woooooow" },
-		update: {},
-		create: {
-			name: "Woooooow",
-			description: "This is the Woooow achievement, Its woooah!"
-		}
-	})
-	await prisma.achievement.upsert({
-		where: { name: "April Fool" },
-		update: {},
-		create: {
-			name: "April Fool",
-			description: "This isnt an achievement"
-		}
-	})
-	await prisma.achievement.upsert({
-		where: { name: "Transcendence" },
-		update: {},
-		create: {
-			name: "Transcendence",
-			description: "We are transcending"
-		}
-	})
-
-	/*/ End of achievement creation /*/
-
 	const fs = require('fs');
 	// const imageBuffer = fs.readFileSync('./default-profile-picture.png');
 	// const imageBase64 = imageBuffer.toString('base64');
