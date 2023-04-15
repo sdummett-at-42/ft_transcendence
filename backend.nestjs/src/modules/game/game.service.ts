@@ -535,6 +535,9 @@ export class GameService {
             where: { id },
             data: { elo: newElo },
           });
+
+        const subuser = await this.prisma.user.findMany()
+        console.log("sub modif", subuser);
     }
       
       
