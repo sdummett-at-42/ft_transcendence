@@ -43,7 +43,7 @@ export default function Navbar() {
             </div>
 
             <div className="Navbar-nav-section" id="Navbar-mid">
-                <Link to="/succes" style={{textDecoration: 'none', color: 'whitesmoke'}}>Succes</Link>
+                <Link to="/achievements" style={{textDecoration: 'none', color: 'whitesmoke'}}>Succes</Link>
                 <Link to="/stats" style={{textDecoration: 'none', color: 'whitesmoke'}}>Statistique</Link>
                 <Link to="/message" style={{textDecoration: 'none', color: 'whitesmoke'}}>Messages</Link>
             </div>
