@@ -10,6 +10,7 @@ import NotFound from "./Pages/Errors/NotFound";
 import Layout from "./Pages/Navbar/Layout";
 import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
 import InitAchievements from "./Pages/Achievements/Achievements";
+import InitStats from "./Pages/Stats/Stats";
 
 function App() {
 
@@ -27,6 +28,7 @@ function App() {
           <Route path='/profil/:id' element={<Layout children={<Profile />} />} />
           <Route path='/unauthorized' element={<Unauthorized />} />
 		  <Route path='/achievements' element={<InitAchievements />} />
+		  <Route path='/statistiques' element={<InitStats/>} />
           <Route path='/*' element={<Layout children={<NotFound />} />} />
         </Routes>
     </div>

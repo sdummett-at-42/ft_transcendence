@@ -1,0 +1,26 @@
+/* Set default styles for the <ul> and <li> elements */
+ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+  }
+  
+  li {
+	padding: 10px;
+  }
+  
+  /* Style odd-numbered list items */
+  li:nth-child(odd) {
+	background-color: #333333;
+  }
+  
+  /* Style even-numbered list items */
+  li:nth-child(even) {
+	background-color: #242424;
+  }
+  
+  /* Add hover effect for list items */
+  li:hover {
+	background-color: #555555;
+  }
+  
