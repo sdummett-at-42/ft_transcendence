@@ -24,13 +24,28 @@ export default function InitStats() {
 
 function UserList({ users }) {
 	return (
-		<ul>
-			{users.map((user, index) => (
-				<li key={user.id}>
-					#{index + 1} {user.name} {user.matchWon.length}{" "}
-					{user.matchWon.length + user.matchLost.length}
-				</li>
-			))}
-		</ul>
+	  <table>
+		<thead>
+		  <tr>
+			<th>Rank</th>
+			<th>Name</th>
+			<th>Wins</th>
+			<th>Matches Played</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  {users.map((user, index) => (
+			<tr key={user.id}>
+			  <td>{index + 1}</td>
+			  <td>
+				<img src={user.profilePicture} alt="Profile" className="profile-picture" />
+				{user.name}
+			  </td>
+			  <td>{user.matchWon.length}</td>
+			  <td>{user.matchWon.length + user.matchLost.length}</td>
+			</tr>
+		  ))}
+		</tbody>
+	  </table>
 	);
-}
+  }

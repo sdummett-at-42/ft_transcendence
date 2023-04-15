@@ -28,7 +28,7 @@ function App() {
           <Route path='/profil/:id' element={<Layout children={<Profile />} />} />
           <Route path='/unauthorized' element={<Unauthorized />} />
 		  <Route path='/achievements' element={<InitAchievements />} />
-		  <Route path='/statistiques' element={<InitStats/>} />
+		  <Route path='/stats' element={<InitStats/>} />
           <Route path='/*' element={<Layout children={<NotFound />} />} />
         </Routes>
     </div>
