@@ -23,29 +23,76 @@ export default function InitStats() {
 }
 
 function UserList({ users }) {
+	const [selectedUser, setSelectedUser] = useState(null);
+
+	const handleUserClick = (user) => {
+		setSelectedUser(user);
+	};
+
 	return (
-	  <table>
-		<thead>
-		  <tr>
-			<th>Rank</th>
-			<th>Name</th>
-			<th>Wins</th>
-			<th>Matches Played</th>
-		  </tr>
-		</thead>
-		<tbody>
-		  {users.map((user, index) => (
-			<tr key={user.id}>
-			  <td>{index + 1}</td>
-			  <td>
-				<img src={user.profilePicture} alt="Profile" className="profile-picture" />
-				{user.name}
-			  </td>
-			  <td>{user.matchWon.length}</td>
-			  <td>{user.matchWon.length + user.matchLost.length}</td>
-			</tr>
-		  ))}
-		</tbody>
-	  </table>
+		<div>
+			<table>
+				<thead>
+					<tr>
+						<th>Rank</th>
+						<th>Name</th>
+						<th>Wins</th>
+						<th>Matches Played</th>
+					</tr>
+				</thead>
+				<tbody>
+					{users.map((user, index) => (
+						<tr key={user.id} onClick={() => handleUserClick(user)}>
+							<td>{index + 1}</td>
+							<td>
+								<img
+									src={user.profilePicture}
+									alt="Profile"
+									className="profile-picture"
+								/>
+								{user.name}
+							</td>
+							<td>{user.matchWon.length}</td>
+							<td>
+								{user.matchWon.length + user.matchLost.length}
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+			{selectedUser && (
+				<UserPopup
+					user={selectedUser}
+					onClose={() => setSelectedUser(null)}
+				/>
+			)}
+		</div>
 	);
-  }
+}
+
+function UserPopup({ user, onClose }) {
+	const handleOutsideClick = (e) => {
+		if (e.target.classList.contains("popup")) {
+			onClose();
+		}
+	};
+
+	return (
+		<div className="popup" onClick={handleOutsideClick}>
+			<div className="popup-content">
+				<button className="close-button" onClick={onClose}>
+					X
+				</button>
+				<h2>{user.name}</h2>
+				<img
+					src={user.profilePicture}
+					alt="Profile"
+					className="profile-picture"
+				/>
+				<p>Wins: {user.matchWon.length}</p>
+				<p>Losses: {user.matchLost.length}</p>
+				{/* Add more details as needed */}
+			</div>
+		</div>
+	);
+}
