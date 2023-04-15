@@ -77,7 +77,7 @@ function Achievements({ achievements }) {
 					></div>
 					<Card.Body>
 						<Card.Title className="achievement-title">
-							{achievement.title}
+							{achievement.name}
 						</Card.Title>
 						<Card.Text className="achievement-description">
 							{achievement.description}

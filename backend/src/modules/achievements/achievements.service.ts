@@ -6,7 +6,6 @@ type BooleanFunction = () => boolean;
 interface Achievement {
 	// icon: string,
 	name: string
-	title: string,
 	description: string,
 	functionHandler: BooleanFunction,
 }
@@ -27,13 +26,11 @@ export class AchievementService {
 	achievementArray: Achievement[] = [
 		{
 			name: "Achievement name 1",
-			title: "Same as achivement name 1",
 			description: "This is the description of the achievement 1",
 			functionHandler: this.handleAch1,
 		},
 		{
 			name: "Achievement name 2",
-			title: "Same as achivement name 2",
 			description: "This is the description of the achievement 2",
 			functionHandler: this.handleAch2,
 		},
@@ -79,7 +76,22 @@ export class AchievementService {
 	}
 
 	async checker(userId: number, achievementName: string) {
-		/* Iterate through the array of achievement function to match the name */
+		/* Check if user exists and if the user
+		*  already have the achievement
+		*/
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId },
+			include: { achievements: true }
+		});
+		if (!user)
+			return;
+		const hasAchievement = user.achievements.some((achievement) => achievement.name === achievementName);
+		if (hasAchievement)
+			return;
+
+		/* Iterate through the array of achievement to match
+		*  the name and then call the achievement handler
+		*/
 		for (const achievement of this.achievementArray) {
 			if (achievement.name === achievementName) {
 				const give = achievement.functionHandler();
@@ -87,17 +99,12 @@ export class AchievementService {
 				 * allowed to give the achievement to the user
 				*/
 				if (give) {
-					const user = await this.prisma.user.findUnique({
-						where: {id: userId}
-					});
-					if (!user)
-						return;
-					const updatedUser = await this.prisma.user.update({
+					await this.prisma.user.update({
 						where: { id: userId },
-						data: { achievements: {connect: { name: achievement.name}}}
+						data: { achievements: { connect: { name: achievement.name } } }
 					});
-					console.log(`updatedUser: ${JSON.stringify(updatedUser)}`)
 				}
+				break;
 			}
 		}
 	}
