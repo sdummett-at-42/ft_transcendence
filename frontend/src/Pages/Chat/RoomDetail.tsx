@@ -9,6 +9,7 @@ import { io, Socket } from "socket.io-client";
 import { createContext, useContext } from "react";
 import { DatabaseContext } from './ChatLogin';
 import InvitedConfirm from './InvitedConfirm';
+import MemberList from './MemberList';
 
 interface RoomDetailProps {
   socket: Socket;
@@ -52,7 +53,6 @@ export default function RoomDetail(props: RoomDetailProps) {
       }
     return userId;
   };
-  
 
   const handleInvite =()=>{
     let userId = findInDatabase(inputInvite);
@@ -65,8 +65,33 @@ export default function RoomDetail(props: RoomDetailProps) {
       userId: userId,
     }
     props.socket.emit("inviteUser", payload);
-  }
+}
 
+const handleBan = () => {
+  let userId = findInDatabase(inputInvite);
+  if (userId == 0){
+    alert("User not found. Please try again.");
+    return ;
+  }
+  const payload ={
+    roomName: props.roomName,
+    userId: userId,
+  }
+  props.socket.emit("banUser", payload);
+}
+const handleMute = () => {
+  let userId = findInDatabase(inputInvite);
+  if (userId == 0){
+    alert("User not found. Please try again.");
+    return ;
+  }
+  const payload ={
+    roomName: props.roomName,
+    userId: userId,
+    timeout: 60,
+  }
+  props.socket.emit("muteUser", payload);
+}
   const  handleInvited = useCallback((payload) =>{
       setMessage(payload.message);
       setRoomNameInvite(payload.roomName);
@@ -79,16 +104,8 @@ const handleNotInvite = useCallback((payload) =>{
 }, [])
 
 const handleAdminList = useCallback((payload)=>{
-  console.log("handleAdminList",payload)
-  console.log("handleAdminList",props.UserId)
   setAdminList(payload.memberList.admins);
-  console.log(adminList);
-  if (adminList.includes(props.UserId))
-  {
-    console.log("inside??")
-    setIfAdmin(true);
-  }
-},[])
+},[props.UserId, adminList])
 const handleCheckIfAdmin = useCallback((payload)=>{
   console.log(" handleCheckIfAdmin", payload)
   if(payload.roomName !== props.roomName){
@@ -96,12 +113,21 @@ const handleCheckIfAdmin = useCallback((payload)=>{
     return;
   }
   setAdminList(payload.memberList.admins);
-  if (adminList.includes(props.UserId))  
+  // if (adminList.includes(props.UserId))  
+  //   setIfAdmin(true);
+  // else
+  //   setIfAdmin(false);
+},[props.UserId, props.roomName, ifAdmin, adminList])
+useEffect(() => {
+  console.log("adminList updated:", adminList);
+  if (adminList.includes(props.UserId))
+  {
+    console.log("inside??")
     setIfAdmin(true);
+  }
   else
     setIfAdmin(false);
-},[props.UserId, props.roomName, ifAdmin, adminList])
-
+}, [adminList]);
   useEffect(() => {
       if (props.socket) {
         props.socket.on("invited", handleInvited);
@@ -118,7 +144,6 @@ const handleCheckIfAdmin = useCallback((payload)=>{
         }
       };
   }, [props.socket, handleInvited, handleNotInvite, handleCheckIfAdmin]);
-
 
  return (
   props.roomName ? (
@@ -148,13 +173,13 @@ const handleCheckIfAdmin = useCallback((payload)=>{
             {ifAdmin? (
             <><div className='chat-info-subtitle'>Ban a Member</div>
            <div className="chat-info-form">
-           <input placeholder="Name" ></input>
-           <button><FontAwesomeIcon icon={faBan} /></button>
+           <input placeholder="Name" value={inputBan} onChange={(e) => setInputBan(e.target.value)} ></input>
+           <button onClick={handleBan}><FontAwesomeIcon icon={faBan} /></button>
            </div>
            <div className='chat-info-subtitle'>Mute a Member</div>
            <div className="chat-info-form">
-            <input placeholder="Name"></input>
-           <button><FontAwesomeIcon icon={faVolumeXmark}/></button>
+            <input placeholder="Name" value={inputBan} onChange={(e) => setInputBan(e.target.value)} ></input>
+           <button onClick={handleMute}><FontAwesomeIcon icon={faVolumeXmark}/></button>
            </div>
            <div className='chat-info-subtitle'>Kick a Member</div>
            <div className="chat-info-form">
@@ -163,64 +188,7 @@ const handleCheckIfAdmin = useCallback((payload)=>{
            </div></>
             ) : null}
       </div>
-      <div className="chat-info-header clearfix">
-        <div className='chat-info-memberlist'>Member List</div>
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_08.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Monica Ward</div>
-                <div className="status">
-                  <i className="fa fa-circle online"></i> Admin
-                </div>    
-              </div>             
-            </li>
-            <button>Play</button><button>Message</button><button>...</button>
-            {/* <button>Play</button><button>Message</button><button>Block</button> */}
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_03.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Mike Thomas</div>
-                <div className="status">
-                  <i className="fa fa-circle online"></i> Member
-                </div>
-              </div>
-            </li>
-            <button>Play</button><button>Message</button><button>...</button>
-            {/* <button>Play</button><button>Message</button><button>Block</button> */}
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_05.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Ginger Johnston</div>
-                <div className="status">
-                  <i className="fa fa-circle online"></i> online
-                </div>
-              </div>
-            </li>
-            <button>Play</button><button>Message</button><button>...</button>
-            {/* <button>Play</button><button>Message</button><button>Block</button> */}
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_06.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Tracy Carpenter</div>
-                <div className="status">
-                  <i className="fa fa-circle offline"></i> left 30 mins ago
-                </div>
-              </div>
-            </li>
-            <button>Play</button><button>Message</button><button>Block</button>
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_07.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Christian Kelly</div>
-                <div className="status">
-                  <i className="fa fa-circle offline"></i> left 10 hours ago
-                </div>
-              </div>
-            </li>
-            <button>Play</button><button>Message</button><button>...</button>
-            {/* <button>Play</button><button>Message</button><button>Block</button> */}
-            
-      </div>
+      <MemberList socket={props.socket} roomName={props.roomName} />
   </div>) : <div className="chatinfo" ></div>
  );
 }

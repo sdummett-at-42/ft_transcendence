@@ -131,6 +131,9 @@ export default function Message(props:MessageProps) {
       // props.socket.on("roomJoined", ()=>{console.log ("roomJoined\n");});
       props.socket.on("roomMsgReceived", handleMessages);
       props.socket.on("userInvited", handleMessageAuto);
+      props.socket.on("roomMsgNotSended", (payload)=>{
+        alert(payload.message);
+      });
     }
     return () => {
       if (props.socket) {
@@ -138,6 +141,7 @@ export default function Message(props:MessageProps) {
         // props.socket.off("roomJoined");
         props.socket.off("roomMsgReceived", handleMessages);
         props.socket.off("userInvited", handleMessageAuto);
+        props.socket.off("roomMsgNotSended");
       }
     };
   }, [props.socket]);
