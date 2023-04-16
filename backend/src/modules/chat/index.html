@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Chat Room</title>
+</head>
+
+<body>
+	<div id="messages"></div>
+	<input type="text" id="roomNameInput" placeholder="Type the room name">
+	<input type="text" id="messageInput" placeholder="Type your message here">
+	<input type="text" id="userIdInput" placeholder="Type the userId here">
+	<input type="text" id="visibilityInput" placeholder="Type the room visibility here">
+	<input type="text" id="passwordInput" placeholder="Type the room password here">
+	<input type="text" id="timeoutInput" placeholder="Type the timeout here">
+	<button onclick="sendRoomMsg()">Send room message</button>
+	<button onclick="createRoom()">Create room</button>
+	<button onclick="leaveRoom()">Leave room</button>
+	<button onclick="joinRoom()">Join room</button>
+	<button onclick="updateRoom()">Update room</button>
+	<button onclick="kickUser()">Kick user</button>
+	<button onclick="banUser()">Ban user</button>
+	<button onclick="unbanUser()">Unban user</button>
+	<button onclick="muteUser()">Mute user</button>
+	<button onclick="unmuteUser()">Unmute user</button>
+	<button onclick="blockUser()">Block user</button>
+	<button onclick="unblockUser()">Unblock user</button>
+	<button onclick="inviteUser()">Invite user</button>
+	<button onclick="uninviteUser()">Uninvite user</button>
+	<button onclick="addRoomAdmin()">Add room admin</button>
+	<button onclick="removeRoomAdmin()">Remove room admin</button>
+	<button onclick="giveRoomOwnership()">Give room ownership</button>
+	<button onclick="getRoomsList()">Get rooms list</button>
+	<button onclick="getRoomMsgHist()">Get room message history</button>
+	<button onclick="sendDM()">Send DM</button>
+	<button onclick="notifsRead()">Notifs Read</button>
+	<button onclick="connect()">Connect</button>
+	<button onclick="disconnect()">Disconnect</button>
+
+
+	<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+	<script>
+		const socket = io();
+		socket.on("connect", function () {
+			console.log("Connected to the server");
+		});
+		function clearMessageInput() {
+			document.getElementById('messageInput').value = '';
+		}
+		function printSuccess(reason, payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `✅ [${reason}] ${payload.roomName}: ${payload.message}`;
+			messagesDiv.appendChild(messageDiv);
+
+		}
+		function printFailure(reason, payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `❌ [${reason}] ${payload.roomName}: ${payload.message}`;
+			messagesDiv.appendChild(messageDiv);
+		}
+
+		function printInfo (reason, payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `❕ [${reason}] ${payload.roomName}: ${payload.message}`;
+			messagesDiv.appendChild(messageDiv);
+		}
+
+		function disconnect() {
+			socket.disconnect();
+		}
+		function connect() {
+			socket.connect();
+		}
+		function sendRoomMsg() {
+			const message = document.getElementById('messageInput').value;
+			const roomName = document.getElementById('roomNameInput').value;
+			const payload = {
+				roomName: roomName,
+				message: message
+			}
+			socket.emit("sendRoomMsg", payload);
+			clearMessageInput();
+		}
+		function createRoom() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				visibility : document.getElementById('visibilityInput').value,
+				password : document.getElementById('passwordInput').value,
+			}
+			socket.emit("createRoom", payload);
+		}
+		function leaveRoom() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+			}
+			socket.emit("leaveRoom", payload);
+		}
+		function joinRoom() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				password : document.getElementById('passwordInput').value,
+			}
+			socket.emit("joinRoom", payload);
+		}
+		function kickUser() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("kickUser", payload);
+		}
+		function banUser() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("banUser", payload);
+		}
+		function unbanUser() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("unbanUser", payload);
+		}
+		function muteUser() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+				timeout: +(document.getElementById('timeoutInput').value)
+			}
+			socket.emit("muteUser", payload);
+		}
+		function unmuteUser() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("unmuteUser", payload);
+		}
+		function blockUser() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("blockUser", payload);
+		}
+		function unblockUser() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("unblockUser", payload);
+		}
+		function inviteUser() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("inviteUser", payload);
+		}
+		function uninviteUser() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("uninviteUser", payload);
+		}
+		function updateRoom() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				visibility : document.getElementById('visibilityInput').value,
+				password : document.getElementById('passwordInput').value,
+			}
+			socket.emit("updateRoom", payload);
+
+		}
+		function addRoomAdmin() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("addRoomAdmin", payload);
+		}
+		function removeRoomAdmin() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("removeRoomAdmin", payload);
+		}
+		function giveRoomOwnership() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+				userId : +(document.getElementById('userIdInput').value),
+			}
+			socket.emit("giveRoomOwnership", payload);
+		}
+		function getRoomsList() {
+			socket.emit("getRoomsList");
+		}
+		function getRoomMsgHist() {
+			const payload = {
+				roomName : document.getElementById('roomNameInput').value,
+			}
+			socket.emit("getRoomMsgHist", payload)
+		}
+		function sendDM() {
+			const payload = {
+				userId : +(document.getElementById('userIdInput').value),
+				message :  document.getElementById('messageInput').value,
+			}
+			socket.emit("sendDM", payload);
+		}
+		function notifsRead() {
+			socket.emit("notifsRead");
+		}
+		socket.on("dataError", function (payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `❌ [dataError] : ${payload.message}`;
+			messagesDiv.appendChild(messageDiv);
+		})
+		socket.on("roomMsgReceived", function (payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `✉️ [roomMsgReceived] ${payload.userId}@${payload.roomName}: ${payload.message}`;
+			messagesDiv.appendChild(messageDiv);
+		});
+		socket.on("roomMsgNotSended", function(payload) {
+			printFailure("roomMsgNotSended", payload)
+		})
+		socket.on("roomMsgNotReceived", function(payload) {
+			printFailure("roomMsgNotReceived", payload)
+		});
+		socket.on("roomCreated", function(payload) {
+			printSuccess("roomCreated", payload)
+		});
+		socket.on("roomNotCreated", function(payload) {
+			printFailure("roomNotCreated", payload)
+		});
+		socket.on("roomNotUpdated", function(payload) {
+			printFailure("roomNotUpdated", payload)
+		});
+		socket.on("roomUpdated", function(payload) {
+			printSuccess("roomUpdated", payload)
+		});
+		socket.on("roomNotJoined", function(payload) {
+			printFailure("roomNotJoined", payload)
+		});
+		socket.on("roomNotLeft", function(payload) {
+			printFailure("roomNotLeft", payload)
+		});
+		socket.on("roomAdminNotAdded", function(payload) {
+			printFailure("roomAdminNotAdded", payload)
+		});
+		socket.on("roomAdminAdded", function(payload) {
+			printSuccess("roomAdminAdded", payload)
+		});
+		socket.on("roomAdminNotRemoved", function(payload) {
+			printFailure("roomAdminNotRemoved", payload)
+		});
+		socket.on("roomAdminRemoved", function(payload) {
+			printSuccess("roomAdminRemoved", payload)
+		});
+		socket.on("roomOwnershipNotGived", function(payload) {
+			printFailure("roomOwnershipNotGived", payload)
+		});
+		socket.on("roomOwnershipGived", function(payload) {
+			printSuccess("roomOwnershipGived", payload)
+		});
+		socket.on("userNotKicked", function(payload) {
+			printFailure("userNotKicked", payload)
+		});
+		socket.on("userKicked", function(payload) {
+			printSuccess("userKicked", payload)
+		});
+		socket.on("userNotBanned", function(payload) {
+			printFailure("userKicked", payload)
+		});
+		socket.on("userBanned", function(payload) {
+			printSuccess("userBanned", payload)
+		});
+		socket.on("userNotUnbanned", function(payload) {
+			printFailure("userNotUnbanned", payload)
+		});
+		socket.on("userUnbanned", function(payload) {
+			printSuccess("userUnbanned", payload)
+		});
+		socket.on("userNotMuted", function(payload) {
+			printFailure("userNotMuted", payload)
+		});
+		socket.on("userMuted", function(payload) {
+			printSuccess("userMuted", payload)
+		});
+		socket.on("userNotUnmuted", function(payload) {
+			printFailure("userNotUnmuted", payload)
+		});
+		socket.on("userUnmuted", function(payload) {
+			printSuccess("userUnmuted", payload)
+		});
+		socket.on("userNotBlocked", function(payload) {
+			printFailure("userUnmuted", payload)
+		});
+		socket.on("userBlocked", function(payload) {
+			printSuccess("userBlocked", payload)
+		});
+		socket.on("userNotUnblocked", function(payload) {
+			printFailure("userNotUnblocked", payload)
+		});
+		socket.on("userUnblocked", function(payload) {
+			printSuccess("userUnblocked", payload)
+		});
+		socket.on("userNotInvited", function(payload) {
+			printFailure("userNotInvited", payload)
+		});
+		socket.on("userInvited", function(payload) {
+			printSuccess("userInvited", payload)
+		});
+		socket.on("userNotUnvited", function(payload) {
+			printFailure("userNotUnvited", payload)
+		});
+		socket.on("userUninvited", function(payload) {
+			printSuccess("userUninvited", payload)
+		});
+		socket.on("roomsListReceived", function(payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `✅ [roomsListReceived] : ${JSON.stringify(payload.roomsList)}`;
+			messagesDiv.appendChild(messageDiv);
+		});
+		socket.on("roomMsgHistNotReceived", function(payload) {
+			printFailure("roomMsgHistNotReceived", payload)
+		});
+		socket.on("roomMsgHistReceived", function(payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `✅ [roomMsgHistReceived] ${payload.roomName}:: ${payload.msgHist}`;
+			messagesDiv.appendChild(messageDiv);
+		});
+		socket.on("memberListUpdated", function(payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `❕ [memberListUpdated] ${payload.roomName}: ${JSON.stringify(payload.memberList)}`;
+			messagesDiv.appendChild(messageDiv);
+		});
+		socket.on("roomJoined", function(payload) {
+			printInfo("roomJoined", payload);
+
+		});
+		socket.on("roomLeft", function(payload) {
+			printInfo("roomLeft", payload);
+
+		});
+		socket.on("granted", function(payload) {
+			printInfo("granted", payload);
+
+		});
+		socket.on("demoted", function(payload) {
+			printInfo("demoted", payload);
+
+		});
+		socket.on("kicked", function(payload) {
+			printInfo("kicked", payload);
+
+		});
+		socket.on("banned", function(payload) {
+			printInfo("banned", payload);
+
+		});
+		socket.on("unbanned", function(payload) {
+			printInfo("unbanned", payload);
+
+		});
+		socket.on("muted", function(payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `❕ [muted] ${payload.roomName}: ${payload.message} (${payload.timeout})`;
+			messagesDiv.appendChild(messageDiv);
+		});
+		socket.on("unmuted", function(payload) {
+			printInfo("unmuted", payload);
+
+		});
+		socket.on("invited", function(payload) {
+			printInfo("invited", payload);
+		});
+		socket.on("DMNotSended", function(payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `❌ [DMNotSended] : ${payload.message}`;
+			messagesDiv.appendChild(messageDiv);
+		});
+		socket.on("DMReceived", function(payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `✉️ [DMReceived] ${payload.userId}: ${payload.message}`;
+			messagesDiv.appendChild(messageDiv);
+		})
+		socket.on("unreadNotif", function (payload) {
+			const messagesDiv = document.getElementById('messages');
+			const messageDiv = document.createElement('div');
+			messageDiv.innerHTML = `❕ [unreadNotif]: ${payload}`;
+			messagesDiv.appendChild(messageDiv);
+
+		});
+
+	</script>
+</body>
+
+</html>

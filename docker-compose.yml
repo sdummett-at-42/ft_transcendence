@@ -5,7 +5,7 @@ services:
   postgres:
     image: postgres:15.2-alpine3.17
     restart: always
-    container_name: postgres.db
+    container_name: database
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -18,9 +18,9 @@ services:
       - backend
 
   nestjs:
-    build: ./backend.nestjs
+    build: ./backend
     restart: always
-    container_name: nestjs.back
+    container_name: backend
     depends_on:
       - postgres
       - redis
@@ -41,7 +41,7 @@ services:
       - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
       - ISSUER=${ISSUER}
     volumes:
-      - ./backend.nestjs/src:/app/src
+      - ./backend/src:/app/src
     ports:
       - 3001:3001
     networks:
@@ -50,18 +50,18 @@ services:
   redis:
     image: redis:7.0.8-alpine3.17
     restart: always
-    container_name: redis.cache
+    container_name: cache
     ports:
       - 7777:7777
     networks:
       - backend
 
-  front:
-    build: ./front
+  reactjs:
+    build: ./frontend
     restart: always
     container_name: frontend
     volumes:
-      - ./front/src:/app/src
+      - ./frontend/src:/app/src
     ports:
       - "5173:5173"
 

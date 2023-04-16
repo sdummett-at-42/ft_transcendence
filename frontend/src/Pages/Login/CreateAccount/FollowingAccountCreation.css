@@ -1,0 +1,33 @@
+#Profil-image-wrapper {
+    padding-top: 2vmin;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.Profil-image {
+    width: 30vmin;
+    height: 30vmin;
+    border-radius: 50%;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    border: 1px solid #000;
+    background-color: #000;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.Profil-image:hover {
+    cursor: pointer;
+}
+
+.Profil-skip-button {
+    margin-top: 15vmin;
+}
+
+.Profil-skip-button:hover {
+    transition: background-color 300ms;
+    background-color: rgb(3, 169, 244);
+}
