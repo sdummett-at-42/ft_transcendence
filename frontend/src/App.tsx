@@ -9,6 +9,7 @@ import Profile from "./Pages/Profile/Profile";
 import NotFound from "./Pages/Errors/NotFound";
 import Layout from "./Pages/Navbar/Layout";
 import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
+import Game from "./Pages/Game/Game";
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/login/intra42" element={<LoginFortyTwo />} />
 
           <Route path="/home" element={<Layout children={<Home />} />} />
+          <Route path="/game" element={<Layout children={<Game />} />} />
           {/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
           <Route path='/profil/:id' element={<Layout children={<Profile />} />} />
           <Route path='/unauthorized' element={<Unauthorized />} />

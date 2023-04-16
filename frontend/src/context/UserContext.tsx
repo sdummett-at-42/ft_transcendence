@@ -15,8 +15,16 @@ const UserContextProvider = ({ children }: any) => {
         },
     });
 
+    const gameSocketRef = useRef(null);
+
+    gameSocketRef.current = io('http://localhost:3001/game', {
+        auth: {
+            token: Cookies.get('connect.sid'),
+        },
+    });
+
     return (
-        <UserContext.Provider value={{ user, setUser, friendSocketRef }}>
+        <UserContext.Provider value={{ user, setUser, friendSocketRef, gameSocketRef }}>
             {children}
         </UserContext.Provider>
     );
