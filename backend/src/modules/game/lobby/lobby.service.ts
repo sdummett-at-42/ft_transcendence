@@ -174,7 +174,7 @@ export class LobbyService {
             p1.player.socket = undefined;
             p2.player.socket = undefined;
 
-            this.gameGateway.server.to(p1Socket).to(p2Socket).emit("goInGame", game.id);
+            this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
 
     // const redirect = `${this.req.protocol}://${this.req.hostname}/game/${game.id}`;
     //const redirect = "http://localhost:3001/game/" + game.id;
@@ -275,7 +275,7 @@ export class LobbyService {
         console.log(socket.handshake.headers);
 		if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
-			socket.emit('notConnected', {
+			socket.emit(EventGame.NotConnected, {
 				timestamp: new Date().toISOString(),
 				message: `No session cookie provided`,
 			});
@@ -286,7 +286,7 @@ export class LobbyService {
 		const session = await this.redis.getSession(sessionHash);
 		if (session === null) {
 			console.debug("User isn't logged in");
-			socket.emit('notConnected', { // Event to report here
+			socket.emit(EventGame.NotConnected, { // Event to report here
 				timestamp: new Date().toISOString(),
 				message: `User isn't logged in.`,
 			});
@@ -360,7 +360,7 @@ export class LobbyService {
     async handleDisconnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
         if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
-			socket.emit('notConnected', {
+			socket.emit(EventGame.NotConnected, {
 				timestamp: new Date().toISOString(),
 				message: `No session cookie provided`,
 			});
@@ -371,7 +371,7 @@ export class LobbyService {
 		const session = await this.redis.getSession(sessionHash);
 		if (session === null) {
 			console.debug("User isn't logged in");
-			socket.emit('notConnected', { // Event to report here
+			socket.emit(EventGame.NotConnected, { // Event to report here
 				timestamp: new Date().toISOString(),
 				message: `User isn't logged in.`,
 			});
