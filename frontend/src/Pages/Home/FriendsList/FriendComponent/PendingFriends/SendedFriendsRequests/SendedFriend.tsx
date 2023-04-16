@@ -26,7 +26,7 @@ export default function SendedFriend(props) {
   return (
     <div>
         {friend && (
-            <div className="friend__info">
+            <div className="Friend-info">
                 <img src={friend.profilePicture} alt="Photo de profil" className="Friend-profile-picture" />
                 <h4>{friend.name}</h4>
                 <div>

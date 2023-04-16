@@ -22,14 +22,14 @@ export default function FriendsList() {
     const { user, friendSocketRef } = useContext(UserContext);
 
     // Store all friends of the user
-    const [friends, setFriends] = useState([]);
+    const [friends, setFriends] = useState([] as any);
     // Store all received friend requests of the user
-    const [friendsPending, setFriendsPending] = useState([]);
+    const [receivedRequests, setReceivedRequests] = useState([] as any);
     // Store all sent friend requests of the user
-    const [friendsRequests, setFriendsRequests] = useState([]);
+    const [sendRequests, setSendRequests] = useState([] as any);
     // Store the online status
-    const [onlineStatus, setOnlineStatus] = useState([]);
-    
+    const [onlineStatus, setOnlineStatus] = useState([] as any);
+
     // Fetch all friends of the user
     useEffect(() => {
         async function getFriends() {
@@ -73,7 +73,7 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-                setFriendsPending(ReceivedPendingFriends);
+                setReceivedRequests(ReceivedPendingFriends);
             }
 
         async function getRequestFriends() {
@@ -89,7 +89,7 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-                setFriendsRequests(SentPendingFriends);
+                setSendRequests(SentPendingFriends);
         }
 
         getFriends();
@@ -111,13 +111,7 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-            const transformedData = ReceivedPendingFriends.map(friend => ({
-                id: friend.sender.id,
-                name: friend.sender.name,
-                profilePicture: friend.sender.profilePicture,
-                elo: friend.sender.elo
-            }));
-            setFriendsPending(transformedData);
+            setReceivedRequests(ReceivedPendingFriends);
             }
         getPendingFriends();
     };
@@ -149,44 +143,22 @@ export default function FriendsList() {
             }});
             const friendsList = ListOfUsers.filter(user => ListOfFriends.includes(user.id));
             setFriends(friendsList);
+            setSendRequests(sendRequests.filter(friend => friend.receiver.id != data.id));
+
         }
         getFriends();
     };
 
     const handleFriendRequestCanceled = (data) => {
-        async function getRequestFriends() {
-            // Get all sended friend requests of the user from the database and set the state
-            const SentPendingFriends = await fetch("http://localhost:3001/friends/requests/sended", {
-                credentials: 'include',
-                method: 'GET'
-            })
-                .then(res => {
-                    if (res.status == 401) {
-                        navigate("/unauthorized");
-                    }
-                    return res.json();
-                });
-            setFriendsRequests(SentPendingFriends);
-        }
-        getRequestFriends();
+        setReceivedRequests(receivedRequests.filter(friend => friend.sender.id != data.id));
     };
 
     const handleFriendConnected = (data) => {
-        console.log("connected");
-        const userId = data.id;
-        console.log(userId);
-        setOnlineStatus([...onlineStatus, userId]);
-        console.log(onlineStatus);
-        console.log("-----------");
-        console.log(onlineStatus.some(id => id === userId));
+        setOnlineStatus([...onlineStatus, data]);
     };
 
     const handleFriendDisconnected = (data) => {
-        console.log("disconnected");
-        const userId = data.id;
-        console.log(userId);
-        setOnlineStatus(onlineStatus.filter(id => id !== userId));
-        console.log(onlineStatus);
+        // setOnlineStatus(onlineStatus.filter(friend => friend.id != data.id));
     };
 
     // Handle the socket events
@@ -199,11 +171,11 @@ export default function FriendsList() {
         friendSocketRef.current.on('friendDisconnected', handleFriendDisconnected);
 
         return () => {
-            // friendSocketRef.current.off('friendRequestReceived', handleFriendRequest);
-            // friendSocketRef.current.off('friendRequestAccepted', handleFriendRequestAccepted);
-            // friendSocketRef.current.off('friendRequestCanceled', handleFriendRequestCanceled);
-            // friendSocketRef.current.off('friendConnected', handleFriendConnected);
-            // friendSocketRef.current.off('friendDisconnected', handleFriendDisconnected);
+            friendSocketRef.current.off('friendRequestReceived', handleFriendRequest);
+            friendSocketRef.current.off('friendRequestAccepted', handleFriendRequestAccepted);
+            friendSocketRef.current.off('friendRequestCanceled', handleFriendRequestCanceled);
+            friendSocketRef.current.off('friendConnected', handleFriendConnected);
+            friendSocketRef.current.off('friendDisconnected', handleFriendDisconnected);
         };
     }, [
         handleFriendRequest,
@@ -236,14 +208,14 @@ export default function FriendsList() {
             });
 
         // Check if the user is already a friend or if the user is already in the friend request list or if the user is the current user
-        if (!getUser || getUser.id === user.id || friendsRequests.some(friend => friend.id === getUser.id) || friends.some(id => id === getUser.id)) {
+        if (!getUser || getUser.id === user.id || sendRequests.some(friend => friend.receiver.id === getUser.id) || friends.some(friend => friend.id === getUser.id)) {
             setIsShaking(true);
             setTimeout(() => { setIsShaking(false) }, 1000);
             return;
         }
-
+        
         // Check if the user is already in the pending friend request list
-        if (friendsPending.some(friend => friend.sender.id === getUser.id)) {
+        if (receivedRequests.some(friend => friend.sender.id === getUser.id)) {
             AcceptFriend(getUser);
             return;
         }
@@ -264,8 +236,11 @@ export default function FriendsList() {
                     navigate("/unauthorized");
                 }
                 else if (res.status == 201) {
-                    setFriendsRequests([...friendsRequests, getUser]);
+                    return res.json();
                 }
+            })
+            .then(res => {
+                setSendRequests([...sendRequests, res]);
             });
     }
 
@@ -286,7 +261,7 @@ export default function FriendsList() {
                 }
                 else if (res.status == 200) {
                     setFriends([...friends, friend]);
-                    setFriendsPending(friendsPending.filter(friendPending => friendPending.sender.id !== friend.id));
+                    setReceivedRequests(receivedRequests.filter(receivedRequest => receivedRequest.sender.id !== friend.id));
                 }
             })
     }
@@ -307,9 +282,9 @@ export default function FriendsList() {
                     navigate("/unauthorized");
                 }
                 else if (res.status == 204) {
-                    setFriendsPending(friendsPending.filter(friendPending => friendPending.id !== friend.id));
+                    setReceivedRequests(receivedRequests.filter(receivedRequest => receivedRequest.sender.id !== friend.id));
                 }
-            })
+            });
     }
 
     const CancelRequest = async (friend:UserData) => {
@@ -328,10 +303,9 @@ export default function FriendsList() {
                     navigate("/unauthorized");
                 }
                 else if (res.status == 204) {
-                    setFriendsRequests(friendsRequests.filter(friendRequests => friendRequests.id !== friend.id));
+                    setSendRequests(sendRequests.filter(sendRequest => sendRequest.receiver.id !== friend.id));
                 }
-            }
-            )
+            });
     }
 
     return (
@@ -349,14 +323,14 @@ export default function FriendsList() {
                             <div key={index}>
                                 <Friend
                                     props={friend}
-                                    online={onlineStatus.some(id => id === friend.id)}
+                                    isConnected={onlineStatus.some(online => online.id === friend.id)}
                                 />
                             </div>
                             );
                         })}
                 </div>
                 <div>
-                    {friendsPending.map((friend, index) => {
+                    {receivedRequests.map((friend, index) => {
                         return (
                             <div key={index}>
                                 <ReceivedFriend
@@ -369,7 +343,7 @@ export default function FriendsList() {
                         })}
                 </div>
                 <div>
-                    {friendsRequests.map((friend, index) => {
+                    {sendRequests.map((friend, index) => {
                         return (
                             <div key={index}>
                                 <SendedFriend

@@ -125,7 +125,7 @@ export default function Profile() {
 
     return (
         <div className="Profil-body">
-            <video src={profileVideo} autoPlay loop muted className="Profile-background-video" />
+            {/* <video src={profileVideo} autoPlay loop muted className="Profile-background-video" /> */}
             <div className="Profil-card">
 
                 <h3 className="LoginSelector-card-title">Modifiez votre profil:</h3>

@@ -3,8 +3,9 @@ import "./Friend.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMessage, faTableTennis, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
-export default function Friend(props, online) {
- 
+
+export default function Friend(props) {
+    
     type UserData = {
         name: string;
         id: number;
@@ -13,37 +14,33 @@ export default function Friend(props, online) {
     }
 
     const [friend, setFriend] = useState<UserData>();
-    const [onlineStatus, setOnlineStatus] = useState<boolean>(false);
+    const [active, setActive] = useState<boolean>(false);
 
     useEffect(() => {
         setFriend(props.props);
+        console.log(props.props);
+        setActive(props.isConnected);
+        console.log(props.isConnected);
     }, [props]);
-
-    console.log(online);
-    useEffect(() => {
-        // setOnline(onlineStatus);
-    }, [online]);
 
   return (
     <div>
         {friend && (
-            <div className="friend__info">
-                <img src={friend.profilePicture} alt="profilePicture" className="Friend-profile-picture" />
-                <div className="Friend-name">
-                    <h4>{friend.name}</h4>
-                    {onlineStatus && (
-                        <div className="Friend-online-status">
-                            <div className="Friend-online-status-circle"></div>
-                            <p>En ligne</p>
+            <div className="Friend-info">
+
+                <div className="Friend-profile">
+                    <div className="Friend-wrapper-profile-picture">
+                        <img src={friend.profilePicture} alt={`Image de profile de ${friend.name}`} className="Friend-profile-picture" />
+                        <div className={`Friend-circle-status ${active ? "Friend-online" : "Friend-offline"}`}></div>
+                    </div>
+                    <div className="Friend-name-status">
+                        <h4 className="Friend-name">{friend.name}</h4>
+                        <div className={`Friend-message ${active ? "Friend-online" : "Friend-offline"}`}>
+                            {active ? "En ligne" : "Hors ligne"}
                         </div>
-                    )}
-                    {!onlineStatus && (
-                        <div className="Friend-online-status">
-                            <div className="Friend-offline-status-circle"></div>
-                            <p>Hors ligne</p>
-                        </div>
-                    )}
+                    </div>
                 </div>
+
                 <button
                     className="PendingFriend-button"
                 >

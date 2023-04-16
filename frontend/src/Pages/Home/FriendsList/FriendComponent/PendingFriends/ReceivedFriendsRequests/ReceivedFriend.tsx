@@ -23,15 +23,15 @@ export default function ReceivedFriend(props) {
         props.onAcceptFriend(friend);
     }
 
-    const DeclineFriend = (friend) => {
+    const RefuseFriend = (friend) => {
         // Decline the friend request
-        props.onDeclineFriend(friend);
+        props.onRefusedFriend(friend);
     }
 
   return (
     <div>
         {friend && (
-            <div className="friend__info">
+            <div className="Friend-info">
                 <img src={friend.profilePicture} alt="Photo de profil" className="Friend-profile-picture" />
                 <h4>{friend.name}</h4>
                 <button
@@ -42,7 +42,7 @@ export default function ReceivedFriend(props) {
                 </button>
                 <button
                     className="PendingFriend-button PendingFriend-Declined"
-                    onClick={() => DeclineFriend(friend)}    
+                    onClick={() => RefuseFriend(friend)}    
                 >
                     <FontAwesomeIcon icon={faXmark} size="lg" id="PendingFriend-Declined-icon"/>
                 </button>
