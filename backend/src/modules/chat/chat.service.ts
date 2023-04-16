@@ -212,6 +212,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${userId} has left the room ${dto.roomName}.`
 		});
@@ -313,6 +314,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +socket.data.userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${socket.data.userId} has joined the room ${dto.roomName}.`
 		});
@@ -425,6 +427,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been kicked from the room ${dto.roomName}.`
 		});
@@ -553,6 +556,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been banned from the room ${dto.roomName}.`
 		});
@@ -646,6 +650,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been unbanned from the room ${dto.roomName}.`
 		});
@@ -765,6 +770,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been muted from the room ${dto.roomName} for ${dto.timeout} secs.`
 		});
@@ -862,6 +868,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been unmuted from the room ${dto.roomName}.`
 		});
@@ -1216,6 +1223,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been granted admin in the room ${dto.roomName}.`
 		});
@@ -1308,6 +1316,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} has been demoted to a normal user in the room ${dto.roomName}.`
 		});
@@ -1390,6 +1399,7 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.userId} is the new owner of the room ${dto.roomName}.`
 		});
