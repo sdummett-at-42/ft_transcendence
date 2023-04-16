@@ -6,19 +6,18 @@ import * as fs from "fs";
 import { Player, Game, Square, Circle, BlackHole } from '../entities/game.entities';
 import { GameGateway } from '../game.gateway'
 import { EventGame } from '../game-event.enum';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class LobbyService {
     constructor(private readonly gameGateway: GameGateway,
-                private readonly redis: RedisService) {}
+                private readonly redis: RedisService,
+                private readonly prisma: PrismaService ){}
 
     BaseThreshold = 1000 / 100;
 
     // TODO
-    // recuper par la DB
-    // Suppr joueur Q if deco
-
-
+    // Ajouter liste player en jeu
 
     nbGame : number = 0;
     users : { player : Player, threshold : number}[] = [];
@@ -82,7 +81,9 @@ export class LobbyService {
         } else if (this.users.length >= 2) { // if >= 2 player in Q
             // check if 2 player match
             let j : number;
-            for (let i : number = 0; i < this.users.length - 1; i++) {
+            for (let i : number = 0; i < this.users.length; i++) {
+                console.log(this.users.length);
+                console.log("i = ", i);
                 j = i + 1;
                 while (j < this.users.length) {
                     if (this.checkMatch(this.users[i], this.users[j]) === true) { // if yes create game
@@ -91,6 +92,7 @@ export class LobbyService {
                         i = this.users.length; // leave loop because users was modified
                         break;
                     }
+                    j++;
                 }
                 // if not match found augment treshold to this.users[i]
                 if (gotMatch === true) {
@@ -98,7 +100,7 @@ export class LobbyService {
                 } else {
                     this.users[i].threshold += 5;
                 }
-                i++;
+                //i++;
             }
         }
         // Test solo player
@@ -286,14 +288,22 @@ export class LobbyService {
 
         const allData = JSON.parse(session).passport.user;
         const userId = JSON.parse(session).passport.user.id;
+        
 		socket.data.userId = userId;
-
-        socket.data.name = allData.name;
-        socket.data.elo = allData.elo;
         socket.data.socket = socket.id;
+        
+        //TODO
+        // get via prisma
+        const prismData = await this.prisma.user.findUnique({
+			where: { id : userId },
+			select: {
+				name: true,
+				elo: true,
+			},
+		});
+        socket.data.name = prismData.name;
+        socket.data.elo = prismData.elo;
 
-        // console.log("data: ",  socket.data.socket);
-        // console.log("socketid: ",  socket.id);
 
         // TODO
         // check si avec https j'ai encore acces a headers.referer
