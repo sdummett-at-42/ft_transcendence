@@ -24,31 +24,22 @@ function App() {
 				credentials: "include",
 			});
 			const userData = await response.json();
-			console.log(`userData: ${JSON.stringify(userData)}`)
 			setUser(userData);
 		}
-
 		fetchUser();
 	}, []);
 
-	return (user &&
+	return (
 		<div className="App">
 			<Routes>
-				<Route path="/" element={<LoginSelector />} />
-				<Route path="/register" element={<CreateAccount />} />
-				<Route
-					path="/register/finalization"
-					element={<FollowingAccountCreation />}
-				/>
-				{/* <Route path="/forgotMail" element={<ForgotMail />} /> */}
-				<Route path="/login/intra42" element={<LoginFortyTwo />} />
-
 				<Route path="/home" element={<Layout children={<Home />} />} />
 				{/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
+				{user ? (
 				<Route
 					path="/profile"
 					element={<Layout children={<Profile userId={user.id} />} />}
 				/>
+				) : null}
 				<Route
 					path="/settings"
 					element={<Layout children={<Settings />} />}
@@ -62,10 +53,19 @@ function App() {
 					path="/stats"
 					element={<Layout children={<InitStats />} />}
 				/>
+				{/* Temporary duplicate code below */}
+				<Route path="/" element={<LoginSelector />} />
+				<Route path="/register" element={<CreateAccount />} />
+				<Route
+					path="/register/finalization"
+					element={<FollowingAccountCreation />}
+				/>
+				{/* <Route path="/forgotMail" element={<ForgotMail />} /> */}
+				<Route path="/login/intra42" element={<LoginFortyTwo />} />
 				<Route path="/*" element={<Layout children={<NotFound />} />} />
 			</Routes>
 		</div>
-	);
+	)
 }
 
 export default App;
