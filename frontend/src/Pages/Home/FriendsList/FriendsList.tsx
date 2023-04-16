@@ -27,6 +27,8 @@ export default function FriendsList() {
     const [friendsPending, setFriendsPending] = useState([]);
     // Store all sent friend requests of the user
     const [friendsRequests, setFriendsRequests] = useState([]);
+    // Store the online status
+    const [onlineStatus, setOnlineStatus] = useState([]);
     
     // Fetch all friends of the user
     useEffect(() => {
@@ -43,7 +45,19 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-            setFriends(ListOfFriends);
+            const ListOfUsers = await fetch("http://localhost:3001/users", {
+                credentials: 'include',
+                method: 'GET'
+                })
+                .then(res => {
+                    if (res.status == 401) {
+                        navigate("/unauthorized");
+                    }
+                    else if (res.status == 200) {
+                        return res.json();
+                }});
+            const friendsList = ListOfUsers.filter(user => ListOfFriends.includes(user.id));
+            setFriends(friendsList);
         } 
 
         async function getPendingFriends() {
@@ -122,7 +136,19 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-            setFriends(ListOfFriends);
+            const ListOfUsers = await fetch("http://localhost:3001/users", {
+                credentials: 'include',
+                method: 'GET'
+            })
+                .then(res => {
+                    if (res.status == 401) {
+                        navigate("/unauthorized");
+                    }
+                    else if (res.status == 200) {
+                        return res.json();
+            }});
+            const friendsList = ListOfUsers.filter(user => ListOfFriends.includes(user.id));
+            setFriends(friendsList);
         }
         getFriends();
     };
@@ -146,9 +172,21 @@ export default function FriendsList() {
     };
 
     const handleFriendConnected = (data) => {
+        console.log("connected");
+        const userId = data.id;
+        console.log(userId);
+        setOnlineStatus([...onlineStatus, userId]);
+        console.log(onlineStatus);
+        console.log("-----------");
+        console.log(onlineStatus.some(id => id === userId));
     };
 
     const handleFriendDisconnected = (data) => {
+        console.log("disconnected");
+        const userId = data.id;
+        console.log(userId);
+        setOnlineStatus(onlineStatus.filter(id => id !== userId));
+        console.log(onlineStatus);
     };
 
     // Handle the socket events
@@ -161,11 +199,11 @@ export default function FriendsList() {
         friendSocketRef.current.on('friendDisconnected', handleFriendDisconnected);
 
         return () => {
-            friendSocketRef.current.off('friendRequestReceived', handleFriendRequest);
-            friendSocketRef.current.off('friendRequestAccepted', handleFriendRequestAccepted);
-            friendSocketRef.current.off('friendRequestCanceled', handleFriendRequestCanceled);
-            friendSocketRef.current.off('friendConnected', handleFriendConnected);
-            friendSocketRef.current.off('friendDisconnected', handleFriendDisconnected);
+            // friendSocketRef.current.off('friendRequestReceived', handleFriendRequest);
+            // friendSocketRef.current.off('friendRequestAccepted', handleFriendRequestAccepted);
+            // friendSocketRef.current.off('friendRequestCanceled', handleFriendRequestCanceled);
+            // friendSocketRef.current.off('friendConnected', handleFriendConnected);
+            // friendSocketRef.current.off('friendDisconnected', handleFriendDisconnected);
         };
     }, [
         handleFriendRequest,
@@ -198,7 +236,7 @@ export default function FriendsList() {
             });
 
         // Check if the user is already a friend or if the user is already in the friend request list or if the user is the current user
-        if (!getUser || getUser.id === user.id || friendsRequests.some(friend => friend.receiver.id === getUser.id) || friends.some(id => id === getUser.id)) {
+        if (!getUser || getUser.id === user.id || friendsRequests.some(friend => friend.id === getUser.id) || friends.some(id => id === getUser.id)) {
             setIsShaking(true);
             setTimeout(() => { setIsShaking(false) }, 1000);
             return;
@@ -248,7 +286,7 @@ export default function FriendsList() {
                 }
                 else if (res.status == 200) {
                     setFriends([...friends, friend]);
-                    setFriendsPending(friendsPending.filter(friendPending => friendPending.id !== friend.id));
+                    setFriendsPending(friendsPending.filter(friendPending => friendPending.sender.id !== friend.id));
                 }
             })
     }
@@ -309,7 +347,10 @@ export default function FriendsList() {
                     {friends.map((friend, index) => {
                         return (
                             <div key={index}>
-                                <Friend props={friend} />
+                                <Friend
+                                    props={friend}
+                                    online={onlineStatus.some(id => id === friend.id)}
+                                />
                             </div>
                             );
                         })}
