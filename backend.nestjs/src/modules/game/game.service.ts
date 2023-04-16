@@ -52,20 +52,35 @@ export class GameService {
         if (client.data.userId === game.p2.id) { // c'est le joueur 2
             game.p2.socket = client.data.socket;
         }
-        console.log("joingame");
         server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+        // When 1 player are in game, laucnh timer if Player 2 doesn't join
+        // 15 sec to join
+        if (game.p1.socket != undefined || game.p2.socket != undefined) {
+            clearTimeout(game.timeoutJoin);
+            game.timeoutJoin = setTimeout(() => {
+                if (game.p1.socket != undefined) {
+                    // player 2 win abandon
+                    this.victoryByGiveUpLimitMax(game, 2);
+                }
+                if (game.p2.socket != undefined) {
+                    // player 1 win abandon
+                    this.victoryByGiveUpLimitMax(game, 1);
+                }
+            }, 15000)
+        }
 
         // When 2 player are here start game
-        if (game.p1.socket != undefined && game.p2.socket != undefined)
-            this.startingGame(server, game);
+        if (game.p1.socket != undefined && game.p2.socket != undefined) {
+            // stop timer
+            clearTimeout(game.timeoutJoin);
+            if (game.startBool === false)
+                this.startingGame(server, game);
+        }
     }
 
     startingGame(server : Server, game : Game) : void {
-        if (game.shapes.length > game.numberElement ) {
-            console.log("Partie deja en cours");
-        }
-        else if (game.gameInterval === undefined) {
             console.log("starting game !");
+            game.startBool = true;
 
             // Bullet start side player 1
             this.startNewBullet(game, 1);
@@ -89,7 +104,8 @@ export class GameService {
                     // si p1Pause && limit pause depasser = victoire forfait
                     if (game.pauseP1 === true) {
                         const check : number = game.pauseP1Time + dateActual - game.pauseP1Start.getTime();
-                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer) {
+                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
+                            game.pauseP1Max >= game.pauseTotalMax) {
                             this.victoryByGiveUpLimitMax(game, 2);
                             return ;
                         }
@@ -97,7 +113,8 @@ export class GameService {
                     // if player 2 pause
                     if (game.pauseP2 === true) {
                         const check : number = game.pauseP2Time + dateActual - game.pauseP2Start.getTime();;
-                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer) {
+                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
+                            game.pauseP2Max >= game.pauseTotalMax) {
                             this.victoryByGiveUpLimitMax(game, 1);
                             return ;
                         }
@@ -116,9 +133,6 @@ export class GameService {
                 server.to(game.roomId).emit(EventGame.gameTimer, elapsedTime);
             }, delay);
             // console.log("StartingGame : sub setInterval");
-
-
-        }
     }
 
     pauseGame(game : Game, idPause : number) : void {
@@ -153,19 +167,8 @@ export class GameService {
             clearTimeout(game.launchBulletTimer);
         }
 
-        // TODO
-        // stop bullet all
-        // game.shapes.forEach((shape, index) => {
-        //     if (game.shapes[index] instanceof Bullet){
-        
-
-        //     }
-        // })
-
         clearInterval(game.bulletInterval);
         game.bulletInterval = undefined;
-
-
 
         clearInterval(game.frequencyInterval);
         game.frequencyInterval = undefined;
@@ -198,10 +201,30 @@ export class GameService {
             // decompte 3 2 1 reprise ?
             // si oui changer actualDate
 
-            game.shapes.forEach((shape) => {
-                if (shape instanceof Bullet)
-                    this.startMoving(game.server, game, shape);
-            })
+            // check if relaunch
+            if (!game.p1.relaunchBulletBool && !game.p2.relaunchBulletBool)
+                game.shapes.forEach((shape) => {
+                    if (shape instanceof Bullet)
+                        this.startMoving(game.server, game, shape);
+                })
+            else {
+                let side;
+                const bullet : Shape = game.shapes.find(shape => shape instanceof Bullet)
+                if (bullet === undefined || !(bullet instanceof Bullet))
+                    return ;
+                if (game.p1.relaunchBulletBool)
+                    side = 1;
+                else
+                    side = 2;
+                game.launchBulletTimer = setTimeout(() => {
+                    // Player got X ms to launch bullet
+                    if (side === 1)
+                        game.p1.relaunchBulletBool = false;
+                    else if (side === 2)
+                        game.p2.relaunchBulletBool = false;
+                    this.startMoving(game.server, game, bullet);
+                }, 3000);
+            }
         }             
     }
 
@@ -402,6 +425,7 @@ export class GameService {
 
         game.launchBulletTimer = setTimeout(() => {
                 // Player got X ms to launch bullet
+                console.log("Start moving auto");
                 if (side === 1)
                     game.p1.relaunchBulletBool = false;
                 else if (side === 2)
@@ -469,6 +493,8 @@ export class GameService {
             scoreP2 = 1;
         }
         else {
+            // TODO
+            // check si elo > elo
             scoreP1 = 0.5;
             scoreP2 = 0.5;
         }
@@ -788,6 +814,7 @@ export class GameService {
         const pourcentRacket = 1 - ((racket.pos.y + racket.length / 2) / game.field.height );
         // Place Bullet on racket from pourcent
         temp.pos.y = (pourcentRacket * racket.length) + racket.pos.y;
+        console.log("Debug setBulletRelaunch");
         this.collisionRacket(game, temp, racket);
     }
 }

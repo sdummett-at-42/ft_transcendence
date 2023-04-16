@@ -142,6 +142,11 @@ export class Game {
     field : Field; // size
     shapes : Shape[] = [];
 
+    startBool : Boolean = false;
+    endBool : Boolean = false;
+
+    timeoutJoin?: NodeJS.Timeout;
+
     // gameInterval
     gameInterval?: NodeJS.Timeout;
     launchBulletTimer?: NodeJS.Timeout;

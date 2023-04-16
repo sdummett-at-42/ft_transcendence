@@ -44,37 +44,37 @@ export class GameGateway {
   |* game *|
   \* **** */
 
-  @SubscribeMessage(EventGame.gameStart)
-  // generate bullet and game start
-  StartingMessage(client: any, payload: any) : void {
-    console.log("gateway : start game");
+  // @SubscribeMessage(EventGame.gameStart)
+  // // generate bullet and game start
+  // StartingMessage(client: any, payload: any) : void {
+  //   console.log("gateway : start game");
 
-    // get game by gameid from client
-    const gameId = Number(client.data.ingame); // string to number
+  //   // get game by gameid from client
+  //   const gameId = Number(client.data.ingame); // string to number
 
-    const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
-    const game = this.lobbyService.games[indexGame];
+  //   const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+  //   const game = this.lobbyService.games[indexGame];
 
-    if (game === undefined)
-      return ;
+  //   if (game === undefined)
+  //     return ;
 
-    this.gameService.startingGame(this.server, game);
-  }
+  //   this.gameService.startingGame(this.server, game);
+  // }
 
   // TODO retirer a la fin ou modifier pour ff
-  @SubscribeMessage(EventGame.gameEnd)
-  EndingMessage(client: any, payload: any) : void {
-    console.log("gateway : end");
+  // @SubscribeMessage(EventGame.gameEnd)
+  // EndingMessage(client: any, payload: any) : void {
+  //   console.log("gateway : end");
 
-    // get game by gameid from client
-    const gameId = Number(client.data.ingame); // string to number
+  //   // get game by gameid from client
+  //   const gameId = Number(client.data.ingame); // string to number
 
-    const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
-    const game = this.lobbyService.games[indexGame];
-    if (game === undefined)
-      return ;
-    this.gameService.stopGame(this.server, game);
-  }
+  //   const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
+  //   const game = this.lobbyService.games[indexGame];
+  //   if (game === undefined)
+  //     return ;
+  //   this.gameService.stopGame(this.server, game);
+  // }
 
   // socket.emit("Mouvement", {roomId : room, data : data});
   @SubscribeMessage(EventGame.playerMouvement)
