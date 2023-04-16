@@ -12,7 +12,7 @@ export default function HomeContent() {
             <video src={homeVideo} autoPlay loop muted className="HomeContent-video"/>
             <div className="HomeContent-text">
                 Jouer a Pong !
-                <Link to="/game" style={{textDecoration: 'none', color: 'whitesmoke'}}>
+                <Link to="/lobby" style={{textDecoration: 'none', color: 'whitesmoke'}}>
                     <FontAwesomeIcon icon={faPlay} size="4x" />
                 </Link>
             </div>

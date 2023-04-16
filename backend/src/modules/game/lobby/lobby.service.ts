@@ -27,10 +27,10 @@ export class LobbyService {
 
     // Send html
     async lobbyRoom(res : Response) {
-        console.log("Lobby.service : Controller('game')  lobbyRoom");
-        const data = await fs.promises.readFile('src/modules/game/Dir/lobby.html', 'utf8');
-        res.send(data);
-        console.log("USERS:", this.users);
+        // console.log("Lobby.service : Controller('game')  lobbyRoom");
+        // const data = await fs.promises.readFile('src/modules/game/Dir/lobby.html', 'utf8');
+        // res.send(data);
+         console.log("USERS:", this.users);
     }
 
     // Add user [] 
@@ -255,29 +255,43 @@ export class LobbyService {
     |* connect functon *|
     \* *************** */
 
+    private extractString(inputString: string): string {
+		if (!inputString)
+			return '';
+
+		const prefix = 's:';
+		const suffix = '.';
+		const startIndex = inputString.indexOf(prefix);
+		const endIndex = inputString.indexOf(suffix, startIndex + prefix.length);
+
+		if (startIndex !== -1 && endIndex !== -1)
+			return inputString.substring(startIndex + prefix.length, endIndex);
+		return '';
+	}
+
     async handleConnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
-		if (socket.handshake.headers.cookie == undefined) {
+        console.log(socket.handshake.headers);
+		if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
-			socket.emit(EventGame.NotConnected, {
+			socket.emit('notConnected', {
 				timestamp: new Date().toISOString(),
 				message: `No session cookie provided`,
 			});
-            console.log("handleConnection no session cookie");
 			socket.disconnect()
-			return null;
+			return;
 		}
-		const sessionHash = socket.handshake.headers.cookie.slice(16).split(".")[0];
+		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
 		if (session === null) {
 			console.debug("User isn't logged in");
-			socket.emit(EventGame.NotConnected, {
+			socket.emit('notConnected', { // Event to report here
 				timestamp: new Date().toISOString(),
 				message: `User isn't logged in.`,
 			});
-            console.log("handleConnection not logged");
 			socket.disconnect()
-			return null;
+			return;
 		}
+
         console.log("handleConnection: connected");
 		socket.emit(EventGame.IsConnected, {
 			timestamp: new Date().toISOString(),
@@ -334,28 +348,26 @@ export class LobbyService {
     \* ****************** */
 
     async handleDisconnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
-        if (socket.handshake.headers.cookie == undefined) {
-            console.debug("Session cookie wasn't provided. Disconnecting socket.");
-            socket.emit(EventGame.NotConnected, {
-                timestamp: new Date().toISOString(),
-                message: `No session cookie provided`,
-            });
-            console.log("handleConnection no session cookie");
-            socket.disconnect()
-            return null;
-        }
-        const sessionHash = socket.handshake.headers.cookie.slice(16).split(".")[0];
-        const session = await this.redis.getSession(sessionHash);
-        if (session === null) {
-            console.debug("User isn't logged in");
-            socket.emit(EventGame.NotConnected, {
-                timestamp: new Date().toISOString(),
-                message: `User isn't logged in.`,
-            });
-            console.log("handleConnection not logged");
-            socket.disconnect()
-            return null;
-        }
+        if (socket.handshake.auth.token == undefined) {
+			console.debug("Session cookie wasn't provided. Disconnecting socket.");
+			socket.emit('notConnected', {
+				timestamp: new Date().toISOString(),
+				message: `No session cookie provided`,
+			});
+			socket.disconnect()
+			return;
+		}
+		const sessionHash = this.extractString(socket.handshake.auth.token);
+		const session = await this.redis.getSession(sessionHash);
+		if (session === null) {
+			console.debug("User isn't logged in");
+			socket.emit('notConnected', { // Event to report here
+				timestamp: new Date().toISOString(),
+				message: `User isn't logged in.`,
+			});
+			socket.disconnect()
+			return;
+		}
 
         const userId = JSON.parse(session).passport.user.id;
 

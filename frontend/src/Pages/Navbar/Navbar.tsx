@@ -37,7 +37,7 @@ export default function Navbar() {
         <nav className="Navbar-nav">
             <div className="Navbar-nav-section" id="Navbar-left">
                 <Link to="/home"><img className="LoginSelector-invert-effect Navbar-logo" src={Logo42} alt="Logo-ecole-42" /></Link>
-                <Link to="/game" style={{textDecoration: 'none', color: 'whitesmoke'}}>
+                <Link to="/lobby" style={{textDecoration: 'none', color: 'whitesmoke'}}>
                     Pong
                 </Link>
             </div>

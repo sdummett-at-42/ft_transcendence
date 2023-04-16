@@ -13,6 +13,7 @@ export enum EventGame {
     gameScore = "score",
     gameVictoryScore = "VictoryScore",
     gameTimer = "gameTimer",
+    goInGame = "goInGame",
 
     /* ****** *\
     |* Player *|
@@ -24,6 +25,7 @@ export enum EventGame {
     playerJoinQueue = "joinQueue",
     playerLeaveQueue = "leaveQueue",
     playerClickCanvas = "clickCanvas",
+
 
     //send
 

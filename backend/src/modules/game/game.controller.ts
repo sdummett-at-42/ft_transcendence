@@ -21,7 +21,7 @@ export class GameController {
     async lobbyRoom(@Res() res : Response) {
         // create lobby/ matchmaking here
         // if match create unic gameroom with these 2 client at player
-        this.lobbyService.lobbyRoom(res);
+        //this.lobbyService.lobbyRoom(res);
     }
 
     // suppri plus tard et transferer dans lobby-service quand match found poru charger la map
@@ -42,8 +42,8 @@ export class GameController {
             res.sendStatus(404);
         } else {
             // game exist but maybe end or in course
-            const data = await fs.promises.readFile('src/modules/game/Dir/game.html', 'utf8');
-            res.status(200).send(data);
+            //const data = await fs.promises.readFile('src/modules/game/Dir/game.html', 'utf8');
+            res.status(200);
         }
 
         // check if game 
