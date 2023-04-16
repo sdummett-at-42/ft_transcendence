@@ -51,16 +51,18 @@ export default function Navbar() {
             <div className="Navbar-nav-section" id="Navbar-right">
                 <div>
                     {user && (
+						<Link to='/profile' style={{textDecoration: 'none', color: 'whitesmoke'}}>
                         <div id="Navbar-profil">
                             <img id="Navbar-profil-picture" className="Navbar-logo" src={user.profilePicture} alt="myProfilePicture" />
                             <div id="Navbar-profil-name">
                                 {user.name}
                             </div>
                         </div>
+						</Link>
                     )}
                 </div>
                 <div id="Navbar-option">
-                    <Link to="/profil/:self">
+                    <Link to="/settings">
                         <FontAwesomeIcon icon={faUserGear} style={{textDecoration: 'none', color: 'whitesmoke'}} size="lg" />
                     </Link>
                 </div>
