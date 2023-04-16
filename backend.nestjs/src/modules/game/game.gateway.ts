@@ -22,13 +22,13 @@ export class GameGateway {
   async handleConnection(socket: Socket) {
     console.log('New client connected game:', socket.id);
     const res = await this.lobbyService.handleConnection(socket);
-    if (res !== null) 
+    if (res !== null && this.gameService.onMatch(res.game)) 
     {
       console.log("resume game");
       this.gameService.resumeGame(res.game, res.id);
     }
     else
-    console.log("not resume game");
+      console.log("not resume game");
   }
 
   // Disconnection
@@ -36,7 +36,7 @@ export class GameGateway {
     console.log(`Client disconnected game: ${socket.id}`);
     // return any or {game : Game, id : number}
     const res = await this.lobbyService.handleDisconnection(socket);
-    if (res !== null)
+    if (res !== null && this.gameService.onMatch(res.game))
       this.gameService.pauseGame(res.game, res.id);
   }
 
@@ -87,7 +87,7 @@ export class GameGateway {
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
 
-    if (game === undefined)
+    if (game === undefined || !this.gameService.onMatch(game))
       return ;
 
     this.gameService.mouvementGame(this.server, game, client, payload.data.x, payload.data.y);
@@ -101,7 +101,7 @@ export class GameGateway {
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
 
-    if (game === undefined)
+    if (game === undefined || !this.gameService.onMatch(game))
       return ;
     this.gameService.clickGame(game, client);
 
@@ -116,7 +116,7 @@ export class GameGateway {
     const gameId = Number(client.data.ingame); // string to number
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
-    if (game === undefined)
+    if (game === undefined || !this.gameService.onMatch(game))
       return ;
     this.gameService.joinGame(this.server, game, client, payload);
   }

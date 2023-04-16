@@ -6,7 +6,6 @@ import * as fs from "fs";
 import { Player, Game, Square, Circle, BlackHole } from '../entities/game.entities';
 import { GameGateway } from '../game.gateway'
 import { EventGame } from '../game-event.enum';
-import { GameService } from '../game.service';
 
 @Injectable()
 export class LobbyService {

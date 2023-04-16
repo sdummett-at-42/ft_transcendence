@@ -32,8 +32,11 @@ export class GameService {
     // un seul socket joueur
     // attendre les 2 joueurs present
 
-    //TODO
-    // faire une fonction qui check si la game est termine pour bloquer les inputs
+    onMatch(game : Game) : Boolean {
+        if (game.endBool === true) // match is finished
+            return false;
+        return true;
+    }
 
     joinGame(server: Server, game : Game, client : Socket, payload : {roomId : string, msg : string}) {
         client.join(payload.roomId);
@@ -259,6 +262,9 @@ export class GameService {
             // Stop game's interval
             clearInterval(game.gameInterval);
             game.gameInterval = undefined;
+            
+            // Bool endgame true
+            game.endBool = true;
 
             server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
         // }
