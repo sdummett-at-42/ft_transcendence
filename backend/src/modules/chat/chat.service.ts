@@ -1646,11 +1646,32 @@ export class ChatService {
 		// unsetUnreadRoomMsg <== TODO
 	}
 
+	// async getUserRooms(socket, dto, server) {
+	// 	const rooms = await this.redis.getUserRooms(socket.data.userId)
+	// 	socket.emit(Event.userRooms, {rooms});
+	// }
 	async getUserRooms(socket, dto, server) {
-		const rooms = await this.redis.getUserRooms(socket.data.userId)
-		socket.emit(Event.userRooms, {rooms});
-	}
+		const roomsList = [];
+		const roomNames = await this.redis.getRoomNames();
+		await Promise.all(roomNames.map(async (roomName) => {
+			let ifpublic = false;
+			let ifprotected = false;
+			if (await this.redis.getRoomVisibility(roomName) == "public") 
+				ifpublic = true;
+			if (await this.redis.getRoomProtection(roomName) == "true")
+				ifprotected  = true;
 
+				roomsList.push({
+					roomName,
+					protected: ifprotected, 
+					public : ifpublic,
+				});
+			}
+		));
+		socket.emit(Event.userRooms, {
+			roomsList,
+		})
+	}
 	async getDmsList(socket, dto, server) {
 		const dms = await this.redis.getDmList(socket.data.userId);
 		socket.emit(Event.dmsList, { dms });

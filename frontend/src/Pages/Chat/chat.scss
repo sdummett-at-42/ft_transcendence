@@ -48,10 +48,9 @@ body {
         border: none;
         padding: 14px;
     }
-    // .fa-plus-square {
-    //   position: relative;
-    //   left: -25px;
-    // }
+    .active {
+        border: 3px solid rgb(217, 209, 91);
+    }
     ul {
         padding: 20px;
         height: 770px;
@@ -267,6 +266,9 @@ body {
             align-items: center;
             gap: 5px;
         }
+        .chat-info-member-list {
+            overflow: auto;
+        }
         input {
             margin-left: 5px;
             border-radius: 3px;
@@ -274,6 +276,9 @@ body {
         }
         img {
             float: left;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
         }
         .about {
             float: left;
@@ -421,7 +426,6 @@ body {
         border-radius: 3px;
         border: none;
     }
-
 }
 
 .modal-content {

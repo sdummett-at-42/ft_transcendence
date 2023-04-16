@@ -16,6 +16,7 @@ export default function ChatroomList(props: ChatroomListProps) {
     const [chatrooms, setChatrooms] = useState([]);
     const [showAddRoom, setShowAddRoom] = useState(false);
     const [showJoinRoom, setShowJoinRoom] = useState(false);
+    const [selectedRoom, setSelectedRoom] = useState(null);
 
     // Event handlers
     const handleRoomCreated = useCallback((payload) => {
@@ -27,19 +28,15 @@ export default function ChatroomList(props: ChatroomListProps) {
       props.onUpdate();
     }, []);
 
-    // const handleRoomsList = useCallback((payload) => {
-    //   // console.log(`ROOMRECEIVE: ${JSON.stringify(payload)}`);
-    //   // setChatrooms(payload.roomsList);
-    // }, []);
-
     const handleRoomsListReceived = useCallback((payload) => {
-      setChatrooms(payload.rooms.map(room => ({ roomName: room })));
-      console.log("chat rooms:", chatrooms);
+      console.log("handleRoomsListReceived", payload);
+      setChatrooms(payload.roomsList);
+      // console.log("chat rooms:", chatrooms);
     }, []);
     const handleDMRoomsListReceived = useCallback((payload) => {
       // console.log(`ROOMDM: ${JSON.stringify(payload)}`);
       setChatrooms((prevChatrooms) => [...prevChatrooms, ...payload.dms.map(room => ({ roomName: room }))]);
-      console.log("chat rooms2:", chatrooms);
+      // console.log("chat rooms2:", chatrooms);
     }, []);
 
     const handleRoomDeleted = useCallback((payload) => {
@@ -55,6 +52,7 @@ export default function ChatroomList(props: ChatroomListProps) {
       props.onListClick(chatroomId);
       props.socket.emit("getRoomMembers", { roomName:
         chatroomId});
+      setSelectedRoom(chatroomId);
     }
 
     // Init
@@ -91,7 +89,7 @@ export default function ChatroomList(props: ChatroomListProps) {
           props.socket.off("roomJoined", handleRoomJoined);
           props.socket.off("roomLeft", handleRoomDeleted);
       }}
-    }, [props.socket, handleRoomJoined]);
+    }, [props.socket, handleRoomJoined, selectedRoom]);
 
   // Render
   return (
@@ -119,12 +117,12 @@ export default function ChatroomList(props: ChatroomListProps) {
                     </div>
                   </li>
             {chatrooms.map(room => (
-              <li className="clearfix"  key={room.roomName} onClick={() => handleChatroomClick(room.roomName)}>       
+              <li className={`clearfix ${selectedRoom === room.roomName ? "active" : ""}`}  key={room.roomName} onClick={() => handleChatroomClick(room.roomName)}>       
               <div className="about">
               <div className="name" >{room.roomName} 
               </div>
               <div className="status">
-                  <i className="fa fa-circle online"></i> Protected <FontAwesomeIcon icon={faLock} />
+                  <i className="fa fa-circle online"></i> {room.public? "public" : "private"}:{room.protected? "protected" :"not protected"} <FontAwesomeIcon icon={faLock} />
                   </div>
               </div>
             </li>
