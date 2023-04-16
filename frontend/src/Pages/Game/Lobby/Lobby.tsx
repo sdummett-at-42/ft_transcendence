@@ -29,9 +29,12 @@ export default function Lobby() {
     ]);
 
     return (
-        <div>
-            <h1>Lobby</h1>
-            <button onClick={() => gameSocketRef.current.emit('joinQueue')}>Join Queue</button>
+        <div className="Lobby">
+            <div className="Lobby-content">
+                
+                <h1>Lobby</h1>
+                <button onClick={() => gameSocketRef.current.emit('joinQueue')}>Join Queue</button>
+            </div>
             <FriendsList />
         </div>
     )

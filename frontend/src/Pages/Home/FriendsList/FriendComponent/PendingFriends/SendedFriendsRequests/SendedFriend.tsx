@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./SendedFriend.css";
+import "../PendingFriend.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faXmark } from "@fortawesome/free-solid-svg-icons";
 
@@ -27,8 +27,17 @@ export default function SendedFriend(props) {
     <div>
         {friend && (
             <div className="Friend-info">
-                <img src={friend.profilePicture} alt="Photo de profil" className="Friend-profile-picture" />
-                <h4>{friend.name}</h4>
+                <div className="Friend-profile">
+                    <div className="Friend-wrapper-profile-picture">
+                        <img src={friend.profilePicture} alt={`Image de profile de ${friend.name}`} className="Friend-profile-picture" />
+                        <div className={`Friend-circle-status Pending-friend-waiting`}></div>
+                    </div>
+                    <div className="Friend-name-status">
+                        <h4 className="Friend-name">{friend.name}</h4>
+                        <div className="Friend-message Pending-friend-waiting">En attente</div>
+                    </div>
+                </div>
+
                 <div>
                     <FontAwesomeIcon icon={faClock} size="lg" id="PendingFriend-Validate-icon"/>
                 </div>

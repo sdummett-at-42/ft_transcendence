@@ -36,6 +36,7 @@
 
 .SearchBar-results-list {
     position: absolute;
+    z-index: 1;
     color:#242424;
     width: 23%;
     background-color: white;

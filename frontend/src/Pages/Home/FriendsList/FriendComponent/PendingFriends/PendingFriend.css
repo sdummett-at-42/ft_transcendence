@@ -13,3 +13,11 @@
     scale: 1.2;
     color: #ff0000;
 }
+
+.Friend-circle-status.Pending-friend-waiting {
+    background-color: #faa61a;
+}
+
+.Friend-message.Pending-friend-waiting {
+    color: #faa61a;
+  }
