@@ -42,6 +42,23 @@ export class UsersController {
 		return this.users.findOneUserByIdWithEmail(req.user.id);
 	}
 
+	@Get('me/matchs')
+	@HttpCode(200)
+	@ApiOkResponse({ type: UserMeEntity, description: 'Returns all the matches of the current user' })
+	async findMeMatchs(@Request() req) {
+		return await this.users.findUserMatchs(req.user.id);
+	}
+
+	@Get(':id/matchs')
+	@HttpCode(200)
+	@ApiOkResponse({ type: UserMeEntity, description: 'Returns all the matches of an user' })
+	async findUserMatchs(@Param('id', ParseIntPipe) id: number) {
+		const user = await this.users.findOneUserById(id);
+		if (!user)
+			throw new NotFoundException(`User with id ${id} does not exist.`);
+		return await this.users.findUserMatchs(id);
+	}
+
 	@Delete('me')
 	@HttpCode(204)
 	@ApiNoContentResponse({ type: UserEntity, description: 'Deletes the current user' })

@@ -25,7 +25,7 @@ function App() {
 
           <Route path="/home" element={<Layout children={<Home />} />} />
           {/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
-          <Route path='/profil/:id' element={<Layout children={<Profile />} />} />
+          <Route path='/profil' element={<Layout children={<Profile userId={5} />} />} />
           <Route path='/unauthorized' element={<Unauthorized />} />
 		  <Route path='/achievements' element={<Layout children={<InitAchievements />} />} />
 		  <Route path='/stats' element={<Layout children={<InitStats />} />} />

@@ -1,193 +1,123 @@
-import React, { useRef, useState, useEffect } from "react";
-import "./Profile.css";
-import loadingGif from "../../assets/Loading.mp4";
-import profileVideo from "../../assets/Profile-background-slow.mp4" 
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
-export default function Profile() {
+export default function Profile({ userId }) {
+	const [user, setUser] = useState(null);
+	const [matchData, setMatchData] = useState(null);
 
-    const [image, setImage] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [userData, setUserData] = useState(null);
-    const [errorMessages, setErrorMessages] = useState({});
-    const usernameInputRef = useRef(null);
-    const naviguate = useNavigate();
+	useEffect(() => {
+		// Fetch user data
+		fetch(`http://localhost:3001/users/${userId}`, {
+			method: "GET",
+			credentials: "include",
+		})
+			.then((response) => response.json())
+			.then((data) => setUser(data))
+			.catch((error) => console.error(error));
 
-    useEffect(() => {
-        fetchUserData();
-    }, []);
+		// Fetch match data
+		fetch(`http://localhost:3001/users/${userId}/matchs`, {
+			method: "GET",
+			credentials: "include",
+		})
+			.then((response) => response.json())
+			.then((data) => setMatchData(data))
+			.catch((error) => console.error(error));
+	}, [userId]);
 
-    // fetch data
-    const fetchUserData = async () => {
-        const response = await fetch("http://localhost:3001/users/me", {
-            credentials: 'include',
-            method: "GET"
-        })
-            .then(res => {
-                // console.log(res);
-                if (res.status == 401) {
-                    naviguate("/unauthorized");
-                    return;
-                }
-                return res.json();
-            });
-        const data = await response;
-        setUserData(data);
-        setImage(data.profilePicture);
-        setLoading(false);
-    };
+	if (!user || !matchData) {
+		return <p>Loading...</p>;
+	}
 
-    // Handle image upload
-    const handleImageChange = (e) => {
-        setLoading(true);
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => {
-          setImage(reader.result);
-          setLoading(false);
-        };
-    };
+	return <MatchList user={user} match={matchData} />;
+}
 
-    // Handle form submit
-    function handleLoginForm() {
-        setErrorMessages(prevErrors => ({...prevErrors, username: ""}));
-        const username = usernameInputRef.current.value;
+// import { useState, useEffect } from "react";
 
-        if (!username) {
-            console.log("No username provided");
-            return;
-        }
+function MatchList({ user, match }) {
+	const { name, profilePicture, elo } = user;
+	const { matchWon, matchLost } = match;
 
-        if (username.length < 3) {
-            console.log("Username is too short");
-            return;
-        }
+	const [allMatches, setAllMatches] = useState([]);
 
-        fetch('http://localhost:3001/users/me', {
-            method: 'PATCH',
-			headers: { "Content-Type": "application/json" },
-			credentials: 'include',
-            body: JSON.stringify({
-                name: username,
-                email: userData?.email,
-                profilePicture: image,
-            }),
-        })
-        .then(res => {
-            console.log(res);
-            if (res.status == 401) {
-                naviguate("/unauthorized");
-                return;
-            }
-            else if (res.status == 400) {
-                return;
-            }
-            else if (res.status == 409) {
-                setErrorMessages(prevErrors => ({...prevErrors, username: "Le nom d'utilisateur est déjà pris"}));
-                return;
-            }
-            else if (res.status == 200) {
-                window.location.reload();
-            }
-            return res.json();
-        })
-    }
+	useEffect(() => {
+		const fetchMatches = async () => {
+			// Combine the matchWon and matchLost arrays into a single array
+			const allMatches = [...matchWon, ...matchLost];
 
-    const [switchOn, setSwitchOn] = useState(false);
-    const [pngBase64, setPngBase64] = useState("");
+			// Sort the matches based on createdAt
+			allMatches.sort(
+				(a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+			);
 
-    function handle2fa() {
-        setSwitchOn(!switchOn);
-        if (!switchOn) {
-            fetch('http://localhost:3001/auth/2fa/generate', {
-                method: 'GET',
-                headers: { "Content-Type": "application/json" },
-                credentials: 'include',
-            })
-            .then(res => {
-                if (res.status == 401) {
-                    naviguate("/unauthorized");
-                    return;
-                }
-                else if (res.status == 400) {
-                    return;
-                }
-                else if (res.status == 200) {
-                    return res.json();
-                }
-            })
-            .then(data => {
-                setPngBase64(data.base64Qrcode);
-            })
-        }
-    }
+			// Fetch user data for each winner and loser
+			const matchData = await Promise.all(
+				allMatches.map(async (match) => {
+					const winnerRes = await fetch(
+						`http://localhost:3001/users/${match.winnerId}`,
+						{
+							method: "GET",
+							credentials: "include",
+						}
+					);
+					const winnerData = await winnerRes.json();
 
-    return (
-        <div className="Profil-body">
-            <video src={profileVideo} autoPlay loop muted className="Profile-background-video" />
-            <div className="Profil-card">
+					const loserRes = await fetch(
+						`http://localhost:3001/users/${match.looserId}`,
+						{
+							method: "GET",
+							credentials: "include",
+						}
+					);
+					const loserData = await loserRes.json();
 
-                <h3 className="LoginSelector-card-title">Modifiez votre profil:</h3>
+					return {
+						...match,
+						winnerName: winnerData.name,
+						loserName: loserData.name,
+					};
+				})
+			);
 
-                <div id="Profil-image-wrapper">
+			setAllMatches(matchData);
+		};
 
-                    {loading ? (
-                        <video src={loadingGif} autoPlay loop muted className="Profil-image" />
-                        ) : (
-                        <div>{image && <img src={image} alt="Preview" className="Profil-image" />}</div>
-                    )}
-    
-                    <input
-                        id="Profil-button"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                    />
-                </div>
+		fetchMatches();
+	}, [matchWon, matchLost]);
 
-                <div className="LoginSelector-card-subtitle">
+	return (
+		<div>
+			<h2>{name}</h2>
+			<img
+				src={profilePicture}
+				alt="Profile"
+				className="profile-picture"
+			/>
+			<p>Elo: {elo}</p>
+			<p>
+				Wins/Losses: {matchWon.length}/{matchLost.length}
+			</p>
 
-                    <form>
-                        <input
-                            className="LoginSelector-button LoginSelector-input"
-                            type="text"
-                            placeholder="Pseudonyme"
-                            defaultValue={userData?.name}
-                            ref={usernameInputRef}
-                            required
-                        />
-                        {errorMessages.username && <p className="LoginSelector-error">{errorMessages.username}</p>}
-
-                        <input
-                            className="LoginSelector-button LoginSelector-input LoginSelector-submit"
-                            type="button"
-                            value="Mettre à jour"
-                            onClick={e => {
-                                handleLoginForm();
-                            }}
-                        />
-
-                    </form>
-
-                    <div className="2fa">
-                        Activer la double authentification
-                        <label className="Profil-switch">
-                        <input className="Profil-input"
-                            type="checkbox"
-                            onClick={e => {
-                                handle2fa();
-                            }}
-                            />
-                        <span className="Profil-slider Profil-round"></span>
-                        </label>
-                        
-                    </div>
-
-                    {(switchOn && pngBase64) && <img src={pngBase64} alt="base64 image" />}
-
-                </div>
-            </div>
-        </div>
-    );
+			<h3>Matches</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>Winner</th>
+						<th>Loser</th>
+						<th>Winner Score</th>
+						<th>Looser Score</th>
+					</tr>
+				</thead>
+				<tbody>
+					{allMatches.map((match) => (
+						<tr key={`match-${match.id}`}>
+							<td>{match.winnerName}</td>
+							<td>{match.loserName}</td>
+							<td>{match.winnerScore}</td>
+							<td>{match.looserScore}</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
+	);
 }
