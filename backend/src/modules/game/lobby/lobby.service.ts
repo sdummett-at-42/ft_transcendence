@@ -280,7 +280,7 @@ export class LobbyService {
 				message: `No session cookie provided`,
 			});
 			socket.disconnect()
-			return;
+			return null;
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
@@ -291,7 +291,7 @@ export class LobbyService {
 				message: `User isn't logged in.`,
 			});
 			socket.disconnect()
-			return;
+			return null;
 		}
 
         console.log("handleConnection: connected");
@@ -365,7 +365,7 @@ export class LobbyService {
 				message: `No session cookie provided`,
 			});
 			socket.disconnect()
-			return;
+			return null;
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
@@ -376,7 +376,7 @@ export class LobbyService {
 				message: `User isn't logged in.`,
 			});
 			socket.disconnect()
-			return;
+			return null;
 		}
 
         const userId = JSON.parse(session).passport.user.id;

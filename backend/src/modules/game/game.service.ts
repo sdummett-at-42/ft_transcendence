@@ -526,16 +526,26 @@ export class GameService {
     }
 
     private async newElo(game : Game, scoreP1 : number, scoreP2 : number) {
-        // TODO
-        // change nombregame (facteur K)
-        const users = await this.prisma.user.findMany();
-        console.log("Pre modif **********", users);
+        // const users = await this.prisma.user.findMany();
+        // console.log("Pre modif **********", users);
 
-        this.updateElo(game.p1.id ,this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, 5)); // last = nb game jouer
-        this.updateElo(game.p2.id ,this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, 5));
+        const p1Prisma = await this.prisma.user.findUnique({
+            where : {id : game.p1.id},
+        });
+        const p2Prisma = await this.prisma.user.findUnique({
+            where : {id : game.p2.id},
+        });
+
+        // TODO
+        // Check if ranked game
+
+        this.updateElo(game.p1.id ,this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
+        this.updateElo(game.p2.id ,this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
     
-        const userqwe = await this.prisma.user.findMany();
-        console.log("sub modif**********", userqwe);
+        this.updatePrisma(game, scoreP1, scoreP2, p1Prisma, p2Prisma);
+
+        // const userqwe = await this.prisma.user.findMany();
+        // console.log("sub modif**********", userqwe);
     }
 
     private calculateElo(oldElo: number, opponentElo: number, score: number, gamesPlayed: number): number {
@@ -565,6 +575,51 @@ export class GameService {
                 eloHistory: {push:newElo}
             }
           });
+    }
+
+    private async updatePrisma(game : Game, scoreP1 : number, scoreP2 : number,  p1Prisma, p2Prisma) {
+        let winner;
+        let winnerId;
+        let looser;
+        let looserId;
+        let winnerScore;
+        let looserScore;
+
+        if (scoreP1 === 1) {
+            winner = p1Prisma;
+            winnerId = p1Prisma.id;
+            looser = p2Prisma;
+            looserId = p2Prisma.id;
+            winnerScore = game.p1.score;
+            looserScore = game.p2.score;
+        } else {
+            winner = p2Prisma;
+            winnerId = p2Prisma.id;
+            looser = p1Prisma;
+            looserId = p1Prisma.id;
+            winnerScore = game.p2.score;
+            looserScore = game.p1.score;
+        }
+
+
+        // const match = await this.prisma.match.create({
+		// 	data: {
+		// 		winner : winner,
+        //         winnerId : winnerId,
+        //         looser : looser,
+        //         looserId : looserId,
+        //         winnerScore : winnerScore	,
+        //         looserScore : looserScore
+		// 	},
+		// });
+
+        // id					Int					@id @default(autoincrement())
+        // winner				User				@relation("winner", fields: [winnerId], references: [id], onDelete: Cascade)
+        // winnerId			Int
+        // looser				User				@relation("looser", fields: [looserId], references: [id], onDelete: Cascade)
+        // looserId			Int
+        // winnerScore			Int
+        // looserScore			Int
     }
       
       
