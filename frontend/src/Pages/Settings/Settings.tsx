@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 
 export default function Settings() {
 	const [user, setUser] = useState(null);
+	const [qrCode, setQrCode] = useState(null);
+	const [otpCode, setOtpCode] = useState("");
+	const [is2faEnabled, setIs2faEnabled] = useState(false);
 
 	useEffect(() => {
 		async function fetchUser() {
@@ -64,18 +67,70 @@ export default function Settings() {
 		fetch("http://localhost:3001/users/me", {
 			method: "DELETE",
 			credentials: "include",
-		})
-			.then((response) => {
-				window.location.href = "http://localhost:5173/";
-			})
+		}).then((response) => {
+			window.location.href = "http://localhost:5173/";
+		});
 	}
 
-	function handle2faToggle() {
-		console.log("handle2faToggle");
-		// TODO: Implement 2FA toggle
+	async function handle2faToggle() {
+		console.log(`handle2faToggle`);
+		try {
+			if (!is2faEnabled) {
+				const response = await fetch(
+					"http://localhost:3001/auth/2fa/generate",
+					{
+						method: "GET",
+						credentials: "include",
+					}
+				);
+				const qrCodeData = await response.json();
+				setQrCode(qrCodeData);
+			} else {
+				const response = await fetch(
+					"http://localhost:3001/auth/2fa/disable",
+					{
+						method: "PATCH",
+						credentials: "include",
+					}
+				);
+
+				if (!response.ok) {
+					throw new Error("Failed to disable 2FA");
+				}
+			}
+
+			setIs2faEnabled(!is2faEnabled);
+			setOtpCode("");
+		} catch (error) {
+			console.error(error);
+		}
 	}
 
-	console.log(`2fa is enabled: ${JSON.stringify(user.twofactorIsEnabled)}`)
+	async function handleVerifyOtp() {
+		try {
+			const response = await fetch(
+				"http://localhost:3001/auth/2fa/verify",
+				{
+					method: "POST",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ otp: otpCode }),
+				}
+			);
+
+			if (!response.ok) {
+				throw new Error("Failed to verify OTP code");
+			}
+
+			setIs2faEnabled(true);
+			setOtpCode("");
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
 	return (
 		<div>
 			<h2>Settings</h2>
@@ -93,19 +148,22 @@ export default function Settings() {
 				</label>
 				<button onClick={handleNameChange}>Change Name</button>
 			</div>
-			<div>
-				<label>
-					Current Password:
-					<input type="password" />
-				</label>
-				<label>
-					New Password:
-					<input type="password" />
-				</label>
-				<button onClick={handlePasswordChange}>Change Password</button>
-			</div>
 			<button onClick={handleLogout}>Logout</button>
 			<button onClick={handleAccountDeletion}>Delete Account</button>
+			{qrCode && !is2faEnabled && (
+				<div>
+					<img src={`${qrCode.base64Qrcode}`} />
+					<label>
+						OTP Code:
+						<input
+							type="text"
+							value={otpCode}
+							onChange={(event) => setOtpCode(event.target.value)}
+						/>
+					</label>
+					<button onClick={handleVerifyOtp}>Verify</button>
+				</div>
+			)}
 			<button onClick={handle2faToggle}>
 				{user.twofactorIsEnabled ? "Disable 2FA" : "Enable 2FA"}
 			</button>
