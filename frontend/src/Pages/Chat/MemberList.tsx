@@ -17,8 +17,8 @@ export default function MemberList(props: MemberListProps) {
     const [members, setMembers ] = useState({ owner: '', admins: [], members: [] });
 
     useEffect(() => {
-     console.log("members2222", members);
-    setItem(members.members.map((each) => {
+    //  console.log("members2222", members);
+    setItem(members.members.map((each,index) => {
         let user = database.find((user) => user.id === each);
         let role = "member";
         if(members.owner.includes(each) ==  true)
@@ -27,8 +27,7 @@ export default function MemberList(props: MemberListProps) {
             role = "Admin";
         return (
           <>
-          <div className="row">
-            <li className="clearfix col-6">
+            <li className="clearfix col-6" key={index}>
             <img  src={user.profilePicture} alt="avatar" />
             <div className="about">
               <div className="name">{user.name}</div>
@@ -38,8 +37,7 @@ export default function MemberList(props: MemberListProps) {
             </div>             
           </li>
           <div className="col-6">
-          <button>Play</button><button>Message</button><button>...</button>
-          </div>
+          <button>Play</button><button>Message</button><button>block</button> profile
           </div>
           </>
         );
@@ -47,7 +45,7 @@ export default function MemberList(props: MemberListProps) {
     );
     }, [database, members]);
     const handleMemberList = useCallback((payload)=>{
-        console.log("handleMemberList", payload)
+        // console.log("handleMemberList", payload)
         setMembers(payload.memberList);
       },[])
     useEffect(() => {
@@ -62,7 +60,7 @@ export default function MemberList(props: MemberListProps) {
     }, [props.socket, handleMemberList]);
     return  (
         <div className="chat-info-header clearfix">
-        <div className='chat-info-memberlist'>Member List</div>  
+        <div className='chat-info-memberlist row'>Member List</div>  
             {item}
         </div>
     );

@@ -48,7 +48,7 @@ export default function ChatLogin() {
     console.log("List:",list);
     setRoomName(list);
     const payload = {
-      roomName: roomName,
+      roomName: list, // if i use state of roomName, the emit will delay
     }
     socket.emit("getRoomMsgHist", payload);
   }
@@ -74,7 +74,6 @@ export default function ChatLogin() {
   }, [shouldUpdateDatabase]);
 
   useEffect(()=>{
-    console.log("here????");
     const fetchData = async () => {
 
       await fetch("http://localhost:3001/users/me", {
@@ -84,7 +83,6 @@ export default function ChatLogin() {
           .then((response) => response.json())
           .then(json => {
               setUserId(json.id);
-              console.log("SearchBar:",  typeof(json.id));
           });
     };
     fetchData();

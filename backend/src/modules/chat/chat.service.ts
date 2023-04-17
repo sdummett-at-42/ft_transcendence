@@ -129,21 +129,25 @@ export class ChatService {
 		await this.redis.setRoomPassword(dto.roomName, await argon2.hash(dto.password), JSON.stringify(isProtected));
 		await this.redis.setUserRoom(socket.data.userId, dto.roomName);
 
-		console.log("Je passe la dedans");
+
+		// console.log("Je passe la dedans");
 		socket.emit(Event.roomCreated, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
 			message: `Room ${dto.roomName} has been created.`
 		});
 
+		let vis = await this.redis.getRoomVisibility(dto.roomName);
 		const sockets = server.sockets.sockets;
 		sockets.forEach((value, key) => {
 			if (value.data.userId === socket.data.userId) {
 				value.join(dto.roomName)
-				console.log("Je passe ici");
+				console.log("Je passe ici", dto.visibility);
 				value.emit(Event.roomJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),
+					public: vis,
+					protected :isProtected, 
 					message: `You have joined room ${dto.roomName}.`
 				})
 			}
@@ -219,7 +223,7 @@ export class ChatService {
 	}
 
 	async joinRoom(socket, dto: JoinRoomDto, server) {
-		console.log("here??");
+		// console.log("here??");
 		const userId: string = socket.data.userId.toString();
 
 		const room = await this.redis.getRoom(dto.roomName);
@@ -293,18 +297,25 @@ export class ChatService {
 		await this.redis.unsetRoomInvited(dto.roomName, +userId);
 
 		console.debug(`User ${userId} is joining room ${dto.roomName}`);
-
+		let isProtected = false;
+		if (dto.password != "")
+			isProtected = true;
 		await this.redis.setRoomMember(dto.roomName, +userId);
 		await this.redis.setUserRoom(+userId, dto.roomName);
+		let vis = await this.redis.getRoomVisibility(dto.roomName);
+		
 
 		const sockets = server.sockets.sockets;
 		sockets.forEach((value, key) => {
 			if (value.data.userId === socket.data.userId) {
 				console.log(value.data.userId);
 				value.join(dto.roomName)
+				console.log("Je passe ici2", vis);
 				socket.emit(Event.roomJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),
+					public: vis,
+					protected :isProtected, 
 					message: `You have joined room ${dto.roomName}.`,
 				})
 			}
@@ -1133,6 +1144,8 @@ export class ChatService {
 		socket.emit(Event.roomUpdated, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
+			public: dto.visibility,
+			protected :isProtected, 
 			message: `Room ${dto.roomName} has been updated.`,
 		})
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -1652,12 +1665,12 @@ export class ChatService {
 	// }
 	async getUserRooms(socket, dto, server) {
 		const roomsList = [];
-		const roomNames = await this.redis.getRoomNames();
+		const roomNames = await this.redis.getUserRooms(socket.data.userId)
 		await Promise.all(roomNames.map(async (roomName) => {
-			let ifpublic = false;
+			let ifpublic = "private";
 			let ifprotected = false;
 			if (await this.redis.getRoomVisibility(roomName) == "public") 
-				ifpublic = true;
+				ifpublic = "public";
 			if (await this.redis.getRoomProtection(roomName) == "true")
 				ifprotected  = true;
 
@@ -1665,6 +1678,7 @@ export class ChatService {
 					roomName,
 					protected: ifprotected, 
 					public : ifpublic,
+					// timestamp: new Date().toISOString(),
 				});
 			}
 		));

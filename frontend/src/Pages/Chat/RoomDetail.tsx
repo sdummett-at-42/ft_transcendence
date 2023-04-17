@@ -119,10 +119,10 @@ const handleCheckIfAdmin = useCallback((payload)=>{
   //   setIfAdmin(false);
 },[props.UserId, props.roomName, ifAdmin, adminList])
 useEffect(() => {
-  console.log("adminList updated:", adminList);
+  // console.log("adminList updated:", adminList);
   if (adminList.includes(props.UserId))
   {
-    console.log("inside??")
+    // console.log("inside??")
     setIfAdmin(true);
   }
   else
@@ -149,22 +149,23 @@ useEffect(() => {
   props.roomName ? (
   <div className="chatinfo">
       <div className="chat-info-header clearfix">
-      <div className='chat-info-title'>Room Info : {props.roomName}, {props.UserId}</div>
-        <div className='chat-info-subtitle'>Accessibility</div>
+      <div className='chat-info-title'>Room Info : {props.roomName}
+    
         {ifAdmin? (
         <button  onClick={() => {
-          setShow(true);}} >Change</button>
+          setShow(true);}} >Setting</button>
          ) : null}
           <Setting         isVisible={show}
             socket={props.socket}
             onClose={() => setShow(false)} 
-            roomName = {props.roomName }/>
+            roomName = {props.roomName} 
+            onUpdate = {props.onUpdate}/>
           <InvitedConfirm isVisible={showConfirm}
             RoomName={roomNameInvite}
             onClose={() => setShowConfirm(false)} 
             socket={props.socket}
-            message = {message}/>
-            <div className='chat-info-subtitle'>Public</div>
+            message = {message}/></div>
+            {/* <div className='chat-info-subtitle'>Public</div> */}
             <div className='chat-info-subtitle'>Invite a friend</div>
             <div className="chat-info-form">
             <input placeholder="Name" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)}/>

@@ -33,6 +33,8 @@ export const LeaveRoomSchema = Joi.object({
 export class JoinRoomDto {
 	roomName: string;
 	password: string;
+	visibility: string;
+	
 }
 export const JoinRoomSchema = Joi.object({
 	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),

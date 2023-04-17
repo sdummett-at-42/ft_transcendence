@@ -1,7 +1,8 @@
 import React from 'react';
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useContext } from "react";
 import { useState } from 'react';
 import { Socket } from "socket.io-client";
+import { DatabaseContext } from './ChatLogin';
 
 import "./chat.scss"
 interface SettingProps {
@@ -9,6 +10,7 @@ interface SettingProps {
   isVisible: Boolean,
   onClose:() => void,
   roomName :string,
+  onUpdate:() =>void;
 
 }
 
@@ -16,6 +18,7 @@ export default function Setting(props: SettingProps) {
   const [access, setAccess] = useState("public");
   const [password, setPassword]=useState("");
   const [admin, setAdmin]= useState("");
+  const database = useContext(DatabaseContext);
 
   const handleAccessChange = ()=>{
     const payload = {
@@ -27,10 +30,20 @@ export default function Setting(props: SettingProps) {
   }
 
   const handleAddAdmin = ()=>{
-
+    let user = database.find((user) => user.name === admin);
+    if (user === undefined) {
+      props.onUpdate();
+      const interval = setInterval(() => {
+      user = database.find((user) => user.name === admin);
+      if (user !== undefined) {
+          clearInterval(interval);
+          console.log("user underfine");
+          }
+      }, 1000);
+    }
     const payload = {
       roomName : props.roomName,
-      userId : ""
+      userId : user.id
     }
     props.socket.emit("addRoomAdmin", payload);
     console.log("change sent");
@@ -38,9 +51,9 @@ export default function Setting(props: SettingProps) {
 
   useEffect(() => {
     if (props.socket) {
-      props.socket.on("roomUpdated",
-        props.onClose()
-      );
+      // props.socket.on("roomUpdated",
+      //   props.onClose()
+      // );
       props.socket.on("roomNotUpdated", (payload) => {
         console.log("roomNotUpdated");
         alert(payload.message);
@@ -48,7 +61,7 @@ export default function Setting(props: SettingProps) {
     }
     return () => {
       if (props.socket) {
-        props.socket.off('roomUpdated');
+        // props.socket.off('roomUpdated');
         props.socket.off('roomNotUpdated');
       }
     };
@@ -84,7 +97,7 @@ export default function Setting(props: SettingProps) {
               </div>
               <div className=" d-flex justify-content-end" onClick={handleAddAdmin}> <button>Add</button></div>
             <div className="modal-form">
-            <button onClick={props.onClose}>Cancel</button>
+            <button onClick={props.onClose}>Close</button>
               </div>
               </div>
           </div>

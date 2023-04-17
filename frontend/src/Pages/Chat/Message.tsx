@@ -68,9 +68,9 @@ export default function Message(props:MessageProps) {
   }, [messageList]);
 
   useEffect(() => {
-    console.log("messageList", messageList);
+    // console.log("messageList", messageList);
     setItem(messageList.sort((a, b) => a.timestamp - b.timestamp)
-      .map((each) => {
+      .map((each, index) => {
       const date = new Date(each.timestamp);
       const hour = date.getHours().toString().padStart(2, '0');
       const minute = date.getMinutes().toString().padStart(2, '0');
@@ -89,7 +89,6 @@ export default function Message(props:MessageProps) {
         else {
           let user = database.find((user) => user.id === each.userId);
           if (user === undefined) {
-            console.log("here??")
             props.onUpdate();
             const interval = setInterval(() => {
             user = database.find((user) => user.id === each.userId);
@@ -112,7 +111,7 @@ export default function Message(props:MessageProps) {
         }
         return (
           
-          <li className="clearfix">
+          <li className="clearfix" key={index}>
             <div className={className1}>
               <span className="message-data-name">  {username}</span>
               <span className="message-data-time">{hour}:{minute}:{second}</span>
@@ -124,11 +123,17 @@ export default function Message(props:MessageProps) {
     );
   },[props.roomName, messageList, database] )
   
+  const handleMessagesReceived = useCallback((payload) => {
+
+    console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
+    setMessageList(payload.msgHist);
+    // console.log("handleRoomsListReceived", payload);
+    // console.log("chat rooms:", chatrooms);
+  }, [messageList, props.roomName])
+  
   useEffect(() => {
     if (props.socket) {
-      props.socket.on("roomMsgHistReceived", (payload) => {console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
-      setMessageList(payload.msgHist);});
-      // props.socket.on("roomJoined", ()=>{console.log ("roomJoined\n");});
+      props.socket.on("roomMsgHistReceived", handleMessagesReceived);
       props.socket.on("roomMsgReceived", handleMessages);
       props.socket.on("userInvited", handleMessageAuto);
       props.socket.on("roomMsgNotSended", (payload)=>{
@@ -137,14 +142,13 @@ export default function Message(props:MessageProps) {
     }
     return () => {
       if (props.socket) {
-        props.socket.off("roomMsgHistReceived");
-        // props.socket.off("roomJoined");
+        props.socket.off("roomMsgHistReceived",handleMessagesReceived);
         props.socket.off("roomMsgReceived", handleMessages);
         props.socket.off("userInvited", handleMessageAuto);
         props.socket.off("roomMsgNotSended");
       }
     };
-  }, [props.socket]);
+  }, [props.socket,props.roomName, handleMessagesReceived,handleMessages,handleMessageAuto]);
 
   return (
     props.roomName ? (
@@ -152,7 +156,7 @@ export default function Message(props:MessageProps) {
 <div className="chat-header clearfix">
   <div className="chat-about container">
     <div className="row">
-      <div className="chat-with col-6">Chatroom : {props.roomName}, {props.UserId}</div>
+      <div className="chat-with col-6">Chatroom : {props.roomName}</div>
     </div>
       <button className="col-2" onClick={handleQuit}>Leave</button>
     </div>

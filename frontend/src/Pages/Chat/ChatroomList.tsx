@@ -20,31 +20,51 @@ export default function ChatroomList(props: ChatroomListProps) {
 
     // Event handlers
     const handleRoomCreated = useCallback((payload) => {
-      console.log("created");
-    }, []);
+      // console.log("created", payload);
+    }, [chatrooms]);
 
     const handleRoomJoined = useCallback((payload) => {
-      setChatrooms((prevChatrooms) => [...prevChatrooms, {roomName: payload.roomName}]);
-      props.onUpdate();
-    }, []);
+      // console.log("handleRoomJoined", payload);
+      setChatrooms((prevChatrooms) => [...prevChatrooms, {
+        roomName: payload.roomName,
+        public : payload.public,
+        protected : payload.protected
+      }]);
+      props.onUpdate(); //update database!
+    }, [chatrooms]);
 
     const handleRoomsListReceived = useCallback((payload) => {
-      console.log("handleRoomsListReceived", payload);
+      // console.log("handleRoomsListReceived", payload);
       setChatrooms(payload.roomsList);
       // console.log("chat rooms:", chatrooms);
-    }, []);
+    }, [chatrooms]);
     const handleDMRoomsListReceived = useCallback((payload) => {
       // console.log(`ROOMDM: ${JSON.stringify(payload)}`);
       setChatrooms((prevChatrooms) => [...prevChatrooms, ...payload.dms.map(room => ({ roomName: room }))]);
       // console.log("chat rooms2:", chatrooms);
-    }, []);
+    }, [chatrooms]);
 
     const handleRoomDeleted = useCallback((payload) => {
       // console.log("LEAVE", payload);
       setChatrooms((prevChatrooms) => {
         return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
       });
-    }, []);
+    }, [chatrooms]);
+
+    const handleRoomsUpdate = useCallback ((payload) =>{
+      // console.log("handleRoomsUpdate", payload, chatrooms);
+      const chatroomIndex = chatrooms.findIndex(room => room.roomName === payload.roomName);
+      if (chatroomIndex === -1) {
+        console.log("cant not find the roomname updated");
+        return;
+      }
+      const updatedChatroom = {...chatrooms[chatroomIndex], 
+        public : payload.public,
+        protected : payload.protected};
+      const updatedChatrooms = [...chatrooms];
+      updatedChatrooms[chatroomIndex] = updatedChatroom;
+      setChatrooms(updatedChatrooms);
+    }, [chatrooms]);
 
     // Render handlers
     const handleChatroomClick = (chatroomId)=> {
@@ -69,17 +89,10 @@ export default function ChatroomList(props: ChatroomListProps) {
         props.socket.on("dmsList",handleDMRoomsListReceived);
         props.socket.on("roomCreated", handleRoomCreated);
         props.socket.on("roomJoined", handleRoomJoined);
+        props.socket.on("roomUpdated", handleRoomsUpdate);
         props.socket.on("roomLeft", handleRoomDeleted );
         // console.log("received");
         // console.log(props.socket.listeners("roomsListReceived"));
-        // console.log("created");
-        // console.log(props.socket.listeners("roomCreated"));
-        console.log("joined");
-        console.log(props.socket.listeners("roomJoined"));
-        // console.log("left");
-        // console.log(props.socket.listeners("roomLeft"));
-        // console.log("fake");
-        // console.log(props.socket.listeners("fakeEvent"));
       return () => {
           // Log the event listeners to the console
           // props.socket.off("roomsListReceived", handleRoomsList);
@@ -88,6 +101,7 @@ export default function ChatroomList(props: ChatroomListProps) {
           props.socket.off("roomCreated", handleRoomCreated);
           props.socket.off("roomJoined", handleRoomJoined);
           props.socket.off("roomLeft", handleRoomDeleted);
+          props.socket.on("roomUpdated", handleRoomsUpdate);
       }}
     }, [props.socket, handleRoomJoined, selectedRoom]);
 
@@ -110,19 +124,13 @@ export default function ChatroomList(props: ChatroomListProps) {
             socket={props.socket}/>
             </div>
                 <ul className="list">
-                  <li className="clearfix">       
-                    <div className="about">
-                    <div className="name">Group A</div>
-                    <div className="status"> Private <FontAwesomeIcon icon={faLock} /></div>
-                    </div>
-                  </li>
             {chatrooms.map(room => (
               <li className={`clearfix ${selectedRoom === room.roomName ? "active" : ""}`}  key={room.roomName} onClick={() => handleChatroomClick(room.roomName)}>       
               <div className="about">
               <div className="name" >{room.roomName} 
               </div>
               <div className="status">
-                  <i className="fa fa-circle online"></i> {room.public? "public" : "private"}:{room.protected? "protected" :"not protected"} <FontAwesomeIcon icon={faLock} />
+                  <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Private"} {room.protected?  <FontAwesomeIcon icon={faLock} /> :null}
                   </div>
               </div>
             </li>
