@@ -97,10 +97,14 @@ export class ChatService {
 		const owner = await this.redis.getRoomOwner(roomName);
 		let admins = (await this.redis.getRoomAdmins(roomName)).map(Number);
 		let members = (await this.redis.getRoomMembers(roomName)).map(Number);
+		let banned = (await this.redis.getRoomBanned(roomName)).map(Number);
+		let muted = (await this.redis.getRoomAllMuted(roomName)).map(Number);
 		const memberList = {
 			owner: owner,
 			admins: admins,
 			members: members,
+			banned: banned,
+			muted: muted,
 		}
 		return memberList;
 	}
