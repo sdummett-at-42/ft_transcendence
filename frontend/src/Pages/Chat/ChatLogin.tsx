@@ -4,8 +4,8 @@ import { Socket } from "socket.io-client";
 import ChatroomList from "./ChatroomList";
 import Message from './Message';
 import RoomDetail from "./RoomDetail";
-import "./chat.css"
-import "./chat.scss"
+// import "./chat.css"
+// import "./chat.scss"
 import { connectSocket , disconnectSocket } from "./Socket";
 
 

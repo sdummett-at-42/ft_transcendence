@@ -15,6 +15,7 @@ import Game from "./Pages/Game/Pong/Game";
 import InitAchievements from "./Pages/Achievements/Achievements";
 import InitStats from "./Pages/Stats/Stats";
 // import Settings from "./Pages/Settings/Settings";
+import ChatLogin from "./Pages/Chat/ChatLogin";
 import { useEffect, useState } from "react";
 
 function App() {
@@ -84,6 +85,10 @@ function App() {
 				<Route
 					path="/stats"
 					element={<Layout children={<InitStats />} />}
+				/>
+				<Route
+					path="/chat"
+					element={<Layout children={<ChatLogin />} />}
 				/>
 				<Route
 					path="/*"

@@ -28,11 +28,7 @@ async function bootstrap() {
 			cookie: {
 				maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 				httpOnly: false,
-<<<<<<< HEAD:backend/src/main.ts
 			},
-=======
-			}
->>>>>>> wlo:backend.nestjs/src/main.ts
 		}));
 
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
