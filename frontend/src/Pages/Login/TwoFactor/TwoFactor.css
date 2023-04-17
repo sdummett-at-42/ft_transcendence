@@ -1,0 +1,54 @@
+.auth-container {
+	max-width: 500px;
+	margin: 50px auto;
+	padding: 20px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	box-shadow: 0px 0px 10px #ccc;
+	background-color: #333333;
+}
+
+h2 {
+	font-size: 24px;
+	margin-bottom: 20px;
+}
+
+form {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 20px;
+}
+
+label {
+	font-size: 18px;
+	margin-bottom: 10px;
+}
+
+input[type="text"] {
+	font-size: 18px;
+	padding: 10px;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+	margin-bottom: 20px;
+}
+
+button[type="submit"] {
+	font-size: 18px;
+	padding: 10px 20px;
+	border-radius: 5px;
+	border: none;
+	background-color: #007bff;
+	color: #fff;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+	background-color: #0062cc;
+}
+
+.error-message {
+	font-size: 16px;
+	color: #dc3545;
+	margin-top: 10px;
+}

@@ -204,11 +204,6 @@ export class AuthController {
 			path: "/",
 		});
 		res.setHeader('Set-Cookie', cookie);
-		res.send({
-			message: "Partially logged, 2FA enabled.",
-			twofactorEnabled: true,
-			twofactorValidated: false,
-		});
-		res.status(302).redirect("http://localhost:5173/home")
+		res.status(302).redirect("http://localhost:5173/login/2fa")
 	}
 }

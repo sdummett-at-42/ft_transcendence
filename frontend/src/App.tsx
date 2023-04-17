@@ -13,6 +13,7 @@ import InitAchievements from "./Pages/Achievements/Achievements";
 import InitStats from "./Pages/Stats/Stats";
 import Settings from "./Pages/Settings/Settings";
 import { useEffect, useState } from "react";
+import TwoFactor from "./Pages/Login/TwoFactor/TwoFactor";
 
 function App() {
 	const [user, setUser] = useState(null);
@@ -53,7 +54,6 @@ function App() {
 					path="/stats"
 					element={<Layout children={<InitStats />} />}
 				/>
-				{/* Temporary duplicate code below */}
 				<Route path="/" element={<LoginSelector />} />
 				<Route path="/register" element={<CreateAccount />} />
 				<Route
@@ -62,6 +62,7 @@ function App() {
 				/>
 				{/* <Route path="/forgotMail" element={<ForgotMail />} /> */}
 				<Route path="/login/intra42" element={<LoginFortyTwo />} />
+				<Route path="/login/2fa" element={<TwoFactor />} />
 				<Route path="/*" element={<Layout children={<NotFound />} />} />
 			</Routes>
 		</div>
