@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./Lobby.css"
 import { UserContext } from "../../../context/UserContext"
 import FriendsList from "../../Home/FriendsList/FriendsList";
@@ -8,6 +8,7 @@ export default function Lobby() {
 
     const { user, gameSocketRef } = useContext(UserContext);
     const navigate = useNavigate();
+    const [dispSelector, setDispSelector] = useState(true);
 
     const handleJoinGame = (data) => {
         console.log('Joining game');
@@ -31,9 +32,20 @@ export default function Lobby() {
     return (
         <div className="Lobby">
             <div className="Lobby-content">
-                
-                <h1>Lobby</h1>
-                <button onClick={() => gameSocketRef.current.emit('joinQueue')}>Join Queue</button>
+                {dispSelector && (
+                    <div className="Lobby-selector">
+                        <p>
+                            Choose a game mode:
+                        </p>
+                        <button onClick={() => setDispSelector(false)}>Classic</button>
+                    </div>
+                )}
+                {!dispSelector && (
+                    <div className="Lobby-queue">
+                        <h1>Lobby</h1>
+                        <button onClick={() => gameSocketRef.current.emit('joinQueue')}>Join Queue</button>
+                    </div>
+                )}
             </div>
             <FriendsList />
         </div>
