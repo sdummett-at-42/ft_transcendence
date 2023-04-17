@@ -119,6 +119,14 @@ export class RedisService {
 			})
 		})
 	}
+	async getRoomAllMuted(roomName: string): Promise<string[]> {
+		return new Promise((resolve, reject) => {
+			this.client.keys(`room:${roomName}:infos:muted:*`, (err, muted) => {
+				const mutedUsers = muted.map((mutedUser) => mutedUser.split(':')[4]);
+				resolve(mutedUsers);
+			})
+		})
+	}
 
 	async setRoomInvited(roomName: string, userId: number) {
 		this.client.hset(`room:${roomName}:infos:invited`, userId, 1);
