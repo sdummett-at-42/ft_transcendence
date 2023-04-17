@@ -5,6 +5,7 @@ import './TwoFactor.css';
 export default function TwoFactor() {
 	const [otp, setOtp] = useState("");
 	const [error, setError] = useState("");
+	const [isShaking, setIsShaking] = useState(false);
 	const navigate = useNavigate();
 
 	const handleSubmit = (event) => {
@@ -22,6 +23,8 @@ export default function TwoFactor() {
 					navigate("/");
 				} else if (response.status === 400) {
 					setError("Invalid OTP code");
+					setIsShaking(true);
+            		setTimeout(() => { setIsShaking(false) }, 1000);
 				}
 			})
 			.catch((error) => {
@@ -47,7 +50,7 @@ export default function TwoFactor() {
 					autoComplete="off"
 					type="text"
 					id="otp-input"
-					className="auth-input"
+					className={`auth-input ${isShaking ? "shake" : ""}`}
 					value={otp}
 					onChange={(event) => setOtp(event.target.value)}
 				/>
