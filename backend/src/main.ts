@@ -28,7 +28,11 @@ async function bootstrap() {
 			cookie: {
 				maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 				httpOnly: false,
+<<<<<<< HEAD:backend/src/main.ts
 			},
+=======
+			}
+>>>>>>> wlo:backend.nestjs/src/main.ts
 		}));
 
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
@@ -44,6 +48,13 @@ async function bootstrap() {
 
 	const document = SwaggerModule.createDocument(app, swaggerConfig);
 	SwaggerModule.setup("api", app, document);
+
+	// const corsOptions: CorsOptions = {
+	// 	origin: '*',
+	// 	methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+	// 	allowedHeaders: ['Content-Type', 'Authorization'],
+	//   };
+	//   app.use(cors(corsOptions));
 
 	// app.setGlobalPrefix("api");
 	app.use(passport.initialize());
