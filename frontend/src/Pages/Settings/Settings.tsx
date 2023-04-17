@@ -14,6 +14,7 @@ export default function Settings() {
 			});
 			const userData = await response.json();
 			setUser(userData);
+			setIs2faEnabled(userData.twofactorIsEnabled);
 		}
 
 		fetchUser();
@@ -72,40 +73,6 @@ export default function Settings() {
 		});
 	}
 
-	async function handle2faToggle() {
-		console.log(`handle2faToggle`);
-		try {
-			if (!is2faEnabled) {
-				const response = await fetch(
-					"http://localhost:3001/auth/2fa/generate",
-					{
-						method: "GET",
-						credentials: "include",
-					}
-				);
-				const qrCodeData = await response.json();
-				setQrCode(qrCodeData);
-			} else {
-				const response = await fetch(
-					"http://localhost:3001/auth/2fa/disable",
-					{
-						method: "PATCH",
-						credentials: "include",
-					}
-				);
-
-				if (!response.ok) {
-					throw new Error("Failed to disable 2FA");
-				}
-			}
-
-			setIs2faEnabled(!is2faEnabled);
-			setOtpCode("");
-		} catch (error) {
-			console.error(error);
-		}
-	}
-
 	async function handleVerifyOtp() {
 		try {
 			const response = await fetch(
@@ -124,10 +91,44 @@ export default function Settings() {
 				throw new Error("Failed to verify OTP code");
 			}
 
-			setIs2faEnabled(true);
-			setOtpCode("");
+			const { secretVerified } = await response.json();
+			if (secretVerified) {
+				setIs2faEnabled(true);
+				setOtpCode("");
+				alert("OTP code verified successfully!");
+				// setIsQrCodeShown(false);
+			} else {
+				alert("Invalid OTP code, please try again.");
+			}
 		} catch (error) {
 			console.error(error);
+		}
+	}
+
+	async function handle2faToggle() {
+		if (!is2faEnabled) {
+			const response = await fetch(
+				"http://localhost:3001/auth/2fa/generate",
+				{
+					method: "GET",
+					credentials: "include",
+				}
+			);
+			const qrCodeData = await response.json();
+			setQrCode(qrCodeData);
+			setOtpCode("");
+			// setIsQrCodeShown(true);
+		} else {
+			const response = await fetch(
+				"http://localhost:3001/auth/2fa/disable",
+				{
+					method: "PATCH",
+					credentials: "include",
+				}
+			);
+			setIs2faEnabled(false);
+			// setIsQrCodeShown(false);
+			setQrCode(null);
 		}
 	}
 
@@ -165,7 +166,11 @@ export default function Settings() {
 				</div>
 			)}
 			<button onClick={handle2faToggle}>
-				{user.twofactorIsEnabled ? "Disable 2FA" : "Enable 2FA"}
+				{qrCode && !is2faEnabled
+					? "Regenerate"
+					: is2faEnabled
+					? "Disable 2FA"
+					: "Enable 2FA"}
 			</button>
 		</div>
 	);
