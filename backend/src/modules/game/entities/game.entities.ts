@@ -132,6 +132,8 @@ export class Field {
     }
 }
 
+//TODO
+// check si tout utiliser
 export class Game {
     id : number;
     roomId : string;

@@ -126,8 +126,8 @@ export class GameService {
                 } else { // game not in pause
                     // check game timer end
                     elapsedTime = Math.floor(new Date().getTime() - game.dateStart.getTime() - game.pauseTotalTime);
-                    // check Limit timer
-                    if (game.limitTimerBool === true && elapsedTime >= game.limitTimer) {
+                    // check Limit timer et score non egalitaire
+                    if (game.limitTimerBool === true && elapsedTime >= game.limitTimer && game.p1.score != game.p2.score) {
                         this.victoryByScore(game);
                         return ;
                     }
@@ -233,41 +233,34 @@ export class GameService {
 
     // stop all interval et clear all bullet
     stopGame(server : Server, game : Game) : void {
+        console.log("Fin de la partie !");
 
-        // if (game.shapes.length <= game.numberElement ) {
-        //     console.log("la partie n'a pas commence !");
-        //     return null;
-        // }
-        // else {
-            console.log("Fin de la partie !");
+        // Stop all interval bullet
+        // game.shapes.forEach((shape, index) => {
+        //     if (game.shapes[index] instanceof Bullet){
+        //         clearInterval(game.bulletInterval);
+        //         game.bulletInterval = undefined;
+        //     }
+        // })
 
-            // Stop all interval bullet
-            // game.shapes.forEach((shape, index) => {
-            //     if (game.shapes[index] instanceof Bullet){
-            //         clearInterval(game.bulletInterval);
-            //         game.bulletInterval = undefined;
-            //     }
-            // })
-
-            clearInterval(game.bulletInterval);
-            game.bulletInterval = undefined;
+        clearInterval(game.bulletInterval);
+        game.bulletInterval = undefined;
 
 
-            clearInterval(game.frequencyInterval);
-            game.frequencyInterval = undefined;
+        clearInterval(game.frequencyInterval);
+        game.frequencyInterval = undefined;
             
-            // and clear all element add after init
-            game.shapes.splice(game.numberElement);
+        // and clear all element add after init
+        game.shapes.splice(game.numberElement);
 
-            // Stop game's interval
-            clearInterval(game.gameInterval);
-            game.gameInterval = undefined;
+        // Stop game's interval
+        clearInterval(game.gameInterval);
+        game.gameInterval = undefined;
             
-            // Bool endgame true
-            game.endBool = true;
+        // Bool endgame true
+        game.endBool = true;
 
-            server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
-        // }
+        server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
     }
 
     mouvementGame(server : Server, game : Game, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
@@ -532,12 +525,27 @@ export class GameService {
         game.server.to(game.roomId).emit(EventGame.gameVictoryScore, {p1 : game.p1, p2 : game.p2})
     }
 
-    private newElo(game : Game, scoreP1 : number, scoreP2 : number) : void {
+    private async newElo(game : Game, scoreP1 : number, scoreP2 : number) {
+        // const users = await this.prisma.user.findMany();
+        // console.log("Pre modif **********", users);
+
+        const p1Prisma = await this.prisma.user.findUnique({
+            where : {id : game.p1.id},
+        });
+        const p2Prisma = await this.prisma.user.findUnique({
+            where : {id : game.p2.id},
+        });
+
         // TODO
-        // change nombregame (facteur K)
-        
-        this.updateElo(game.p1.id ,this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, 5)); // last = nb game jouer
-        this.updateElo(game.p2.id ,this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, 5));
+        // Check if ranked game
+
+        this.updateElo(game.p1.id ,this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
+        this.updateElo(game.p2.id ,this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
+    
+        this.updatePrisma(game, scoreP1, scoreP2, p1Prisma, p2Prisma);
+
+        // const userqwe = await this.prisma.user.findMany();
+        // console.log("sub modif**********", userqwe);
     }
 
     private calculateElo(oldElo: number, opponentElo: number, score: number, gamesPlayed: number): number {
@@ -560,16 +568,58 @@ export class GameService {
     }
 
     private async updateElo(id : number, newElo : number){
-        const users = await this.prisma.user.findMany()
-        console.log("Pre modif", users);
-
         const user = await this.prisma.user.update({
             where: { id },
-            data: { elo: newElo },
+            data: {
+                elo: newElo,
+                eloHistory: {push:newElo}
+            }
           });
+    }
 
-        const subuser = await this.prisma.user.findMany()
-        console.log("sub modif", subuser);
+    private async updatePrisma(game : Game, scoreP1 : number, scoreP2 : number,  p1Prisma, p2Prisma) {
+        let winner;
+        let winnerId;
+        let looser;
+        let looserId;
+        let winnerScore;
+        let looserScore;
+
+        if (scoreP1 === 1) {
+            winner = p1Prisma;
+            winnerId = p1Prisma.id;
+            looser = p2Prisma;
+            looserId = p2Prisma.id;
+            winnerScore = game.p1.score;
+            looserScore = game.p2.score;
+        } else {
+            winner = p2Prisma;
+            winnerId = p2Prisma.id;
+            looser = p1Prisma;
+            looserId = p1Prisma.id;
+            winnerScore = game.p2.score;
+            looserScore = game.p1.score;
+        }
+
+
+        // const match = await this.prisma.match.create({
+		// 	data: {
+		// 		winner : winner,
+        //         winnerId : winnerId,
+        //         looser : looser,
+        //         looserId : looserId,
+        //         winnerScore : winnerScore	,
+        //         looserScore : looserScore
+		// 	},
+		// });
+
+        // id					Int					@id @default(autoincrement())
+        // winner				User				@relation("winner", fields: [winnerId], references: [id], onDelete: Cascade)
+        // winnerId			Int
+        // looser				User				@relation("looser", fields: [looserId], references: [id], onDelete: Cascade)
+        // looserId			Int
+        // winnerScore			Int
+        // looserScore			Int
     }
       
       

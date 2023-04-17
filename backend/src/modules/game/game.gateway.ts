@@ -126,14 +126,14 @@ export class GameGateway {
   \* ***** */
 
   @SubscribeMessage(EventGame.playerJoinQueue)
-  JoinLobbyMessage(client: any, payload: any) : void {
+  JoinLobbyMessage(client: any) : void {
     console.log(`Gateway : player has join queue`);
     // function check every second if 2 player match
     this.lobbyService.lobbyJoinQueue(client);
   }
 
   @SubscribeMessage(EventGame.playerLeaveQueue)
-  LeaveLobbyMessage(client: any, payload: any) : void {
+  LeaveLobbyMessage(client: any) : void {
     console.log(`Gateway : player has leave queue`);
     // function cancel Queue (delete from [] user search)
     this.lobbyService.lobbyLeaveQueue(client);

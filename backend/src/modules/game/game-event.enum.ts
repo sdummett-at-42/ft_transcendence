@@ -4,30 +4,31 @@ export enum EventGame {
     |* Game *|
     \* **** */
 
-    // recv
+    // game recv (client)
     gameStart = "start",
     gameEnd = "end",
 
-    //send
-    gameImage = "image",
-    gameScore = "score",
-    gameVictoryScore = "VictoryScore",
-    gameTimer = "gameTimer",
-    goInGame = "goInGame",
-
-    /* ****** *\
-    |* Player *|
-    \* ****** */
-
-    // recv
-    playerMouvement = "Mouvement",
-    playerJoinGame = "joinGame",
-    playerJoinQueue = "joinQueue",
-    playerLeaveQueue = "leaveQueue",
     playerClickCanvas = "clickCanvas",
-
-
-    //send
+    playerJoinGame = "joinGame",        // Client join game Spec/ Player Rejoin
+    playerMouvement = "Mouvement",      // Player send his mouse coord
+    
+    // game emit (srv)
+    gameImage = "image",                // Send All object on map to print
+    gameScore = "score",                // Send Actual score of players
+    gameVictoryScore = "VictoryScore",  // game is end by scoring
+    gameTimer = "gameTimer",            // Time in game
+    
+    /* ***** *\
+    |* Lobby *|
+    \* ***** */
+    
+    // Lobby Emit (Client)
+    playerJoinQueue = "joinQueue",      // Player join Q
+    playerLeaveQueue = "leaveQueue",    // Player leave Q
+    
+    
+    // Lobby recv (srv)
+    lobbyGoGame = "goInGame", // send id game to join /game/:id
 
 
     /* ************* *\
