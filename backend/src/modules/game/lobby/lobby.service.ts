@@ -272,7 +272,6 @@ export class LobbyService {
 	}
 
     async handleConnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
-        console.log(socket.handshake.headers);
 		if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
 			socket.emit(EventGame.NotConnected, {
@@ -332,6 +331,7 @@ export class LobbyService {
         } else {
             //TODO
             // check if game exist| ingame| finish
+            // faire que le front envoie l'id de la game ?
             console.log("socket in: /game/:id");
             socket.data.ingame = gameId;
             

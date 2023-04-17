@@ -38,10 +38,10 @@ export class GameService {
         return true;
     }
 
-    joinGame(server: Server, game : Game, client : Socket, payload : {roomId : string, msg : string}) {
-        client.join(payload.roomId);
+    joinGame(server: Server, game : Game, client : Socket, roomId : string) {
+        client.join(roomId);
 
-        console.log(payload);
+        console.log(roomId);
         console.log(game.roomId);
         
         console.log("client  ", client.data.userId);
@@ -268,7 +268,7 @@ export class GameService {
         let tmpYmin : number = y - game.p1.racket.length / 2; // tmpY = haut de la racket
         let tmpYmax : number = y + game.p1.racket.length / 2; // tmpY = bas de la racket      
         
-        // console.log("client   :", client.data.userId);
+        //console.log("client   :", client.data.userId);
         // Player 1
         if (client.data.socket === game.p1.socket) {
             if (tmpYmin < 0) // si haut racket trop haut
