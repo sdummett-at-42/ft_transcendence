@@ -1,0 +1,68 @@
+.Settings {
+	background-color: #242424;
+	color: #fff;
+	font-family: sans-serif;
+	font-size: 16px;
+	padding: 20px;
+}
+
+.Settings h2 {
+	font-size: 24px;
+	font-weight: bold;
+	margin-top: 0;
+	margin-bottom: 20px;
+}
+
+.Settings p {
+	margin-top: 0;
+	margin-bottom: 10px;
+}
+
+.Settings label {
+	display: block;
+	margin-bottom: 10px;
+}
+
+.Settings input[type="text"] {
+	padding: 5px;
+	border: none;
+	background-color: #424242;
+	color: #fff;
+	border-radius: 3px;
+	margin-left: 10px;
+}
+
+.Settings button {
+	padding: 10px;
+	background-color: #4285f4;
+	color: #fff;
+	border: none;
+	border-radius: 3px;
+	cursor: pointer;
+	margin-top: 10px;
+	margin-right: 10px;
+}
+
+.Settings button:hover {
+	background-color: #3367d6;
+}
+
+.Settings img {
+	max-width: 100%;
+	height: auto;
+	margin-bottom: 10px;
+}
+
+.Settings .qr-code {
+	margin-top: 10px;
+	margin-bottom: 20px;
+}
+
+.Settings .qr-code label {
+	display: inline-block;
+	margin-right: 10px;
+}
+
+.Settings .qr-code input[type="text"] {
+	margin-left: 5px;
+}

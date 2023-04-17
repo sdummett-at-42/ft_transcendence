@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "./Settings.css";
 
 export default function Settings() {
 	const [user, setUser] = useState(null);
@@ -133,7 +134,7 @@ export default function Settings() {
 	}
 
 	return (
-		<div>
+		<div className="Settings">
 			<h2>Settings</h2>
 			<p>Logged in as {user.name}</p>
 			<div>
