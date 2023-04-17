@@ -164,10 +164,6 @@ export class LobbyService {
             // send to player join game's url
             //this.gameGateway.server
 
-            console.log("+++++++++++++");
-            console.log(this.games);
-            console.log("+++++++++++++");
-
             const p1Socket = p1.player.socket;
             const p2Socket = p2.player.socket;
 
@@ -200,10 +196,6 @@ export class LobbyService {
     initGame(server : Server, game : Game) {
         // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
         // on count pour numberElement lors reset/scoring
-
-        console.log("-------------");
-        console.log("----Game:", game);
-        console.log("-------------");
 
         if (game.shapes.length != 0)
             return ;
