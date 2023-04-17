@@ -20,29 +20,29 @@ export class TwoFactorStrategy extends PassportStrategy(Strategy, '2fa') {
 
 	async validate(req): Promise<any> {
 
-		const username = req.user.name;
 		const twofactorCookie = this.auth.getCookie('2fa', req);
 		// no 2fa cookie sended
 		if (twofactorCookie === undefined)
-			throw new UnauthorizedException({message: 'No 2FA cookie.'});
+			throw new UnauthorizedException({ message: 'No 2FA cookie.' });
 
 		let userId;
 		let email;
+		let username;
 		try {
 			const obj = this.auth.decrypt2faId(twofactorCookie);
 			userId = obj.userId;
 			email = obj.email;
-			console.log(`obj = ${JSON.stringify(obj)}`);
+			username = (await this.auth.findOneUserById(userId)).name;
 		}
 		catch (err) {
 			// Invalid cookie sended
-			throw new UnauthorizedException({message: 'Invalid 2FA cookie.'});
+			throw new UnauthorizedException({ message: 'Invalid 2FA cookie.' });
 		}
 
 		const cookie = await this.auth.get2faCookie(userId);
 		// Invalid cookie sended
 		if (!cookie)
-			throw new UnauthorizedException({message: 'Invalid 2FA cookie.'});
+			throw new UnauthorizedException({ message: 'Invalid 2FA cookie.' });
 
 		const secret = await this.auth.get2faSecret(userId);
 		// 2FA not enabled
@@ -55,11 +55,11 @@ export class TwoFactorStrategy extends PassportStrategy(Strategy, '2fa') {
 
 		const dto = req.body;
 		if (dto === undefined)
-			throw new BadRequestException({message: 'You need to pass an object with `otp` field'})
+			throw new BadRequestException({ message: 'You need to pass an object with `otp` field' })
 		const { error } = OtpSchema.validate(dto);
 		if (error) {
 			console.log(error.message)
-			throw new BadRequestException({message: error.message})
+			throw new BadRequestException({ message: error.message })
 		}
 
 		const check = otplib.authenticator.check(dto.otp, secret);
