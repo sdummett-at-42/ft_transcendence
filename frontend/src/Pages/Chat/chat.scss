@@ -11,6 +11,13 @@ body {
     color: white;
 }
 
+.row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    margin: -10px;
+}
+
 .containerhere {
     // overflow: auto;
     display: flex;
@@ -20,9 +27,6 @@ body {
     //  width: 120vh;
     background: #444753;
     border-radius: 5px;
-    .row {
-        width: 100%;
-    }
 }
 
 .people-list {
@@ -298,9 +302,8 @@ body {
         .PendingFriend-button {
             background-color: transparent;
             border: none;
-            color: #fff;   
+            color: #fff;
         }
-        
         button {
             border-radius: 3px;
             float: right;

@@ -7,11 +7,11 @@ import { Socket } from "socket.io-client";
 
 
 interface InvitedConfirmProps {
-  socket: Socket;
-  isVisible: Boolean;
-  onClose:() => void;
-  message:string;
-  RoomName :string;
+  socket: Socket,
+  isVisible: Boolean,
+  onClose:() => void,
+  message:string,
+  RoomName :string,
 }
 export default function InvitedConfirm(props: InvitedConfirmProps) {
   const [password, setPassword] = useState("");

@@ -7,11 +7,11 @@ import "./chat.scss"
 import { DatabaseContext } from './ChatLogin';
 
 interface MessageProps {
-  socket: Socket;
-  roomName: string;
-  onQuit: () => void;
-  UserId:Number;
-  onUpdate:() =>void;
+  socket: Socket,
+  roomName: string,
+  onQuit: () => void,
+  UserId:Number,
+  onUpdate:() =>void,
 }
 
 export default function Message(props:MessageProps) {

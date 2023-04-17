@@ -10,7 +10,9 @@ import "./chat.scss"
 
 interface MemberListProps {
   socket: Socket, 
+  onListClick : (list: string) => void,
   roomName :string,
+  UserId: Number,
 }
 
 export default function MemberList(props: MemberListProps) {
@@ -18,13 +20,14 @@ export default function MemberList(props: MemberListProps) {
     const [item, setItem] = useState([]);
     const [members, setMembers ] = useState({ owner: '', admins: [], members: [] });
 
-    const hanldeDM= (event) => {
-      props.socket.emit("sendDM", )
+    const hanldeDM= (id, name) => {
+        props.onListClick(name);
+    //   props.socket.emit("sendDM", )
     };
 
     useEffect(() => {
     //  console.log("members2222", members);
-    setItem(members.members.map((each,index) => {
+    setItem(members.members.map((each, index) => {
         let user = database.find((user) => user.id === each);
         let role = "member";
         if(members.owner.includes(each) ==  true)
@@ -42,11 +45,12 @@ export default function MemberList(props: MemberListProps) {
               </div>    
             </div>             
           </li>
-          <div className="col-5">
-          <button className="PendingFriend-button"onClick={hanldeDM}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
+          
+            {/* play, message, block, unmute, unban */}
+          {user.id === props.UserId ? null : (<div className="col-5"><button className="PendingFriend-button" onClick={()=>hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
           <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} size="lg" /></button>
           <button className="PendingFriend-button" ><FontAwesomeIcon icon={faEllipsisVertical} size="lg" /></button>
-          </div>
+          </div>)}
           </>
         );
     })

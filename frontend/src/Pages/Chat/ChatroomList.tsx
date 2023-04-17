@@ -7,13 +7,14 @@ import { faLock} from '@fortawesome/free-solid-svg-icons';
 import RoomJoin from './RoomJoin';
 
 interface ChatroomListProps {
-  socket: Socket;
-  onListClick : (list: string) => void;
-  onUpdate:() =>void;
+  socket: Socket,
+  onListClick : (list: string) => void,
+  onUpdate:() =>void,
 }
 export default function ChatroomList(props: ChatroomListProps) {
     // States
     const [chatrooms, setChatrooms] = useState([]);
+    const [dms, setdms] = useState([]);
     const [showAddRoom, setShowAddRoom] = useState(false);
     const [showJoinRoom, setShowJoinRoom] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -39,10 +40,10 @@ export default function ChatroomList(props: ChatroomListProps) {
       // console.log("chat rooms:", chatrooms);
     }, [chatrooms]);
     const handleDMRoomsListReceived = useCallback((payload) => {
-      // console.log(`ROOMDM: ${JSON.stringify(payload)}`);
-      setChatrooms((prevChatrooms) => [...prevChatrooms, ...payload.dms.map(room => ({ roomName: room }))]);
+      console.log(`ROOMDM: ${JSON.stringify(payload)}`);
+      // setdms(payload.dms);
       // console.log("chat rooms2:", chatrooms);
-    }, [chatrooms]);
+    }, [dms]);
 
     const handleRoomDeleted = useCallback((payload) => {
       // console.log("LEAVE", payload);
@@ -124,19 +125,28 @@ export default function ChatroomList(props: ChatroomListProps) {
             socket={props.socket}/>
             </div>
                 <ul className="list">
-            {chatrooms.map(room => (
-              <li className={`clearfix ${selectedRoom === room.roomName ? "active" : ""}`}  key={room.roomName} onClick={() => handleChatroomClick(room.roomName)}>       
-              <div className="about">
-              <div className="name" >{room.roomName} 
-              </div>
-              <div className="status">
-                  <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Private"} {room.protected?  <FontAwesomeIcon icon={faLock} /> :null}
-                  </div>
-              </div>
-            </li>
-            ))}
-          </ul>
-          </div>
+                  {chatrooms.map(room => (
+                  <li className={`clearfix ${selectedRoom === room.roomName ? "active" : ""}`}  key={room.roomName} onClick={() => handleChatroomClick(room.roomName)}>       
+                    <div className="about"> <div className="name" >{room.roomName} </div>
+                    <div className="status">
+                      <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Private"} {room.protected?  <FontAwesomeIcon icon={faLock} /> :null}
+                    </div>
+                    </div>
+                  </li>
+                  ))}
+                </ul>
+                <ul className="list">
+                  {dms.map(room => (
+                  <li className="clearfix" key={room.roomName} onClick={() => handleChatroomClick(room.roomName)}>       
+                    <div className="about"> <div className="name" >{room.roomName} </div>
+                    <div className="status">
+                      <i className="fa fa-circle online"></i> 
+                    </div>
+                    </div>
+                  </li>
+                  ))}
+                </ul>
+            </div>
         </div>
   );
 }

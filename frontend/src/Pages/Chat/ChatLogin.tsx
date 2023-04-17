@@ -1,4 +1,4 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap/dist/css/bootstrap.min.css';
 import React from "react";
 import { useState , useEffect } from 'react';
 import ChatroomList from "./ChatroomList";
@@ -45,6 +45,7 @@ export default function ChatLogin() {
   };
 
   const handleListClick = (list) => {
+    console.log("here?")
     console.log("List:",list);
     setRoomName(list);
     const payload = {
@@ -118,7 +119,7 @@ export default function ChatLogin() {
             <DatabaseContext.Provider value={database}>
               <ChatroomList socket={socket}  onListClick={handleListClick} onUpdate={handleChildComponentUpdate}/>
               <Message socket={socket} roomName={roomName} onQuit={handleLeaveRoom} UserId = {userId} onUpdate={handleChildComponentUpdate}/>
-              <RoomDetail socket={socket} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId = {userId}/>
+              <RoomDetail socket={socket}  onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId = {userId}/>
             </DatabaseContext.Provider>
       </div>
       </div>

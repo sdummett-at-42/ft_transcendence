@@ -12,13 +12,13 @@ import InvitedConfirm from './InvitedConfirm';
 import MemberList from './MemberList';
 
 interface RoomDetailProps {
-  socket: Socket;
-  roomName : string;
-  onUpdate:() =>void;
-  UserId: Number;
+  socket: Socket,
+  onListClick : (list: string) => void,
+  roomName : string,
+  onUpdate:() =>void,
+  UserId: Number,
   
 }
-
 export default function RoomDetail(props: RoomDetailProps) {
   const [show, setShow] = useState(false);
   const [inputInvite, setInputInvite] = useState("");
@@ -159,7 +159,6 @@ useEffect(() => {
   <div className="chatinfo">
       <div className="chat-info-header clearfix">
       <div className='chat-info-title'>Room Info
-    
         {ifAdmin? (
         <button  onClick={() => {
           setShow(true);}} >Setting</button>
@@ -198,7 +197,7 @@ useEffect(() => {
            </div></>
             ) : null}
       </div>
-      <MemberList socket={props.socket} roomName={props.roomName} />
+      <MemberList socket={props.socket} onListClick = {props.onListClick} roomName={props.roomName} UserId={props.UserId} />
   </div>) : <div className="chatinfo" ></div>
  );
 }
