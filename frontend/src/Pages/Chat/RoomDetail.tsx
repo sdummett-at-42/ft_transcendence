@@ -68,7 +68,7 @@ export default function RoomDetail(props: RoomDetailProps) {
 }
 
 const handleBan = () => {
-  let userId = findInDatabase(inputInvite);
+  let userId = findInDatabase(inputBan);
   if (userId == 0){
     alert("User not found. Please try again.");
     return ;
@@ -80,7 +80,7 @@ const handleBan = () => {
   props.socket.emit("banUser", payload);
 }
 const handleMute = () => {
-  let userId = findInDatabase(inputInvite);
+  let userId = findInDatabase(inputMute);
   if (userId == 0){
     alert("User not found. Please try again.");
     return ;
@@ -91,6 +91,19 @@ const handleMute = () => {
     timeout: 60,
   }
   props.socket.emit("muteUser", payload);
+}
+
+const handleKick = () => {
+  let userId = findInDatabase(inputKick);
+  if (userId == 0){
+    alert("User not found. Please try again.");
+    return ;
+  }
+  const payload ={
+    roomName: props.roomName,
+    userId: userId,
+  }
+  props.socket.emit("kcikUser", payload);
 }
   const  handleInvited = useCallback((payload) =>{
       setMessage(payload.message);
@@ -119,12 +132,8 @@ const handleCheckIfAdmin = useCallback((payload)=>{
   //   setIfAdmin(false);
 },[props.UserId, props.roomName, ifAdmin, adminList])
 useEffect(() => {
-  // console.log("adminList updated:", adminList);
   if (adminList.includes(props.UserId))
-  {
-    // console.log("inside??")
     setIfAdmin(true);
-  }
   else
     setIfAdmin(false);
 }, [adminList]);
@@ -143,13 +152,13 @@ useEffect(() => {
           props.socket.off("roomMembers", handleAdminList);
         }
       };
-  }, [props.socket, handleInvited, handleNotInvite, handleCheckIfAdmin]);
+  }, [props.socket,  props.onUpdate, handleInvited, handleNotInvite, handleCheckIfAdmin]);
 
  return (
   props.roomName ? (
   <div className="chatinfo">
       <div className="chat-info-header clearfix">
-      <div className='chat-info-title'>Room Info : {props.roomName}
+      <div className='chat-info-title'>Room Info
     
         {ifAdmin? (
         <button  onClick={() => {
@@ -179,13 +188,13 @@ useEffect(() => {
            </div>
            <div className='chat-info-subtitle'>Mute a Member</div>
            <div className="chat-info-form">
-            <input placeholder="Name" value={inputBan} onChange={(e) => setInputBan(e.target.value)} ></input>
+            <input placeholder="Name" value={inputMute} onChange={(e) => setInputMute(e.target.value)} ></input>
            <button onClick={handleMute}><FontAwesomeIcon icon={faVolumeXmark}/></button>
            </div>
            <div className='chat-info-subtitle'>Kick a Member</div>
            <div className="chat-info-form">
-            <input placeholder="Name"></input>
-           <button><FontAwesomeIcon icon={faPersonRunning}/></button>
+            <input placeholder="Name" value={inputKick} onChange={(e) => setInputKick(e.target.value)}></input>
+           <button onClick={handleKick}><FontAwesomeIcon icon={faPersonRunning}/></button>
            </div></>
             ) : null}
       </div>

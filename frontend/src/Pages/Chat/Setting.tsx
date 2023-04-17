@@ -31,37 +31,38 @@ export default function Setting(props: SettingProps) {
 
   const handleAddAdmin = ()=>{
     let user = database.find((user) => user.name === admin);
-    if (user === undefined) {
-      props.onUpdate();
-      const interval = setInterval(() => {
-      user = database.find((user) => user.name === admin);
-      if (user !== undefined) {
-          clearInterval(interval);
-          console.log("user underfine");
-          }
-      }, 1000);
+    if (user  === undefined){
+      alert("User not found. Please try again.");
+      return ;
     }
+    console.log("user", user);
     const payload = {
       roomName : props.roomName,
       userId : user.id
     }
     props.socket.emit("addRoomAdmin", payload);
-    console.log("change sent");
   }
 
   useEffect(() => {
     if (props.socket) {
-      // props.socket.on("roomUpdated",
-      //   props.onClose()
-      // );
+      props.socket.on("roomAdminAdded", (payload) => {
+        // console.log("roomAdminAdded", payload);
+      })
+      props.socket.on("roomAdminNotAdded",(payload) =>{
+        alert(payload.message);
+      })
+      props.socket.on("roomUpdated",
+        props.onClose());
       props.socket.on("roomNotUpdated", (payload) => {
-        console.log("roomNotUpdated");
+        console.log("roomNotUpdated", payload);
         alert(payload.message);
       });
     }
     return () => {
       if (props.socket) {
-        // props.socket.off('roomUpdated');
+        props.socket.off("roomAdminAdded");
+        props.socket.off("roomAdminNotAdded");
+        props.socket.off('roomUpdated');
         props.socket.off('roomNotUpdated');
       }
     };

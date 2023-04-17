@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Socket } from "socket.io-client";
 import { DatabaseContext } from './ChatLogin'
 import { createContext, useContext } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMessage, faTableTennis, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import "./chat.scss"
 
 interface MemberListProps {
@@ -16,6 +18,10 @@ export default function MemberList(props: MemberListProps) {
     const [item, setItem] = useState([]);
     const [members, setMembers ] = useState({ owner: '', admins: [], members: [] });
 
+    const hanldeDM= (event) => {
+      props.socket.emit("sendDM", )
+    };
+
     useEffect(() => {
     //  console.log("members2222", members);
     setItem(members.members.map((each,index) => {
@@ -27,17 +33,19 @@ export default function MemberList(props: MemberListProps) {
             role = "Admin";
         return (
           <>
-            <li className="clearfix col-6" key={index}>
+            <li className="clearfix col-7 " key={index}>
             <img  src={user.profilePicture} alt="avatar" />
             <div className="about">
-              <div className="name">{user.name}</div>
+              <div className="name ">{user.name}</div>
               <div className="status">
                 <i className="fa fa-circle online"></i> {role}
               </div>    
             </div>             
           </li>
-          <div className="col-6">
-          <button>Play</button><button>Message</button><button>block</button> profile
+          <div className="col-5">
+          <button className="PendingFriend-button"onClick={hanldeDM}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
+          <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} size="lg" /></button>
+          <button className="PendingFriend-button" ><FontAwesomeIcon icon={faEllipsisVertical} size="lg" /></button>
           </div>
           </>
         );
@@ -45,23 +53,32 @@ export default function MemberList(props: MemberListProps) {
     );
     }, [database, members]);
     const handleMemberList = useCallback((payload)=>{
-        // console.log("handleMemberList", payload)
         setMembers(payload.memberList);
-      },[])
+    },[members])
+  const handleMemberUpdate =useCallback((payload)=>{
+    console.log("handleMemberUpdate", payload)
+    setMembers(payload.memberList);
+  },[members])
     useEffect(() => {
         if (props.socket) {        
           props.socket.on("roomMembers", handleMemberList);
+          props.socket.on("memberListUpdated",handleMemberUpdate);
+          // props.socket.off("roomAdminAdded", handleAdminUpdate);
         }
         return () => {
           if (props.socket) {
             props.socket.off("roomMembers", handleMemberList);
+            props.socket.off("memberListUpdated",handleMemberUpdate);
+            // props.socket.off("roomAdminAdded", handleAdminUpdate);
           }
         };
     }, [props.socket, handleMemberList]);
     return  (
         <div className="chat-info-header clearfix">
-        <div className='chat-info-memberlist row'>Member List</div>  
+        <div className='chat-info-member-list'>Member List </div>
+        <div className="row">
             {item}
+            </div>
         </div>
     );
   };
