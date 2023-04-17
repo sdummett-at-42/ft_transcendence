@@ -1,5 +1,7 @@
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import LoginSelector from "./Pages/Login/LoginSelector";
+// import ForgotMail from "./Pages/Login/forgotMail/ForgotMail";
 import LoginFortyTwo from "./Pages/Login/FortyTwoLogin/LoginFortyTwo";
 import CreateAccount from "./Pages/Login/CreateAccount/CreateAccount";
 import FollowingAccountCreation from "./Pages/Login/CreateAccount/FollowingAccountCreation";
@@ -64,7 +66,7 @@ function App() {
 					element={<Layout children={<Game />} />}
 				/>
 				<Route
-					path="/profile/:name"
+					path="/profile"
 					element={<Layout children={<Profile userId={user.id} />} />}
 				/>
 				{/* <Route
