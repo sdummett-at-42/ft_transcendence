@@ -121,6 +121,7 @@ export class ChatService {
 		let isProtected = false;
 		if (dto.password != "")
 			isProtected = true;
+		await this.redis.setCreatedAt(dto.roomName);
 		await this.redis.setRoomName(dto.roomName);
 		await this.redis.setRoomOwner(dto.roomName, socket.data.userId);
 		await this.redis.setRoomAdmin(dto.roomName, socket.data.userId);
@@ -1679,6 +1680,7 @@ export class ChatService {
 					protected: ifprotected, 
 					public : ifpublic,
 					// timestamp: new Date().toISOString(),
+					created_at: await this.redis.getCreatedAt(roomName),
 				});
 			}
 		));

@@ -26,6 +26,20 @@ export class RedisService {
 		return this.client;
 	}
 
+	async setCreatedAt(roomName: string) {
+		console.log('Hello ?')
+		this.client.hset(`room:${roomName}:infos:created_at`, new Date().toISOString(), 1);
+	}
+
+	async getCreatedAt(roomName: string) {
+		return new Promise((resolve, reject) => {
+			this.client.hkeys(`room:${roomName}:infos:created_at`, (err, time) => {
+				console.log(`TIME == ${time}`);
+				resolve(new Date(time[0]));
+			})
+		})
+	}
+
 	async setRoomOwner(roomName: string, userId: number) {
 		await this.client.del(`room:${roomName}:infos:owner`);
 		this.client.hset(`room:${roomName}:infos:owner`, userId, 1);
