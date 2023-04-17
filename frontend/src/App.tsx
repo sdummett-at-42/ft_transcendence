@@ -6,7 +6,7 @@ import CreateAccount from "./Pages/Login/CreateAccount/CreateAccount";
 import FollowingAccountCreation from "./Pages/Login/CreateAccount/FollowingAccountCreation";
 import Home from "./Pages/Home/Home";
 import Profile from "./Pages/Profile/Profile";
-import NotFound from "./Pages/Errors/NotFound";
+import NotFound from "./Pages/Errors/NotFound/NotFound";
 import Layout from "./Pages/Navbar/Layout";
 import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
 import InitAchievements from "./Pages/Achievements/Achievements";
