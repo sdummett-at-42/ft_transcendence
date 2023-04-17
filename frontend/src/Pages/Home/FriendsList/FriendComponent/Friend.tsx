@@ -18,9 +18,7 @@ export default function Friend(props) {
 
     useEffect(() => {
         setFriend(props.props);
-        console.log(props.props);
         setActive(props.isConnected);
-        console.log(props.isConnected);
     }, [props]);
 
   return (

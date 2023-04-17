@@ -20,20 +20,21 @@ export class GameGateway {
 
   // Connection
   async handleConnection(socket: Socket) {
-    console.log('New client connected game:', socket.id);
+    // console.log('New client connected game:', socket.id);
     const res = await this.lobbyService.handleConnection(socket);
     if (res !== null && this.gameService.onMatch(res.game)) 
     {
-      console.log("resume game");
+      // console.log("resume game");
       this.gameService.resumeGame(res.game, res.id);
     }
     else
-      console.log("not resume game");
+      // console.log("not resume game");
+      ;
   }
 
   // Disconnection
   async handleDisconnect(socket: Socket) {
-    console.log(`Client disconnected game: ${socket.id}`);
+    // console.log(`Client disconnected game: ${socket.id}`);
     // return any or {game : Game, id : number}
     const res = await this.lobbyService.handleDisconnection(socket);
     if (res !== null && this.gameService.onMatch(res.game))
@@ -95,7 +96,7 @@ export class GameGateway {
 
   @SubscribeMessage(EventGame.playerClickCanvas)
   ClickCanvasMessage(client: any) : void {
-    console.log("click");
+    // console.log("click");
     // get game by gameid from client
     const gameId = Number(client.data.ingame);
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
@@ -110,7 +111,7 @@ export class GameGateway {
   // When Client connect to socket server
   @SubscribeMessage(EventGame.playerJoinGame)
   JoinGameMessage(client: any, payload: {roomId : string, msg : string}) : void {
-    console.log(`Gateway : player has join game`);
+    // console.log(`Gateway : player has join game`);
   
     // get game by gameid from client
     const gameId = Number(client.data.ingame); // string to number
@@ -127,14 +128,14 @@ export class GameGateway {
 
   @SubscribeMessage(EventGame.playerJoinQueue)
   JoinLobbyMessage(client: any) : void {
-    console.log(`Gateway : player has join queue`);
+    // console.log(`Gateway : player has join queue`);
     // function check every second if 2 player match
     this.lobbyService.lobbyJoinQueue(client);
   }
 
   @SubscribeMessage(EventGame.playerLeaveQueue)
   LeaveLobbyMessage(client: any) : void {
-    console.log(`Gateway : player has leave queue`);
+    // console.log(`Gateway : player has leave queue`);
     // function cancel Queue (delete from [] user search)
     this.lobbyService.lobbyLeaveQueue(client);
   }

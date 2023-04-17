@@ -27,7 +27,7 @@ function App() {
 				credentials: "include",
 			});
 			const userData = await response.json();
-			console.log(`userData: ${JSON.stringify(userData)}`)
+			// console.log(`userData: ${JSON.stringify(userData)}`)
 			setUser(userData);
 		}
 		fetchUser();

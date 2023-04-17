@@ -41,12 +41,12 @@ export class GameService {
     joinGame(server: Server, game : Game, client : Socket, payload : {roomId : string, msg : string}) {
         client.join(payload.roomId);
 
-        console.log(payload);
-        console.log(game.roomId);
+        // console.log(payload);
+        // console.log(game.roomId);
         
-        console.log("client  ", client.data.userId);
-        console.log("player 1", game.p1.id);
-        console.log("player 2", game.p2.id);
+        // console.log("client  ", client.data.userId);
+        // console.log("player 1", game.p1.id);
+        // console.log("player 2", game.p2.id);
 
         if (client.data.userId === game.p1.id) { // c'est le joueur 1
             game.p1.socket = client.data.socket;
@@ -82,7 +82,7 @@ export class GameService {
     }
 
     startingGame(server : Server, game : Game) : void {
-            console.log("starting game !");
+            // console.log("starting game !");
             game.startBool = true;
 
             // Bullet start side player 1
@@ -142,7 +142,7 @@ export class GameService {
         // cas deco : socket undefine
         // cas pause manuel : socket define but action emit
 
-        console.log("PauseGame");
+        // console.log("PauseGame");
         // manual and deco
         // 2 if if player game alone ?
         if (idPause === game.p1.id) {
@@ -183,7 +183,7 @@ export class GameService {
 
         // TODO
         // cas fin pause manuel
-        console.log("resume game");
+        // console.log("resume game");
 
         const actualDate : number = new Date().getTime();
         // if 2 player are ready
@@ -233,7 +233,7 @@ export class GameService {
 
     // stop all interval et clear all bullet
     stopGame(server : Server, game : Game) : void {
-        console.log("Fin de la partie !");
+        // console.log("Fin de la partie !");
 
         // Stop all interval bullet
         // game.shapes.forEach((shape, index) => {
@@ -322,7 +322,7 @@ export class GameService {
     \* *************** */
 
     private startMoving(server: Server, game : Game, bullet: Bullet) {
-        console.log("Start moving : begin");
+        // console.log("Start moving : begin");
         let delay = 1000 / bullet.f;
         //console.log("delay = ", delay, " bullet.r * Math.cos(bullet.a) = " ,bullet.r * Math.cos(bullet.a));
       
@@ -337,7 +337,7 @@ export class GameService {
                     game.shapes.forEach((shape) => {
                         if (shape instanceof Bullet) {
                             shape.f += shape.speed;
-                            console.log("bullet frequency: ", bullet.f);
+                            // console.log("bullet frequency: ", bullet.f);
                         }})
                 }, 1000);
         }
@@ -424,7 +424,7 @@ export class GameService {
 
         game.launchBulletTimer = setTimeout(() => {
                 // Player got X ms to launch bullet
-                console.log("Start moving auto");
+                // console.log("Start moving auto");
                 if (side === 1)
                     game.p1.relaunchBulletBool = false;
                 else if (side === 2)
@@ -478,7 +478,7 @@ export class GameService {
         // stop game
         this.stopGame(game.server, game);
 
-        console.log("++++++ VICTOIRE SCORE");
+        // console.log("++++++ VICTOIRE SCORE");
 
         // get who win
         let scoreP1;
@@ -513,7 +513,7 @@ export class GameService {
         // winner == 1 -> player 1 win
         // winner == 2 -> player 2 win
 
-        console.log("++++++ VICTOIRE ABANDON");
+        // console.log("++++++ VICTOIRE ABANDON");
         // get who win + calcul new elo
         if (winner === 1) // p1 win
             this.newElo(game, 1, 0);
@@ -771,8 +771,8 @@ export class GameService {
         }
         else // bullet go left
             bullet.a = angleFinal;
-        console.log("angleF:", bullet.a);
-        console.log();
+        // console.log("angleF:", bullet.a);
+        // console.log();
     }
 
     private collisionSquare(bullet : Bullet, square : Square) : void {
@@ -807,15 +807,15 @@ export class GameService {
         // appliquer collision cercle
 
 
-        console.log("a1:", bullet.a);
+        // console.log("a1:", bullet.a);
         // Change bullet.a according to...
         if (dx < dy) {
             // Collision with vertical edge
-            console.log("vertical");
+            // console.log("vertical");
             bullet.a = Math.PI - bullet.a;
         } else {
             // Collision with horozontal edge
-            console.log("horizontal");
+            // console.log("horizontal");
             
             const dytemp = Math.abs(bullet.pos.y - y1); // top
             // cas bullet.a = 0 ou 3.14
@@ -835,8 +835,8 @@ export class GameService {
                 bullet.a = -bullet.a;
             }
         }
-        console.log("a2:", bullet.a);
-        console.log();
+        // console.log("a2:", bullet.a);
+        // console.log();
 
     }
 
@@ -870,7 +870,7 @@ export class GameService {
         const pourcentRacket = 1 - ((racket.pos.y + racket.length / 2) / game.field.height );
         // Place Bullet on racket from pourcent
         temp.pos.y = (pourcentRacket * racket.length) + racket.pos.y;
-        console.log("Debug setBulletRelaunch");
+        // console.log("Debug setBulletRelaunch");
         this.collisionRacket(game, temp, racket);
     }
 }

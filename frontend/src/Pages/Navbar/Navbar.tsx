@@ -33,7 +33,7 @@ export default function Navbar() {
     };
 
 
-    return (
+    return (user && (
         <nav className="Navbar-nav">
             <div className="Navbar-nav-section" id="Navbar-left">
                 <Link to="/home"><img className="LoginSelector-invert-effect Navbar-logo" src={Logo42} alt="Logo-ecole-42" /></Link>
@@ -69,5 +69,5 @@ export default function Navbar() {
                 </div>
             </div>
         </nav>
-    );
+    ));
 }

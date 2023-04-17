@@ -144,7 +144,8 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		const sockets = await this.server.fetchSockets();
 		const connectedIds = Object.entries(sockets)
 			.map(([key, value]) => value.data.userId)
-		if (connectedIds.length > 0)
+		if (connectedIds.length > 0){
 			socket.emit('connectedFriends', { friendIds: connectedIds });
+		}
 	}
 }
