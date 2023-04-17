@@ -38,7 +38,7 @@ function App() {
 		<div className="App">
 			<Routes>
 				<Route path="/home" element={<Layout children={<Home />} />} />
-				{/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
+				<Route path="/lobby" element={<Layout children={<Lobby />} />} />
 				{user ? (
 				<Route
 					path="/profile"

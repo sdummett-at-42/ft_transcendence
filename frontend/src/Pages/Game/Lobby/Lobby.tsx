@@ -38,6 +38,7 @@ export default function Lobby() {
                             Choose a game mode:
                         </p>
                         <button onClick={() => setDispSelector(false)}>Classic</button>
+                        <button onClick={() => setDispSelector(false)}>Ranked</button>
                     </div>
                 )}
                 {!dispSelector && (
