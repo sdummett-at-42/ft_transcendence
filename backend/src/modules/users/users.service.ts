@@ -118,6 +118,21 @@ export class UsersService {
 		if (!user || user.id === 0) throw new HttpException('User not found', 404);
 		return user;
 	}
+	async findMe(id: number) {
+		const user = await this.prisma.user.findUnique({
+			where: { id },
+			select: {
+				id: true,
+				name: true,
+				profilePicture: true,
+				elo: true,
+				email: true,
+				twofactorIsEnabled: true
+			},
+		});
+		if (!user || user.id === 0) throw new HttpException('User not found', 404);
+		return user;
+	}
 
 	findOneUserByEmail(email: string) {
 		return this.prisma.user.findUnique({ where: { email } });

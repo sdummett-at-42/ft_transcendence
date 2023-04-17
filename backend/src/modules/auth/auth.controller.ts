@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Delete, Body, Req, Request, Res, Response, UseGuards, HttpCode } from "@nestjs/common";
-import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
+import { Controller, Get, Post, Delete, Body, Req, Request, Res, Response, UseGuards, HttpCode, Patch } from "@nestjs/common";
+import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import * as otplib from 'otplib';
 import * as qrcode from 'qrcode';
 import { AuthenticatedGuard } from "./utils/authenticated.guard";
@@ -107,6 +107,14 @@ export class AuthController {
 		});
 	}
 
+	@Patch('2fa/disable')
+	@HttpCode(201)
+	@ApiCreatedResponse({ description: '2FA Disabled' })
+	@UseGuards(AuthenticatedGuard)
+	async disableTwoFa(@Req() req) {
+		await this.auth.update2faIsEnabled(req.user.id, false);
+	}
+
 	// Generate a secret for activating 2fa
 	// Need to verify /auth/2fa/verify to enable 2fa
 	@Get('2fa/generate')
@@ -196,11 +204,6 @@ export class AuthController {
 			path: "/",
 		});
 		res.setHeader('Set-Cookie', cookie);
-		res.send({
-			message: "Partially logged, 2FA enabled.",
-			twofactorEnabled: true,
-			twofactorValidated: false,
-		});
-		res.status(302).redirect("http://localhost:5173/home")
+		res.status(302).redirect("http://localhost:5173/login/2fa")
 	}
 }

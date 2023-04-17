@@ -66,7 +66,7 @@ export class TwoFactorStrategy extends PassportStrategy(Strategy, '2fa') {
 		// Invalid OTP
 		if (!check) {
 			console.log('OTP check failed, Invalid OTP')
-			throw new UnauthorizedException({
+			throw new BadRequestException({
 				message: "OTP check failed, Invalid OTP",
 				twofactorEnabled: true,
 				twofactorValidated: false,

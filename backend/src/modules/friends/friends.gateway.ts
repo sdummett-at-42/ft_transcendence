@@ -44,7 +44,7 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null) {
+		if (session === null || !JSON.parse(session).passport) {
 			console.debug("User isn't logged in");
 			socket.emit('notConnected', { // Event to report here
 				timestamp: new Date().toISOString(),

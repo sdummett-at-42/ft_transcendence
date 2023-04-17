@@ -39,7 +39,7 @@ export class UsersController {
 	@HttpCode(200)
 	@ApiOkResponse({ type: UserMeEntity, description: 'Returns the current user' })
 	findMe(@Request() req) {
-		return this.users.findOneUserByIdWithEmail(req.user.id);
+		return this.users.findMe(req.user.id);
 	}
 
 	@Get('me/matchs')

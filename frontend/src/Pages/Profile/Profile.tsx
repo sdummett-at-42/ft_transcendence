@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import "./Profile.css"
 
 export default function Profile({ userId }) {
 	const [user, setUser] = useState(null);
@@ -85,7 +86,7 @@ function MatchList({ user, match }) {
 	}, [matchWon, matchLost]);
 
 	return (
-		<div>
+		<div className="profile-container">
 			<h2>{name}</h2>
 			<img
 				src={profilePicture}
@@ -98,7 +99,7 @@ function MatchList({ user, match }) {
 			</p>
 
 			<h3>Matches</h3>
-			<table>
+			<table className="match-table">
 				<thead>
 					<tr>
 						<th>Winner</th>

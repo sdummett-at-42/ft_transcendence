@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Card } from "react-bootstrap";
 import "./Achievements.css";
 
 export default function InitAchievements() {
@@ -62,7 +61,7 @@ export default function InitAchievements() {
 function Achievements({ achievements }) {
 	return (
 		<div className="achievements">
-			{achievements.map((achievement) => (
+			{/* {achievements.map((achievement) => (
 				<Card
 					key={achievement.id}
 					className={`achievement-card ${
@@ -84,7 +83,7 @@ function Achievements({ achievements }) {
 						</Card.Text>
 					</Card.Body>
 				</Card>
-			))}
+			))} */}
 		</div>
 	);
 }
