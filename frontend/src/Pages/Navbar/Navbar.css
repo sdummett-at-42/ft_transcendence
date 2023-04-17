@@ -56,3 +56,13 @@
 #Navbar-option {
     margin-left: 3rem;
 }
+
+#Navbar-profile-button {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+}
+
+#Navbar-profile-button:hover {
+    scale: 1.5;
+}

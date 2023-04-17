@@ -38,7 +38,7 @@ export class AuthController {
 	@ApiNoContentResponse({ description: 'User has been logged out.'})
 	@UseGuards(AuthenticatedGuard)
 	async logout(@Request() req, @Response() res) {
-		this.auth.disconnectUserSockets(req.user.id);
+		// this.auth.disconnectUserSockets(req.user.id);
 		req.logout(() => {
 			const user = req.user;
 			res.send(user);

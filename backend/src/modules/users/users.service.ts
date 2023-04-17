@@ -82,6 +82,8 @@ export class UsersService {
 				name: true,
 				profilePicture: true,
 				elo: true,
+				matchLost: true,
+				matchWon: true,
 			},
 		});
 	}
@@ -170,7 +172,7 @@ export class UsersService {
 	}
 
 	async removeUser(id: number) {
-		await this.images.removeImage(id);
+		// await this.images.removeImage(id);
 		return this.prisma.user.delete({
 			where: { id },
 			select: {
@@ -191,5 +193,25 @@ export class UsersService {
 			user = await this.prisma.user.findUnique({ where: { name } });
 		}
 		return name;
+	}
+
+	async getAchievements(id: number) {
+		return await this.prisma.user.findUnique({
+			where: { id },
+			select: { achievements: true},
+		})
+	}
+
+	async findUserMatchs(id: number) {
+		return await this.prisma.user.findUnique({
+			where: {
+				id,
+			},
+			select: {
+				id: true,
+				matchLost: true,
+				matchWon: true,
+			},
+		});
 	}
 }
