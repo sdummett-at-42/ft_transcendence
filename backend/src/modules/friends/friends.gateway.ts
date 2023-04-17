@@ -138,4 +138,13 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		if (receiverSocketsIds.length > 0)
 			this.server.to(receiverSocketsIds).emit('friendRequestCanceled', {id: requesterId});
 	}
+
+	@SubscribeMessage('getConnectedFriends')
+	async onGetConnectedFriend(@ConnectedSocket() socket) {
+		const sockets = await this.server.fetchSockets();
+		const connectedIds = Object.entries(sockets)
+			.map(([key, value]) => value.data.userId)
+		if (connectedIds.length > 0)
+			socket.emit('connectedFriends', { friendIds: connectedIds });
+	}
 }
