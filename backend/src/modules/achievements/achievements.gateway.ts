@@ -30,7 +30,6 @@ export class AchievementsGateway implements OnGatewayInit, OnGatewayConnection, 
 	}
 
 	async handleConnection(@ConnectedSocket() socket) {
-		console.log(`handleConnection AchievementsGateway`);
 		if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
 			socket.emit('notConnected', {
@@ -54,9 +53,20 @@ export class AchievementsGateway implements OnGatewayInit, OnGatewayConnection, 
 
 		const userId = JSON.parse(session).passport.user.id;
 		socket.data.userId = userId;
-		console.log(`Achievement socket connected for user ${userId}`);
+		// setTimeout(function () {
+		// 	console.log("Emitting new achievement!");
+		// 	this.notifyUser(userId, 'Achievement 1');
+		// }.bind(this), 3000);
 	}
 
+	async notifyUser(userId: number, achievementName: string) {
+		const sockets = await this.server.fetchSockets();
+		sockets.forEach(socket => {
+			if (socket.data.userId == userId) {
+				socket.emit('newAchievement', { achievementName });
+			}
+		});
+	}
 
 	async handleDisconnect(@ConnectedSocket() socket) { }
 }
