@@ -11,6 +11,7 @@ import { ImagesModule } from './modules/images/images.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { UsersModule } from './modules/users/users.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { GameModule } from './modules/game/game.module';
 import { AchievementModule } from './modules/achievements/achievements.module';
 
 @Module({
@@ -51,6 +52,7 @@ import { AchievementModule } from './modules/achievements/achievements.module';
 				limit: configService.get('THROTTLER_LIMIT'),
 			}),
 		}),
+		GameModule,
 	],
 	providers: [AppService],
 })

@@ -1,3 +1,4 @@
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import LoginSelector from "./Pages/Login/LoginSelector";
 import CreateAccount from "./Pages/Login/CreateAccount/CreateAccount";
@@ -7,9 +8,13 @@ import Profile from "./Pages/Profile/Profile";
 import NotFound from "./Pages/Errors/NotFound/NotFound";
 import Layout from "./Pages/Navbar/Layout";
 import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
+import Lobby from "./Pages/Game/Lobby/Lobby";
+import Game from "./Pages/Game/Pong/Game";
 import InitAchievements from "./Pages/Achievements/Achievements";
 import InitStats from "./Pages/Stats/Stats";
 import Settings from "./Pages/Settings/Settings";
+import ChatLogin from "./Pages/Chat/ChatLogin";
+import { useEffect, useState } from "react";
 import TwoFactor from "./Pages/Login/TwoFactor/TwoFactor";
 import { UserContext } from "./context/UserContext";
 import { useContext } from "react";
@@ -22,6 +27,7 @@ function App() {
 		<div className="App">
 			<Routes>
 				<Route path="/home" element={<Layout children={<Home />} />} />
+				<Route path="/lobby" element={<Layout children={<Lobby />} />} />
 				{user ? (
 					<Route
 						path="/profile"
@@ -32,7 +38,10 @@ function App() {
 					path="/settings"
 					element={<Layout children={<Settings />} />}
 				/>
-				<Route path="/unauthorized" element={<Unauthorized />} />
+				<Route
+					path="/unauthorized"
+					element={<Unauthorized />}
+				/>
 				<Route
 					path="/achievements"
 					element={<Layout children={<InitAchievements />} />}

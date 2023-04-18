@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     border-top: 1px solid rgb(255, 255, 255, 0.1);
+    border-left: 1px solid rgb(255, 255, 255, 0.1);
     flex-grow: 1;
     color: #eee;
 }
@@ -29,13 +30,6 @@
     flex-direction: column;
     overflow-y: auto;
     height: 85vmin;
-}
-
-.FriendsList-user {
-    display: flex;
-    text-align: center;
-    justify-content: center;
-    color: whitesmoke;
 }
 
 .FriendsList-messages {

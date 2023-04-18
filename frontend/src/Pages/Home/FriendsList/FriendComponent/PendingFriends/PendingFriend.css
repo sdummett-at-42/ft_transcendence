@@ -1,0 +1,23 @@
+.PendingFriend-button {
+    background-color: transparent;
+    border: none;
+    color: #fff;   
+}
+
+.PendingFriend-Validate:hover > #PendingFriend-Validate-icon {
+    scale: 1.2;
+    color: #00ff00;
+}
+
+.PendingFriend-Declined:hover > #PendingFriend-Declined-icon {
+    scale: 1.2;
+    color: #ff0000;
+}
+
+.Friend-circle-status.Pending-friend-waiting {
+    background-color: #faa61a;
+}
+
+.Friend-message.Pending-friend-waiting {
+    color: #faa61a;
+  }

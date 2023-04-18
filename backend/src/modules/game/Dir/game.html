@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Canvas de jeu</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<!-- <style>
+		canvas {
+			background-color: gray;
+			border: 5px solid black;
+		}
+	</style> -->
+</head>
+<body>
+    <div id="divTimer"> Timer </div>
+    <button id="startBtn" onclick="startGame()">Start Game</button>
+    <div id="p1">Player 1 = 0</div>
+    <div id="p2">Player 2 = 0</div>
+    <br>
+	<canvas id="mapGame" width="800" height="400"> Désolé, votre navigateur ne prend pas en charge &lt;canvas&gt;. </canvas>
+
+    <div id="Windiv"></div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <script>
+        // faire que le client se connecte sur /game/:idgame
+        const id = window.location.pathname.split('/')[2];
+        const socket = io(`/game`);
+        // const socket = io(`ws://localhost:3001/game`);
+        const room = "game" + id;
+
+        console.log(socket);
+		socket.on("connect", function () {
+			console.log("Connected to the server");
+            const msg = "User have join the game Y has player X.";
+            //socket.join(room);
+            //socket.to(room).emit("joinGame", msg);
+            socket.emit("joinGame", {roomId : room, message : msg});
+		});
+
+
+        const mapjeu = document.getElementById('mapGame');
+        const ctx = mapjeu.getContext("2d");
+        mapjeu.addEventListener("mousemove", updateGame); // catch on mouse's mouvement
+        mapjeu.addEventListener("mousedown", clickGame); // catach on click
+
+        // Mouvement souris player in canvas
+        function updateGame(event) {
+            const rect = mapjeu.getBoundingClientRect(); // obtenir la position de l'élément Canvas
+            const x = event.clientX - rect.left; // position X de la souris sur l'élément
+            const y = event.clientY - rect.top; // position Y de la souris sur l'élément
+            console.log("Position de la souris : " + x + ", " + y);
+
+            const data = {x: x, y: y};
+            socket.emit("Mouvement", {roomId : room, data : data});
+        }
+
+        // Mouvement souris player in canvas
+        function clickGame(event) {
+            console.log("click canvas");
+            socket.emit("clickCanvas", room);
+        }
+
+        function startGame() {
+
+			const msg = "Start game from client";
+            // Changer le texte du bouton\
+            const startBtn = document.getElementById("startBtn");
+            if (startBtn.innerHTML === "Start Game")
+            {
+                socket.emit("start", {roomId : room, msg : msg}); 
+                startBtn.innerHTML = "End Game";
+            }
+            else if (startBtn.innerHTML === "End Game")
+            {
+                socket.emit("end", {roomId : room, msg : msg});
+                startBtn.innerHTML = "Start Game";
+            }
+		}
+
+        socket.on('image', function(data) {
+            console.log("image");
+            ctx.clearRect(0, 0, mapjeu.width, mapjeu.height);
+            //ctx.beginPath();
+
+            console.log(`size = ${data.length}`);
+            console.log(data);
+            for (let i = 0; i < data.length; i++)
+            {
+                ctx.beginPath();
+                //console.log(`type is ${data[0].type}`);
+                if (data[i].type === "Bullet")
+                {
+                    console.log("this is bullet");
+                    // pos : Coordonnee;   // Coordonnee
+                    // r : number;         // size of radius
+                    // v : number;         // speed
+                    // a : number;         // direction
+                    ctx.fillStyle = "red"; // a remplacer par couleur objet
+                    ctx.arc(data[i].pos.x, data[i].pos.y, data[i].r, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+                else if (data[i].type === "Circle")
+                {
+                    console.log("this is Circle");
+                    ctx.strokeStyle = "blue";
+                    ctx.arc(data[i].pos.x, data[i].pos.y, data[i].r, 0, 2 * Math.PI);
+                    //ctx.fill();
+                    ctx.stroke();
+                }
+                else if (data[i].type === "BlackHole")
+                {
+                    console.log("this is BlackHole");
+                    ctx.strokeStyle = "Black";
+                    ctx.arc(data[i].pos.x, data[i].pos.y, data[i].r, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+                else if (data[i].type === "Square")
+                {
+                    console.log("this is saqure");
+                    ctx.fillStyle = "green";
+                    ctx.fillRect(data[i].pos.x, data[i].pos.y, data[i].width, data[i].length);
+                    ctx.fill();
+                }
+            }
+
+            console.log(data);
+        });
+
+        socket.on('score', function(data) {
+            var divp1 = document.getElementById("p1");
+            var divp2 = document.getElementById("p2");
+            
+            const msg = `${data.name} : ${data.score}`;
+            if (data.side === 1)
+                divp1.innerHTML = msg;
+            else
+                divp2.innerHTML = msg;
+        })
+
+        socket.on('VictoryScore', function(data) {
+            var div = document.getElementById("Windiv");
+            
+            console.log("victoryscore");
+            if (data.p1.score > data.p2.score)
+                div.innerHTML = "Player 1 a explose Player2. Sale noon"
+            else
+                div.innerHTML = "Player 2 a explose Player1. Sale noob";
+        })
+
+        socket.on('gameTimer', function(data) {
+            var div = document.getElementById("divTimer");
+
+            div.innerHTML = `Time : ${data}`;
+        })
+    </script>
+</body>
+</html>

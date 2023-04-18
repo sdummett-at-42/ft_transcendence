@@ -1,15 +1,17 @@
 import { useState } from "react";
 import "./TwoFactor.css";
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect} from "react";
+import { useContext, useEffect } from "react";
 import { UserContext } from "../../../context/UserContext";
 import Loading from "../../Loading/Loading";
+import "./TwoFactor.css";
 
 export default function TwoFactor() {
 	const { user, isLoading } = useContext(UserContext);
 	const navigate = useNavigate();
 	const [otp, setOtp] = useState("");
 	const [error, setError] = useState("");
+	const [isShaking, setIsShaking] = useState(false);
 
 	const handleSubmit = (event) => {
 		event.preventDefault();
@@ -21,11 +23,15 @@ export default function TwoFactor() {
 		})
 			.then((response) => {
 				if (response.ok) {
-					window.location.href = "http://localhost:5173/home";
+					navigate("/home");
 				} else if (response.status === 401) {
-					window.location.href = "http://localhost:5173/";
+					navigate("/");
 				} else if (response.status === 400) {
 					setError("Invalid OTP code");
+					setIsShaking(true);
+					setTimeout(() => {
+						setIsShaking(false);
+					}, 1000);
 				}
 			})
 			.catch((error) => {
@@ -43,16 +49,22 @@ export default function TwoFactor() {
 	} else
 		return (
 			<div className="auth-container">
-				<h2>Two Factor Authentication</h2>
-				<form onSubmit={handleSubmit}>
-					<label htmlFor="otp-input">Enter OTP Code:</label>
+				<h2 className="auth-h2">Two Factor Authentication</h2>
+				<form className="auth-form" onSubmit={handleSubmit}>
+					<label htmlFor="otp-input" className="auth-label">
+						Enter OTP Code:
+					</label>
 					<input
+						autoComplete="off"
 						type="text"
 						id="otp-input"
+						className={`auth-input ${isShaking ? "shake" : ""}`}
 						value={otp}
 						onChange={(event) => setOtp(event.target.value)}
 					/>
-					<button type="submit">Login</button>
+					<button type="submit" className="auth-button">
+						Login
+					</button>
 				</form>
 				{error && <p className="error-message">{error}</p>}
 			</div>

@@ -107,7 +107,7 @@ export class FriendRequestService {
 		return this.friends.addFriend(id, friendId);
 	}
 
-	async declineFriendRequest(id: number, friendId: number) {
+	async removeFriendRequest(id: number, friendId: number) {
 		const friendRequest = await this.prisma.friendRequest.findUnique({
 			where: {
 				senderId_receiverId: {
