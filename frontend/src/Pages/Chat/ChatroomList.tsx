@@ -8,6 +8,7 @@ import RoomJoin from './RoomJoin';
 import "./chat.scss"
 import InvitedConfirm from './InvitedConfirm';
 import { DatabaseContext } from './ChatLogin';
+import group from "../../assets/group.png"
 
 interface ChatroomListProps {
   socket: Socket,
@@ -54,7 +55,7 @@ export default function ChatroomList(props: ChatroomListProps) {
         const filteredObjects = database.filter(obj => payload.dms.includes(obj.id));
         // console.log("database:", database);
         // console.log("include", filteredObjects);
-        const newDms = filteredObjects.map(obj => ({id: obj.id, name: obj.name}));
+        const newDms = filteredObjects.map(obj => ({id: obj.id, name: obj.name, prof: obj.profilePicture}));
         setdms(newDms);
       }
     }, [dms, database]);
@@ -133,7 +134,7 @@ export default function ChatroomList(props: ChatroomListProps) {
 
   // Render
   return (
-    <div className="people-list col-lg-3" id="people-list">
+    <div className="people-list col-lg-3">
             <div className="row">
             <div className="search col-lg-6">
             {/* <button onClick={showdata}>Show data</button> */}
@@ -149,9 +150,10 @@ export default function ChatroomList(props: ChatroomListProps) {
             onClose={() => setShowJoinRoom(false)} 
             socket={props.socket}/>
             </div>
-                <ul className="list col-lg-12">
+                <ul className="list-1 col-lg-12">
                   {chatrooms.map(room => (
                   <li className={`clearfix ${selectedRoom === room.roomName && !props.ifDM ? "active" : ""}`}  key={room.roomName} onClick={() => handleChatroomClick(room.roomName, 0 , false)}>       
+                    <img src={group} />
                     <div className="about"> <div className="name" >{room.roomName} </div>
                     <div className="status">
                       <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Private"} {room.protected?  <FontAwesomeIcon icon={faLock} /> :null}
@@ -160,9 +162,10 @@ export default function ChatroomList(props: ChatroomListProps) {
                   </li>
                   ))}
                 </ul>
-                <ul className="list col-lg-12">
+                <ul className="list-2 col-lg-12">
                   {dms.map(room => (
                   <li className={`clearfix ${(selectedRoom === room.name) || (props.toDMID.name === room.name && props.ifDM) ? "active" : ""}`}   key={room.id} onClick={() => handleChatroomClick(room.name, room.id, true)}>       
+                    <img src={room.prof} />
                     <div className="about"> <div className="name" >{room.name} </div>
                     <div className="status">
                       <i className="fa fa-circle online"></i> 
