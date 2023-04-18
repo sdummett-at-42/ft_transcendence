@@ -1,7 +1,6 @@
 import React, { FC } from 'react';
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faBan, faPlus, faVolumeXmark, faPersonRunning} from '@fortawesome/free-solid-svg-icons';
-import { faMessageSlash} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Setting from './Setting';
 import { useState, useEffect , useCallback} from 'react';
@@ -10,10 +9,11 @@ import { createContext, useContext } from "react";
 import { DatabaseContext } from './ChatLogin';
 import InvitedConfirm from './InvitedConfirm';
 import MemberList from './MemberList';
+import "./chat.scss"
 
 interface RoomDetailProps {
   socket: Socket,
-  onListClick : (list: string) => void,
+  onListClick : (list: string,id:number, ifDM:boolean) => void,
   roomName : string,
   onUpdate:() =>void,
   UserId: Number,
@@ -156,7 +156,7 @@ useEffect(() => {
 
  return (
   props.roomName ? (
-  <div className="chatinfo">
+  <div className="chatinfo col-lg-3">
       <div className="chat-info-header clearfix">
       <div className='chat-info-title'>Room Info
         {ifAdmin? (

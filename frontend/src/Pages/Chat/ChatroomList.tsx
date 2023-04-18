@@ -5,10 +5,12 @@ import { io, Socket } from "socket.io-client";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock} from '@fortawesome/free-solid-svg-icons';
 import RoomJoin from './RoomJoin';
+import "./chat.scss"
+import InvitedConfirm from './InvitedConfirm';
 
 interface ChatroomListProps {
   socket: Socket,
-  onListClick : (list: string) => void,
+  onListClick : (list: string,id:number, ifDM: boolean) => void,
   onUpdate:() =>void,
 }
 export default function ChatroomList(props: ChatroomListProps) {
@@ -41,6 +43,10 @@ export default function ChatroomList(props: ChatroomListProps) {
     }, [chatrooms]);
     const handleDMRoomsListReceived = useCallback((payload) => {
       console.log(`ROOMDM: ${JSON.stringify(payload)}`);
+      setdms(payload.dms);
+    }, [dms]);
+    const handlDMlistupdated = useCallback((payload) => {
+      console.log(`ROOMdmUPADTE: ${JSON.stringify(payload)}`);
       // setdms(payload.dms);
       // console.log("chat rooms2:", chatrooms);
     }, [dms]);
@@ -68,12 +74,17 @@ export default function ChatroomList(props: ChatroomListProps) {
     }, [chatrooms]);
 
     // Render handlers
-    const handleChatroomClick = (chatroomId)=> {
-      console.log("handleChatroomClick", chatroomId);
-      props.onListClick(chatroomId);
-      props.socket.emit("getRoomMembers", { roomName:
-        chatroomId});
-      setSelectedRoom(chatroomId);
+    const handleChatroomClick = (roomName, userID,  ifDM)=> {
+      console.log("handleChatroomClick", roomName, userID, ifDM);
+      if (ifDM ==  false){
+        props.onListClick(roomName, 0, false);
+        props.socket.emit("getRoomMembers", { roomName:roomName});
+        setSelectedRoom(roomName);
+      } else{
+        props.onListClick("", userID, true)
+        props.socket.emit("getDmHist", {userId: userID});
+        selectedRoom(userID.toString());
+      }
     }
 
     // Init
@@ -91,7 +102,8 @@ export default function ChatroomList(props: ChatroomListProps) {
         props.socket.on("roomCreated", handleRoomCreated);
         props.socket.on("roomJoined", handleRoomJoined);
         props.socket.on("roomUpdated", handleRoomsUpdate);
-        props.socket.on("roomLeft", handleRoomDeleted );
+        props.socket.on("roomLeft", handleRoomDeleted);
+        props.socket.on("DMReceived", handlDMlistupdated);
         // console.log("received");
         // console.log(props.socket.listeners("roomsListReceived"));
       return () => {
@@ -103,30 +115,31 @@ export default function ChatroomList(props: ChatroomListProps) {
           props.socket.off("roomJoined", handleRoomJoined);
           props.socket.off("roomLeft", handleRoomDeleted);
           props.socket.on("roomUpdated", handleRoomsUpdate);
+          props.socket.on("DMReceived", handlDMlistupdated);
       }}
     }, [props.socket, handleRoomJoined, selectedRoom]);
 
   // Render
   return (
-    <div className="people-list" id="people-list">
+    <div className="people-list col-lg-3" id="people-list">
             <div className="row">
-            <div className="search col">
+            <div className="search col-lg-6">
             {/* <button onClick={showdata}>Show data</button> */}
             <button  onClick={() => {setShowAddRoom(true);}} >New Room</button>
           <RoomCreate   isVisible={showAddRoom}
             onClose={() => setShowAddRoom(false)} 
             socket={props.socket}/>
             </div>
-            <div className="search col">
+            <div className="search col-lg-6">
             <button onClick={() => {setShowJoinRoom(true);}}>Join Room</button>
           <RoomJoin isVisible={showJoinRoom}
             footer={<button>Cancel</button>}
             onClose={() => setShowJoinRoom(false)} 
             socket={props.socket}/>
             </div>
-                <ul className="list">
+                <ul className="list col-lg-12">
                   {chatrooms.map(room => (
-                  <li className={`clearfix ${selectedRoom === room.roomName ? "active" : ""}`}  key={room.roomName} onClick={() => handleChatroomClick(room.roomName)}>       
+                  <li className={`clearfix ${selectedRoom === room.roomName ? "active" : ""}`}  key={room.roomName} onClick={() => handleChatroomClick(room.roomName, 0 , false)}>       
                     <div className="about"> <div className="name" >{room.roomName} </div>
                     <div className="status">
                       <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Private"} {room.protected?  <FontAwesomeIcon icon={faLock} /> :null}
@@ -137,8 +150,8 @@ export default function ChatroomList(props: ChatroomListProps) {
                 </ul>
                 <ul className="list">
                   {dms.map(room => (
-                  <li className="clearfix" key={room.roomName} onClick={() => handleChatroomClick(room.roomName)}>       
-                    <div className="about"> <div className="name" >{room.roomName} </div>
+                  <li className={`clearfix ${selectedRoom === room.toString() ? "active" : ""}`} key={room} onClick={() => handleChatroomClick("", room, true)}>       
+                    <div className="about"> <div className="name" >{room} </div>
                     <div className="status">
                       <i className="fa fa-circle online"></i> 
                     </div>

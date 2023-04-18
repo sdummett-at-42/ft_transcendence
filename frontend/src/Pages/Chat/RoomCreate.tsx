@@ -69,7 +69,7 @@ export default function RoomCreate(props: RoomCreatProps) {
                 <input type="text" className="form-control" name="roomName" placeholder="Name" required value={formData.name} onChange={handleInputChange} />
             </div>
             <div className="form-group col-md-4">
-                <label htmlFor="inputAccess">Accessibility</label>
+                <label htmlFor="inputAccess">Accessibility:</label>
                 <select name="visibility" className="form-control" required  value={formData.visibility} onChange={handleInputChange}>
                 <option value="public" >Public</option>
                 <option value="private">Private</option>

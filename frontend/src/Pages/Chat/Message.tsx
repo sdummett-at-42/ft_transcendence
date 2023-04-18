@@ -2,13 +2,14 @@ import React, { FC } from 'react';
 import {Socket } from "socket.io-client";
 import { useState, useEffect, useCallback } from 'react';
 import { createContext, useContext } from "react";
-import "./chat.css"
 import "./chat.scss"
 import { DatabaseContext } from './ChatLogin';
 
 interface MessageProps {
   socket: Socket,
   roomName: string,
+  ifDM: boolean,
+  toDMID :number,
   onQuit: () => void,
   UserId:Number,
   onUpdate:() =>void,
@@ -16,36 +17,38 @@ interface MessageProps {
 
 export default function Message(props:MessageProps) {
   const [messageList, setMessageList] = useState([]);
-  const [showInput, setShowInput] = useState(false);
-  const [inputValue, setInputValue] = useState("");
   const [message, setMessage]= useState("");
   const [ifShowMessage, setIfShowMessage] = useState(false);
   const [item, setItem] = useState([]);
   const database = useContext(DatabaseContext);
   const [userId, setUserId] = useState("");
+  const [dmList, setDmList] = useState([])
 
   const handleQuit = () => {
     props.onQuit();
     setMessageList([]);
   };
 
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
-  };
   const handleMessageChange = (event) => {
     setMessage(event.target.value);
   };
 
-  const handleJoinSubmit = (event) => {
-    event.preventDefault();
-    setShowInput(false);
-  };
   const handleSendMessage = (event) =>{
-    const payload = {
-      roomName: props.roomName,
-      message: message,
+    if (props.ifDM == false){
+      console.log("props.ifDM == false")
+      const payload = {
+        roomName: props.roomName,
+        message: message,
+      }
+      props.socket.emit("sendRoomMsg",payload);
+    } else {
+      console.log("props.ifDM == true")
+      const payload = {
+        userId: props.toDMID,
+        message: message,
+      }
+      props.socket.emit("sendDM",payload);
     }
-    props.socket.emit("sendRoomMsg",payload);
     setMessage("");
   };
   const handleMessageAuto= useCallback((payload)=>{
@@ -122,6 +125,12 @@ export default function Message(props:MessageProps) {
     }})
     );
   },[props.roomName, messageList, database] )
+
+  const handleDMReceived = useCallback((payload) => {
+
+    console.log("roomDMReceived :", payload );
+
+  }, [dmList, props.roomName, props.ifDM])
   
   const handleMessagesReceived = useCallback((payload) => {
 
@@ -129,11 +138,12 @@ export default function Message(props:MessageProps) {
     setMessageList(payload.msgHist);
     // console.log("handleRoomsListReceived", payload);
     // console.log("chat rooms:", chatrooms);
-  }, [messageList, props.roomName])
+  }, [messageList, props.roomName, props.ifDM])
   
   useEffect(() => {
     if (props.socket) {
       props.socket.on("roomMsgHistReceived", handleMessagesReceived);
+      props.socket.on("dmHist", handleDMReceived);
       props.socket.on("roomMsgReceived", handleMessages);
       props.socket.on("userInvited", handleMessageAuto);
       props.socket.on("roomMsgNotSended", (payload)=>{
@@ -143,6 +153,7 @@ export default function Message(props:MessageProps) {
     return () => {
       if (props.socket) {
         props.socket.off("roomMsgHistReceived",handleMessagesReceived);
+        props.socket.on("dmHist", handleDMReceived);
         props.socket.off("roomMsgReceived", handleMessages);
         props.socket.off("userInvited", handleMessageAuto);
         props.socket.off("roomMsgNotSended");
@@ -152,9 +163,9 @@ export default function Message(props:MessageProps) {
 
   return (
     props.roomName ? (
-<div className="chat">
+<div className="chat col-lg-6 ">
 <div className="chat-header clearfix">
-  <div className="chat-about container">
+  <div className="chat-about">
     <div className="row">
       <div className="chat-with col-6">Chatroom : {props.roomName}</div>
     </div>
@@ -172,6 +183,6 @@ export default function Message(props:MessageProps) {
     <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="2" value={message} onChange={handleMessageChange}></textarea>      
     <button onClick={handleSendMessage} >Send</button>
   </div>
-</div>):<div className="chat"> <h4>Choose a room to view messages</h4></div> 
+</div>):<div className="chat col-lg-6"> <h4>Choose a room to view messages</h4></div> 
   );
 }

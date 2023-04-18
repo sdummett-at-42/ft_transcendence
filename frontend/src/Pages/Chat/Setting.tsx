@@ -3,6 +3,7 @@ import { useRef, useEffect, useContext } from "react";
 import { useState } from 'react';
 import { Socket } from "socket.io-client";
 import { DatabaseContext } from './ChatLogin';
+import "./chat.scss"
 
 import "./chat.scss"
 interface SettingProps {
@@ -78,17 +79,15 @@ export default function Setting(props: SettingProps) {
           </div>
           <div className="modal-body">
             <div className="modal-content">
-              <div className="row">
-                <div className ="col-8">
-                <label htmlFor="inputAccess">Accessibility</label>
+                <div className="form-group col-md-12">
+                <label htmlFor="inputAccess">Accessibility:</label>
                 <select name="visibility" className="form-control" value={access} onChange={(e) => setAccess(e.target.value)}>
                 <option value="public" >Public</option>
                 <option value="private">Private</option>
                 </select>
-                </div>
-            <div className="col-8">
-                <label htmlFor="inputPassword">Password </label>
-                <label htmlFor="inputPassword">(To remove the password, leave the field empty.)</label>
+            </div>
+            <div className="form-group col-md-12">
+                <label htmlFor="inputPassword">Password (To remove the password, leave the field empty.)</label>
                 <input type="text" className="form-control" name="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <div className="d-flex justify-content-end" onClick={handleAccessChange}><button>Change</button></div>
@@ -99,7 +98,6 @@ export default function Setting(props: SettingProps) {
               <div className=" d-flex justify-content-end" onClick={handleAddAdmin}> <button>Add</button></div>
             <div className="modal-form">
             <button onClick={props.onClose}>Close</button>
-              </div>
               </div>
           </div>
           </div>
