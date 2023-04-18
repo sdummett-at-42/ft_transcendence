@@ -1,7 +1,13 @@
 import { useState } from "react";
-import './TwoFactor.css';
+import "./TwoFactor.css";
+import { useNavigate } from "react-router-dom";
+import { useContext, useEffect} from "react";
+import { UserContext } from "../../../context/UserContext";
+import Loading from "../../Loading/Loading";
 
 export default function TwoFactor() {
+	const { user, isLoading } = useContext(UserContext);
+	const navigate = useNavigate();
 	const [otp, setOtp] = useState("");
 	const [error, setError] = useState("");
 
@@ -28,20 +34,27 @@ export default function TwoFactor() {
 			});
 	};
 
-	return (
-		<div className="auth-container">
-			<h2>Two Factor Authentication</h2>
-			<form onSubmit={handleSubmit}>
-				<label htmlFor="otp-input">Enter OTP Code:</label>
-				<input
-					type="text"
-					id="otp-input"
-					value={otp}
-					onChange={(event) => setOtp(event.target.value)}
-				/>
-				<button type="submit">Login</button>
-			</form>
-			{error && <p className="error-message">{error}</p>}
-		</div>
-	);
+	useEffect(() => {
+		if (!isLoading && user) navigate("/home");
+	}, [user, navigate, isLoading]);
+
+	if (isLoading || user) {
+		return <Loading />;
+	} else
+		return (
+			<div className="auth-container">
+				<h2>Two Factor Authentication</h2>
+				<form onSubmit={handleSubmit}>
+					<label htmlFor="otp-input">Enter OTP Code:</label>
+					<input
+						type="text"
+						id="otp-input"
+						value={otp}
+						onChange={(event) => setOtp(event.target.value)}
+					/>
+					<button type="submit">Login</button>
+				</form>
+				{error && <p className="error-message">{error}</p>}
+			</div>
+		);
 }

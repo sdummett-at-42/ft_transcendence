@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import LoginSelector from "./Pages/Login/LoginSelector";
-// import ForgotMail from "./Pages/Login/forgotMail/ForgotMail";
 import CreateAccount from "./Pages/Login/CreateAccount/CreateAccount";
 import FollowingAccountCreation from "./Pages/Login/CreateAccount/FollowingAccountCreation";
 import Home from "./Pages/Home/Home";
@@ -11,34 +10,23 @@ import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
 import InitAchievements from "./Pages/Achievements/Achievements";
 import InitStats from "./Pages/Stats/Stats";
 import Settings from "./Pages/Settings/Settings";
-import { useEffect, useState } from "react";
 import TwoFactor from "./Pages/Login/TwoFactor/TwoFactor";
+import { UserContext } from "./context/UserContext";
+import { useContext } from "react";
+import Loading from "./Pages/Loading/Loading";
 
 function App() {
-	const [user, setUser] = useState(null);
-
-	useEffect(() => {
-		async function fetchUser() {
-			const response = await fetch("http://localhost:3001/users/me", {
-				method: "GET",
-				credentials: "include",
-			});
-			const userData = await response.json();
-			setUser(userData);
-		}
-		fetchUser();
-	}, []);
+	const { user } = useContext(UserContext);
 
 	return (
 		<div className="App">
 			<Routes>
 				<Route path="/home" element={<Layout children={<Home />} />} />
-				{/* <Route path="/chat" element={<Layout children={<Chat />} />} /> */}
 				{user ? (
-				<Route
-					path="/profile"
-					element={<Layout children={<Profile userId={user.id} />} />}
-				/>
+					<Route
+						path="/profile"
+						element={<Layout children={<Profile userId={user.id} />} />}
+					/>
 				) : null}
 				<Route
 					path="/settings"
@@ -59,9 +47,9 @@ function App() {
 					path="/register/finalization"
 					element={<FollowingAccountCreation />}
 				/>
-				{/* <Route path="/forgotMail" element={<ForgotMail />} /> */}
 				<Route path="/login/2fa" element={<TwoFactor />} />
 				<Route path="/*" element={<Layout children={<NotFound />} />} />
+				<Route path="/loading" element={<Loading />} />
 			</Routes>
 		</div>
 	)
