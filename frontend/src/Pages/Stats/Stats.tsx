@@ -35,6 +35,7 @@ function UserList({ users }) {
 				<thead>
 					<tr>
 						<th>Rank</th>
+						<th>Elo</th>
 						<th>Name</th>
 						<th>Wins</th>
 						<th>Matches Played</th>
@@ -44,6 +45,7 @@ function UserList({ users }) {
 					{users.map((user, index) => (
 						<tr key={user.id} onClick={() => handleUserClick(user)}>
 							<td>{index + 1}</td>
+							<td>{user.elo}</td>
 							<td>
 								<img
 									src={user.profilePicture}
