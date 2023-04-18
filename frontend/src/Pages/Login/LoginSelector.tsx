@@ -2,7 +2,6 @@ import React, { useRef, useState } from "react";
 import "./LoginSelector.css";
 import { Link, useNavigate } from "react-router-dom";
 import Logo42 from "../../assets/42_Logo.png";
-import { SHA256 } from "crypto-js";
 
 export default function LoginSelector() {
 	const naviguate = useNavigate();
@@ -40,7 +39,7 @@ export default function LoginSelector() {
 			return;
 		}
 
-		const hashedPassword = SHA256(password).toString();
+		const hashedPassword = password;
 
 		fetch("http://localhost:3001/auth/local", {
 			method: "POST",

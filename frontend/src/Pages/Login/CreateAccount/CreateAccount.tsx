@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import "./CreateAccount.css"
 import Logo42 from "../../../assets/42_Logo.png"
-import { SHA256 } from "crypto-js"
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
@@ -61,7 +60,7 @@ export default function CreateAccount() {
         }
 
         // Hash password
-        const hashedPassword = SHA256(password).toString();
+        const hashedPassword = password;
 
         fetch('http://localhost:3001/auth/local', {
             method: 'POST',
