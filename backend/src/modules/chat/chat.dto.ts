@@ -190,3 +190,11 @@ export const sendDMSchema = Joi.object({
 	userId: Joi.number().min(USERID_MIN).required(),
 	message: Joi.string().min(MESSAGE_MIN).max(MESSAGE_MAX).required(),
 })
+
+export class GetDmHistDto {
+	userId: number;
+}
+
+export const GetDmHistSchema = Joi.object({
+	userId: Joi.number().min(USERID_MIN).required(),
+})

@@ -34,7 +34,6 @@ export class RedisService {
 	async getCreatedAt(roomName: string) {
 		return new Promise((resolve, reject) => {
 			this.client.hkeys(`room:${roomName}:infos:created_at`, (err, time) => {
-				console.log(`TIME == ${time}`);
 				resolve(new Date(time[0]));
 			})
 		})

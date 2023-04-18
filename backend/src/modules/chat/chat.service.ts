@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto, UninviteUserDto, GetRoomMsgHistDto, sendDMDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto, UninviteUserDto, GetRoomMsgHistDto, sendDMDto, GetDmHistDto } from './chat.dto';
 import { Event } from './chat-event.enum';
 import * as argon2 from 'argon2';
 import { PrismaService } from "nestjs-prisma";
@@ -1658,6 +1658,17 @@ export class ChatService {
 			})
 		});
 	}
+
+	async getDmHist(socket, dto: GetDmHistDto, server) {
+		const userId: string = socket.data.userId.toString();
+
+		const dms = await this.redis.getDm(+userId, dto.userId);
+		socket.emit(Event.dmHist, {
+			userId: dto.userId,
+			msgHist: dms,
+		})
+	}
+
 
 	async notifsRead(socket, dto, server) {
 		await this.redis.unsetUserUnreadDM(socket.data.userId);
