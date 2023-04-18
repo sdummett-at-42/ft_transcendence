@@ -26,3 +26,63 @@
     font-weight: 400;
     font-size: 5vmin;
 }
+
+@keyframes background-pan {
+    from {
+      background-position: 0% center;
+    }
+    
+    to {
+      background-position: -200% center;
+    }
+}
+
+.HomeContent-magic-text {
+    --purple: rgb(123, 31, 162);
+    --violet: rgb(103, 58, 183);
+    --pink: rgb(244, 143, 177);
+    animation: background-pan 3s linear infinite;
+    background: linear-gradient(
+        to right,
+        var(--purple),
+        var(--violet),
+        var(--pink),
+        var(--purple)
+    );
+    background-size: 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    white-space: nowrap;
+}
+
+.glitch-icon {
+    font: {
+        size 8.125rem;
+        weight: 700;
+    }
+    text-decoration: none;
+    text-transform: uppercase;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    letter-spacing: 5px;
+
+    &:before, &:after {
+        display: block;
+        content: attr(data-glitch);
+        text-transform: uppercase;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        opacity: 0.8;
+    } &:after {
+        color: #f0f;
+        z-index: -2;
+    } &:before {
+        color: #0ff;
+    }
+}

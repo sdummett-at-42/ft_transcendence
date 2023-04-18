@@ -3,12 +3,17 @@ import "./Lobby.css"
 import { UserContext } from "../../../context/UserContext"
 import FriendsList from "../../Home/FriendsList/FriendsList";
 import { useNavigate } from "react-router-dom";
+import ModeSelector from "./ModeSelector/ModeSelector";
+import Custom from "./Custom/Custom";
+import Ranked from "./Ranked/Ranked";
 
 export default function Lobby() {
 
     const { user, gameSocketRef } = useContext(UserContext);
     const navigate = useNavigate();
     const [dispSelector, setDispSelector] = useState(true);
+    const [ranked, setRanked] = useState(false);
+    const [custom, setCustom] = useState(false);
 
     const handleJoinGame = (data) => {
         console.log('Joining game');
@@ -33,19 +38,13 @@ export default function Lobby() {
         <div className="Lobby">
             <div className="Lobby-content">
                 {dispSelector && (
-                    <div className="Lobby-selector">
-                        <p>
-                            Choose a game mode:
-                        </p>
-                        <button onClick={() => setDispSelector(false)}>Classic</button>
-                        <button onClick={() => setDispSelector(false)}>Ranked</button>
-                    </div>
+                    <ModeSelector setDispSelector={setDispSelector} setRanked={setRanked} setCustom={setCustom} />
                 )}
-                {!dispSelector && (
-                    <div className="Lobby-queue">
-                        <h1>Lobby</h1>
-                        <button onClick={() => gameSocketRef.current.emit('joinQueue')}>Join Queue</button>
-                    </div>
+                {(!dispSelector && ranked) && (
+                    <Ranked setDispSelector={setDispSelector} setRanked={setRanked} />
+                )}
+                {(!dispSelector && custom) && (
+                    <Custom setDispSelector={setDispSelector} setCustom={setCustom} />
                 )}
             </div>
             <FriendsList />

@@ -3,6 +3,14 @@
     height: 5vmin;
 }
 
+.Navbar-logo:hover {
+    scale: 1.3;
+}
+
+#Navbar-pong:hover {
+    scale: 1.3;
+}
+
 .Navbar-nav {
     display: flex;
     top: 0;
@@ -31,6 +39,18 @@
     color: whitesmoke;
 }
 
+#Navbar-achivement:hover {
+    scale: 1.3;
+}
+
+#Navbar-stats:hover {
+    scale: 1.3;
+}
+
+#Navbar-chat:hover {
+    scale: 1.3;
+}
+
 #Navbar-right {
     display: flex;
     justify-content: center;
@@ -53,6 +73,19 @@
     border-radius: 50%;
 }
 
+#Navbar-profil-picture:hover {
+    scale: 1.1;
+}
+
+#Navbar-profil-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#Navbar-profil-name:hover {
+    scale: 1.3;
+}
+
 #Navbar-option {
     margin-left: 3rem;
 }
@@ -63,7 +96,6 @@
     color: #fff;
 }
 
-#Navbar-profile-button:hover {
+#Navbar-option:hover {
     scale: 1.3;
-
 }
