@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import homeVideo from "../../../assets/home-background.mp4"
+import PlayButton from "../../../assets/Pong_white.png"
 
 export default function HomeContent() {
 
@@ -51,7 +52,14 @@ export default function HomeContent() {
                     Jouer a Pong !
                 </h1>
                 <Link to="/lobby" style={{textDecoration: 'none', color: 'whitesmoke'}}>
-                    <FontAwesomeIcon icon={faPlay} className="glitch-icon"/>
+                <div class="glitch">
+                    <img src={PlayButton} alt="" />
+	                <div class="glitch__layers">
+		                <div class="glitch__layer"></div>
+		                <div class="glitch__layer"></div>
+		                <div class="glitch__layer"></div>
+	                </div>
+                </div>
                 </Link>
             </div>
         </div>
