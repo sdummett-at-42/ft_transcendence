@@ -62,8 +62,6 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		for (const room of userRooms)
 			socket.join(room);
 		
-		console.log(`Handle connection: ${userId}`);
-		
 		socket.emit('connected', { // Event to report here
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`

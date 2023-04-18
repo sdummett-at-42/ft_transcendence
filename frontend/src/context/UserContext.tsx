@@ -8,8 +8,15 @@ const UserContextProvider = ({ children }: any) => {
 	const [user, setUser] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const friendSocketRef = useRef(null);
+	const achievementSocketRef = useRef(null);
 
 	friendSocketRef.current = io("http://localhost:3001/friends", {
+		auth: {
+			token: Cookies.get("connect.sid"),
+		},
+	});
+
+	achievementSocketRef.current = io("http://localhost:3001/achievements", {
 		auth: {
 			token: Cookies.get("connect.sid"),
 		},
@@ -31,7 +38,7 @@ const UserContextProvider = ({ children }: any) => {
 
 	return (
 		<UserContext.Provider
-			value={{ user, setUser, friendSocketRef, isLoading }}
+			value={{ user, setUser, friendSocketRef, achievementSocketRef, isLoading }}
 		>
 			{isLoading ? <div>Loading...</div> : children}
 		</UserContext.Provider>
