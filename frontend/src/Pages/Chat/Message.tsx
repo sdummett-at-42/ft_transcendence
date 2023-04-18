@@ -9,7 +9,10 @@ interface MessageProps {
   socket: Socket,
   roomName: string,
   ifDM: boolean,
-  toDMID :number,
+  toDMID: {
+    id: number;
+    name: string;
+  };
   onQuit: () => void,
   UserId:Number,
   onUpdate:() =>void,
@@ -22,7 +25,8 @@ export default function Message(props:MessageProps) {
   const [item, setItem] = useState([]);
   const database = useContext(DatabaseContext);
   const [userId, setUserId] = useState("");
-  const [dmList, setDmList] = useState([])
+  const [dmList, setDmList] = useState([]);
+  const [itemDM, setItemDM] = useState([]);
 
   const handleQuit = () => {
     props.onQuit();
@@ -44,7 +48,7 @@ export default function Message(props:MessageProps) {
     } else {
       console.log("props.ifDM == true")
       const payload = {
-        userId: props.toDMID,
+        userId: props.toDMID.id,
         message: message,
       }
       props.socket.emit("sendDM",payload);
@@ -61,15 +65,74 @@ export default function Message(props:MessageProps) {
   },[]);
 
   const handleMessages = useCallback((payload) => {
-    // if(payload.userId != -1)
       setMessageList((prevme) => [...prevme, payload]);
   },[messageList]);
+
+  const handleDMupdate = useCallback((payload) => {
+      console.log("handleDMupdate", payload);
+      setDmList((prevme) => [...prevme, payload]);
+  },[dmList]);
 
   useEffect(() => {
     // refersh context
     props.onUpdate();
-  }, [messageList]);
+  }, [messageList, dmList]);
 
+  useEffect(() => {
+    // console.log("messageList", messageList);
+    setItemDM(dmList.sort((a, b) => a.timestamp - b.timestamp)
+      .map((each, index) => {
+      const date = new Date(each.timestamp);
+      const hour = date.getHours().toString().padStart(2, '0');
+      const minute = date.getMinutes().toString().padStart(2, '0');
+      const second = date.getSeconds().toString().padStart(2, '0');
+      let className1 = "message-data";
+      let className2 = "message";
+      if (props.roomName == null) {
+        console.log("props.roomName == nul")
+        return null;
+      }
+      else {
+        let username;
+        if (each.userId === -1){
+          username = "Notification";
+        }
+        else {
+          let user = database.find((user) => user.id === each.userId);
+          if (user === undefined) {
+            props.onUpdate();
+            const interval = setInterval(() => {
+            user = database.find((user) => user.id === each.userId);
+            if (user !== undefined) {
+                clearInterval(interval);
+                // username = each.userId;
+                console.log("user underfine");
+                }
+            }, 1000);
+          } else {
+            username = user.name
+            // console.log("here", username);
+          }
+          if (each.userId === props.UserId) {
+            className1 += " align-right";
+            className2 += " other-message float-right";
+          } else {
+            className2 += " my-message"; 
+          }
+        }
+        return (
+          
+          <li className="clearfix" key={index}>
+            <div className={className1}>
+              <span className="message-data-name">  {username}</span>
+              <span className="message-data-time">{hour}:{minute}:{second}</span>
+            </div>
+              <div className={className2}>{each.message}</div>
+          </li>
+        );
+    }})
+    );
+  },[props.roomName, dmList, database] )
   useEffect(() => {
     // console.log("messageList", messageList);
     setItem(messageList.sort((a, b) => a.timestamp - b.timestamp)
@@ -127,9 +190,8 @@ export default function Message(props:MessageProps) {
   },[props.roomName, messageList, database] )
 
   const handleDMReceived = useCallback((payload) => {
-
-    console.log("roomDMReceived :", payload );
-
+    console.log(payload);
+    setDmList(payload.msgHist);
   }, [dmList, props.roomName, props.ifDM])
   
   const handleMessagesReceived = useCallback((payload) => {
@@ -143,8 +205,11 @@ export default function Message(props:MessageProps) {
   useEffect(() => {
     if (props.socket) {
       props.socket.on("roomMsgHistReceived", handleMessagesReceived);
-      props.socket.on("dmHist", handleDMReceived);
       props.socket.on("roomMsgReceived", handleMessages);
+      props.socket.on("dmHist", handleDMReceived);
+      props.socket.on("DMReceived",handleDMupdate);
+      props.socket.on("DMNotSended",(payload)=>{
+        alert(payload.message);})
       props.socket.on("userInvited", handleMessageAuto);
       props.socket.on("roomMsgNotSended", (payload)=>{
         alert(payload.message);
@@ -153,13 +218,15 @@ export default function Message(props:MessageProps) {
     return () => {
       if (props.socket) {
         props.socket.off("roomMsgHistReceived",handleMessagesReceived);
-        props.socket.on("dmHist", handleDMReceived);
         props.socket.off("roomMsgReceived", handleMessages);
+        props.socket.off("dmHist", handleDMReceived);
+        props.socket.off("DMReceived", handleDMupdate);
         props.socket.off("userInvited", handleMessageAuto);
+        props.socket.off("DMNotSended");
         props.socket.off("roomMsgNotSended");
       }
     };
-  }, [props.socket,props.roomName, handleMessagesReceived,handleMessages,handleMessageAuto]);
+  }, [props.socket, props.roomName, handleMessagesReceived,handleMessages,handleMessageAuto]);
 
   return (
     props.roomName ? (
@@ -169,13 +236,13 @@ export default function Message(props:MessageProps) {
     <div className="row">
       <div className="chat-with col-6">Chatroom : {props.roomName}</div>
     </div>
-      <button className="col-2" onClick={handleQuit}>Leave</button>
+      {props.ifDM? null : <button className="col-2" onClick={handleQuit}>Leave</button>}
     </div>
 </div> 
 
 <div className="chat-history">
   <ul>
-    {item}
+    {props.ifDM? itemDM: item}
   </ul>
 
 </div>

@@ -17,7 +17,7 @@ interface RoomDetailProps {
   roomName : string,
   onUpdate:() =>void,
   UserId: Number,
-  
+  ifDM :boolean,
 }
 export default function RoomDetail(props: RoomDetailProps) {
   const [show, setShow] = useState(false);
@@ -155,7 +155,7 @@ useEffect(() => {
   }, [props.socket,  props.onUpdate, handleInvited, handleNotInvite, handleCheckIfAdmin]);
 
  return (
-  props.roomName ? (
+  (!props.ifDM) && props.roomName ? (
   <div className="chatinfo col-lg-3">
       <div className="chat-info-header clearfix">
       <div className='chat-info-title'>Room Info

@@ -38,14 +38,13 @@ export default function MemberList(props: MemberListProps) {
         return (
           <>
             <li className="clearfix col-lg-7 " key={index}>
-            <img  src={user.profilePicture} alt="avatar" />
-            <div className="about">
-              <div className="name ">{user.name}</div>
-              <div className="status">
-                <i className="fa fa-circle online"></i> {role}
-              </div>    
-            </div>             
-          </li>
+                <img  src={user.profilePicture} alt="avatar" />
+                <div className="about">
+                    <div className="name ">{user.name}</div>
+                    <div className="status">
+                    <i className="fa fa-circle online"></i> {role}</div>    
+                </div>             
+            </li>
           
             {/* play, message, block, unmute, unban */}
           {user.id === props.UserId ? null : (<div className="col-lg-5"><button className="PendingFriend-button" onClick={()=>hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>

@@ -26,7 +26,7 @@ export default function RoomJoin(props: RoomJoinProps) {
         roomName: roomName,
         password: password,
       }
-    console.log("handleJoinRoom", payload);
+    // console.log("handleJoinRoom", payload);
     props.socket.emit("joinRoom",payload);
     setRoomName("");
     setPassword("");

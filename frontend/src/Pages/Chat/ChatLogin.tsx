@@ -17,24 +17,9 @@ export default function ChatLogin() {
   const [shouldUpdateDatabase, setShouldUpdateDatabase] = useState(false);
   const [ifsocket, setIfSocket] = useState(false);
   const [ifDM , setIfDM] = useState(false);
-  const [toDMID, setToDMID]= useState(0);
-
-  useEffect(() => {
-    const fetchData = async () => {
-
-      await fetch("http://localhost:3001/users/", {
-          method: "GET",
-          credentials: "include"
-      })
-          .then((response) => response.json())
-          .then(json => {
-              setDatabase(json);
-          });
-    };
-    fetchData();
-    // console.log("database", database);
-  }, []);
-
+  const [toDMID, setToDMID]= useState({id: 0, name :""});
+  const [ifDataReady, setifDataReady] = useState(false);
+  
   const handleUpdateDatabase = async () => {
     await fetch("http://localhost:3001/users/", {
           method: "GET",
@@ -46,18 +31,18 @@ export default function ChatLogin() {
       });
   };
 
-  const handleListClick = (list,id, ifDM) => {
-    console.log("here? ifdm", ifDM)
-    console.log("List:",list);
-    setToDMID(id);
+  const handleListClick = (name,id, ifDM) => {
+    // console.log("here? ifdm", ifDM)
+    // console.log("List:",name, id);
+    setToDMID({id : id , name : name});
+    setRoomName(name);
     if(ifDM == true)
       setIfDM(true);
     else
       setIfDM(false);
-    setRoomName(list);
     if( ifDM == false){
       const payload = {
-        roomName: list, // if i use state of roomName, the emit will delay
+        roomName: name, // if i use state of roomName, the emit will delay
       }
       socket.emit("getRoomMsgHist", payload);
     }
@@ -88,6 +73,23 @@ export default function ChatLogin() {
       handleUpdateDatabase();
     }
   }, [shouldUpdateDatabase]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+
+      await fetch("http://localhost:3001/users/", {
+          method: "GET",
+          credentials: "include"
+      })
+          .then((response) => response.json())
+          .then(json => {
+              setDatabase(json);
+              setifDataReady(true);
+          });
+    };
+    fetchData();
+    // console.log("fetch database 1", database);
+  },[]);
 
   useEffect(()=>{
     const fetchData = async () => {
@@ -124,9 +126,9 @@ export default function ChatLogin() {
         socket.off('disconnect', onDisconnect);
         socket.off("memberListUpdated", handleUpdateDatabase );
       };
-    }, [socket]);
+    }, [socket, ifsocket, database]);
 
-    if (ifsocket == false) {
+    if (ifsocket == false ) {
       return <div>Connecting to server...</div>;
     } else {
     return (
@@ -134,9 +136,9 @@ export default function ChatLogin() {
         <div className="containerhere containerhere clearfix">
           <div className="row">
             <DatabaseContext.Provider value={database}>
-              <ChatroomList socket={socket}  onListClick={handleListClick} onUpdate={handleChildComponentUpdate}/>
+              <ChatroomList socket={socket}  onListClick={handleListClick} onUpdate={handleChildComponentUpdate} ifDM={ifDM} toDMID={toDMID} ifDataReady={ifDataReady}/>
               <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId = {userId} onUpdate={handleChildComponentUpdate}/>
-              <RoomDetail socket={socket}  onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId = {userId}/>
+              <RoomDetail socket={socket}  onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId = {userId} ifDM={ifDM}/>
             </DatabaseContext.Provider>
       </div>
       </div>

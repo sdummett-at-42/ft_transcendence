@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { useState, useEffect, useCallback} from 'react';
+import { useState, useEffect, useCallback, useContext} from 'react';
 import RoomCreate from "./RoomCreate";
 import { io, Socket } from "socket.io-client";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -7,11 +7,18 @@ import { faLock} from '@fortawesome/free-solid-svg-icons';
 import RoomJoin from './RoomJoin';
 import "./chat.scss"
 import InvitedConfirm from './InvitedConfirm';
+import { DatabaseContext } from './ChatLogin';
 
 interface ChatroomListProps {
   socket: Socket,
   onListClick : (list: string,id:number, ifDM: boolean) => void,
   onUpdate:() =>void,
+  ifDM : boolean,
+  toDMID: {
+    id: number;
+    name: string;
+  };
+  ifDataReady : boolean,
 }
 export default function ChatroomList(props: ChatroomListProps) {
     // States
@@ -19,7 +26,8 @@ export default function ChatroomList(props: ChatroomListProps) {
     const [dms, setdms] = useState([]);
     const [showAddRoom, setShowAddRoom] = useState(false);
     const [showJoinRoom, setShowJoinRoom] = useState(false);
-    const [selectedRoom, setSelectedRoom] = useState(null);
+    const [selectedRoom, setSelectedRoom] = useState("");
+    const database = useContext(DatabaseContext);
 
     // Event handlers
     const handleRoomCreated = useCallback((payload) => {
@@ -42,13 +50,17 @@ export default function ChatroomList(props: ChatroomListProps) {
       // console.log("chat rooms:", chatrooms);
     }, [chatrooms]);
     const handleDMRoomsListReceived = useCallback((payload) => {
-      console.log(`ROOMDM: ${JSON.stringify(payload)}`);
-      setdms(payload.dms);
-    }, [dms]);
+      if (database) {
+        const filteredObjects = database.filter(obj => payload.dms.includes(obj.id));
+        // console.log("database:", database);
+        // console.log("include", filteredObjects);
+        const newDms = filteredObjects.map(obj => ({id: obj.id, name: obj.name}));
+        setdms(newDms);
+      }
+    }, [dms, database]);
     const handlDMlistupdated = useCallback((payload) => {
-      console.log(`ROOMdmUPADTE: ${JSON.stringify(payload)}`);
-      // setdms(payload.dms);
-      // console.log("chat rooms2:", chatrooms);
+      console.log("ROOMdmUPADTE:", payload );
+      setdms(payload.dms);
     }, [dms]);
 
     const handleRoomDeleted = useCallback((payload) => {
@@ -59,7 +71,7 @@ export default function ChatroomList(props: ChatroomListProps) {
     }, [chatrooms]);
 
     const handleRoomsUpdate = useCallback ((payload) =>{
-      // console.log("handleRoomsUpdate", payload, chatrooms);
+      console.log("handleRoomsUpdate", payload, chatrooms);
       const chatroomIndex = chatrooms.findIndex(room => room.roomName === payload.roomName);
       if (chatroomIndex === -1) {
         console.log("cant not find the roomname updated");
@@ -81,9 +93,9 @@ export default function ChatroomList(props: ChatroomListProps) {
         props.socket.emit("getRoomMembers", { roomName:roomName});
         setSelectedRoom(roomName);
       } else{
-        props.onListClick("", userID, true)
+        props.onListClick(roomName, userID, true)
         props.socket.emit("getDmHist", {userId: userID});
-        selectedRoom(userID.toString());
+        setSelectedRoom(roomName);
       }
     }
 
@@ -94,7 +106,7 @@ export default function ChatroomList(props: ChatroomListProps) {
       props.socket.emit("getDmsList");
     }, []);
     useEffect(() => {
-      if (props.socket) {
+      if (props.socket && props.ifDataReady) {
         // console.log("The socket exists")
         // props.socket.on("roomsListReceived",handleRoomsList);
         props.socket.on("userRooms",handleRoomsListReceived);
@@ -114,10 +126,10 @@ export default function ChatroomList(props: ChatroomListProps) {
           props.socket.off("roomCreated", handleRoomCreated);
           props.socket.off("roomJoined", handleRoomJoined);
           props.socket.off("roomLeft", handleRoomDeleted);
-          props.socket.on("roomUpdated", handleRoomsUpdate);
-          props.socket.on("DMReceived", handlDMlistupdated);
+          props.socket.off("roomUpdated", handleRoomsUpdate);
+          props.socket.off("DMReceived", handlDMlistupdated);
       }}
-    }, [props.socket, handleRoomJoined, selectedRoom]);
+    }, [props.socket, props.ifDataReady, database, handleRoomJoined, selectedRoom, props.ifDM]);
 
   // Render
   return (
@@ -139,7 +151,7 @@ export default function ChatroomList(props: ChatroomListProps) {
             </div>
                 <ul className="list col-lg-12">
                   {chatrooms.map(room => (
-                  <li className={`clearfix ${selectedRoom === room.roomName ? "active" : ""}`}  key={room.roomName} onClick={() => handleChatroomClick(room.roomName, 0 , false)}>       
+                  <li className={`clearfix ${selectedRoom === room.roomName && !props.ifDM ? "active" : ""}`}  key={room.roomName} onClick={() => handleChatroomClick(room.roomName, 0 , false)}>       
                     <div className="about"> <div className="name" >{room.roomName} </div>
                     <div className="status">
                       <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Private"} {room.protected?  <FontAwesomeIcon icon={faLock} /> :null}
@@ -148,10 +160,10 @@ export default function ChatroomList(props: ChatroomListProps) {
                   </li>
                   ))}
                 </ul>
-                <ul className="list">
+                <ul className="list col-lg-12">
                   {dms.map(room => (
-                  <li className={`clearfix ${selectedRoom === room.toString() ? "active" : ""}`} key={room} onClick={() => handleChatroomClick("", room, true)}>       
-                    <div className="about"> <div className="name" >{room} </div>
+                  <li className={`clearfix ${(selectedRoom === room.name) || (props.toDMID.name === room.name && props.ifDM) ? "active" : ""}`}   key={room.id} onClick={() => handleChatroomClick(room.name, room.id, true)}>       
+                    <div className="about"> <div className="name" >{room.name} </div>
                     <div className="status">
                       <i className="fa fa-circle online"></i> 
                     </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRef, useEffect, useContext } from "react";
+import { useRef, useEffect, useContext, useCallback } from "react";
 import { useState } from 'react';
 import { Socket } from "socket.io-client";
 import { DatabaseContext } from './ChatLogin';
@@ -44,6 +44,14 @@ export default function Setting(props: SettingProps) {
     props.socket.emit("addRoomAdmin", payload);
   }
 
+  const handleRoomUpdated = useCallback ((payload) =>{
+    console.log("handleRoomsUpdate", payload);
+    props.onClose();
+  }, []);
+  const handleRoomNotUpdated = useCallback ((payload) =>{
+    console.log("roomNotUpdated", payload);
+    alert(payload.message);
+  }, []);
   useEffect(() => {
     if (props.socket) {
       props.socket.on("roomAdminAdded", (payload) => {
@@ -52,19 +60,15 @@ export default function Setting(props: SettingProps) {
       props.socket.on("roomAdminNotAdded",(payload) =>{
         alert(payload.message);
       })
-      props.socket.on("roomUpdated",
-        props.onClose());
-      props.socket.on("roomNotUpdated", (payload) => {
-        console.log("roomNotUpdated", payload);
-        alert(payload.message);
-      });
+      props.socket.on("roomUpdated", handleRoomUpdated);
+      props.socket.on("roomNotUpdated", handleRoomNotUpdated);
     }
     return () => {
       if (props.socket) {
         props.socket.off("roomAdminAdded");
         props.socket.off("roomAdminNotAdded");
-        props.socket.off('roomUpdated');
-        props.socket.off('roomNotUpdated');
+        props.socket.off("roomUpdated", handleRoomUpdated);
+        props.socket.off("roomNotUpdated", handleRoomNotUpdated);
       }
     };
   }, [props.socket]);
