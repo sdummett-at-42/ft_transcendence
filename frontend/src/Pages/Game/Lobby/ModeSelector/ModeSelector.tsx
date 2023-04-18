@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import "../Lobby.css"
+import RankedIcon from "../../../../assets/crown-logo.png"
 
 export default function ModeSelector(props) {
 
@@ -11,18 +12,26 @@ export default function ModeSelector(props) {
                     Choisissez votre mode de jeu:
             </h1>
             <div className="Lobby-buttons-container">
-                <button
-                    onClick={() => (setDispSelector(false), setCustom(true))}
-                    className="Lobby-selector-button"
-                >
-                    Personnalisee
-                </button>
-                <button
+                <div
                     onClick={() => (setDispSelector(false), setRanked(true))}
                     className="Lobby-selector-button"
                 >
-                    Classee
-                </button>
+                    <img src={RankedIcon} alt="" />
+                    <div className="Lobby-info">
+                        <h1>Classée</h1>
+                        <p>Affrontez d'autres joueurs et grimpez dans le classement</p>
+                    </div>
+                </div>
+                <div
+                    onClick={() => (setDispSelector(false), setCustom(true))}
+                    className="Lobby-selector-button"
+                >
+                    <img src={RankedIcon} alt="" />
+                    <div className="Lobby-info">
+                        <h1>Décontractée</h1>
+                        <p>Défiez vos amis dans une partie entièrement personnalisé </p>
+                    </div>
+                </div>
             </div>
         </div>
     )

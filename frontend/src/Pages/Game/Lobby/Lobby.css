@@ -11,27 +11,28 @@
 }
 
 .Lobby-title {
-    font-size: 2rem;
     font-weight: bold;
-    margin: 15% 0;
+    margin: 5%;
     padding: 0;
     color: whitesmoke;
 }
 
 .Lobby-buttons-container {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
 }
 
 .Lobby-selector-button {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 15px 15px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 10% 15%;
-    cursor: pointer;
+    height: 100%;
+}
+
+.Lobby-info {
+    height: 200px;
+    width: 350px;
+    padding: 6px;
+    box-sizing: border-box;
+    position: absolute;
+    bottom: 240px;
+    background-color: rgb(27,27,27);
+    color: whitesmoke;
 }

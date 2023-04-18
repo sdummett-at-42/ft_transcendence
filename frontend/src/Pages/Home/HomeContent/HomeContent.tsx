@@ -1,8 +1,6 @@
 import React, { useRef } from "react";
 import "./HomeContent.css"
 import { Link } from "react-router-dom"
-import { faPlay } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import homeVideo from "../../../assets/home-background.mp4"
 import PlayButton from "../../../assets/Pong_white.png"
 
