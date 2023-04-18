@@ -163,7 +163,7 @@ export default function FriendsList() {
                 <div className="FriendsList-user">
                     {friends && (friends.map((friend) => {
                         return <Friend key={friend.id} props={friend} />
-                        }))};
+                        }))}
                 </div>
                 <div className="FriendsList-user-pending">
                     {/* {friendsPending && (<Friend props={friendsPending} />)}; */}
