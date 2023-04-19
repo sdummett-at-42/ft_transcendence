@@ -100,26 +100,32 @@ function MatchList({ user, match }) {
 			</p>
 			<InitAchievements userId={user.id} showLocked={false} />
 			<h3>Matches</h3>
-			<table className="match-table">
-				<thead>
-					<tr>
-						<th>Winner</th>
-						<th>Loser</th>
-						<th>Winner Score</th>
-						<th>Looser Score</th>
-					</tr>
-				</thead>
-				<tbody>
-					{allMatches.map((match) => (
-						<tr key={`match-${match.id}`}>
-							<td>{match.winnerName}</td>
-							<td>{match.loserName}</td>
-							<td>{match.winnerScore}</td>
-							<td>{match.looserScore}</td>
+			{allMatches.length === 0 ? (
+				<p>No matches played.</p>
+			) : (
+				<table className="match-table">
+					<thead>
+						<tr>
+							<th>Winner</th>
+							<th>Loser</th>
+							<th>Winner Score</th>
+							<th>Loser Score</th>
 						</tr>
-					))}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{allMatches.map((match) => (
+							<tr key={`match-${match.id}`}>
+								<td>{match.winnerName}</td>
+								<td>{match.loserName}</td>
+								<td>{match.winnerScore}</td>
+								<td>{match.looserScore}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			)}
 		</div>
 	);
 }
+
+///

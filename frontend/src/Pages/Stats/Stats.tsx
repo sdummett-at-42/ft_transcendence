@@ -31,6 +31,10 @@ function UserList({ users }) {
 		setSelectedUser(user);
 	};
 
+	const filteredUsers = users.filter((user) => {
+		return user.matchWon.length + user.matchLost.length > 0;
+	});
+
 	return (
 		<div>
 			<table>
@@ -43,52 +47,40 @@ function UserList({ users }) {
 						<th>Matches Played</th>
 					</tr>
 				</thead>
-				<tbody>
-					{users.map((user, index) => (
-						<tr key={user.id} onClick={() => handleUserClick(user)}>
-							<td>{index + 1}</td>
-							<td>{user.elo}</td>
-							<td>
-								<img
-									src={user.profilePicture}
-									alt="Profile"
-									className="profile-picture"
-								/>
-								{user.name}
-							</td>
-							<td>{user.matchWon.length}</td>
-							<td>
-								{user.matchWon.length + user.matchLost.length}
-							</td>
-						</tr>
-					))}
-				</tbody>
+				{filteredUsers.length === 0 ? null : (
+					<tbody>
+						{filteredUsers.map((user, index) => (
+							<tr
+								key={user.id}
+								onClick={() => handleUserClick(user)}
+							>
+								<td>{index + 1}</td>
+								<td>{user.elo}</td>
+								<td>
+									<img
+										src={user.profilePicture}
+										alt="Profile"
+										className="profile-picture"
+									/>
+									{user.name}
+								</td>
+								<td>{user.matchWon.length}</td>
+								<td>
+									{user.matchWon.length +
+										user.matchLost.length}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				)}
 			</table>
+			{filteredUsers.length === 0 ? <p>No users to display</p> : null}
 			{selectedUser && (
 				<UserPopup
 					user={selectedUser}
 					onClose={() => setSelectedUser(null)}
 				/>
 			)}
-		</div>
-	);
-}
-
-function UserPopup({ user, onClose }) {
-	const handleOutsideClick = (e) => {
-		if (e.target.classList.contains("popup")) {
-			onClose();
-		}
-	};
-
-	return (
-		<div className="popup" onClick={handleOutsideClick}>
-			<div className="popup-content">
-				<button className="close-button" onClick={onClose}>
-					X
-				</button>
-				<Profile userId={user.id} showLocked={false} />
-			</div>
 		</div>
 	);
 }
