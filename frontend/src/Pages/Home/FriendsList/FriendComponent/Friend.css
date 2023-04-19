@@ -8,13 +8,13 @@
     border-bottom: 1px solid rgb(255, 255, 255, 0.1);
 }
 
-/* .Friend-profile-picture {
+.Friend-profile-picture {
     margin-bottom: 1vmin;
     height: 5vmin;
     width: 5vmin;
     object-fit: cover;
     border-radius: 50%;
-} */
+}
 
 .Friend-profile {
     display: flex;
@@ -70,37 +70,3 @@
 .Friend-message.Friend-offline {
   color: gray;
 }
-
-
-
-
-/* .Friend-name-status {
-    display: flex;
-    flex-direction: column;
-    margin-left: 1vmin;
-}
-
-.Friend-online-status-circle {
-    height: 1vmin;
-    width: 1vmin;
-    border-radius: 50%;
-    background-color: #00ff00;
-    border: 1px solid #000000;
-}
-
-.Friend-offline-status-circle {
-    height: 1vmin;
-    width: 1vmin;
-    border-radius: 50%;
-    background-color: #ff0000;
-    border: 1px solid #000000;
-}
-
-.Friend-ingame-status-circle {
-    height: 1vmin;
-    width: 1vmin;
-    border-radius: 50%;
-    background-color: #0000ff;
-    border: 1px solid #000000;
-} */
-

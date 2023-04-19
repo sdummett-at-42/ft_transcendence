@@ -6,8 +6,9 @@ import { AuthService } from '../auth.service';
 import * as Joi from 'joi';
 import { LoginMethod } from "@prisma/client";
 import * as fs from 'fs';
+import * as argon2 from 'argon2';
 
-const PASSWORD_MIN = 16;
+const PASSWORD_MIN = 8;
 const USERNAME_MIN = 3;
 const USERNAME_MAX = 16;
 export const RegisterSchema = Joi.object({
@@ -48,7 +49,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 		if (user.loginMethod != LoginMethod.LOCAL)
 			throw new ConflictException(`You used another signin method. (${user.loginMethod})`);
 
-		if (user.password != password)
+		if (await argon2.verify(user.password, password) == false)
 			throw new BadRequestException('Wrong password');
 
 		return user;
@@ -77,7 +78,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 			base64: Buffer.from(imageData).toString('base64'),
 			mimeType: 'image/svg+xml'
 		};
-		return await this.authService.createUser(LoginMethod.LOCAL, email, username, password, image);
+		return await this.authService.createUser(LoginMethod.LOCAL, email, username, await argon2.hash(password), image);
 	}
 
 	async validate(req): Promise<any> {

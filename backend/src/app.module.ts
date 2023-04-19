@@ -12,6 +12,7 @@ import { RedisModule } from './modules/redis/redis.module';
 import { UsersModule } from './modules/users/users.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { GameModule } from './modules/game/game.module';
+import { AchievementModule } from './modules/achievements/achievements.module';
 
 @Module({
 	imports: [
@@ -41,6 +42,7 @@ import { GameModule } from './modules/game/game.module';
 		ImagesModule,
 		FriendsModule,
 		ChatModule,
+		AchievementModule,
 		PassportModule.register({ session: true }),
 		ThrottlerModule.forRootAsync({
 			imports: [ConfigModule],

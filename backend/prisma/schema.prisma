@@ -32,14 +32,15 @@ model User {
 	twofactorSecret		String?
 	password			String?
 	loginMethod			LoginMethod
+	achievements		Achievement[]
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
 }
 
 model FriendRequest {
-	sender				User				@relation("sender", fields: [senderId], references: [id])
+	sender				User				@relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
 	senderId			Int
-	receiver			User				@relation("receiver", fields: [receiverId], references: [id])
+	receiver			User				@relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
 	receiverId			Int
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
@@ -49,9 +50,9 @@ model FriendRequest {
 
 model Match {
 	id					Int					@id @default(autoincrement())
-	winner				User				@relation("winner", fields: [winnerId], references: [id])
+	winner				User				@relation("winner", fields: [winnerId], references: [id], onDelete: Cascade)
 	winnerId			Int
-	looser				User				@relation("looser", fields: [looserId], references: [id])
+	looser				User				@relation("looser", fields: [looserId], references: [id], onDelete: Cascade)
 	looserId			Int
 	winnerScore			Int
 	looserScore			Int
@@ -63,8 +64,15 @@ model Image {
 	name				String
 	mimetype			String
 	data				String
-	owner				User?				@relation("profilePicture", fields: [ownerId], references: [id])
+	owner				User?				@relation("profilePicture", fields: [ownerId], references: [id], onDelete: Cascade)
 	ownerId				Int					@unique
 	createdAt			DateTime			@default(now())
 	updatedAt			DateTime			@default(now())
+}
+
+model Achievement {
+	id					Int					@id @default(autoincrement())
+	name				String				@unique
+	description			String
+	users				User[]
 }

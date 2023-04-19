@@ -1,11 +1,12 @@
-import { Controller, Get, UseGuards, Req, ParseIntPipe, Post, Patch, Delete, Body, HttpCode } from "@nestjs/common";
+import { Controller, Get, UseGuards, Req, ParseIntPipe, Post, Patch, Delete, Body, HttpCode, BadRequestException } from "@nestjs/common";
 import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
 import { ContentTypeGuard } from "src/shared/content-type.guard";
 import { FriendsService } from "./friends.service";
 import { FriendRequestService } from "./friend-request.service";
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from "src/modules/users/entities/user.entity";
 import { FriendsGateway } from "./friends.gateway";
+import { CreateFriendRequestDto } from "./dto/friends.dto";
 
 @ApiTags('friends')
 @Controller('friends')
@@ -38,12 +39,13 @@ export class FriendsController {
 	@HttpCode(201)
 	@UseGuards(ContentTypeGuard)
 	@ApiCreatedResponse({ type: UserEntity, description: 'Sends a friend request' })
+	@ApiNotFoundResponse({ description: 'The friend doesnt exits'})
 	async sendFriendRequest(
-		@Req() request ,
-		@Body('friendId') friendId: number,
+		@Body() dto: CreateFriendRequestDto,
+		@Req() request
 	) {
-		const friendRequest = await this.friendRequest.sendFriendRequest(request.user.id, friendId);
-		this.friendGateway.sendFriendRequest(request.user.id, friendId);
+		const friendRequest = await this.friendRequest.sendFriendRequest(request.user.id, dto.friendId);
+		this.friendGateway.sendFriendRequest(request.user.id, dto.friendId);
 		return friendRequest;
 	}
 

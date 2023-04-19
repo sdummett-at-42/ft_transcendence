@@ -44,7 +44,7 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null) {
+		if (session === null || !JSON.parse(session).passport) {
 			console.debug("User isn't logged in");
 			socket.emit('notConnected', { // Event to report here
 				timestamp: new Date().toISOString(),
@@ -61,8 +61,6 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		const userRooms = await this.redis.getUserRooms(userId);
 		for (const room of userRooms)
 			socket.join(room);
-		
-		console.log(`Handle connection: ${userId}`);
 		
 		socket.emit('connected', { // Event to report here
 			timestamp: new Date().toISOString(),
@@ -137,5 +135,15 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
 		if (receiverSocketsIds.length > 0)
 			this.server.to(receiverSocketsIds).emit('friendRequestCanceled', {id: requesterId});
+	}
+
+	@SubscribeMessage('getConnectedFriends')
+	async onGetConnectedFriend(@ConnectedSocket() socket) {
+		const sockets = await this.server.fetchSockets();
+		const connectedIds = Object.entries(sockets)
+			.map(([key, value]) => value.data.userId)
+		if (connectedIds.length > 0){
+			socket.emit('connectedFriends', { friendIds: connectedIds });
+		}
 	}
 }

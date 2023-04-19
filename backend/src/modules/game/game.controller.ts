@@ -33,7 +33,7 @@ export class GameController {
     @ApiResponse({ status: 404, description: `La partie n'existe pas ou n'a pas été trouvé.` })
     async gameRoom(@Param('id')id :string, @Res() res:Response) {
         // client auto connect on socket's game
-        console.log(`Controller('game')  @Get(':id') gamerRoom: ${id}`);
+        // console.log(`Controller('game')  @Get(':id') gamerRoom: ${id}`);
         const numId = Number(id);
 
         if (isNaN(numId) || numId >= this.lobbyService.nbGame || numId < 0) { // unvalid id or unexistant game

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./ReceivedFriend.css";
+import "../PendingFriend.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
 
@@ -32,8 +32,18 @@ export default function ReceivedFriend(props) {
     <div>
         {friend && (
             <div className="Friend-info">
-                <img src={friend.profilePicture} alt="Photo de profil" className="Friend-profile-picture" />
-                <h4>{friend.name}</h4>
+
+                <div className="Friend-profile">
+                    <div className="Friend-wrapper-profile-picture">
+                        <img src={friend.profilePicture} alt={`Image de profile de ${friend.name}`} className="Friend-profile-picture" />
+                        <div className={`Friend-circle-status Pending-friend-waiting`}></div>
+                    </div>
+                    <div className="Friend-name-status">
+                        <h4 className="Friend-name">{friend.name}</h4>
+                        <div className="Friend-message Pending-friend-waiting">Demande d'ami</div>
+                    </div>
+                </div>
+
                 <button
                     className="PendingFriend-button PendingFriend-Validate"
                     onClick={() => AcceptFriend(friend)}

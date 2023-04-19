@@ -45,6 +45,13 @@ async function bootstrap() {
 	const document = SwaggerModule.createDocument(app, swaggerConfig);
 	SwaggerModule.setup("api", app, document);
 
+	// const corsOptions: CorsOptions = {
+	// 	origin: '*',
+	// 	methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+	// 	allowedHeaders: ['Content-Type', 'Authorization'],
+	//   };
+	//   app.use(cors(corsOptions));
+
 	// app.setGlobalPrefix("api");
 	app.use(passport.initialize());
 	app.use(passport.session());

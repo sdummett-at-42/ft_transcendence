@@ -95,6 +95,7 @@ export default function FriendsList() {
         getFriends();
         getPendingFriends();
         getRequestFriends();
+        friendSocketRef.current.emit("getOnlineFriends");
     }, []);
 
     const handleFriendRequest = (data) => {
@@ -144,7 +145,6 @@ export default function FriendsList() {
             const friendsList = ListOfUsers.filter(user => ListOfFriends.includes(user.id));
             setFriends(friendsList);
             setSendRequests(sendRequests.filter(friend => friend.receiver.id != data.id));
-
         }
         getFriends();
     };
@@ -154,11 +154,21 @@ export default function FriendsList() {
     };
 
     const handleFriendConnected = (data) => {
-        setOnlineStatus([...onlineStatus, data]);
+        console.log("connected");
+        setOnlineStatus([...onlineStatus, data.id]);
     };
 
     const handleFriendDisconnected = (data) => {
-        // setOnlineStatus(onlineStatus.filter(friend => friend.id != data.id));
+        console.log("disconnected");
+        setOnlineStatus(onlineStatus.filter(friend => friend !== data.id));
+    };
+
+    function removeDuplicate(arr) {
+        return Array.from(new Set(arr));
+    }
+
+    const handleAllConnected = (data) => {
+        setOnlineStatus((prevState) => [...prevState, data]);
     };
 
     // Handle the socket events
@@ -169,6 +179,7 @@ export default function FriendsList() {
         friendSocketRef.current.on('friendRequestCanceled', handleFriendRequestCanceled);
         friendSocketRef.current.on('friendConnected', handleFriendConnected);
         friendSocketRef.current.on('friendDisconnected', handleFriendDisconnected);
+        friendSocketRef.current.on('connectedFriends', handleAllConnected);
 
         return () => {
             friendSocketRef.current.off('friendRequestReceived', handleFriendRequest);
@@ -176,6 +187,7 @@ export default function FriendsList() {
             friendSocketRef.current.off('friendRequestCanceled', handleFriendRequestCanceled);
             friendSocketRef.current.off('friendConnected', handleFriendConnected);
             friendSocketRef.current.off('friendDisconnected', handleFriendDisconnected);
+            friendSocketRef.current.off('connectedFriends', handleAllConnected);
         };
     }, [
         handleFriendRequest,
@@ -183,6 +195,7 @@ export default function FriendsList() {
         handleFriendRequestCanceled,
         handleFriendConnected,
         handleFriendDisconnected,
+        handleAllConnected,
         friendSocketRef]);
 
     const [isShaking, setIsShaking] = useState(false);
@@ -319,11 +332,12 @@ export default function FriendsList() {
             <div className="FriendsList-list">
                 <div>
                     {friends.map((friend, index) => {
+                        {console.log(onlineStatus)}
                         return (
                             <div key={index}>
                                 <Friend
                                     props={friend}
-                                    isConnected={onlineStatus.some(online => online.id === friend.id)}
+                                    isConnected={onlineStatus.some(online => online === friend.id)}
                                 />
                             </div>
                             );

@@ -29,18 +29,18 @@ export class LobbyService {
         // console.log("Lobby.service : Controller('game')  lobbyRoom");
         // const data = await fs.promises.readFile('src/modules/game/Dir/lobby.html', 'utf8');
         // res.send(data);
-         console.log("USERS:", this.users);
+        //  console.log("USERS:", this.users);
     }
 
     // Add user [] 
     lobbyJoinQueue(client : Socket) {
-        console.log("lobby join Queue:", client.data);
+        // console.log("lobby join Queue:", client.data);
         //TODO check if in game (boolean)
 
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
 
         if (index === -1) { // Check if player already in Q
-            console.log("DATA =", client.data);
+            // console.log("DATA =", client.data);
             const player = new Player(client.data);
             this.users.push({ player, threshold : this.BaseThreshold});
 
@@ -69,21 +69,21 @@ export class LobbyService {
     \* *************** */
     
     intervalQueueFunction() {
-        console.log("queueInterval: check");
-        console.log("lenght:" ,this.users.length);
-        console.log("users:" ,this.users);
+        // console.log("queueInterval: check");
+        // console.log("lenght:" ,this.users.length);
+        // console.log("users:" ,this.users);
 
         let gotMatch : Boolean = false;
         if (this.users.length === 0) { // if no player in Q
             clearInterval(this.queueInterval);
             this.queueInterval = undefined;
-            console.log(this.queueInterval);
+            // console.log(this.queueInterval);
         } else if (this.users.length >= 2) { // if >= 2 player in Q
             // check if 2 player match
             let j : number;
             for (let i : number = 0; i < this.users.length; i++) {
-                console.log(this.users.length);
-                console.log("i = ", i);
+                // console.log(this.users.length);
+                // console.log("i = ", i);
                 j = i + 1;
                 while (j < this.users.length) {
                     if (this.checkMatch(this.users[i], this.users[j]) === true) { // if yes create game
@@ -125,9 +125,9 @@ export class LobbyService {
         
         // check gap elo
         if (p1.threshold >= diff && p2.threshold >= diff) {
-            console.log("match found");
-            console.log(p1);
-            console.log(p2);
+            // console.log("match found");
+            // console.log(p1);
+            // console.log(p2);
             return true;
         }
         return (false)
@@ -155,7 +155,7 @@ export class LobbyService {
             if (remP2 != -1)
                 this.users.splice(remP2, 1);
 
-            console.log("Users after lobbycreate:", this.users.length);
+            // console.log("Users after lobbycreate:", this.users.length);
 
             // console.log("Player 1:", p1);
             // console.log("Player 2:", p2);
@@ -200,6 +200,13 @@ export class LobbyService {
         // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
         // on count pour numberElement lors reset/scoring
 
+<<<<<<< HEAD
+=======
+        // console.log("-------------");
+        // console.log("----Game:", game);
+        // console.log("-------------");
+
+>>>>>>> origin/gsap
         if (game.shapes.length != 0)
             return ;
 
@@ -267,8 +274,12 @@ export class LobbyService {
 	}
 
     async handleConnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
+<<<<<<< HEAD
+=======
+        // console.log(socket.handshake.headers);
+>>>>>>> origin/gsap
 		if (socket.handshake.auth.token == undefined) {
-			console.debug("Session cookie wasn't provided. Disconnecting socket.");
+			// console.debug("Session cookie wasn't provided. Disconnecting socket.");
 			socket.emit(EventGame.NotConnected, {
 				timestamp: new Date().toISOString(),
 				message: `No session cookie provided`,
@@ -278,8 +289,8 @@ export class LobbyService {
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null) {
-			console.debug("User isn't logged in");
+		if (session === null || !JSON.parse(session).passport) {
+			// console.debug("User isn't logged in");
 			socket.emit(EventGame.NotConnected, { // Event to report here
 				timestamp: new Date().toISOString(),
 				message: `User isn't logged in.`,
@@ -288,7 +299,7 @@ export class LobbyService {
 			return null;
 		}
 
-        console.log("handleConnection: connected");
+        // console.log("handleConnection: connected");
 		socket.emit(EventGame.IsConnected, {
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
@@ -321,13 +332,17 @@ export class LobbyService {
         const gameId = socket.handshake.headers.referer.split('/').pop();
         // console.log("**************************");
         if (gameId === "game") { // not in game
-            console.log("socket in: /game");
+            // console.log("socket in: /game");
             socket.join(`game`);
         } else {
             //TODO
             // check if game exist| ingame| finish
+<<<<<<< HEAD
             // faire que le front envoie l'id de la game ?
             console.log("socket in: /game/:id");
+=======
+            // console.log("socket in: /game/:id");
+>>>>>>> origin/gsap
             socket.data.ingame = gameId;
             
             const index = this.games.findIndex(games => games.id === Number(gameId));
@@ -354,7 +369,7 @@ export class LobbyService {
 
     async handleDisconnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
         if (socket.handshake.auth.token == undefined) {
-			console.debug("Session cookie wasn't provided. Disconnecting socket.");
+			// console.debug("Session cookie wasn't provided. Disconnecting socket.");
 			socket.emit(EventGame.NotConnected, {
 				timestamp: new Date().toISOString(),
 				message: `No session cookie provided`,
@@ -364,8 +379,8 @@ export class LobbyService {
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null) {
-			console.debug("User isn't logged in");
+		if (session === null || !JSON.parse(session).passport) {
+			// console.debug("User isn't logged in");
 			socket.emit(EventGame.NotConnected, { // Event to report here
 				timestamp: new Date().toISOString(),
 				message: `User isn't logged in.`,
@@ -383,7 +398,7 @@ export class LobbyService {
         const gameId = socket.handshake.headers.referer.split('/').pop();
 
         if (gameId === "game") { // not in game
-            console.log("disconnect socket in: /game");
+            // console.log("disconnect socket in: /game");
             // check is player is in Q
             const index = this.users.findIndex(users => users.player.id === userId);
             if (index !== -1)
@@ -391,7 +406,7 @@ export class LobbyService {
         } else {
             //TODO
             // check if game exist| ingame| finish
-            console.log("disconnect in game/:id");
+            // console.log("disconnect in game/:id");
 
             const index = this.games.findIndex(games => games.id === Number(gameId));
             const game : Game = this.games[index];

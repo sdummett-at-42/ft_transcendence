@@ -1,0 +1,18 @@
+.achievement-notification {
+	position: fixed;
+	top: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: #fff;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	padding: 10px;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+}
+
+.achievement-notification.visible {
+	opacity: 1;
+	visibility: visible;
+}

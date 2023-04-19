@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useContext } from "react";
 import "./Navbar.css"
 import { Link, useNavigate } from "react-router-dom";
 import Logo42 from "../../assets/42_Logo.png"
@@ -32,39 +32,48 @@ export default function Navbar() {
         setUser(data);
     };
 
-
-    return (
+    return (user && (
         <nav className="Navbar-nav">
             <div className="Navbar-nav-section" id="Navbar-left">
-                <Link to="/home"><img className="LoginSelector-invert-effect Navbar-logo" src={Logo42} alt="Logo-ecole-42" /></Link>
-                <Link to="/lobby" style={{textDecoration: 'none', color: 'whitesmoke'}}>
-                    Pong
+                <Link to="/home">
+                    <img className="LoginSelector-invert-effect Navbar-logo" src={Logo42} alt="Logo-ecole-42" />
+                </Link>
+                <Link to="/lobby" style={{textDecoration: 'none', color: 'whitesmoke'}} id="Navbar-pong" >
+                        Pong
                 </Link>
             </div>
 
             <div className="Navbar-nav-section" id="Navbar-mid">
-                <Link to="/succes" style={{textDecoration: 'none', color: 'whitesmoke'}}>Succes</Link>
-                <Link to="/stats" style={{textDecoration: 'none', color: 'whitesmoke'}}>Statistique</Link>
-                <Link to="/message" style={{textDecoration: 'none', color: 'whitesmoke'}}>Messages</Link>
+                <Link to="/achievements" style={{textDecoration: 'none', color: 'whitesmoke'}} id="Navbar-achivement">
+                    Succes
+                </Link>
+                <Link to="/stats" style={{textDecoration: 'none', color: 'whitesmoke'}} id="Navbar-stats">
+                    Statistique
+                </Link>
+                <Link to="/chat" style={{textDecoration: 'none', color: 'whitesmoke'}} id="Navbar-chat">
+                    Messages
+                </Link>
             </div>
 
             <div className="Navbar-nav-section" id="Navbar-right">
                 <div>
                     {user && (
+						<Link to='/profile' style={{textDecoration: 'none', color: 'whitesmoke'}}>
                         <div id="Navbar-profil">
                             <img id="Navbar-profil-picture" className="Navbar-logo" src={user.profilePicture} alt="myProfilePicture" />
                             <div id="Navbar-profil-name">
                                 {user.name}
                             </div>
                         </div>
+						</Link>
                     )}
                 </div>
                 <div id="Navbar-option">
-                    <Link to="/profil/:self">
+                    <Link to="/settings">
                         <FontAwesomeIcon icon={faUserGear} style={{textDecoration: 'none', color: 'whitesmoke'}} size="lg" />
                     </Link>
                 </div>
             </div>
         </nav>
-    );
+    ));
 }

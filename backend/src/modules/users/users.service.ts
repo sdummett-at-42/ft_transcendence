@@ -82,6 +82,8 @@ export class UsersService {
 				name: true,
 				profilePicture: true,
 				elo: true,
+				matchLost: true,
+				matchWon: true,
 			},
 		});
 	}
@@ -111,6 +113,21 @@ export class UsersService {
 				profilePicture: true,
 				elo: true,
 				email: true,
+			},
+		});
+		if (!user || user.id === 0) throw new HttpException('User not found', 404);
+		return user;
+	}
+	async findMe(id: number) {
+		const user = await this.prisma.user.findUnique({
+			where: { id },
+			select: {
+				id: true,
+				name: true,
+				profilePicture: true,
+				elo: true,
+				email: true,
+				twofactorIsEnabled: true
 			},
 		});
 		if (!user || user.id === 0) throw new HttpException('User not found', 404);
@@ -170,7 +187,7 @@ export class UsersService {
 	}
 
 	async removeUser(id: number) {
-		await this.images.removeImage(id);
+		// await this.images.removeImage(id);
 		return this.prisma.user.delete({
 			where: { id },
 			select: {
@@ -191,5 +208,25 @@ export class UsersService {
 			user = await this.prisma.user.findUnique({ where: { name } });
 		}
 		return name;
+	}
+
+	async getAchievements(id: number) {
+		return await this.prisma.user.findUnique({
+			where: { id },
+			select: { achievements: true},
+		})
+	}
+
+	async findUserMatchs(id: number) {
+		return await this.prisma.user.findUnique({
+			where: {
+				id,
+			},
+			select: {
+				id: true,
+				matchLost: true,
+				matchWon: true,
+			},
+		});
 	}
 }
