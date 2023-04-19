@@ -47,7 +47,7 @@ export default function HomeContent() {
                     data-value=" Jouer a Pong !"
                     ref={h1Ref}
                 >
-                    Jouer a Pong !
+                    Jouer à Pong !
                 </h1>
                 <Link to="/lobby" style={{textDecoration: 'none', color: 'whitesmoke'}}>
                 <div class="glitch">

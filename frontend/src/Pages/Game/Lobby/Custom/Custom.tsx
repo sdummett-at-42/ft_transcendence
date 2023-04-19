@@ -17,7 +17,7 @@ export default function Custom(props) {
                 Retour a la selection de mode
             </button>
             <h1>Perso Lobby</h1>
-            <button onClick={() => gameSocketRef.current.emit('joinQueue')}>Join Queue</button>
+            <button onClick={() => gameSocketRef.current.emit('joinQueue')}>Lancer la partie</button>
         </div>
     </div>
     );

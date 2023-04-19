@@ -113,3 +113,8 @@
         background-color: rgba(255, 179, 71, 0.3);
     }
   }
+
+.Lobby-recap-backward {
+    display: flex;
+    align-items: center;
+}
