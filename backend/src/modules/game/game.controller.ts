@@ -4,7 +4,6 @@ import { Response } from 'express';
 import { GameService } from './game.service';
 import { LobbyService } from './lobby/lobby.service';
 import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
-import * as fs from "fs";
 
 @ApiTags('games')
 @Controller('game')
@@ -19,6 +18,7 @@ export class GameController {
 
     @Get()
     async lobbyRoom(@Res() res : Response) {
+        console.log("controller /game")
         // create lobby/ matchmaking here
         // if match create unic gameroom with these 2 client at player
         //this.lobbyService.lobbyRoom(res);
@@ -33,6 +33,9 @@ export class GameController {
     @ApiResponse({ status: 404, description: `La partie n'existe pas ou n'a pas été trouvé.` })
     async gameRoom(@Param('id')id :string, @Res() res:Response) {
         // client auto connect on socket's game
+        console.log(`Controller game/:id`);
+
+
         // console.log(`Controller('game')  @Get(':id') gamerRoom: ${id}`);
         const numId = Number(id);
 

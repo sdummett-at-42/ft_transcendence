@@ -40,15 +40,10 @@ export class LobbyService {
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
 
         if (index === -1) { // Check if player already in Q
-            // console.log("DATA =", client.data);
             const player = new Player(client.data);
             this.users.push({ player, threshold : this.BaseThreshold});
-
-            if (this.queueInterval === undefined) {
+            if (this.queueInterval === undefined)
                 this.queueInterval = setInterval(this.intervalQueueFunction.bind(this), 500);
-            }
-
-            // this.lobbyCreateGame(player, player);
         }
     }
 
@@ -70,20 +65,19 @@ export class LobbyService {
     
     intervalQueueFunction() {
         // console.log("queueInterval: check");
-        // console.log("lenght:" ,this.users.length);
-        // console.log("users:" ,this.users);
+        console.log("Player in Q :" ,this.users.length);
+        for (let i = 0; i < this.users.length; i++)
+            console.log(`id : ${this.users[i].player.name}`);
+        console.log();
 
         let gotMatch : Boolean = false;
         if (this.users.length === 0) { // if no player in Q
             clearInterval(this.queueInterval);
             this.queueInterval = undefined;
-            // console.log(this.queueInterval);
         } else if (this.users.length >= 2) { // if >= 2 player in Q
             // check if 2 player match
             let j : number;
             for (let i : number = 0; i < this.users.length; i++) {
-                // console.log(this.users.length);
-                // console.log("i = ", i);
                 j = i + 1;
                 while (j < this.users.length) {
                     if (this.checkMatch(this.users[i], this.users[j]) === true) { // if yes create game
@@ -164,8 +158,8 @@ export class LobbyService {
             // send to player join game's url
             //this.gameGateway.server
 
-            const p1Socket = p1.player.socket;
-            const p2Socket = p2.player.socket;
+            // const p1Socket = p1.player.socket;
+            // const p2Socket = p2.player.socket;
 
             // TODO
             // retirer car new front ne se deco pas
@@ -173,7 +167,7 @@ export class LobbyService {
             // p1.player.socket = undefined;
             // p2.player.socket = undefined;
 
-            this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
+            this.gameGateway.server.to(p1.player.socket).to(p2.player.socket).emit(EventGame.lobbyGoGame , game.id);
 
     // const redirect = `${this.req.protocol}://${this.req.hostname}/game/${game.id}`;
     //const redirect = "http://localhost:3001/game/" + game.id;
@@ -243,7 +237,6 @@ export class LobbyService {
         game.shapes.push(BlackHole_01);
 
         game.numberElement = game.shapes.length;
-        server.emit(EventGame.gameImage, game.shapes);   
     }
 
 
@@ -294,7 +287,6 @@ export class LobbyService {
 			message: `Socket successfully connected.`
 		});
 
-        const allData = JSON.parse(session).passport.user;
         const userId = JSON.parse(session).passport.user.id;
         
 		socket.data.userId = userId;
@@ -319,8 +311,13 @@ export class LobbyService {
         // console.log("user : ", JSON.parse(session).passport.user);
         // console.log("socket:", socket.handshake.headers.referer);
         const gameId = socket.handshake.headers.referer.split('/').pop();
-        // console.log("**************************");
-        if (gameId === "game") { // not in game
+
+        console.log(socket.handshake.headers.referer);
+        console.log(gameId);
+        if (gameId === "") {
+            console.log("lobby service connect: not /game or /game/:id");
+            return null;
+        } else if (gameId === "game") { // not in game
             // console.log("socket in: /game");
             socket.join(`game`);
         } else {
