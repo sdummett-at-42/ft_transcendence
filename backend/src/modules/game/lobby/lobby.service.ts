@@ -167,8 +167,11 @@ export class LobbyService {
             const p1Socket = p1.player.socket;
             const p2Socket = p2.player.socket;
 
-            p1.player.socket = undefined;
-            p2.player.socket = undefined;
+            // TODO
+            // retirer car new front ne se deco pas
+            
+            // p1.player.socket = undefined;
+            // p2.player.socket = undefined;
 
             this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
 
