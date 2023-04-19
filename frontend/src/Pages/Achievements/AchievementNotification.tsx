@@ -5,18 +5,18 @@ import "./AchievementNotification.css";
 function AchievementNotification() {
   const [showNotification, setShowNotification] = useState(false);
   const [achievementName, setAchievementName] = useState("");
-  const { achievementSocketRef } = useContext(UserContext);
+  const { notificationSocketRef } = useContext(UserContext);
 
   useEffect(() => {
     // Set up socket listener for new achievements
-    achievementSocketRef.current.on("newAchievement", (data) => {
+    notificationSocketRef.current.on("newAchievement", (data) => {
       setShowNotification(true);
       setAchievementName(data.achievementName);
       setTimeout(() => {
         setShowNotification(false);
       }, 3000);
     });
-  }, [achievementSocketRef]);
+  }, [notificationSocketRef]);
 
   return (
     <div className={`achievement-notification ${showNotification ? "visible" : ""}`}>

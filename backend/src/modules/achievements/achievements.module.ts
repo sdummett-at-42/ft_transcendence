@@ -3,11 +3,10 @@ import { AchievementsController } from "./achievements.controller";
 import { AchievementService } from "./achievements.service";
 import { PrismaModule } from "nestjs-prisma";
 import { RedisModule } from "../redis/redis.module";
-import { AchievementsGateway } from "./achievements.gateway";
 
 @Module({
 	controllers: [AchievementsController],
-	providers: [AchievementService, AchievementsGateway],
+	providers: [AchievementService],
 	imports: [PrismaModule, RedisModule],
 	exports: [AchievementService],
 })

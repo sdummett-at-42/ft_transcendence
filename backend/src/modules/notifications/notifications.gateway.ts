@@ -1,21 +1,21 @@
-import { ConnectedSocket, WebSocketServer, MessageBody, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { Injectable } from "@nestjs/common";
+import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server } from 'socket.io'
-import { RedisService } from '../redis/redis.service';
-import { FriendsService } from './friends.service';
+import { RedisService } from "../redis/redis.service";
+import { FriendsService } from "../friends/friends.service";
 
 @Injectable()
-@WebSocketGateway({ cors: true,  namespace: 'friends' })
-export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-
+@WebSocketGateway({ cors: true, namespace: 'notifications' })
+export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private readonly redis: RedisService,
-		private readonly friendsService: FriendsService) { }
+		private readonly friends: FriendsService,
+	) { }
 
 	@WebSocketServer()
 	server: Server;
 
-	async afterInit(server: any) {}
+	async afterInit(server: any) { }
 
 	private extractString(inputString: string): string {
 		if (!inputString)
@@ -31,7 +31,6 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		return '';
 	}
 
-	// If first connected socket, send 'friendConnected' to all the friends
 	async handleConnection(@ConnectedSocket() socket) {
 		if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
@@ -70,7 +69,7 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 		const sockets = await this.server.fetchSockets();
 		const userSockets = sockets.filter(s => { return s.data.userId === userId });
 		if (userSockets.length === 1) {
-			const friendIds = await this.friendsService.findAll(userId);
+			const friendIds = await this.friends.findAll(userId);
 			if (!friendIds)
 				return;
 			const friendSocketIds = Object.entries(sockets)
@@ -80,28 +79,44 @@ export class FriendsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 			if (friendSocketIds.length > 0)
 				this.server.to(friendSocketIds).emit('friendConnected', {id: +userId}); // Event to report here
 		}
+
+		/* This is to test achivements notifications */
+		// setTimeout(function () {
+		// 	console.log("Emitting new achievement!");
+			// this.emitNewAchievement(userId, 'Achievement 1');
+		// }.bind(this), 3000);
 	}
 
-	// If last connected socket, send 'friendDisconnected' to all friends
+
+	
 	async handleDisconnect(@ConnectedSocket() socket) {
 		// Check if the socket is in active session
 		const userId = socket.data.userId;
 		if (!userId)
-			return;
-
+		return;
+		
 		const sockets = await this.server.fetchSockets();
 		const userSockets = sockets.filter(s => { return s.data.userId === userId });
 		if (userSockets.length === 1) {
-			const friendIds = await this.friendsService.findAll(userId);
+			const friendIds = await this.friends.findAll(userId);
 			if (!friendIds)
-				return;
+			return;
 			const friendSocketIds = Object.entries(sockets)
 			.filter(([key, value]) => friendIds.includes(value.data.userId))
 			.map(([key, value]) => value.id);
-
+			
 			if (friendSocketIds.length > 0)
-				this.server.to(friendSocketIds).emit('friendDisconnected', {id: +userId}); // Event to report here
+			this.server.to(friendSocketIds).emit('friendDisconnected', {id: +userId}); // Event to report here
 		}
+	}
+	
+	async emitNewAchievement(userId: number, achievementName: string) {
+		const sockets = await this.server.fetchSockets();
+		sockets.forEach(socket => {
+			if (socket.data.userId == userId) {
+				socket.emit('newAchievement', { achievementName });
+			}
+		});
 	}
 
 	async sendFriendRequest(requesterId: number, receiverId: number) {

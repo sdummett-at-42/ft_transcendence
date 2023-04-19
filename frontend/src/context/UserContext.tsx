@@ -15,8 +15,8 @@ const UserContextProvider = ({ children }: any) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [user, setUser] = useState<UserData>();
 
-	const friendSocketRef = useRef({});
-	friendSocketRef.current = io("http://localhost:3001/friends", {
+	const notificationSocketRef = useRef({});
+	notificationSocketRef.current = io("http://localhost:3001/notifications", {
 		auth: {
 			token: Cookies.get("connect.sid"),
 		},
@@ -25,14 +25,6 @@ const UserContextProvider = ({ children }: any) => {
 	const gameSocketRef = useRef({});
 
 	gameSocketRef.current = io("http://localhost:3001/game", {
-		auth: {
-			token: Cookies.get("connect.sid"),
-		},
-	});
-
-	const achievementSocketRef = useRef({});
-
-	achievementSocketRef.current = io("http://localhost:3001/achievements", {
 		auth: {
 			token: Cookies.get("connect.sid"),
 		},
@@ -57,10 +49,9 @@ const UserContextProvider = ({ children }: any) => {
 			value={{
 				user,
 				setUser,
-				friendSocketRef,
+				notificationSocketRef,
 				gameSocketRef,
 				isLoading,
-				achievementSocketRef,
 			}}
 		>
 			{children}
