@@ -81,12 +81,12 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		}
 
 		/* This is to test achivements notifications */
-		setTimeout(function () {
-			console.log("Emitting new achievement!");
-			this.emitNewAchievement(userId, 'Achievement 1');
-			this.emitNewAchievement(userId, 'Achievement 2');
-			this.emitNewAchievement(userId, 'Achievement 3');
-		}.bind(this), 2000);
+		// setTimeout(function () {
+		// 	console.log("Emitting new achievement!");
+		// 	this.emitNewAchievement(userId, 'Achievement 1');
+		// 	this.emitNewAchievement(userId, 'Achievement 2');
+		// 	this.emitNewAchievement(userId, 'Achievement 3');
+		// }.bind(this), 2000);
 	}
 
 

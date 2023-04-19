@@ -10,25 +10,30 @@ type UserData = {
 };
 
 export const UserContext = React.createContext({} as any);
-
 const UserContextProvider = ({ children }: any) => {
 	const [isLoading, setIsLoading] = useState(true);
+	const [rendered, setRendered] = useState(false);
 	const [user, setUser] = useState<UserData>();
 
 	const notificationSocketRef = useRef({});
-	notificationSocketRef.current = io("http://localhost:3001/notifications", {
-		auth: {
-			token: Cookies.get("connect.sid"),
-		},
-	});
-
 	const gameSocketRef = useRef({});
+	if (!rendered) {
+		notificationSocketRef.current = io(
+			"http://localhost:3001/notifications",
+			{
+				auth: {
+					token: Cookies.get("connect.sid"),
+				},
+			}
+		);
 
-	gameSocketRef.current = io("http://localhost:3001/game", {
-		auth: {
-			token: Cookies.get("connect.sid"),
-		},
-	});
+		gameSocketRef.current = io("http://localhost:3001/game", {
+			auth: {
+				token: Cookies.get("connect.sid"),
+			},
+		});
+		setRendered(true);
+	}
 
 	useEffect(() => {
 		const fetchUserData = async () => {
