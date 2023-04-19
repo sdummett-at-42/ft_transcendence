@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import {Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { useState, useEffect, useCallback } from 'react';
 import { createContext, useContext } from "react";
 import "./chat.scss"
@@ -14,13 +14,13 @@ interface MessageProps {
     name: string;
   };
   onQuit: () => void,
-  UserId:Number,
-  onUpdate:() =>void,
+  UserId: Number,
+  onUpdate: () => void,
 }
 
-export default function Message(props:MessageProps) {
+export default function Message(props: MessageProps) {
   const [messageList, setMessageList] = useState([]);
-  const [message, setMessage]= useState("");
+  const [message, setMessage] = useState("");
   const [ifShowMessage, setIfShowMessage] = useState(false);
   const [item, setItem] = useState([]);
   const database = useContext(DatabaseContext);
@@ -37,41 +37,41 @@ export default function Message(props:MessageProps) {
     setMessage(event.target.value);
   };
 
-  const handleSendMessage = (event) =>{
-    if (props.ifDM == false){
+  const handleSendMessage = (event) => {
+    if (props.ifDM == false) {
       console.log("props.ifDM == false")
       const payload = {
         roomName: props.roomName,
         message: message,
       }
-      props.socket.emit("sendRoomMsg",payload);
+      props.socket.emit("sendRoomMsg", payload);
     } else {
       console.log("props.ifDM == true")
       const payload = {
         userId: props.toDMID.id,
         message: message,
       }
-      props.socket.emit("sendDM",payload);
+      props.socket.emit("sendDM", payload);
     }
     setMessage("");
   };
-  const handleMessageAuto= useCallback((payload)=>{
+  const handleMessageAuto = useCallback((payload) => {
     setMessageList((prevme) => [...prevme, {
       roomName: "",
-      userId : -1,
+      userId: -1,
       timestamp: new Date().toISOString(),
-      message : payload.message
+      message: payload.message
     }]);
-  },[]);
+  }, []);
 
   const handleMessages = useCallback((payload) => {
-      setMessageList((prevme) => [...prevme, payload]);
-  },[messageList]);
+    setMessageList((prevme) => [...prevme, payload]);
+  }, [messageList]);
 
   const handleDMupdate = useCallback((payload) => {
-      console.log("handleDMupdate", payload);
-      setDmList((prevme) => [...prevme, payload]);
-  },[dmList]);
+    console.log("handleDMupdate", payload);
+    setDmList((prevme) => [...prevme, payload]);
+  }, [dmList]);
 
   useEffect(() => {
     // refersh context
@@ -81,173 +81,171 @@ export default function Message(props:MessageProps) {
   useEffect(() => {
     console.log("dmList", dmList);
     const sortitemDM = dmList.sort((a, b) => (new Date(a.timestamp)) - (new Date(b.timestamp)));
-    console.log("sortitemDM", sortitemDM);
+    // console.log("sortitemDM", sortitemDM);
     setItemDM(dmList.sort((a, b) => a.timestamp - b.timestamp)
       .map((each, index) => {
-      const date = new Date(each.timestamp);
-      const hour = date.getHours().toString().padStart(2, '0');
-      const minute = date.getMinutes().toString().padStart(2, '0');
-      const second = date.getSeconds().toString().padStart(2, '0');
-      let className1 = "message-data";
-      let className2 = "message";
-      if (props.roomName == null) {
-        console.log("props.roomName == nul")
-        return null;
-      }
-      else {
-        let username;
-        if (each.userId === -1){
-          username = "Notification";
+        const date = new Date(each.timestamp);
+        const hour = date.getHours().toString().padStart(2, '0');
+        const minute = date.getMinutes().toString().padStart(2, '0');
+        const second = date.getSeconds().toString().padStart(2, '0');
+        let className1 = "message-data";
+        let className2 = "message";
+        if (props.roomName == null) {
+          console.log("props.roomName == nul")
+          return null;
         }
         else {
-          let user = database.find((user) => user.id === each.userId);
-          if (user === undefined) {
-            props.onUpdate();
-            const interval = setInterval(() => {
-            user = database.find((user) => user.id === each.userId);
-            if (user !== undefined) {
-                clearInterval(interval);
-                console.log("user underfine");
+          let username;
+          if (each.userId === -1) {
+            username = "Notification";
+          }
+          else {
+            let user = database.find((user) => user.id === each.userId);
+            if (user === undefined) {
+              props.onUpdate();
+              const interval = setInterval(() => {
+                user = database.find((user) => user.id === each.userId);
+                if (user !== undefined) {
+                  clearInterval(interval);
+                  console.log("user underfine");
                 }
-            }, 1000);
-          } else {
-            username = user.name
+              }, 1000);
+            } else {
+              username = user.name
+            }
+            if (each.userId === props.UserId) {
+              className1 += " align-right";
+              className2 += " other-message float-right";
+            } else {
+              className2 += " my-message";
+            }
           }
-          if (each.userId === props.UserId) {
-            className1 += " align-right";
-            className2 += " other-message float-right";
-          } else {
-            className2 += " my-message"; 
-          }
-        }
-        return (
-          
-          <li className="clearfix" key={index}>
-            <div className={className1}>
-              <span className="message-data-name">  {username}</span>
-              <span className="message-data-time">{hour}:{minute}:{second}</span>
-            </div>
+          return (
+
+            <li className="clearfix" key={index}>
+              <div className={className1}>
+                <span className="message-data-name">  {username}</span>
+                <span className="message-data-time">{hour}:{minute}:{second}</span>
+              </div>
               <div className={className2}>{each.message}</div>
-          </li>
-        );
-    }})
+            </li>
+          );
+        }
+      })
     );
-  },[dmList] )
+  }, [dmList, database])
   useEffect(() => {
     // console.log("messageList", messageList);
     setItem(messageList.sort((a, b) => a.timestamp - b.timestamp)
       .map((each, index) => {
-      const date = new Date(each.timestamp);
-      const hour = date.getHours().toString().padStart(2, '0');
-      const minute = date.getMinutes().toString().padStart(2, '0');
-      const second = date.getSeconds().toString().padStart(2, '0');
-      let className1 = "message-data";
-      let className2 = "message";
-      if (props.roomName == null) {
-        console.log("props.roomName == nul")
-        return null;
-      }
-      else {
-        let username;
-        if (each.userId === -1){
-          username = "Notification";
+        const date = new Date(each.timestamp);
+        const hour = date.getHours().toString().padStart(2, '0');
+        const minute = date.getMinutes().toString().padStart(2, '0');
+        const second = date.getSeconds().toString().padStart(2, '0');
+        let className1 = "message-data";
+        let className2 = "message";
+        if (props.roomName == null) {
+          console.log("props.roomName == nul")
+          return null;
         }
         else {
-          let user = database.find((user) => user.id === each.userId);
-          if (user === undefined) {
-            props.onUpdate();
-            const interval = setInterval(() => {
-            user = database.find((user) => user.id === each.userId);
-            if (user !== undefined) {
-                clearInterval(interval);
-                // username = each.userId;
-                console.log("user underfine");
+          let username;
+          if (each.userId === -1) {
+            username = "Notification";
+          }
+          else {
+            let user = database.find((user) => user.id === each.userId);
+            if (user === undefined) {
+              props.onUpdate();
+              const interval = setInterval(() => {
+                user = database.find((user) => user.id === each.userId);
+                if (user !== undefined) {
+                  clearInterval(interval);
+                  // username = each.userId;
+                  console.log("user underfine");
                 }
-            }, 1000);
-          } else {
-            username = user.name
-            // console.log("here", username);
+              }, 1000);
+            } else {
+              username = user.name
+              // console.log("here", username);
+            }
+            if (each.userId === props.UserId) {
+              className1 += " align-right";
+              className2 += " other-message float-right";
+            } else {
+              className2 += " my-message";
+            }
           }
-          if (each.userId === props.UserId) {
-            className1 += " align-right";
-            className2 += " other-message float-right";
-          } else {
-            className2 += " my-message"; 
-          }
-        }
-        return (
-          
-          <li className="clearfix" key={index}>
-            <div className={className1}>
-              <span className="message-data-name">  {username}</span>
-              <span className="message-data-time">{hour}:{minute}:{second}</span>
-            </div>
+          return (
+
+            <li className="clearfix" key={index}>
+              <div className={className1}>
+                <span className="message-data-name">  {username}</span>
+                <span className="message-data-time">{hour}:{minute}:{second}</span>
+              </div>
               <div className={className2}>{each.message}</div>
-          </li>
-        );
-    }})
+            </li>
+          );
+        }
+      })
     );
-  },[messageList] )
+  }, [messageList, database])
 
   const handleDMReceived = useCallback((payload) => {
-    console.log(`dm : ${JSON.stringify(payload)}`);
+    // console.log(`dm : ${JSON.stringify(payload)}`);
     setDmList(payload.msgHist);
-  }, [dmList, props.roomName, props.ifDM])
-  
-  const handleMessagesReceived = useCallback((payload) => {
+  }, [dmList, database, props.roomName, props.ifDM])
 
-    console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
+  const handleMessagesReceived = useCallback((payload) => {
+    // console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
     setMessageList(payload.msgHist);
-  }, [messageList, props.roomName, props.ifDM])
-  
+  }, [messageList, database, props.roomName, props.ifDM])
+
   useEffect(() => {
-    if (props.socket) {
       props.socket.on("roomMsgHistReceived", handleMessagesReceived);
       props.socket.on("roomMsgReceived", handleMessages);
       props.socket.on("dmHist", handleDMReceived);
-      props.socket.on("DMReceived",handleDMupdate);
-      props.socket.on("DMNotSended",(payload)=>{
-        alert(payload.message);})
+      props.socket.on("DMReceived", handleDMupdate);
+      props.socket.on("DMNotSended", (payload) => {
+        alert(payload.message);
+      })
       props.socket.on("userInvited", handleMessageAuto);
-      props.socket.on("roomMsgNotSended", (payload)=>{
+      props.socket.on("roomMsgNotSended", (payload) => {
         alert(payload.message);
       });
-    }
     return () => {
-      if (props.socket) {
-        props.socket.off("roomMsgHistReceived",handleMessagesReceived);
+        props.socket.off("roomMsgHistReceived", handleMessagesReceived);
         props.socket.off("roomMsgReceived", handleMessages);
         props.socket.off("dmHist", handleDMReceived);
         props.socket.off("DMReceived", handleDMupdate);
         props.socket.off("userInvited", handleMessageAuto);
         props.socket.off("DMNotSended");
         props.socket.off("roomMsgNotSended");
-      }
     };
-  }, [props.socket, props.roomName, handleMessagesReceived,handleMessages,handleMessageAuto]);
+  }, [props.socket, props.roomName, handleMessagesReceived, handleMessages, handleMessageAuto]);
 
   return (
     props.roomName ? (
-<div className="chat col-lg-6 ">
-<div className="chat-header clearfix">
-  <div className="chat-about">
-    <div className="row">
-      <div className="chat-with col-6">Chatroom : {props.roomName}</div>
-    </div>
-      {props.ifDM? null : <button className="col-2" onClick={handleQuit}>Leave</button>}
-    </div>
-</div> 
+      <div className="chat col-lg-6 ">
+        <div className="chat-header clearfix">
+          <div className="chat-about">
+            <div className="row">
+              <div className="chat-with col-6">Chatroom : {props.roomName}</div>
+            </div>
+            {props.ifDM ? null : <button className="col-2" onClick={handleQuit}>Leave</button>}
+          </div>
+        </div>
 
-<div className="chat-history">
-  <ul>
-    {props.ifDM? itemDM: item}
-  </ul>
+        <div className="chat-history">
+          <ul>
+            {props.ifDM ? itemDM : item}
+          </ul>
 
-</div>
-  <div className="chat-message clearfix">
-    <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="2" value={message} onChange={handleMessageChange}></textarea>      
-    <button onClick={handleSendMessage} >Send</button>
-  </div>
-</div>):<div className="chat col-lg-6"> <h4>Choose a room to view messages</h4></div> 
+        </div>
+        <div className="chat-message clearfix">
+          <textarea name="message-to-send" id="message-to-send" placeholder="Type your message" rows="2" value={message} onChange={handleMessageChange}></textarea>
+          <button onClick={handleSendMessage} >Send</button>
+        </div>
+      </div>) : <div className="chat col-lg-6"> <h4>Choose a room to view messages</h4></div>
   );
 }
