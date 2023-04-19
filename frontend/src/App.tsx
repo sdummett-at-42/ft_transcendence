@@ -27,25 +27,33 @@ function App() {
 		<div className="App">
 			<Routes>
 				<Route path="/home" element={<Layout children={<Home />} />} />
-				<Route path="/lobby" element={<Layout children={<Lobby />} />} />
+				<Route
+					path="/lobby"
+					element={<Layout children={<Lobby />} />}
+				/>
 				{user ? (
 					<Route
 						path="/profile"
-						element={<Layout children={<Profile userId={user.id} />} />}
+						element={
+							<Layout children={<Profile userId={user.id} />} />
+						}
 					/>
 				) : null}
 				<Route
 					path="/settings"
 					element={<Layout children={<Settings />} />}
 				/>
-				<Route
-					path="/unauthorized"
-					element={<Unauthorized />}
-				/>
-				<Route
-					path="/achievements"
-					element={<Layout children={<InitAchievements />} />}
-				/>
+				<Route path="/unauthorized" element={<Unauthorized />} />
+				{user ? (
+					<Route
+						path="/achievements"
+						element={
+							<Layout
+								children={<InitAchievements userId={user.id} />}
+							/>
+						}
+					/>
+				) : null}
 				<Route
 					path="/stats"
 					element={<Layout children={<InitStats />} />}
@@ -61,7 +69,7 @@ function App() {
 				<Route path="/loading" element={<Loading />} />
 			</Routes>
 		</div>
-	)
+	);
 }
 
 export default App;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Profile.css"
+import InitAchievements from "../Achievements/Achievements";
 
 export default function Profile({ userId }) {
 	const [user, setUser] = useState(null);
@@ -97,7 +98,7 @@ function MatchList({ user, match }) {
 			<p>
 				Wins/Losses: {matchWon.length}/{matchLost.length}
 			</p>
-
+			<InitAchievements userId={user.id} />
 			<h3>Matches</h3>
 			<table className="match-table">
 				<thead>

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import "./Achievements.css";
 
-export default function InitAchievements() {
+export default function InitAchievements({ userId }) {
 	const [achievements, setAchievements] = useState([]);
 
 	useEffect(() => {
-		async function fetchAchievements() {
+		async function fetchAchievements(userId: number) {
 			const [userAchievementsRes, allAchievementsRes] = await Promise.all(
 				[
-					fetch("http://localhost:3001/users/me/achievements", {
+					fetch(`http://localhost:3001/users/${userId}/achievements`, {
 						method: "GET",
 						headers: { "Content-Type": "application/json" },
 						credentials: "include",
@@ -52,8 +52,8 @@ export default function InitAchievements() {
 				console.log(`Fetching achievements failed.`);
 			}
 		}
-		fetchAchievements();
-	}, []);
+		fetchAchievements(userId);
+	}, [userId]);
 
 	return <Achievements achievements={achievements} />;
 }

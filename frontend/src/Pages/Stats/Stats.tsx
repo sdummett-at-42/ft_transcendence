@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Stats.css";
+import InitAchievements from "../Achievements/Achievements";
 
 export default function InitStats() {
 	const [users, setUsers] = useState([]);
@@ -93,6 +94,7 @@ function UserPopup({ user, onClose }) {
 				/>
 				<p>Wins: {user.matchWon.length}</p>
 				<p>Losses: {user.matchLost.length}</p>
+				<InitAchievements userId={user.id}/>
 				{/* Add more details as needed */}
 			</div>
 		</div>
