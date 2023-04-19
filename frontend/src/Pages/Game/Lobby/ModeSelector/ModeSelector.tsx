@@ -1,6 +1,7 @@
 import React from "react";
 import "../Lobby.css"
 import RankedIcon from "../../../../assets/crown-logo.png"
+import CustomIcon from "../../../../assets/custom-logo.png"
 
 export default function ModeSelector(props) {
 
@@ -26,7 +27,7 @@ export default function ModeSelector(props) {
                     onClick={() => (setDispSelector(false), setCustom(true))}
                     className="Lobby-selector-button"
                 >
-                    <img src={RankedIcon} alt="" />
+                    <img src={CustomIcon} alt="" />
                     <div className="Lobby-info">
                         <h1>Décontractée</h1>
                         <p>Défiez vos amis dans une partie entièrement personnalisé </p>

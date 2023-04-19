@@ -144,11 +144,15 @@ export default function LoginSelector() {
 								{/* {errorMessages.login && <Link to="/forgotMail" className="LoginSelector-error">{errorMessages.login}</Link>} */}
 							</form>
 							<div className="LoginSelector-card-subtitle">
+
 								<a
 									href="http://localhost:3001/auth/42/login"
 									className="FortyTwoLogin-button"
-								>
-									Se connecter avec 42
+									>
+										<div className="FortyTwoLogin-button-content">
+										Se connecter avec 42
+
+										</div>
 								</a>
 							</div>
 						</div>
