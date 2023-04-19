@@ -200,13 +200,6 @@ export class LobbyService {
         // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
         // on count pour numberElement lors reset/scoring
 
-<<<<<<< HEAD
-=======
-        // console.log("-------------");
-        // console.log("----Game:", game);
-        // console.log("-------------");
-
->>>>>>> origin/gsap
         if (game.shapes.length != 0)
             return ;
 
@@ -274,10 +267,6 @@ export class LobbyService {
 	}
 
     async handleConnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
-<<<<<<< HEAD
-=======
-        // console.log(socket.handshake.headers);
->>>>>>> origin/gsap
 		if (socket.handshake.auth.token == undefined) {
 			// console.debug("Session cookie wasn't provided. Disconnecting socket.");
 			socket.emit(EventGame.NotConnected, {
@@ -337,12 +326,8 @@ export class LobbyService {
         } else {
             //TODO
             // check if game exist| ingame| finish
-<<<<<<< HEAD
             // faire que le front envoie l'id de la game ?
             console.log("socket in: /game/:id");
-=======
-            // console.log("socket in: /game/:id");
->>>>>>> origin/gsap
             socket.data.ingame = gameId;
             
             const index = this.games.findIndex(games => games.id === Number(gameId));
