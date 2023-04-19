@@ -17,20 +17,26 @@ export default function ModeSelector(props) {
                     onClick={() => (setDispSelector(false), setRanked(true))}
                     className="Lobby-selector-button"
                 >
-                    <img src={RankedIcon} alt="" />
+                    <img src={RankedIcon} alt="" draggable="false" />
                     <div className="Lobby-info">
-                        <h1>Classée</h1>
-                        <p>Affrontez d'autres joueurs et grimpez dans le classement</p>
+                        <h1 className="Lobby-mode-name">Classée</h1>
+                        <p className="Lobby-mode-text">
+                            Affrontez d'autres joueurs et grimpez dans le classement.
+                            Parviendriez-vous à devenir le maitre incontesté de Pong ?
+                        </p>
                     </div>
                 </div>
                 <div
                     onClick={() => (setDispSelector(false), setCustom(true))}
                     className="Lobby-selector-button"
                 >
-                    <img src={CustomIcon} alt="" />
+                    <img src={CustomIcon} alt="" draggable="false" />
                     <div className="Lobby-info">
-                        <h1>Décontractée</h1>
-                        <p>Défiez vos amis dans une partie entièrement personnalisé </p>
+                        <h1 className="Lobby-mode-name">Décontractée</h1>
+                        <p className="Lobby-mode-text">
+                            Défiez vos amis dans une partie entièrement personnalisée.
+                            Ici pas de classement, juste du fun !
+                        </p>
                     </div>
                 </div>
             </div>
