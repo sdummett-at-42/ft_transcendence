@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from "react";
 import "./Achievements.css";
 
-export default function InitAchievements({ userId }) {
+export default function InitAchievements({ userId, showLocked }) {
 	const [achievements, setAchievements] = useState([]);
 
 	useEffect(() => {
 		async function fetchAchievements(userId: number) {
 			const [userAchievementsRes, allAchievementsRes] = await Promise.all(
 				[
-					fetch(`http://localhost:3001/users/${userId}/achievements`, {
-						method: "GET",
-						headers: { "Content-Type": "application/json" },
-						credentials: "include",
-					}),
+					fetch(
+						`http://localhost:3001/users/${userId}/achievements`,
+						{
+							method: "GET",
+							headers: { "Content-Type": "application/json" },
+							credentials: "include",
+						}
+					),
 					fetch("http://localhost:3001/achievements", {
 						method: "GET",
 						headers: { "Content-Type": "application/json" },
@@ -55,35 +58,40 @@ export default function InitAchievements({ userId }) {
 		fetchAchievements(userId);
 	}, [userId]);
 
-	return <Achievements achievements={achievements} />;
+	return <Achievements achievements={achievements} showLocked={showLocked} />;
 }
 
-function Achievements({ achievements }) {
+function Achievements({ achievements, showLocked }) {
 	return (
 		<div className="achievements">
-			{achievements.map((achievement) => (
-				<div
-					key={achievement.id}
-					className={`achievement-card ${
-						achievement.unlocked
-							? "achievement-unlocked"
-							: "achievement-locked"
-					}`}
-				>
-					<div
-						className="achievement-icon"
-						style={{ backgroundImage: `url(${achievement.icon})` }}
-					></div>
-					<div className="achievement-details">
-						<div className="achievement-title">
-							{achievement.name}
+			{achievements.map(
+				(achievement) =>
+					(achievement.unlocked || showLocked) && (
+						<div
+							key={achievement.id}
+							className={`achievement-card ${
+								achievement.unlocked
+									? "achievement-unlocked"
+									: "achievement-locked"
+							}`}
+						>
+							<div
+								className="achievement-icon"
+								style={{
+									backgroundImage: `url(${achievement.icon})`,
+								}}
+							></div>
+							<div className="achievement-details">
+								<div className="achievement-title">
+									{achievement.name}
+								</div>
+								<div className="achievement-description">
+									{achievement.description}
+								</div>
+							</div>
 						</div>
-						<div className="achievement-description">
-							{achievement.description}
-						</div>
-					</div>
-				</div>
-			))}
+					)
+			)}
 		</div>
 	);
 }

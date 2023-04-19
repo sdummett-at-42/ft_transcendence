@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Stats.css";
 import InitAchievements from "../Achievements/Achievements";
+import Profile from "../Profile/Profile";
 
 export default function InitStats() {
 	const [users, setUsers] = useState([]);
@@ -86,16 +87,7 @@ function UserPopup({ user, onClose }) {
 				<button className="close-button" onClick={onClose}>
 					X
 				</button>
-				<h2>{user.name}</h2>
-				<img
-					src={user.profilePicture}
-					alt="Profile"
-					className="profile-picture"
-				/>
-				<p>Wins: {user.matchWon.length}</p>
-				<p>Losses: {user.matchLost.length}</p>
-				<InitAchievements userId={user.id}/>
-				{/* Add more details as needed */}
+				<Profile userId={user.id} showLocked={false} />
 			</div>
 		</div>
 	);

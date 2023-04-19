@@ -49,7 +49,12 @@ function App() {
 						path="/achievements"
 						element={
 							<Layout
-								children={<InitAchievements userId={user.id} />}
+								children={
+									<InitAchievements
+										userId={user.id}
+										showLocked={true}
+									/>
+								}
 							/>
 						}
 					/>
