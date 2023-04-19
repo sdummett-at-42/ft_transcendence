@@ -1657,6 +1657,12 @@ export class ChatService {
 				message: dto.message,
 			})
 		});
+
+		socket.emit(Event.DMReceived, {
+			userId: +userId,
+			timestamp: new Date(currentTimestamp).toISOString(),
+			message: dto.message,
+		});
 	}
 
 	async getDmHist(socket, dto: GetDmHistDto, server) {
