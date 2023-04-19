@@ -4,23 +4,34 @@ import "./AchievementNotification.css";
 
 function AchievementNotification() {
   const [showNotification, setShowNotification] = useState(false);
-  const [achievementName, setAchievementName] = useState("");
+  const [achievementQueue, setAchievementQueue] = useState([]);
   const { notificationSocketRef } = useContext(UserContext);
 
   useEffect(() => {
     // Set up socket listener for new achievements
     notificationSocketRef.current.on("newAchievement", (data) => {
-      setShowNotification(true);
-      setAchievementName(data.achievementName);
-      setTimeout(() => {
-        setShowNotification(false);
-      }, 3000);
+      setAchievementQueue((prevQueue) => [...prevQueue, data]);
     });
   }, [notificationSocketRef]);
 
+  useEffect(() => {
+    if (achievementQueue.length > 0 && !showNotification) {
+      setShowNotification(true);
+      setTimeout(() => {
+        setShowNotification(false);
+        setAchievementQueue((prevQueue) => prevQueue.slice(1));
+      }, 3000);
+    }
+  }, [achievementQueue, showNotification]);
+
+  // Remove achievements that have already been displayed
+  const filteredQueue = achievementQueue.filter(
+    (achievement, index) => index === 0 || achievement.achievementName !== achievementQueue[index - 1].achievementName
+  );
+
   return (
     <div className={`achievement-notification ${showNotification ? "visible" : ""}`}>
-      {achievementName && <div>{achievementName} unlocked!</div>}
+      {filteredQueue.length > 0 && <div>{filteredQueue[0].achievementName} unlocked!</div>}
     </div>
   );
 }
