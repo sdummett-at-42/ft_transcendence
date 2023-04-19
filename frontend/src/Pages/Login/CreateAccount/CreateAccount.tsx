@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { useContext } from "react";
 import { UserContext } from "../../../context/UserContext";
 import Loading from "../../Loading/Loading";
+import { SHA256 } from "crypto-js"
 
 export default function CreateAccount() {
 	const { user, isLoading } = useContext(UserContext);
@@ -82,7 +83,7 @@ export default function CreateAccount() {
 		}
 
 		// Hash password
-		const hashedPassword = password;
+		const hashedPassword = SHA256(password).toString();
 
 		fetch("http://localhost:3001/auth/local", {
 			method: "POST",

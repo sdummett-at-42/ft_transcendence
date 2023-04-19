@@ -5,6 +5,7 @@ import Logo42 from "../../assets/42_Logo.png";
 import { useContext } from "react";
 import { UserContext } from "../../context/UserContext";
 import Loading from "../Loading/Loading";
+import { SHA256 } from "crypto-js";
 
 export default function LoginSelector() {
 	const { user, isLoading } = useContext(UserContext);
@@ -43,7 +44,7 @@ export default function LoginSelector() {
 			return;
 		}
 
-		const hashedPassword = password;
+		const hashedPassword = SHA256(password).toString();
 
 		fetch("http://localhost:3001/auth/local", {
 			method: "POST",
