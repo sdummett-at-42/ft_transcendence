@@ -81,4 +81,5 @@ export enum Event {
 	roomMembers = "roomMembers",
 	getDmHist = "getDmHist",
 	dmHist = "dmHist",
+	dmUpdated = "dmUpdated",
 }

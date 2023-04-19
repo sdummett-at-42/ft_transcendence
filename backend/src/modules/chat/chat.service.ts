@@ -228,7 +228,6 @@ export class ChatService {
 	}
 
 	async joinRoom(socket, dto: JoinRoomDto, server) {
-		// console.log("here??");
 		const userId: string = socket.data.userId.toString();
 
 		const room = await this.redis.getRoom(dto.roomName);
@@ -1635,12 +1634,13 @@ export class ChatService {
 			});
 			return;
 		}
-
+		
 		const sockets = await server.fetchSockets();
+		// console.log("userId", userId);
 		const receiverSockets = sockets.filter(s => {
-			return s.data.userId === dto.userId;
+			return s.data.userId === dto.userId ;
 		});
-
+		console.log("receiverSockets", receiverSockets.length);
 		const currentTimestamp = Date.now();
 		this.redis.setDm(+userId, dto.userId, new Date(currentTimestamp).toISOString(), dto.message, EXPIRATION_TIME);
 		if (receiverSockets.length === 0) {
@@ -1648,20 +1648,29 @@ export class ChatService {
 			await this.redis.setUserUnreadDM(+userId, dto.userId);
 			return;
 		}
+		socket.emit(Event.DMReceived, {
+			userId: +userId,
+			timestamp: new Date(currentTimestamp).toISOString(),
+			message: dto.message,
+		})
+		socket.emit(Event.dmUpdated, {
+			userId: +dto.userId, 
+			timestamp: new Date().toISOString(),
+			message: `Room ${dto.userId} has been updated.`,
+		})
 
-		console.debug(`User ${userId} is sending a DM to user ${dto.userId}`);
 		receiverSockets.forEach(socket => {
+			// console.debug("socket",socket);
 			socket.emit(Event.DMReceived, {
 				userId: +userId,
 				timestamp: new Date(currentTimestamp).toISOString(),
 				message: dto.message,
 			})
-		});
-
-		socket.emit(Event.DMReceived, {
-			userId: +userId,
-			timestamp: new Date(currentTimestamp).toISOString(),
-			message: dto.message,
+			socket.emit(Event.dmUpdated, {
+				userId: +userId,
+				timestamp: new Date().toISOString(),
+				message: `Room ${dto.userId} has been updated.`,
+			})
 		});
 	}
 

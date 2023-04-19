@@ -15,7 +15,7 @@ export default function ChatLogin() {
   const [userId, setUserId] = useState(0);
   const [database, setDatabase] = useState([]);
   const [shouldUpdateDatabase, setShouldUpdateDatabase] = useState(false);
-  const [ifsocket, setIfSocket] = useState(false);
+  const [ifsocket, setIfSocket] = useState(true);
   const [ifDM , setIfDM] = useState(false);
   const [toDMID, setToDMID]= useState({id: 0, name :""});
   const [ifDataReady, setifDataReady] = useState(false);
@@ -108,8 +108,10 @@ export default function ChatLogin() {
 
     useEffect(() => {
       function onConnect(payload) {
-        setIfSocket(true)
+        // setIfSocket(true)
         console.log("connected socket!");
+        socket.emit("getUserRooms");
+        socket.emit("getDmsList");
       }
   
       function onDisconnect() {
@@ -126,7 +128,7 @@ export default function ChatLogin() {
         socket.off('disconnect', onDisconnect);
         socket.off("memberListUpdated", handleUpdateDatabase );
       };
-    }, [socket, ifsocket, database]);
+    }, [socket, handleUpdateDatabase]);
 
     if (ifsocket == false ) {
       return <div>Connecting to server...</div>;

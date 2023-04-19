@@ -94,12 +94,12 @@ export default function Setting(props: SettingProps) {
                 <label htmlFor="inputPassword">Password (To remove the password, leave the field empty.)</label>
                 <input type="text" className="form-control" name="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            <div className="d-flex justify-content-end" onClick={handleAccessChange}><button>Change</button></div>
-            <div className="col-8">
+            <div className="form-group col-md-12 d-flex justify-content-end" onClick={handleAccessChange}><button>Change</button></div>
+            <div className="col-md-12">
                 <label htmlFor="inputAdmin">New Administrator</label>
                 <input type="text" className="form-control" name="Name" placeholder="Name" value={admin} onChange={(e) => setAdmin(e.target.value)} />
               </div>
-              <div className=" d-flex justify-content-end" onClick={handleAddAdmin}> <button>Add</button></div>
+              <div className="col-md-12 d-flex justify-content-end" onClick={handleAddAdmin}> <button>Add</button></div>
             <div className="modal-form">
             <button onClick={props.onClose}>Close</button>
               </div>

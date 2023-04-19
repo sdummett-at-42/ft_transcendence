@@ -51,7 +51,9 @@ export default function ChatroomList(props: ChatroomListProps) {
       // console.log("chat rooms:", chatrooms);
     }, [chatrooms]);
     const handleDMRoomsListReceived = useCallback((payload) => {
+        console.log("pass DMRoomsListReceived")
       if (database) {
+        console.log("pass DMRoomsListReceived database good")
         const filteredObjects = database.filter(obj => payload.dms.includes(obj.id));
         // console.log("database:", database);
         // console.log("include", filteredObjects);
@@ -60,8 +62,9 @@ export default function ChatroomList(props: ChatroomListProps) {
       }
     }, [dms, database]);
     const handlDMlistupdated = useCallback((payload) => {
-      console.log("ROOMdmUPADTE:", payload );
-      setdms(payload.dms);
+      console.log("ROOMdmUPADTE:", payload);
+      console.log("dms", dms);
+
     }, [dms]);
 
     const handleRoomDeleted = useCallback((payload) => {
@@ -100,15 +103,9 @@ export default function ChatroomList(props: ChatroomListProps) {
       }
     }
 
-    // Init
-    useEffect(() => {
-      // props.socket.emit("getRoomsList");
-      props.socket.emit("getUserRooms");
-      props.socket.emit("getDmsList");
-    }, []);
     useEffect(() => {
       if (props.socket && props.ifDataReady) {
-        // console.log("The socket exists")
+         console.log("The socket exists and data ready")
         // props.socket.on("roomsListReceived",handleRoomsList);
         props.socket.on("userRooms",handleRoomsListReceived);
         props.socket.on("dmsList",handleDMRoomsListReceived);
@@ -116,7 +113,7 @@ export default function ChatroomList(props: ChatroomListProps) {
         props.socket.on("roomJoined", handleRoomJoined);
         props.socket.on("roomUpdated", handleRoomsUpdate);
         props.socket.on("roomLeft", handleRoomDeleted);
-        props.socket.on("DMReceived", handlDMlistupdated);
+        props.socket.on("dmUpdated", handlDMlistupdated);
         // console.log("received");
         // console.log(props.socket.listeners("roomsListReceived"));
       return () => {
@@ -128,7 +125,7 @@ export default function ChatroomList(props: ChatroomListProps) {
           props.socket.off("roomJoined", handleRoomJoined);
           props.socket.off("roomLeft", handleRoomDeleted);
           props.socket.off("roomUpdated", handleRoomsUpdate);
-          props.socket.off("DMReceived", handlDMlistupdated);
+          props.socket.off("dmUpdated", handlDMlistupdated);
       }}
     }, [props.socket, props.ifDataReady, database, handleRoomJoined, selectedRoom, props.ifDM]);
 

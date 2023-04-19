@@ -1,7 +1,8 @@
 @import url(https://fonts.googleapis.com/css?family=Lato:400,700);
 // @import '~bootstrap/dist/css/bootstrap-grid.min.css';
-$green: #86BB71;
-$blue: #4188de;
+$green: #cefcba;
+$blue: #b8d4f6;
+$bluebuttom:#215ea9;
 $orange: #E38968;
 $gray: #92959E;
 body {
@@ -104,7 +105,7 @@ img {
 button {
     border-radius: 3px;
     float: left;
-    color: $blue;
+    color: $bluebuttom;
     font-size: 16px;
     // text-transform: uppercase;
     border: none;
@@ -112,7 +113,7 @@ button {
     font-weight: bold;
     background: #ffffff;
     &:hover {
-        color: darken($blue, 7%);
+        color: darken($bluebuttom, 7%);
     }
 }
 
@@ -173,7 +174,7 @@ button {
             font-weight: bold;
             background: #fefefe;
             &:hover {
-                color: darken($blue, 7%);
+                color: darken($bluebuttom, 7%);
             }
         }
     }
@@ -248,7 +249,7 @@ button {
         }
         button {
             float: right;
-            color: $blue;
+            color: $bluebuttom;
             font-size: 16px;
             text-transform: uppercase;
             border: none;
@@ -256,7 +257,7 @@ button {
             font-weight: bold;
             background: #fefefe;
             &:hover {
-                color: darken($blue, 7%);
+                color: darken($bluebuttom, 7%);
             }
         }
     }
@@ -328,7 +329,7 @@ button {
         button {
             border-radius: 3px;
             float: right;
-            color: $blue;
+            color: $bluebuttom;
             font-size: 16px;
             border: none;
             cursor: pointer;

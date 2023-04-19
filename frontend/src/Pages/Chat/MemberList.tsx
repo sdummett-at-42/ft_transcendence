@@ -29,22 +29,23 @@ export default function MemberList(props: MemberListProps) {
     useEffect(() => {
     //  console.log("members2222", members);
     setItem(members.members.map((each, index) => {
-        let user = database.find((user) => user.id === each);
-        let role = "member";
-        if(members.owner.includes(each) ==  true)
-            role = "Owner";
-        else if (members.admins.includes(each) ==  true)
-            role = "Admin";
-        return (
-          <>
-            <li className="clearfix col-lg-7 " key={index}>
-                <img  src={user.profilePicture} alt="avatar" />
-                <div className="about">
-                    <div className="name ">{user.name}</div>
-                    <div className="status">
-                    <i className="fa fa-circle online"></i> {role}</div>    
-                </div>             
-            </li>
+        if (database){
+            let user = database.find((user) => user.id === each);
+            let role = "member";
+            if(members.owner.includes(each) ==  true)
+                role = "Owner";
+            else if (members.admins.includes(each) ==  true)
+                role = "Admin";
+            return (
+            <>
+                <li className="clearfix col-lg-7 " key={index}>
+                    <img  src={user.profilePicture} alt="avatar" />
+                    <div className="about">
+                        <div className="name ">{user.name}</div>
+                        <div className="status">
+                        <i className="fa fa-circle online"></i> {role}</div>    
+                    </div>             
+                </li>
           
             {/* play, message, block, unmute, unban */}
           {user.id === props.UserId ? null : (<div className="col-lg-5"><button className="PendingFriend-button" onClick={()=>hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
@@ -53,7 +54,7 @@ export default function MemberList(props: MemberListProps) {
           </div>)}
           </>
         );
-    })
+    }})
     );
     }, [database, members]);
     const handleMemberList = useCallback((payload)=>{

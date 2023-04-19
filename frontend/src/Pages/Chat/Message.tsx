@@ -79,7 +79,9 @@ export default function Message(props:MessageProps) {
   }, [messageList, dmList]);
 
   useEffect(() => {
-    // console.log("messageList", messageList);
+    console.log("dmList", dmList);
+    const sortitemDM = dmList.sort((a, b) => (new Date(a.timestamp)) - (new Date(b.timestamp)));
+    console.log("sortitemDM", sortitemDM);
     setItemDM(dmList.sort((a, b) => a.timestamp - b.timestamp)
       .map((each, index) => {
       const date = new Date(each.timestamp);
@@ -105,13 +107,11 @@ export default function Message(props:MessageProps) {
             user = database.find((user) => user.id === each.userId);
             if (user !== undefined) {
                 clearInterval(interval);
-                // username = each.userId;
                 console.log("user underfine");
                 }
             }, 1000);
           } else {
             username = user.name
-            // console.log("here", username);
           }
           if (each.userId === props.UserId) {
             className1 += " align-right";
@@ -132,7 +132,7 @@ export default function Message(props:MessageProps) {
         );
     }})
     );
-  },[props.roomName, dmList, database] )
+  },[dmList] )
   useEffect(() => {
     // console.log("messageList", messageList);
     setItem(messageList.sort((a, b) => a.timestamp - b.timestamp)
@@ -187,10 +187,10 @@ export default function Message(props:MessageProps) {
         );
     }})
     );
-  },[props.roomName, messageList, database] )
+  },[messageList] )
 
   const handleDMReceived = useCallback((payload) => {
-    console.log(payload);
+    console.log(`dm : ${JSON.stringify(payload)}`);
     setDmList(payload.msgHist);
   }, [dmList, props.roomName, props.ifDM])
   
@@ -198,8 +198,6 @@ export default function Message(props:MessageProps) {
 
     console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
     setMessageList(payload.msgHist);
-    // console.log("handleRoomsListReceived", payload);
-    // console.log("chat rooms:", chatrooms);
   }, [messageList, props.roomName, props.ifDM])
   
   useEffect(() => {
