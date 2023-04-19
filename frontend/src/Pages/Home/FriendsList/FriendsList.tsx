@@ -155,6 +155,9 @@ export default function FriendsList() {
 
     const handleFriendConnected = (data) => {
         console.log("connected");
+		if (onlineStatus.includes(data.id))
+			return;
+
         setOnlineStatus([...onlineStatus, data.id]);
     };
 

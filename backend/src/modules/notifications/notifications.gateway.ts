@@ -56,29 +56,17 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		const userId = JSON.parse(session).passport.user.id;
 		socket.data.userId = userId;
 
-		
+
 		const userRooms = await this.redis.getUserRooms(userId);
 		for (const room of userRooms)
 			socket.join(room);
-		
+
 		socket.emit('connected', { // Event to report here
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
 		});
 
-		const sockets = await this.server.fetchSockets();
-		const userSockets = sockets.filter(s => { return s.data.userId === userId });
-		if (userSockets.length === 1) {
-			const friendIds = await this.friends.findAll(userId);
-			if (!friendIds)
-				return;
-			const friendSocketIds = Object.entries(sockets)
-			.filter(([key, value]) => friendIds.includes(value.data.userId))
-			.map(([key, value]) => value.id);
-			
-			if (friendSocketIds.length > 0)
-				this.server.to(friendSocketIds).emit('friendConnected', {id: +userId}); // Event to report here
-		}
+		this.onlineNotify(socket, userId);
 
 		/* This is to test achivements notifications */
 		// setTimeout(function () {
@@ -89,29 +77,55 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		// }.bind(this), 2000);
 	}
 
-
-	
 	async handleDisconnect(@ConnectedSocket() socket) {
 		// Check if the socket is in active session
 		const userId = socket.data.userId;
 		if (!userId)
-		return;
-		
-		const sockets = await this.server.fetchSockets();
-		const userSockets = sockets.filter(s => { return s.data.userId === userId });
-		if (userSockets.length === 1) {
-			const friendIds = await this.friends.findAll(userId);
-			if (!friendIds)
 			return;
+
+		this.offlineNotify(socket, userId);
+	}
+
+	async onlineNotify(socket, userId: number) {
+		// sleep 1sec to wait for the socket to be added to the server
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const sockets = await this.server.fetchSockets();
+		const friendIds = await this.friends.findAll(userId);
+		if (!friendIds)
+			return;
+
+		// create an array of the friends id that are online by filtering the sockets array (the id is store in data.userId) without duplicates
+		const onlineFriends = [...new Set(sockets.filter(s => friendIds.includes(s.data.userId)).map(s => s.data.userId))];
+		for (const friendId of onlineFriends) {
+			socket.emit('friendConnected', { id: friendId });
+		}
+		// if its the first connection of the user, we need to notify his friends that he is online
+		if (onlineFriends.length) {
 			const friendSocketIds = Object.entries(sockets)
-			.filter(([key, value]) => friendIds.includes(value.data.userId))
-			.map(([key, value]) => value.id);
-			
+				.filter(([key, value]) => friendIds.includes(value.data.userId))
+				.map(([key, value]) => value.id);
+
 			if (friendSocketIds.length > 0)
-			this.server.to(friendSocketIds).emit('friendDisconnected', {id: +userId}); // Event to report here
+				this.server.to(friendSocketIds).emit('friendConnected', { id: +userId }); // Event to report here
 		}
 	}
-	
+
+	async offlineNotify(socket, userId: number) {
+		const sockets = await this.server.fetchSockets();
+		const userSockets = sockets.filter(s => { return s.data.userId === userId });
+		if (userSockets.length === 0) {
+			const friendIds = await this.friends.findAll(userId);
+			if (!friendIds)
+				return;
+			const friendSocketIds = Object.entries(sockets)
+				.filter(([key, value]) => friendIds.includes(value.data.userId))
+				.map(([key, value]) => value.id);
+
+			if (friendSocketIds.length > 0)
+				this.server.to(friendSocketIds).emit('friendDisconnected', { id: +userId }); // Event to report here
+		}
+	}
+
 	async emitNewAchievement(userId: number, achievementName: string) {
 		const sockets = await this.server.fetchSockets();
 		sockets.forEach(socket => {
@@ -125,9 +139,9 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		const sockets = await this.server.fetchSockets();
 		console.log(`nb current sockets: ${sockets.length} `);
 		const receiverSocketIds = Object.entries(sockets)
-			.filter(([key, value]) => { console.log(`~ID: ${value.data.userId}`); return receiverId === value.data.userId})
-			.map(([key, value]) => { console.log(`ID: ${value.data.userId}`); return value.id});
-			
+			.filter(([key, value]) => { console.log(`~ID: ${value.data.userId}`); return receiverId === value.data.userId })
+			.map(([key, value]) => { console.log(`ID: ${value.data.userId}`); return value.id });
+
 		console.log(receiverSocketIds);
 
 		if (receiverSocketIds.length > 0)
@@ -137,8 +151,8 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 	async acceptFriendRequest(requesterId: number, receiverId: number) {
 		const sockets = await this.server.fetchSockets();
 		const requesterSocketIds = Object.entries(sockets)
-		.filter(([key, value]) => requesterId === value.data.userId)
-		.map(([key, value]) => value.id);
+			.filter(([key, value]) => requesterId === value.data.userId)
+			.map(([key, value]) => value.id);
 
 		if (requesterSocketIds.length > 0)
 			this.server.to(requesterSocketIds).emit('friendRequestAccepted', { id: receiverId }); // Event to report here
@@ -151,7 +165,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 			.map(([key, value]) => value.id);
 
 		if (receiverSocketsIds.length > 0)
-			this.server.to(receiverSocketsIds).emit('friendRequestCanceled', {id: requesterId});
+			this.server.to(receiverSocketsIds).emit('friendRequestCanceled', { id: requesterId });
 	}
 
 	@SubscribeMessage('getConnectedFriends')
@@ -159,7 +173,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		const sockets = await this.server.fetchSockets();
 		const connectedIds = Object.entries(sockets)
 			.map(([key, value]) => value.data.userId)
-		if (connectedIds.length > 0){
+		if (connectedIds.length > 0) {
 			socket.emit('connectedFriends', { friendIds: connectedIds });
 		}
 	}
