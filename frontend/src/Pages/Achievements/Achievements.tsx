@@ -61,8 +61,8 @@ export default function InitAchievements() {
 function Achievements({ achievements }) {
 	return (
 		<div className="achievements">
-			{/* {achievements.map((achievement) => (
-				<Card
+			{achievements.map((achievement) => (
+				<div
 					key={achievement.id}
 					className={`achievement-card ${
 						achievement.unlocked
@@ -74,16 +74,16 @@ function Achievements({ achievements }) {
 						className="achievement-icon"
 						style={{ backgroundImage: `url(${achievement.icon})` }}
 					></div>
-					<Card.Body>
-						<Card.Title className="achievement-title">
+					<div className="achievement-details">
+						<div className="achievement-title">
 							{achievement.name}
-						</Card.Title>
-						<Card.Text className="achievement-description">
+						</div>
+						<div className="achievement-description">
 							{achievement.description}
-						</Card.Text>
-					</Card.Body>
-				</Card>
-			))} */}
+						</div>
+					</div>
+				</div>
+			))}
 		</div>
 	);
 }
