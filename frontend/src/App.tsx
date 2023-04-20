@@ -14,7 +14,6 @@ import InitAchievements from "./Pages/Achievements/Achievements";
 import InitStats from "./Pages/Stats/Stats";
 import Settings from "./Pages/Settings/Settings";
 import ChatLogin from "./Pages/Chat/ChatLogin";
-import { useEffect, useState } from "react";
 import TwoFactor from "./Pages/Login/TwoFactor/TwoFactor";
 import { UserContext } from "./context/UserContext";
 import { useContext } from "react";
@@ -34,9 +33,7 @@ function App() {
 				{user ? (
 					<Route
 						path="/profile"
-						element={
-							<Layout children={<Profile userId={user.id} />} />
-						}
+						element={<Layout children={<Profile user={user} />} />}
 					/>
 				) : null}
 				<Route

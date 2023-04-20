@@ -29,16 +29,6 @@ export default function InitAchievements({ userId, showLocked }) {
 			) {
 				const userAchievementsJson = await userAchievementsRes.json();
 				const allAchievementsJson = await allAchievementsRes.json();
-				console.log(
-					`userAchievementsJson: ${JSON.stringify(
-						userAchievementsJson
-					)}`
-				);
-				console.log(
-					`allAchievementsJson: ${JSON.stringify(
-						allAchievementsJson
-					)}`
-				);
 				const userAchievementIds =
 					userAchievementsJson.achievements.map(
 						(achievement) => achievement.id

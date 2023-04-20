@@ -2,29 +2,19 @@ import { useState, useEffect } from "react";
 import "./Profile.css";
 import InitAchievements from "../Achievements/Achievements";
 
-export default function Profile({ userId }) {
-	const [user, setUser] = useState(null);
+export default function Profile({ user }) {
 	const [matchData, setMatchData] = useState(null);
 
 	useEffect(() => {
-		// Fetch user data
-		fetch(`http://localhost:3001/users/${userId}`, {
-			method: "GET",
-			credentials: "include",
-		})
-			.then((response) => response.json())
-			.then((data) => setUser(data))
-			.catch((error) => console.error(error));
-
 		// Fetch match data
-		fetch(`http://localhost:3001/users/${userId}/matchs`, {
+		fetch(`http://localhost:3001/users/${user.id}/matchs`, {
 			method: "GET",
 			credentials: "include",
 		})
 			.then((response) => response.json())
 			.then((data) => setMatchData(data))
 			.catch((error) => console.error(error));
-	}, [userId]);
+	}, [user]);
 
 	if (!user || !matchData) {
 		return <p>Loading...</p>;

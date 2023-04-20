@@ -84,3 +84,31 @@ function UserList({ users }) {
 		</div>
 	);
 }
+
+function UserPopup({ user, onClose }) {
+	const handleOutsideClick = (e) => {
+		if (e.target.classList.contains("popup")) {
+			onClose();
+		}
+	};
+
+	return (
+		<div className="popup" onClick={handleOutsideClick}>
+			<div className="popup-content">
+				<button className="close-button" onClick={onClose}>
+					X
+				</button>
+				<Profile user={user} />
+				{/* <h2>{user.name}</h2>
+				<img
+					src={user.profilePicture}
+					alt="Profile"
+					className="profile-picture"
+				/>
+				<p>Wins: {user.matchWon.length}</p>
+				<p>Losses: {user.matchLost.length}</p> */}
+				{/* Add more details as needed */}
+			</div>
+		</div>
+	);
+}
