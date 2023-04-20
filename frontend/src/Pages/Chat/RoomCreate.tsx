@@ -8,7 +8,6 @@ interface RoomCreatProps {
   socket: Socket;
   isVisible: Boolean;
   onClose: () => void;
-  // footer: React.ReactNode;
 }
 
 export default function RoomCreate(props: RoomCreatProps) {
@@ -38,9 +37,8 @@ export default function RoomCreate(props: RoomCreatProps) {
 
   useEffect(() => {
       props.socket.on("roomCreated", handleCloseAfterRoomCreated);
-      props.socket.on("roomNotCreated", () => {
-        console.log("roomNotCreated");
-        alert("The room name already exists.");
+      props.socket.on("roomNotCreated", (payload) => {
+        alert(payload.message);
       });
     return () => {
       if (props.socket) {
@@ -48,7 +46,7 @@ export default function RoomCreate(props: RoomCreatProps) {
         props.socket.off('roomNotCreated');
       }
     };
-  }, [props.socket]);
+  }, [props.socket, handleCloseAfterRoomCreated]);
 
   return !props.isVisible ? null : (
     <div className="modal" onClick={props.onClose}>
@@ -77,10 +75,6 @@ export default function RoomCreate(props: RoomCreatProps) {
                 <label htmlFor="inputPassword">Password</label>
                 <input type="text" className="form-control" name="password" placeholder="Optional" value={formData.password} onChange={handleInputChange} />
               </div>
-              {/* <div class="form-group">
-                <label htmlFor="inputInvitefriend">Invite your friend</label>
-                <input type="text" className="form-control" id="inputInviteFriend" placeholder="Name" />
-            </div> */}
               <div className="modal-form">
                 <button type="submit">Submit</button>
                 <button onClick={props.onClose}>Cancel</button>

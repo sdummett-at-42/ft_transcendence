@@ -79,7 +79,7 @@ export default function MemberList(props: MemberListProps) {
                                 </div>
                             </li>
 
-                            {/* play, message, block, unmute, unban */}
+                            {/* play, message, block */}
                             {user.id === props.UserId ? <div className="col-lg-6"></div> : (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faLock} onClick={() => handleblock(user.id, user.name)} size="lg" /></button>
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faUnlock} onClick={() => handleUnblock(user.id, user.name)} size="lg" /></button>
@@ -125,7 +125,7 @@ export default function MemberList(props: MemberListProps) {
                     props.socket.off("userNotUnblocked");
                 }
             };
-        }, [props.socket, handleMemberList]);
+        }, [props.socket, handleMemberList, handleMemberUpdate]);
         return (
             <div className="chat-info-header-2 clearfix">
                 <div className='chat-info-member-list'>Member List </div>

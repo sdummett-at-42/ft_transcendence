@@ -21,10 +21,8 @@ interface MessageProps {
 export default function Message(props: MessageProps) {
   const [messageList, setMessageList] = useState([]);
   const [message, setMessage] = useState("");
-  const [ifShowMessage, setIfShowMessage] = useState(false);
   const [item, setItem] = useState([]);
   const database = useContext(DatabaseContext);
-  const [userId, setUserId] = useState("");
   const [dmList, setDmList] = useState([]);
   const [itemDM, setItemDM] = useState([]);
 
@@ -191,12 +189,12 @@ export default function Message(props: MessageProps) {
   const handleDMReceived = useCallback((payload) => {
     // console.log(`dm : ${JSON.stringify(payload)}`);
     setDmList(payload.msgHist);
-  }, [dmList, database, props.roomName, props.ifDM])
+  }, [dmList])
 
   const handleMessagesReceived = useCallback((payload) => {
     // console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
     setMessageList(payload.msgHist);
-  }, [messageList, database, props.roomName, props.ifDM])
+  }, [messageList])
 
   useEffect(() => {
       props.socket.on("roomMsgHistReceived", handleMessagesReceived);
@@ -221,7 +219,7 @@ export default function Message(props: MessageProps) {
         props.socket.off("DMNotSended");
         props.socket.off("roomMsgNotSended");
     };
-  }, [props.socket, props.roomName, handleMessagesReceived, handleMessages]);
+  }, [props.socket, handleMessagesReceived, handleMessages, handleDMReceived, handleDMupdate]);
 
   return (
     props.roomName ? (

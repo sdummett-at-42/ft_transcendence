@@ -374,11 +374,6 @@ button {
             padding-bottom: 5px;
             list-style-type: none;
         }
-        .PendingFriend-button {
-            background-color: transparent;
-            border: none;
-            color: #fff;
-        }
         button {
             border-radius: 3px;
             float: right;
@@ -393,6 +388,12 @@ button {
             }
         }
     }
+}
+
+.PendingFriend-button {
+    background-color: transparent;
+    border: none;
+    color: #fff;
 }
 
 .online,

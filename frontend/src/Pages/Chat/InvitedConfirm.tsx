@@ -5,7 +5,6 @@ import { useState } from 'react';
 import "./chat.scss"
 import { Socket } from "socket.io-client";
 
-
 interface InvitedConfirmProps {
   socket: Socket,
   isVisible: Boolean,
@@ -60,7 +59,7 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
         props.socket.off("roomNotJoined", handleNotJoined);
       }
     };
-  }, [props.socket]);
+  }, [props.socket,handleCloseAfterRoomCreated, handleNotJoined]);
 
   return (
     <div >
@@ -75,7 +74,7 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
             </div>
             <div className="modal-body">
               <div className="modal-content">
-                <h3>Would you like to join it? </h3>
+                <h3>Would you like to join room {props.RoomName} ? </h3>
                 <label htmlFor="password">Password</label>
                 <input
                   type="password"

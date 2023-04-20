@@ -9,6 +9,7 @@ import { createContext, useContext } from "react";
 import { DatabaseContext } from './ChatLogin';
 import InvitedConfirm from './InvitedConfirm';
 import MemberList from './MemberList';
+import Profile from './Profile';
 import "./chat.scss"
 
 interface RoomDetailProps {
@@ -30,9 +31,6 @@ export default function RoomDetail(props: RoomDetailProps) {
   const [userId, setUserId] = useState(0);
   const [ifAdmin, setIfAdmin] = useState(false);
   const [adminList, setAdminList] = useState([]);
-  const close = () => {
-    setShow(false);
-  };
 
   const findInDatabase = (name) => {
     let user = database.find((user) => user.name === name);
@@ -133,6 +131,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const handleAdminList = useCallback((payload) => {
     setAdminList(payload.memberList.admins);
   }, [props.UserId, adminList])
+
   const handleCheckIfAdmin = useCallback((payload) => {
     console.log("handleCheckIfAdmin", payload)
     if (payload.roomName !== props.roomName) {
@@ -141,10 +140,17 @@ export default function RoomDetail(props: RoomDetailProps) {
     }
     setAdminList(payload.memberList.admins);
   }, [props.UserId, props.roomName, ifAdmin, adminList])
+
   const handleMessagAction = useCallback((payload)=>{
     alert(payload.message);
   },[])
 
+  useEffect(()=>{
+    if (!database){
+      console.log("databse does not exist!")
+      props.onUpdate();
+    }
+  },[])
   useEffect(() => {
     if (adminList.includes(props.UserId))
       setIfAdmin(true);
@@ -178,7 +184,7 @@ export default function RoomDetail(props: RoomDetailProps) {
         props.socket.off("userNotKicked", handleMessagAction);
         props.socket.off("userKicked", handleMessagAction);
     };
-  }, [handleInvited, handleNotInvite, handleCheckIfAdmin, handleMessagAction]);
+  }, [props.socket, handleInvited, handleNotInvite, handleCheckIfAdmin,handleAdminList, handleMessagAction]);
 
   return (
     (!props.ifDM) && props.roomName ? (
@@ -225,9 +231,10 @@ export default function RoomDetail(props: RoomDetailProps) {
              </div>
              </>
           ) : null}
+          {/* (props.ifDM) ? <Profile socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />  */}
         </div>
         <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />
-      </div>) : <div className="chatinfo" ></div>
+      </div>) : ((props.ifDM) ? <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} /> : <div className="chatinfo" ></div>)
   );
 }
 
