@@ -85,36 +85,6 @@ export class AuthController {
 		});
 	}
 
-	@Get('google/login')
-	@HttpCode(200)
-	@UseGuards(AuthGuard('google'))
-	handleGoogleLogin() { }
-
-	@Get('/google/callback')
-	@HttpCode(200)
-	@UseGuards(AuthGuard('google'))
-	async googleCallback(@Req() req, @Res() res) {
-		const userId = req.user.id;
-		const email = req.user.email;
-		const twofactorEnabled = await this.auth.get2faIsEnabled(userId);
-
-		if (twofactorEnabled)
-			return this.handle2fa(userId, email, res);
-
-		req.logIn(req.user, (err) => {
-			if (err) {
-				console.log(`Login Failed : ${err}`);
-				res.send({message: "Login user failed."})
-				return;
-			}
-			res.send({
-				message: "Logged successfully.",
-				twofactorEnabled: false,
-				twofactorValidated: false,
-			})
-		});
-	}
-
 	@Patch('2fa/disable')
 	@HttpCode(201)
 	@ApiCreatedResponse({ description: '2FA Disabled' })
