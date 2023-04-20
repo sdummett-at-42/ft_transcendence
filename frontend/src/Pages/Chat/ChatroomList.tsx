@@ -29,7 +29,7 @@ export default function ChatroomList(props: ChatroomListProps) {
   const [showJoinRoom, setShowJoinRoom] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState("");
   const database = useContext(DatabaseContext);
-  
+
   // Event handlers
   const handleRoomCreated = useCallback((payload) => {
     // console.log("created", payload);
@@ -66,7 +66,8 @@ export default function ChatroomList(props: ChatroomListProps) {
     if (database) {
       console.log("pass update dmlist, database good")
       const filteredObjects = database.find(obj => obj.id === payload.userId);
-      alert(filteredObjects.name + "had seent you a message!");
+      if (!payload.fromId)
+        alert(filteredObjects.name + " had seent you a message!");
       setdms((prevdms) => [...prevdms, {
         id: filteredObjects.id,
         name: filteredObjects.name, 

@@ -974,7 +974,7 @@ export class ChatService {
 			timestamp: new Date().toISOString(),
 			message: `User ${userId} has been succesfully invited to room ${dto.roomName}.`,
 		});
-		
+
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
@@ -1612,6 +1612,7 @@ export class ChatService {
 			userId: +dto.userId, 
 			timestamp: new Date().toISOString(),
 			message: `Room ${dto.userId} has been updated.`,
+			fromId : +userId,
 		})
 		const receiverSockets = sockets.filter(s => {
 			return s.data.userId === dto.userId ;

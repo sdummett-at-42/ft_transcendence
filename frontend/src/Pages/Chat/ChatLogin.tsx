@@ -5,17 +5,20 @@ import ChatroomList from "./ChatroomList";
 import Message from './Message';
 import RoomDetail from "./RoomDetail";
 import "./chat.scss"
-import { socket } from "./Socket";
+// import { socket } from "./Socket";
 import { createContext, useContext } from "react";
-
 export const DatabaseContext = createContext();
+import { io } from "socket.io-client";
+import Cookies from 'js-cookie';
+
+let socket;
 
 export default function ChatLogin() {
   const [roomName, setRoomName] = useState(null);
   const [userId, setUserId] = useState(0);
   const [database, setDatabase] = useState([]);
   const [shouldUpdateDatabase, setShouldUpdateDatabase] = useState(false);
-  const [ifsocket, setIfSocket] = useState(true);
+  const [ifsocket, setIfSocket] = useState(false);
   const [ifDM, setIfDM] = useState(false);
   const [toDMID, setToDMID] = useState({ id: 0, name: "" });
   const [ifDataReady, setifDataReady] = useState(false);
@@ -107,28 +110,37 @@ export default function ChatLogin() {
   }, []);
 
   useEffect(() => {
-    function onConnect(payload) {
-      // setIfSocket(true)
-      console.log("connected socket!");
-      socket.emit("getUserRooms");
-      socket.emit("getDmsList");
-    }
-
-    function onDisconnect() {
-      setIfSocket(false)
-      console.log("connected socket NOT");
-    }
-
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
+    if(socket){
     socket.on("memberListUpdated", handleUpdateDatabase);
-
+    }
     return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
+      if(socket){
       socket.off("memberListUpdated", handleUpdateDatabase);
+      }
     };
   }, [socket, handleUpdateDatabase]);
+
+  useEffect(() => {
+    socket = io("http://localhost:3001", {
+      auth: {
+        token: Cookies.get('connect.sid')
+      }
+    });
+    socket.on('connect', () => {
+      setIfSocket(true)
+      socket.emit("getUserRooms");
+      socket.emit("getDmsList");
+      console.log('Socket connected');
+    });
+    socket.on('disconnect', () => {
+      setIfSocket(false)
+      console.log('Socket disconnected');
+    });
+    // Clean up the socket connection when the component unmounts
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   if (ifsocket == false) {
     return <div>Connecting to server...</div>;
