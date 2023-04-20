@@ -112,9 +112,24 @@
     100% {
         background-color: rgba(255, 179, 71, 0.3);
     }
-  }
+}
 
 .Lobby-recap-backward {
     display: flex;
     align-items: center;
+    color: whitesmoke;
+    margin: 0.5vh 2vw;
+}
+
+.Lobby-backward {
+    margin: 15px;
+}
+
+.Lobby-backward:hover {
+    scale: 1.2;
+}
+
+.Lobby-recap {
+    border-left: 1px solid rgb(255, 255, 255, 0.1);
+    padding-left: 15px;
 }

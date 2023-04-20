@@ -44,18 +44,18 @@ export default function HomeContent() {
                 <h1
                     className="HomeContent-magic-text"
                     onMouseOver={onMouseOver}
-                    data-value=" Jouer a Pong !"
+                    data-value="Jouer à Pong !"
                     ref={h1Ref}
                 >
                     Jouer à Pong !
                 </h1>
                 <Link to="/lobby" style={{textDecoration: 'none', color: 'whitesmoke'}}>
-                <div class="glitch">
+                <div className="glitch">
                     <img src={PlayButton} alt="" />
-	                <div class="glitch__layers">
-		                <div class="glitch__layer"></div>
-		                <div class="glitch__layer"></div>
-		                <div class="glitch__layer"></div>
+	                <div className="glitch__layers">
+		                <div className="glitch__layer"></div>
+		                <div className="glitch__layer"></div>
+		                <div className="glitch__layer"></div>
 	                </div>
                 </div>
                 </Link>
