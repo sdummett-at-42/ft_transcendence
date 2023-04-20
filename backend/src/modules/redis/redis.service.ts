@@ -178,24 +178,24 @@ export class RedisService {
 		})
 	}
 
-	async setRoomUserBlocked(roomName: string, userBlockedById: number, userBlockedId: number) {
-		this.client.set(`room:${roomName}:infos:blocked:${userBlockedById}:${userBlockedId}`, JSON.stringify({ userBlockedById, userBlockedId }));
+	async setUserBlocked(userBlockedById: number, userBlockedId: number) {
+		this.client.set(`infos:blocked:${userBlockedById}:${userBlockedId}`, JSON.stringify({ userBlockedById, userBlockedId }));
 	}
 
-	async unsetRoomUserBlocked(roomName: string, userId: number, userBlockedId: number) {
-		this.client.del(`room:${roomName}:infos:blocked:${userId}:${userBlockedId}`);
+	async unsetUserBlocked(userId: number, userBlockedId: number) {
+		this.client.del(`infos:blocked:${userId}:${userBlockedId}`);
 	}
 
-	private async getRoomUsersBlockedKeys(roomName: string, userId: number): Promise<string[]> {
+	async getUsersBlockedKeys(userId: number): Promise<string[]> {
 		return new Promise(async (resolve, reject) => {
-			await this.client.keys(`room:${roomName}:infos:blocked:${userId}:*`, (err, keys) => {
+			await this.client.keys(`infos:blocked:${userId}:*`, (err, keys) => {
 				resolve(keys);
 			})
 		});
 	}
 
-	async getRoomUsersBlocked(roomName: string, userId: number): Promise<any[]> {
-		const usersBlockedKeys = await this.getRoomUsersBlockedKeys(roomName, userId);
+	async getUsersBlocked(userId: number): Promise<any[]> {
+		const usersBlockedKeys = await this.getUsersBlockedKeys(userId);
 		if (!usersBlockedKeys || usersBlockedKeys.length === 0) {
 			return [];
 		}

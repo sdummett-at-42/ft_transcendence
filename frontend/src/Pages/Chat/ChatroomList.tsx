@@ -29,7 +29,7 @@ export default function ChatroomList(props: ChatroomListProps) {
   const [showJoinRoom, setShowJoinRoom] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState("");
   const database = useContext(DatabaseContext);
-
+  const [input, setInput] = useState("");
   // Event handlers
   const handleRoomCreated = useCallback((payload) => {
     // console.log("created", payload);
@@ -139,6 +139,13 @@ export default function ChatroomList(props: ChatroomListProps) {
       setSelectedRoom(roomName);
     }
   }
+  const handleblock= () => {
+      const payload = {
+        toUserId: Number(input),
+	      fromUserId:  4,
+      }
+     props.socket.emit("blockUser", payload);
+  }
 
   useEffect(() => {
     // props.socket.on("roomsListReceived",handleRoomsList);
@@ -151,6 +158,12 @@ export default function ChatroomList(props: ChatroomListProps) {
     props.socket.on("dmUpdated", handlDMlistupdated);
     props.socket.on("banned", handleBanEvent);
     props.socket.on("kicked", handleKickEvent);
+    props.socket.on("userBlocked", (payload)=>{
+      console.log("userBlocked", payload)
+    })
+    props.socket.on("userNotBlocked", (payload)=>{
+      console.log("userBlocked", payload)
+    })
     // console.log("received");
     // console.log(props.socket.listeners("roomsListReceived"));
     return () => {
@@ -164,7 +177,9 @@ export default function ChatroomList(props: ChatroomListProps) {
       props.socket.off("roomUpdated", handleRoomsUpdate);
       props.socket.off("dmUpdated", handlDMlistupdated);
       props.socket.off("banned", handleBanEvent);
-      props.socket.on("kicked", handleKickEvent);
+      props.socket.off("kicked", handleKickEvent);
+      props.socket.off("userBlocked");
+      props.socket.off("userNotBlocked");
     }
   }, [props.socket, props.ifDataReady, database, handleRoomJoined, selectedRoom, props.ifDM]);
 
@@ -185,6 +200,11 @@ export default function ChatroomList(props: ChatroomListProps) {
             footer={<button>Cancel</button>}
             onClose={() => setShowJoinRoom(false)}
             socket={props.socket} />
+        </div>
+        <div className='chat-info-subtitle'>block a Member</div>
+           <div className="chat-info-form">
+            <input placeholder="Name" value={input} onChange={(e) => setInput(e.target.value)} ></input>
+           <button onClick={handleblock}>block</button>
         </div>
         <ul className="list-1 col-lg-12">
           {chatrooms.map(room => (

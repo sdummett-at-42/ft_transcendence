@@ -1453,126 +1453,83 @@ export class ChatService {
 	async blockUser(socket, dto: BlockUserDto, server) {
 		const userId: string = socket.data.userId.toString();
 
-		const room = await this.redis.getDm(dto.toUserId, dto.fromUserId);
-		if (room.length === 0) {
-			console.debug(`Room ${dto.roomName} doesn't exist`);
-			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `Room ${dto.roomName} doesn't exists.`
-			});
-			return;
-		}
-
-		const members = await this.redis.getRoomMembers(dto.roomName);
-		if (members.includes(userId) === false) {
-			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
-			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are not member in room ${dto.roomName}.`,
-			});
-			return;
-		}
-
-		if (userId == dto.userId.toString()) {
+		if (userId == dto.toUserId.toString()) {
 			console.debug(`User ${socket.data.userId} cannot block himself`);
 			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
+				roomName: dto.toUserId,
 				timestamp: new Date().toISOString(),
 				message: `You cannot block yourself.`
 			});
 			return;
 		}
 
-		const usersblocked = await this.redis.getRoomUsersBlocked(dto.roomName, +userId);
-		if (usersblocked.includes(dto.userId)) {
-			console.debug(`User ${dto.userId} is already blocked from room ${dto.roomName} by user ${userId}`);
+		const usersblocked = await this.redis.getUsersBlocked(dto.fromUserId);
+		if (usersblocked.includes(dto.toUserId)) {
+			console.debug(`User ${dto.toUserId} is already blocked by user ${userId}`);
 			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
+				userId: dto.toUserId,
 				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is already blocked in room ${dto.roomName} by you.`
+				message: `User ${dto.toUserId} is already blocked by you.`
 			});
 			return;
 		}
 
-		if (members.includes(dto.userId.toString()) === false) {
-			console.debug(`User ${dto.userId} is not member in room ${dto.roomName}.`);
-			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
-			});
-			return;
-		}
+		// if (members.includes(dto.userId.toString()) === false) {
+		// 	console.debug(`User ${dto.userId} is not member in room ${dto.roomName}.`);
+		// 	socket.emit(Event.userNotBlocked, {
+		// 		roomName: dto.roomName,
+		// 		timestamp: new Date().toISOString(),
+		// 		message: `User ${dto.userId} is not member in room ${dto.roomName}.`
+		// 	});
+		// 	return;
+		// }
 
-		console.debug(`User ${socket.data.userId} is blocking user ${dto.userId} from room ${dto.roomName}`);
+		console.debug(`User ${socket.data.userId} is blocking user ${dto.toUserId}`);
 
-		await this.redis.setRoomUserBlocked(dto.roomName, +userId, dto.userId);
+		await this.redis.setUserBlocked( +userId, dto.toUserId);
 
 		socket.emit(Event.userBlocked, {
-			roomName: dto.roomName,
+			touserid: dto.toUserId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been successfully blocked.`,
-			userId: dto.userId,
+			message: `User ${dto.toUserId} has been successfully blocked.`,
+			fromuserId: dto.fromUserId,
 		})
 	}
 
 	async unblockUser(socket, dto: UnblockUserDto, server) {
 		const userId: string = socket.data.userId.toString();
 
-		const room = await this.redis.getRoom(dto.roomName);
-		if (room.length === 0) {
-			console.debug(`Room ${dto.roomName} doesn't exist`);
-			socket.emit(Event.userNotUnblocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `Room ${dto.roomName} doesn't exists.`
-			});
-			return;
-		}
 
-		const members = await this.redis.getRoomMembers(dto.roomName);
-		if (members.includes(userId) === false) {
-			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
-			socket.emit(Event.userNotUnblocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are not member in room ${dto.roomName}.`,
-			});
-			return;
-		}
-
-		if (userId == dto.userId.toString()) {
+		if (userId == dto.toUserId.toString()) {
 			console.debug(`User ${socket.data.userId} cannot unblock himself`);
 			socket.emit(Event.userNotUnblocked, {
-				roomName: dto.roomName,
+				userId: dto.toUserId,
 				timestamp: new Date().toISOString(),
 				message: `You cannot unblock yourself.`
 			});
 			return;
 		}
 
-		const userBlocked = await this.redis.getRoomUsersBlocked(dto.roomName, +userId);
-		if (userBlocked.includes(dto.userId) == false) {
-			console.debug(`User ${dto.userId} is not blocked from room ${dto.roomName} by user ${userId}`);
-			socket.emit(Event.userNotUnblocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not blocked by you in room ${dto.roomName}.`
-			});
-			return;
-		}
+		// const userBlocked = await this.redis.getRoomUsersBlocked(dto.roomName, +userId);
+		// if (userBlocked.includes(dto.userId) == false) {
+		// 	console.debug(`User ${dto.userId} is not blocked from room ${dto.roomName} by user ${userId}`);
+		// 	socket.emit(Event.userNotUnblocked, {
+		// 		roomName: dto.roomName,
+		// 		timestamp: new Date().toISOString(),
+		// 		message: `User ${dto.userId} is not blocked by you in room ${dto.roomName}.`
+		// 	});
+		// 	return;
+		// }
 
-		console.debug(`User ${socket.data.userId} is unblocking user ${dto.userId} from room ${dto.roomName}`);
+		console.debug(`User ${socket.data.userId} is unblocking user ${dto.toUserId}`);
 
-		await this.redis.unsetRoomUserBlocked(dto.roomName, +userId, dto.userId);
+		await this.redis.unsetUserBlocked(+userId, dto.toUserId);
 
 		socket.emit(Event.userUnblocked, {
-			roomName: dto.roomName,
+			userId: dto.toUserId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been successfully unblocked.`,
-			userId: dto.userId,
+			message: `User ${dto.toUserId} has been successfully unblocked.`,
+			fromuserId: dto.fromUserId,
 		})
 	}
 
@@ -1631,6 +1588,18 @@ export class ChatService {
 				userId: dto.userId,
 				timestamp: new Date().toISOString(),
 				message: `User ${dto.userId} doesn't exist.`,
+			});
+			return;
+		}
+
+		const userBlocked = await this.redis.getUsersBlocked(dto.userId);
+		console.log("userBlock", userBlocked, +userId);
+		if (userBlocked.includes(+userId)) {
+			console.log("here??");
+			socket.emit(Event.DMNotSended, {
+				userId: dto.userId,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} has blocked you.`,
 			});
 			return;
 		}
