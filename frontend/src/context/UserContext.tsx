@@ -14,6 +14,7 @@ const UserContextProvider = ({ children }: any) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [rendered, setRendered] = useState(false);
 	const [user, setUser] = useState<UserData>();
+	const [lastUpdate, setLastUpdate] = useState<number>(Date.now());
 
 	const notificationSocketRef = useRef({});
 	const gameSocketRef = useRef({});
@@ -42,21 +43,26 @@ const UserContextProvider = ({ children }: any) => {
 				method: "GET",
 			});
 			const data = await response.json();
-			if (response.status === 401) setUser(undefined);
-			else setUser(data);
+			if (response.status === 401) {
+				setUser(undefined);
+			} else {
+				// Append timestamp as query parameter to profile picture URL
+				data.profilePicture = `${data.profilePicture}?ts=${Date.now()}`;
+				setUser(data);
+			}
 			setIsLoading(false);
 		};
 		fetchUserData();
-	}, []);
+	}, [lastUpdate]);
 
 	return (
 		<UserContext.Provider
 			value={{
 				user,
-				setUser,
 				notificationSocketRef,
 				gameSocketRef,
 				isLoading,
+				setLastUpdate,
 			}}
 		>
 			{children}

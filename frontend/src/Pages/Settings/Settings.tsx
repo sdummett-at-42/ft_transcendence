@@ -5,7 +5,7 @@ import { useContext } from "react";
 
 export default function Settings() {
 	// const [user, setUser] = useState(null);
-	const { user, setUser } = useContext(UserContext);
+	const { user, setLastUpdate } = useContext(UserContext);
 
 	const [qrCode, setQrCode] = useState(null);
 	const [otpCode, setOtpCode] = useState("");
@@ -33,10 +33,7 @@ export default function Settings() {
 				}
 			);
 			if (response.ok) {
-				setUser({
-					...user,
-					profilePicture: `http://localhost:3001/images/${user.id}`,
-				});
+				setLastUpdate(Date.now());
 				alert("Image updated successfully!");
 			} else {
 				throw new Error("Failed to upload image");
