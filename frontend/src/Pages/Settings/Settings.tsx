@@ -1,29 +1,50 @@
 import { useState, useEffect } from "react";
 import "./Settings.css";
+import { UserContext } from "../../context/UserContext";
+import { useContext } from "react";
 
 export default function Settings() {
-	const [user, setUser] = useState(null);
+	// const [user, setUser] = useState(null);
+	const { user, setUser } = useContext(UserContext);
+
 	const [qrCode, setQrCode] = useState(null);
 	const [otpCode, setOtpCode] = useState("");
 	const [is2faEnabled, setIs2faEnabled] = useState(false);
-
-	useEffect(() => {
-		async function fetchUser() {
-			const response = await fetch("http://localhost:3001/users/me", {
-				method: "GET",
-				credentials: "include",
-			});
-			const userData = await response.json();
-			setUser(userData);
-			setIs2faEnabled(userData.twofactorIsEnabled);
-		}
-
-		fetchUser();
-	}, []);
+	const [selectedFile, setSelectedFile] = useState(null);
 
 	if (!user) {
 		return <p>Loading...</p>;
 	}
+
+	const handleFileChange = (event) => {
+		setSelectedFile(event.target.files[0]);
+	};
+
+	const handleUpload = async () => {
+		const formData = new FormData();
+		formData.append("image", selectedFile);
+		try {
+			const response = await fetch(
+				`http://localhost:3001/images/${user.id}`,
+				{
+					method: "PATCH",
+					credentials: "include",
+					body: formData,
+				}
+			);
+			if (response.ok) {
+				setUser({
+					...user,
+					profilePicture: `http://localhost:3001/images/${user.id}`,
+				});
+				alert("Image updated successfully!");
+			} else {
+				throw new Error("Failed to upload image");
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
 	function handleNameChange() {
 		console.log("handleNameChange");
@@ -136,7 +157,28 @@ export default function Settings() {
 	return (
 		<div className="Settings">
 			<h2>Settings</h2>
+			<img
+				src={user.profilePicture}
+				alt="Profile"
+				className="profile-picture"
+			/>
 			<p>Logged in as {user.name}</p>
+			<div>
+				<h2>User Profile</h2>
+				<img src={user.profile} alt="User Profile" />
+				<br />
+				<label htmlFor="file-upload">
+					Choose a new profile picture:
+				</label>
+				<input
+					type="file"
+					id="file-upload"
+					accept="image/*"
+					onChange={handleFileChange}
+				/>
+				<br />
+				<button onClick={handleUpload}>Upload</button>
+			</div>
 			<div>
 				<label>
 					Name:
