@@ -37,6 +37,8 @@ export default function ChatroomList(props: ChatroomListProps) {
 
   const handleRoomJoined = useCallback((payload) => {
     // console.log("handleRoomJoined", payload);
+    if (chatrooms.find(obj=>obj.roomName === payload.roomName))
+        return ;
     setChatrooms((prevChatrooms) => [...prevChatrooms, {
       roomName: payload.roomName,
       public: payload.public,
@@ -64,7 +66,18 @@ export default function ChatroomList(props: ChatroomListProps) {
   const handlDMlistupdated = useCallback((payload) => {
     console.log("ROOMdmUPADTE:", payload);
     console.log("dms", dms);
-
+    if (dms.find(obj=>obj.id === payload.userId))
+        return ;
+    if (database) {
+      console.log("pass update dmlist, database good")
+      const filteredObjects = database.find(obj => obj.id === payload.userId);
+      alert(filteredObjects.name + "had seent you a message!");
+      setdms((prevdms) => [...prevdms, {
+        id: filteredObjects.id,
+        name: filteredObjects.name, 
+        prof: filteredObjects.profilePicture
+      }]);
+    }
   }, [dms]);
 
   const handleRoomDeleted = useCallback((payload) => {
@@ -72,6 +85,28 @@ export default function ChatroomList(props: ChatroomListProps) {
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
+    if (selectedRoom == payload.roomName)
+        setSelectedRoom("");
+  }, [chatrooms]);
+
+  const handleBanEvent= useCallback((payload) => {
+    // console.log("LEAVE", payload);
+    alert(payload.message);
+    setChatrooms((prevChatrooms) => {
+      return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
+    });
+    if (selectedRoom == payload.roomName)
+        setSelectedRoom("");
+  }, [chatrooms]);
+
+  const handleKickEvent= useCallback((payload) => {
+    // console.log("LEAVE", payload);
+    alert(payload.message);
+    setChatrooms((prevChatrooms) => {
+      return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
+    });
+    if (selectedRoom == payload.roomName)
+        setSelectedRoom("");
   }, [chatrooms]);
 
   const handleRoomsUpdate = useCallback((payload) => {
@@ -114,6 +149,8 @@ export default function ChatroomList(props: ChatroomListProps) {
     props.socket.on("roomUpdated", handleRoomsUpdate);
     props.socket.on("roomLeft", handleRoomDeleted);
     props.socket.on("dmUpdated", handlDMlistupdated);
+    props.socket.on("banned", handleBanEvent);
+    props.socket.on("kicked", handleKickEvent);
     // console.log("received");
     // console.log(props.socket.listeners("roomsListReceived"));
     return () => {
@@ -126,6 +163,8 @@ export default function ChatroomList(props: ChatroomListProps) {
       props.socket.off("roomLeft", handleRoomDeleted);
       props.socket.off("roomUpdated", handleRoomsUpdate);
       props.socket.off("dmUpdated", handlDMlistupdated);
+      props.socket.off("banned", handleBanEvent);
+      props.socket.on("kicked", handleKickEvent);
     }
   }, [props.socket, props.ifDataReady, database, handleRoomJoined, selectedRoom, props.ifDM]);
 

@@ -63,6 +63,7 @@ export default function RoomDetail(props: RoomDetailProps) {
       userId: userId,
     }
     props.socket.emit("inviteUser", payload);
+    setInputInvite("");
   }
 
   const handleBan = () => {
@@ -76,6 +77,7 @@ export default function RoomDetail(props: RoomDetailProps) {
       userId: userId,
     }
     props.socket.emit("banUser", payload);
+    setInput("");
   }
   const handleUnBan = () => {
     let userId = findInDatabase(input);
@@ -88,6 +90,7 @@ export default function RoomDetail(props: RoomDetailProps) {
       userId: userId,
     }
     props.socket.emit("unbanUser", payload);
+    setInput("");
   }
   const handleMute = () => {
     let userId = findInDatabase(input);
@@ -101,6 +104,7 @@ export default function RoomDetail(props: RoomDetailProps) {
       timeout: 60,
     }
     props.socket.emit("muteUser", payload);
+    setInput("");
   }
 
   const handleKick = () => {
@@ -113,7 +117,8 @@ export default function RoomDetail(props: RoomDetailProps) {
       roomName: props.roomName,
       userId: userId,
     }
-    props.socket.emit("kcikUser", payload);
+    props.socket.emit("kickUser", payload);
+    setInput("");
   }
   const handleInvited = useCallback((payload) => {
     setMessage(payload.message);
@@ -122,7 +127,6 @@ export default function RoomDetail(props: RoomDetailProps) {
   }, [])
 
   const handleNotInvite = useCallback((payload) => {
-    console.log("not inviting,", payload);
     alert(payload.message);
   }, [])
 
@@ -130,17 +134,17 @@ export default function RoomDetail(props: RoomDetailProps) {
     setAdminList(payload.memberList.admins);
   }, [props.UserId, adminList])
   const handleCheckIfAdmin = useCallback((payload) => {
-    console.log(" handleCheckIfAdmin", payload)
+    console.log("handleCheckIfAdmin", payload)
     if (payload.roomName !== props.roomName) {
       console.log("update not this room!");
       return;
     }
     setAdminList(payload.memberList.admins);
-    // if (adminList.includes(props.UserId))  
-    //   setIfAdmin(true);
-    // else
-    //   setIfAdmin(false);
   }, [props.UserId, props.roomName, ifAdmin, adminList])
+  const handleMessagAction = useCallback((payload)=>{
+    alert(payload.message);
+  },[])
+
   useEffect(() => {
     if (adminList.includes(props.UserId))
       setIfAdmin(true);
@@ -152,13 +156,29 @@ export default function RoomDetail(props: RoomDetailProps) {
       props.socket.on("userNotInvited", handleNotInvite);
       props.socket.on("memberListUpdated", handleCheckIfAdmin);
       props.socket.on("roomMembers", handleAdminList);
+      props.socket.on("userNotBanned", handleMessagAction);
+      props.socket.on("userBanned", handleMessagAction);
+      props.socket.on("userNotUnbanned", handleMessagAction);
+      props.socket.on("unbanned", handleMessagAction);
+      props.socket.on("userNotMuted", handleMessagAction);
+      props.socket.on("userMuted", handleMessagAction);
+      props.socket.on("userNotKicked", handleMessagAction);
+      props.socket.on("userKicked", handleMessagAction);
     return () => {
         props.socket.off("invited", handleInvited);
         props.socket.off("userNotInvited", handleNotInvite);
         props.socket.off("memberListUpdated", handleCheckIfAdmin);
         props.socket.off("roomMembers", handleAdminList);
+        props.socket.off("userNotBanned", handleMessagAction);
+        props.socket.off("userBanned", handleMessagAction);
+        props.socket.off("userNotUnbanned", handleMessagAction);
+        props.socket.off("unbanned", handleMessagAction);
+        props.socket.off("userNotMuted", handleMessagAction);
+        props.socket.off("userMuted", handleMessagAction);
+        props.socket.off("userNotKicked", handleMessagAction);
+        props.socket.off("userKicked", handleMessagAction);
     };
-  }, [props.socket, props.onUpdate, handleInvited, handleNotInvite, handleCheckIfAdmin]);
+  }, [handleInvited, handleNotInvite, handleCheckIfAdmin, handleMessagAction]);
 
   return (
     (!props.ifDM) && props.roomName ? (

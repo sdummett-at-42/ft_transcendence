@@ -154,23 +154,23 @@ export const GiveOwnershipSchema = Joi.object({
 })
 
 export class BlockUserDto {
-	roomName: string;
-	userId: number;
+	toUserId:number;
+	fromUserId: number;
 }
 
 export const BlockUserSchema = Joi.object({
-	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().min(USERID_MIN).required(),
+	toUserId: Joi.number().min(USERID_MIN).required(),
+	fromUserId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class UnblockUserDto {
-	roomName: string;
-	userId: number;
+	toUserId:number;
+	fromUserId: number;
 }
 
 export const UnblockUserSchema = Joi.object({
-	roomName: Joi.string().min(ROOM_NAME_MIN).max(ROOM_NAME_MAX).required(),
-	userId: Joi.number().min(USERID_MIN).required(),
+	toUserId: Joi.number().min(USERID_MIN).required(),
+	fromUserId: Joi.number().min(USERID_MIN).required(),
 })
 
 export class GetRoomMsgHistDto {

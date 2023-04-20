@@ -1453,7 +1453,7 @@ export class ChatService {
 	async blockUser(socket, dto: BlockUserDto, server) {
 		const userId: string = socket.data.userId.toString();
 
-		const room = await this.redis.getRoom(dto.roomName);
+		const room = await this.redis.getDm(dto.toUserId, dto.fromUserId);
 		if (room.length === 0) {
 			console.debug(`Room ${dto.roomName} doesn't exist`);
 			socket.emit(Event.userNotBlocked, {
@@ -1637,17 +1637,7 @@ export class ChatService {
 		
 		const sockets = await server.fetchSockets();
 		// console.log("userId", userId);
-		const receiverSockets = sockets.filter(s => {
-			return s.data.userId === dto.userId ;
-		});
-		console.log("receiverSockets", receiverSockets.length);
 		const currentTimestamp = Date.now();
-		this.redis.setDm(+userId, dto.userId, new Date(currentTimestamp).toISOString(), dto.message, EXPIRATION_TIME);
-		if (receiverSockets.length === 0) {
-			console.debug(`User ${userId} is sending a DM to user ${dto.userId} (disconnected)`);
-			await this.redis.setUserUnreadDM(+userId, dto.userId);
-			return;
-		}
 		socket.emit(Event.DMReceived, {
 			userId: +userId,
 			timestamp: new Date(currentTimestamp).toISOString(),
@@ -1658,7 +1648,16 @@ export class ChatService {
 			timestamp: new Date().toISOString(),
 			message: `Room ${dto.userId} has been updated.`,
 		})
-
+		const receiverSockets = sockets.filter(s => {
+			return s.data.userId === dto.userId ;
+		});
+		console.log("receiverSockets", receiverSockets.length);
+		this.redis.setDm(+userId, dto.userId, new Date(currentTimestamp).toISOString(), dto.message, EXPIRATION_TIME);
+		if (receiverSockets.length === 0) {
+			console.debug(`User ${userId} is sending a DM to user ${dto.userId} (disconnected)`);
+			await this.redis.setUserUnreadDM(+userId, dto.userId);
+			return;
+		}
 		receiverSockets.forEach(socket => {
 			// console.debug("socket",socket);
 			socket.emit(Event.DMReceived, {
