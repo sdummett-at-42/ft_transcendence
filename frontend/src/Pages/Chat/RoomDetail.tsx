@@ -200,7 +200,6 @@ export default function RoomDetail(props: RoomDetailProps) {
               onClose={() => setShowConfirm(false)}
               socket={props.socket}
               message={message} /></div>
-          {/* <div className='chat-info-subtitle'>Public</div> */}
           <div className='chat-info-subtitle'>Invite a friend</div>
           <div className="chat-info-form">
             <input placeholder="Name" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)} />

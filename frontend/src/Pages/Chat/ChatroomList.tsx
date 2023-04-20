@@ -53,19 +53,16 @@ export default function ChatroomList(props: ChatroomListProps) {
     // console.log("chat rooms:", chatrooms);
   }, [chatrooms]);
   const handleDMRoomsListReceived = useCallback((payload) => {
-    console.log("pass DMRoomsListReceived")
+    console.log(payload);
+    setdms(payload.dms);
     if (database) {
-      console.log("pass DMRoomsListReceived database good")
       const filteredObjects = database.filter(obj => payload.dms.includes(obj.id));
-      // console.log("database:", database);
-      // console.log("include", filteredObjects);
+      console.log("filteredObjects", filteredObjects);
       const newDms = filteredObjects.map(obj => ({ id: obj.id, name: obj.name, prof: obj.profilePicture }));
       setdms(newDms);
     }
-  }, [dms, database]);
+  }, [setdms, database]);
   const handlDMlistupdated = useCallback((payload) => {
-    console.log("ROOMdmUPADTE:", payload);
-    console.log("dms", dms);
     if (dms.find(obj=>obj.id === payload.userId))
         return ;
     if (database) {
@@ -139,13 +136,6 @@ export default function ChatroomList(props: ChatroomListProps) {
       setSelectedRoom(roomName);
     }
   }
-  const handleblock= () => {
-      const payload = {
-        toUserId: Number(input),
-	      fromUserId:  4,
-      }
-     props.socket.emit("blockUser", payload);
-  }
 
   useEffect(() => {
     // props.socket.on("roomsListReceived",handleRoomsList);
@@ -158,12 +148,6 @@ export default function ChatroomList(props: ChatroomListProps) {
     props.socket.on("dmUpdated", handlDMlistupdated);
     props.socket.on("banned", handleBanEvent);
     props.socket.on("kicked", handleKickEvent);
-    props.socket.on("userBlocked", (payload)=>{
-      console.log("userBlocked", payload)
-    })
-    props.socket.on("userNotBlocked", (payload)=>{
-      console.log("userBlocked", payload)
-    })
     // console.log("received");
     // console.log(props.socket.listeners("roomsListReceived"));
     return () => {
@@ -178,10 +162,8 @@ export default function ChatroomList(props: ChatroomListProps) {
       props.socket.off("dmUpdated", handlDMlistupdated);
       props.socket.off("banned", handleBanEvent);
       props.socket.off("kicked", handleKickEvent);
-      props.socket.off("userBlocked");
-      props.socket.off("userNotBlocked");
     }
-  }, [props.socket, props.ifDataReady, database, handleRoomJoined, selectedRoom, props.ifDM]);
+  }, [props.socket, props.ifDataReady, database, handleRoomJoined, selectedRoom,  handleDMRoomsListReceived]);
 
   // Render
   return (
@@ -200,11 +182,6 @@ export default function ChatroomList(props: ChatroomListProps) {
             footer={<button>Cancel</button>}
             onClose={() => setShowJoinRoom(false)}
             socket={props.socket} />
-        </div>
-        <div className='chat-info-subtitle'>block a Member</div>
-           <div className="chat-info-form">
-            <input placeholder="Name" value={input} onChange={(e) => setInput(e.target.value)} ></input>
-           <button onClick={handleblock}>block</button>
         </div>
         <ul className="list-1 col-lg-12">
           {chatrooms.map(room => (

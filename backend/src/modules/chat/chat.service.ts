@@ -61,7 +61,6 @@ export class ChatService {
 		for (const room of userRooms)
 			socket.join(room);
 
-		console.log("CONNECTION??")
 		socket.emit(Event.connected, {
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
@@ -147,7 +146,6 @@ export class ChatService {
 		sockets.forEach((value, key) => {
 			if (value.data.userId === socket.data.userId) {
 				value.join(dto.roomName)
-				console.log("Je passe ici", dto.visibility);
 				value.emit(Event.roomJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),
@@ -223,7 +221,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${userId} has left the room ${dto.roomName}.`
+			message: ` has left the room ${dto.roomName}.`
 		});
 	}
 
@@ -331,7 +329,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +socket.data.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${socket.data.userId} has joined the room ${dto.roomName}.`
+			message: ` has joined the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -444,7 +442,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been kicked from the room ${dto.roomName}.`
+			message: ` has been kicked from the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -573,7 +571,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been banned from the room ${dto.roomName}.`
+			message: ` has been banned from the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -667,7 +665,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been unbanned from the room ${dto.roomName}.`
+			message: ` has been unbanned from the room ${dto.roomName}.`
 		});
 	}
 
@@ -787,7 +785,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been muted from the room ${dto.roomName} for ${dto.timeout} secs.`
+			message: ` has been muted from the room ${dto.roomName} for ${dto.timeout} secs.`
 		});
 	}
 
@@ -885,7 +883,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been unmuted from the room ${dto.roomName}.`
+			message: ` has been unmuted from the room ${dto.roomName}.`
 		});
 	}
 
@@ -975,6 +973,14 @@ export class ChatService {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
 			message: `User ${userId} has been succesfully invited to room ${dto.roomName}.`,
+		});
+		
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
+			targetId: +dto.userId,
+			timestamp: new Date().toISOString(),
+			message: ` has been succesfully invited to room ${dto.roomName}.`,
 		});
 	}
 
@@ -1242,7 +1248,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been granted admin in the room ${dto.roomName}.`
+			message: ` has been granted admin in the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -1335,7 +1341,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been demoted to a normal user in the room ${dto.roomName}.`
+			message: ` has been demoted to a normal user in the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -1418,7 +1424,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} is the new owner of the room ${dto.roomName}.`
+			message: ` is the new owner of the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -1456,7 +1462,7 @@ export class ChatService {
 		if (userId == dto.toUserId.toString()) {
 			console.debug(`User ${socket.data.userId} cannot block himself`);
 			socket.emit(Event.userNotBlocked, {
-				roomName: dto.toUserId,
+				userId: dto.toUserId,
 				timestamp: new Date().toISOString(),
 				message: `You cannot block yourself.`
 			});
@@ -1474,22 +1480,12 @@ export class ChatService {
 			return;
 		}
 
-		// if (members.includes(dto.userId.toString()) === false) {
-		// 	console.debug(`User ${dto.userId} is not member in room ${dto.roomName}.`);
-		// 	socket.emit(Event.userNotBlocked, {
-		// 		roomName: dto.roomName,
-		// 		timestamp: new Date().toISOString(),
-		// 		message: `User ${dto.userId} is not member in room ${dto.roomName}.`
-		// 	});
-		// 	return;
-		// }
-
 		console.debug(`User ${socket.data.userId} is blocking user ${dto.toUserId}`);
 
 		await this.redis.setUserBlocked( +userId, dto.toUserId);
 
 		socket.emit(Event.userBlocked, {
-			touserid: dto.toUserId,
+			userId: dto.toUserId,
 			timestamp: new Date().toISOString(),
 			message: `User ${dto.toUserId} has been successfully blocked.`,
 			fromuserId: dto.fromUserId,
@@ -1510,16 +1506,16 @@ export class ChatService {
 			return;
 		}
 
-		// const userBlocked = await this.redis.getRoomUsersBlocked(dto.roomName, +userId);
-		// if (userBlocked.includes(dto.userId) == false) {
-		// 	console.debug(`User ${dto.userId} is not blocked from room ${dto.roomName} by user ${userId}`);
-		// 	socket.emit(Event.userNotUnblocked, {
-		// 		roomName: dto.roomName,
-		// 		timestamp: new Date().toISOString(),
-		// 		message: `User ${dto.userId} is not blocked by you in room ${dto.roomName}.`
-		// 	});
-		// 	return;
-		// }
+		const userBlocked = await this.redis.getUsersBlocked(dto.fromUserId);
+		if (userBlocked.includes(dto.toUserId) == false) {
+			console.debug(`User ${dto.toUserId} is not blocked by user ${userId}`);
+			socket.emit(Event.userNotUnblocked, {
+				userId: dto.toUserId,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.toUserId} is not blocked by you.`
+			});
+			return;
+		}
 
 		console.debug(`User ${socket.data.userId} is unblocking user ${dto.toUserId}`);
 

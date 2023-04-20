@@ -55,14 +55,6 @@ export default function Message(props: MessageProps) {
     }
     setMessage("");
   };
-  const handleMessageAuto = useCallback((payload) => {
-    setMessageList((prevme) => [...prevme, {
-      roomName: "",
-      userId: -1,
-      timestamp: new Date().toISOString(),
-      message: payload.message
-    }]);
-  }, []);
 
   const handleMessages = useCallback((payload) => {
     setMessageList((prevme) => [...prevme, payload]);
@@ -150,8 +142,14 @@ export default function Message(props: MessageProps) {
         }
         else {
           let username;
+          let message;
           if (each.userId === -1) {
             username = "Notification";
+            let user = database.find((user) => user.id === each.targetId);
+            if (user === undefined)
+              message = each.targetId + each.message;
+            else
+              message = user.name + each.message;
           }
           else {
             let user = database.find((user) => user.id === each.userId);
@@ -167,7 +165,6 @@ export default function Message(props: MessageProps) {
               }, 1000);
             } else {
               username = user.name
-              // console.log("here", username);
             }
             if (each.userId === props.UserId) {
               className1 += " align-right";
@@ -183,7 +180,7 @@ export default function Message(props: MessageProps) {
                 <span className="message-data-name">  {username}</span>
                 <span className="message-data-time">{hour}:{minute}:{second}</span>
               </div>
-              <div className={className2}>{each.message}</div>
+              <div className={className2}>{each.userId === -1? message : each.message}</div>
             </li>
           );
         }
@@ -209,7 +206,9 @@ export default function Message(props: MessageProps) {
       props.socket.on("DMNotSended", (payload) => {
         alert(payload.message);
       })
-      props.socket.on("userInvited", handleMessageAuto);
+      props.socket.on("userInvited", (payload) => {
+        alert(payload.message);
+      });
       props.socket.on("roomMsgNotSended", (payload) => {
         alert(payload.message);
       });
@@ -218,11 +217,11 @@ export default function Message(props: MessageProps) {
         props.socket.off("roomMsgReceived", handleMessages);
         props.socket.off("dmHist", handleDMReceived);
         props.socket.off("DMReceived", handleDMupdate);
-        props.socket.off("userInvited", handleMessageAuto);
+        props.socket.off("userInvited");
         props.socket.off("DMNotSended");
         props.socket.off("roomMsgNotSended");
     };
-  }, [props.socket, props.roomName, handleMessagesReceived, handleMessages, handleMessageAuto]);
+  }, [props.socket, props.roomName, handleMessagesReceived, handleMessages]);
 
   return (
     props.roomName ? (
