@@ -110,16 +110,18 @@ export class GameGateway {
 
   // When Client connect to socket server
   @SubscribeMessage(EventGame.playerJoinGame)
-  JoinGameMessage(client: any, payload: {roomId : string, msg : string}) : void {
-    // console.log(`Gateway : player has join game`);
+  JoinGameMessage(client: any, roomId : string) : void {
+    console.log(`Gateway : player has join game`);
   
     // get game by gameid from client
     const gameId = Number(client.data.ingame); // string to number
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
-    if (game === undefined || !this.gameService.onMatch(game))
+    if (game === undefined || !this.gameService.onMatch(game)) {
+      console.log("No game join");
       return ;
-    this.gameService.joinGame(this.server, game, client, payload);
+    }
+    this.gameService.joinGame(this.server, game, client, roomId);
   }
 
   /* ***** *\
