@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./Profile.css";
 import InitAchievements from "../Achievements/Achievements";
+
 
 export default function Profile({ user }) {
 	const [matchData, setMatchData] = useState(null);
@@ -77,7 +78,7 @@ function MatchList({ user, match }) {
 	}, [matchWon, matchLost]);
 
 	return (
-		<div className="profile-container">
+		<div className="Profile">
 			<h2>{name}</h2>
 			<img
 				src={profilePicture}
@@ -117,5 +118,3 @@ function MatchList({ user, match }) {
 		</div>
 	);
 }
-
-///

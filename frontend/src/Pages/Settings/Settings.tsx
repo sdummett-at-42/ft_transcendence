@@ -149,7 +149,13 @@ export default function Settings() {
 			return;
 		}
 		// TODO: Fetch user password from database and compare it to the one entered
-
+		// fetch("http://localhost:3001/users/me/password", {
+		// 	method: "PATCH",
+		// 	headers: { "Content-Type": "application/json" },
+		// 	credentials: "include",
+		// }).then((response) => {
+		// 	console.log(response);
+		// });
 
 		fetch("http://localhost:3001/users/me", {
 			method: "DELETE",
@@ -270,173 +276,204 @@ export default function Settings() {
 		}));
     };
 
+	useEffect(() => {
+		const blob = document.getElementById("blob");
+	
+		window.onpointermove = (event: PointerEvent) => {
+		  const { clientX, clientY } = event;
+	
+		console.log(clientX, clientY);
+		if (clientY < 300) {
+			blob?.animate(
+				{
+				  left: `${clientX}px`,
+				//   top: `${clientY}px`,
+				},
+				{ duration: 3000, fill: "forwards" }
+			  );
+		} else {
+		  	blob?.animate(
+			{
+			  left: `${clientX}px`,
+			  top: `${clientY}px`,
+			},
+			{ duration: 3000, fill: "forwards" }
+		  );
+		}
+	};
+	}, []);
+
 	return (
-		<div className="Settings">
+		<div>
+			<div id="blob"></div>
+			<div id="blur"></div>
+			<div className="Settings">
 
-			<div className="Settings-recap">
-				<img
-					src={user.profilePicture}
-					alt="Photo de profil"
-					className="Settings-profile-picture"
-				/>
-				<p>Connecté en tant que {user.name}</p>
-				<button
-					onClick={handleLogout}
-					className="Settings-button"
-				>
-					Se déconnecter
-				</button>
-			</div>
-
-			<div className="Settings-profile">
-				<h2>Votre profil:</h2>
-
-				<div className="Settings-profile-image">
-					<label className="Settings-label" htmlFor="file-upload">
-						Modifiez votre photo:
-					</label>
-					<div className="Settings-profile-playload">
-						{loading ? (
-							<video
-								src={loadingGif}
-								autoPlay
-								loop
-								muted
-								className="Settings-profile-video-playload"
-							/>
-						) : (
-							<div>
-								{image && (
-									<img
-										src={image}
-										alt="Nouvelle image de profil"
-										className="Settings-profile-image-playload"
-									/>
-								)}
-							</div>
-						)}
-					</div>
-					<div className="Settings-profile-image-buttons">
-						<input
-							type="file"
-							id="Settings-file-upload"
-							className="Settings-label"
-							accept="image/*"
-							onChange={handleFileChange}
-						/>
-						<button
-							onClick={handleUpload}
-							className="Settings-button Settings-upload-button"
-						>
-							Valider
-						</button>
-					</div>
-					{errorMessage.image && <div className="Settings-error">{errorMessage.image}</div>}
-				</div>
-
-				<div className="Settings-profile-name">
-					<label className="Settings-label">
-						Nouveau nom:
-						<input
-							className="Settings-input"
-							type="text"
-							value={nameInput}
-							placeholder={user.name}
-							onChange={handleChange}
-							/>
-					</label>
-					{errorMessage.username && <div className="Settings-error">{errorMessage.username}</div>}
+				<div className="Settings-recap">
+					<img
+						src={user.profilePicture}
+						alt="Photo de profil"
+						className="Settings-profile-picture"
+					/>
+					<p>Connecté en tant que {user.name}</p>
 					<button
-						onClick={handleNameChange}
-						className="Settings-button Settings-upload-button"
+						onClick={handleLogout}
+						className="Settings-button"
 					>
-						Mettre à jour
+						Se déconnecter
 					</button>
 				</div>
-			</div>
-			<div className="Settings-account">
-				<h2>Sécurité</h2>
-				<button
-					onClick={handleDfaOpen}
-					className="Settings-button"
-				>
-					{qrCode && !is2faEnabled
-						? "Regénérer le QR code"
-						: is2faEnabled
-						? "Supprimer la double authentification"
-						: "Activer la double authentification"}
-				</button>
-				<Popup isOpen={isDfaOpen} onClose={handleDfaClose}>
-					{qrCode && !is2faEnabled && (
-						<div className="Settings-2fa-popup">
-							<h3>Scannez le QR code avec votre téléphone</h3>
-							<img src={`${qrCode.base64Qrcode}`} />
-							<label className="Settings-label Settings-2fa-popup-label">
-								Entrez le code à 6 chiffres:
-								<input
-									className="Settings-input"
-									type="text"
-									value={otpCode}
-									onChange={(event) => setOtpCode(event.target.value)}
+
+				<div className="Settings-profile">
+					<h2>Votre profil:</h2>
+
+					<div className="Settings-profile-image">
+						<label className="Settings-label" htmlFor="file-upload">
+							Modifiez votre photo:
+						</label>
+						<div className="Settings-profile-playload">
+							{loading ? (
+								<video
+									src={loadingGif}
+									autoPlay
+									loop
+									muted
+									className="Settings-profile-video-playload"
 								/>
+								) : (
+								<div>
+									{image && (
+										<img
+											src={image}
+											alt="Nouvelle image de profil"
+											className="Settings-profile-image-playload"
+										/>
+									)}
+								</div>
+							)}
+						</div>
+						<div className="Settings-profile-image-buttons">
+							<input
+								type="file"
+								id="Settings-file-upload"
+								className="Settings-label"
+								accept="image/*"
+								onChange={handleFileChange}
+							/>
+							<button
+								onClick={handleUpload}
+								className="Settings-button Settings-upload-button"
+							>
+								Valider
+							</button>
+						</div>
+						{errorMessage.image && <div className="Settings-error">{errorMessage.image}</div>}
+					</div>
+
+					<div className="Settings-profile-name">
+						<label className="Settings-label">
+							Nouveau nom:
+							<input
+								className="Settings-input"
+								type="text"
+								value={nameInput}
+								placeholder={user.name}
+								onChange={handleChange}
+							/>
+						</label>
+						{errorMessage.username && <div className="Settings-error">{errorMessage.username}</div>}
+						<button
+							onClick={handleNameChange}
+							className="Settings-button Settings-upload-button"
+						>
+							Mettre à jour
+						</button>
+					</div>
+				</div>
+				<div className="Settings-account">
+					<h2>Sécurité</h2>
+					<button
+						onClick={handleDfaOpen}
+						className="Settings-button"
+					>
+						{qrCode && !is2faEnabled
+							? "Regénérer le QR code"
+							: is2faEnabled
+							? "Supprimer la double authentification"
+							: "Activer la double authentification"}
+					</button>
+					<Popup isOpen={isDfaOpen} onClose={handleDfaClose}>
+						{qrCode && !is2faEnabled && (
+							<div className="Settings-2fa-popup">
+								<h3>Scannez le QR code avec votre téléphone</h3>
+								<img src={`${qrCode.base64Qrcode}`} />
+								<label className="Settings-label Settings-2fa-popup-label">
+									Entrez le code à 6 chiffres:
+									<input
+										className="Settings-input"
+										type="text"
+										value={otpCode}
+										onChange={(event) => setOtpCode(event.target.value)}
+									/>
+								</label>
+								{errorMessage.otp && <div className="Settings-error">{errorMessage.otp}</div>}
+								<div className="Settings-2fa-popup-buttons">
+									<button
+										onClick={handleDfaClose}
+										className="Settings-button"
+									>
+										Annuler
+									</button>
+									<button
+										onClick={handleVerifyOtp}
+										className="Settings-button"
+									>
+										Valider
+									</button>
+								</div>
+							</div>
+						)}
+					</Popup>
+				</div>
+				<div className="Settings-delete-account">
+					<h2>Suppression du compte</h2>
+					<button
+						onClick={handleDelOpen}
+						className="Settings-button Settings-delete-account-button"
+					>
+						Supprimer mon compte
+					</button>
+					<Popup isOpen={isDelOpen}>
+						<div className="Settings-delete-account-popup">
+							<h3>Êtes-vous sûr de vouloir supprimer votre compte ?</h3>
+							<label className="Settings-label Settings-2fa-popup-label">
+									Entrez votre mot de passe:
+									<input
+										className="Settings-input"
+										type="password"
+										value={password}
+										onChange={(event) => setPassword(event.target.value)}
+									/>
 							</label>
-							{errorMessage.otp && <div className="Settings-error">{errorMessage.otp}</div>}
-							<div className="Settings-2fa-popup-buttons">
+							{errorMessage.password && <div className="Settings-error">{errorMessage.password}</div>}
+							<div className="Settings-delete-account-popup-buttons">
 								<button
-									onClick={handleDfaClose}
+									onClick={handleDelClose}
 									className="Settings-button"
 								>
 									Annuler
 								</button>
 								<button
-									onClick={handleVerifyOtp}
-									className="Settings-button"
+									onClick={handleAccountDeletion}
+									className="Settings-button Settings-delete-account-button-final"
+									id={password ? "Settings-delete-button" : ""}
 								>
-									Valider
+									Supprimer
 								</button>
 							</div>
 						</div>
-					)}
-				</Popup>
-			</div>
-			<div className="Settings-delete-account">
-				<h2>Suppression du compte</h2>
-				<button
-					onClick={handleDelOpen}
-					className="Settings-button Settings-delete-account-button"
-					>
-					Supprimer mon compte
-				</button>
-				<Popup isOpen={isDelOpen}>
-					<div className="Settings-delete-account-popup">
-						<h3>Êtes-vous sûr de vouloir supprimer votre compte ?</h3>
-						<label className="Settings-label Settings-2fa-popup-label">
-								Entrez votre mot de passe:
-								<input
-									className="Settings-input"
-									type="password"
-									value={password}
-									onChange={(event) => setPassword(event.target.value)}
-								/>
-							</label>
-						{errorMessage.password && <div className="Settings-error">{errorMessage.password}</div>}
-						<div className="Settings-delete-account-popup-buttons">
-							<button
-								onClick={handleDelClose}
-								className="Settings-button"
-							>
-								Annuler
-							</button>
-							<button
-								onClick={handleAccountDeletion}
-								className="Settings-button Settings-delete-account-button-final"
-								id={password ? "Settings-delete-button" : ""}
-							>
-								Supprimer
-							</button>
-						</div>
-					</div>
-				</Popup>
+					</Popup>
+				</div>
 			</div>
 		</div>
 	);
