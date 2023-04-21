@@ -5,7 +5,4 @@ export class UpdateUserDto {
 	@ApiProperty()
 	@MaxLength(15)
 	name: string;
-
-	@ApiProperty()
-	profilePicture: string;
 }

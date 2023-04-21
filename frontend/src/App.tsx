@@ -2,7 +2,6 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import LoginSelector from "./Pages/Login/LoginSelector";
 import CreateAccount from "./Pages/Login/CreateAccount/CreateAccount";
-import FollowingAccountCreation from "./Pages/Login/CreateAccount/FollowingAccountCreation";
 import Home from "./Pages/Home/Home";
 import Profile from "./Pages/Profile/Profile";
 import NotFound from "./Pages/Errors/NotFound/NotFound";
@@ -66,10 +65,6 @@ function App() {
 				/>
 				<Route path="/" element={<LoginSelector />} />
 				<Route path="/register" element={<CreateAccount />} />
-				<Route
-					path="/register/finalization"
-					element={<FollowingAccountCreation />}
-				/>
 				<Route path="/login/2fa" element={<TwoFactor />} />
 				<Route path="/*" element={<Layout children={<NotFound />} />} />
 				<Route path="/loading" element={<Loading />} />
