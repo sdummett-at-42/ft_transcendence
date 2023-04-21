@@ -11,6 +11,8 @@ export default function Settings() {
 	const [otpCode, setOtpCode] = useState("");
 	const [is2faEnabled, setIs2faEnabled] = useState(false);
 	const [selectedFile, setSelectedFile] = useState(null);
+	const [nameInput, setNameInput] = useState("");
+	const [errorMessage, setErrorMessage] = useState("");
 
 	if (!user) {
 		return <p>Loading...</p>;
@@ -44,17 +46,26 @@ export default function Settings() {
 	};
 
 	function handleNameChange() {
-		console.log("handleNameChange");
+		if (nameInput.length === 0) {
+			setErrorMessage("Name should be 1 character or more");
+			return;
+		} else if (nameInput.length > 15) {
+			setErrorMessage("Name should not exceed 15 characters");
+			return;
+		}
 		fetch("http://localhost:3001/users/me", {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
 			body: JSON.stringify({
-				name: user.name,
+				name: nameInput,
 			}),
 		})
-			.then((response) => {
-				if (!response.ok) {
+			.then(async (response) => {
+				if (response.ok) {
+					setLastUpdate(Date.now());
+				} else {
+					console.log(await response.json());
 					throw new Error("Failed to update name");
 				}
 			})
@@ -63,13 +74,17 @@ export default function Settings() {
 			});
 	}
 
+	function handleChange(event) {
+		setNameInput(event.target.value);
+		setErrorMessage("");
+	}
+
 	function handlePasswordChange() {
 		console.log("handlePasswordChange");
 		// TODO: Implement password change
 	}
 
 	function handleLogout() {
-		console.log("handleLogout");
 		fetch("http://localhost:3001/auth/logout", {
 			method: "DELETE",
 			credentials: "include",
@@ -83,7 +98,6 @@ export default function Settings() {
 	}
 
 	function handleAccountDeletion() {
-		console.log("handleAccountDeletion");
 		fetch("http://localhost:3001/users/me", {
 			method: "DELETE",
 			credentials: "include",
@@ -181,12 +195,11 @@ export default function Settings() {
 					Name:
 					<input
 						type="text"
-						value={user.name}
-						onChange={(event) =>
-							setUser({ ...user, name: event.target.value })
-						}
+						value={nameInput}
+						onChange={handleChange}
 					/>
 				</label>
+				{errorMessage && <div>{errorMessage}</div>}
 				<button onClick={handleNameChange}>Change Name</button>
 			</div>
 			<button onClick={handleLogout}>Logout</button>
