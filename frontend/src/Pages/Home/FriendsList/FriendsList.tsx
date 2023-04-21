@@ -19,7 +19,7 @@ export default function FriendsList() {
     }
 
     const navigate = useNavigate();
-    const { user, friendSocketRef } = useContext(UserContext);
+    const { user, notificationSocketRef } = useContext(UserContext);
 
     // Store all friends of the user
     const [friends, setFriends] = useState([] as any);
@@ -95,7 +95,7 @@ export default function FriendsList() {
         getFriends();
         getPendingFriends();
         getRequestFriends();
-        friendSocketRef.current.emit("getOnlineFriends");
+        notificationSocketRef.current.emit("getOnlineFriends");
     }, []);
 
     const handleFriendRequest = (data) => {
@@ -155,6 +155,9 @@ export default function FriendsList() {
 
     const handleFriendConnected = (data) => {
         console.log("connected");
+		if (onlineStatus.includes(data.id))
+			return;
+
         setOnlineStatus([...onlineStatus, data.id]);
     };
 
@@ -174,20 +177,20 @@ export default function FriendsList() {
     // Handle the socket events
     useEffect(() => {
 
-        friendSocketRef.current.on('friendRequestReceived', handleFriendRequest);
-        friendSocketRef.current.on('friendRequestAccepted', handleFriendRequestAccepted);
-        friendSocketRef.current.on('friendRequestCanceled', handleFriendRequestCanceled);
-        friendSocketRef.current.on('friendConnected', handleFriendConnected);
-        friendSocketRef.current.on('friendDisconnected', handleFriendDisconnected);
-        friendSocketRef.current.on('connectedFriends', handleAllConnected);
+        notificationSocketRef.current.on('friendRequestReceived', handleFriendRequest);
+        notificationSocketRef.current.on('friendRequestAccepted', handleFriendRequestAccepted);
+        notificationSocketRef.current.on('friendRequestCanceled', handleFriendRequestCanceled);
+        notificationSocketRef.current.on('friendConnected', handleFriendConnected);
+        notificationSocketRef.current.on('friendDisconnected', handleFriendDisconnected);
+        notificationSocketRef.current.on('connectedFriends', handleAllConnected);
 
         return () => {
-            friendSocketRef.current.off('friendRequestReceived', handleFriendRequest);
-            friendSocketRef.current.off('friendRequestAccepted', handleFriendRequestAccepted);
-            friendSocketRef.current.off('friendRequestCanceled', handleFriendRequestCanceled);
-            friendSocketRef.current.off('friendConnected', handleFriendConnected);
-            friendSocketRef.current.off('friendDisconnected', handleFriendDisconnected);
-            friendSocketRef.current.off('connectedFriends', handleAllConnected);
+            notificationSocketRef.current.off('friendRequestReceived', handleFriendRequest);
+            notificationSocketRef.current.off('friendRequestAccepted', handleFriendRequestAccepted);
+            notificationSocketRef.current.off('friendRequestCanceled', handleFriendRequestCanceled);
+            notificationSocketRef.current.off('friendConnected', handleFriendConnected);
+            notificationSocketRef.current.off('friendDisconnected', handleFriendDisconnected);
+            notificationSocketRef.current.off('connectedFriends', handleAllConnected);
         };
     }, [
         handleFriendRequest,
@@ -196,7 +199,7 @@ export default function FriendsList() {
         handleFriendConnected,
         handleFriendDisconnected,
         handleAllConnected,
-        friendSocketRef]);
+        notificationSocketRef]);
 
     const [isShaking, setIsShaking] = useState(false);
 

@@ -5,8 +5,8 @@ import { FriendsService } from "./friends.service";
 import { FriendRequestService } from "./friend-request.service";
 import { ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from "src/modules/users/entities/user.entity";
-import { FriendsGateway } from "./friends.gateway";
 import { CreateFriendRequestDto } from "./dto/friends.dto";
+import { NotificationsGateway } from "../notifications/notifications.gateway";
 
 @ApiTags('friends')
 @Controller('friends')
@@ -15,7 +15,7 @@ export class FriendsController {
 	constructor(
 		private readonly friends: FriendsService,
 		private readonly friendRequest: FriendRequestService,
-		private readonly friendGateway: FriendsGateway) { }
+		private readonly notifications: NotificationsGateway) { }
 
 	@Get()
 	@HttpCode(200)
@@ -45,7 +45,7 @@ export class FriendsController {
 		@Req() request
 	) {
 		const friendRequest = await this.friendRequest.sendFriendRequest(request.user.id, dto.friendId);
-		this.friendGateway.sendFriendRequest(request.user.id, dto.friendId);
+		this.notifications.sendFriendRequest(request.user.id, dto.friendId);
 		return friendRequest;
 	}
 
@@ -58,7 +58,7 @@ export class FriendsController {
 		@Body('friendId') friendId: number,
 	) {
 		const friendRequest = await this.friendRequest.acceptFriendRequest(request.user.id, friendId);
-		this.friendGateway.acceptFriendRequest(friendId, request.user.id);
+		this.notifications.acceptFriendRequest(friendId, request.user.id);
 		return friendRequest;
 	}
 
@@ -82,7 +82,7 @@ export class FriendsController {
 		@Body('friendId') friendId: number,
 	) {
 		const friendRequest = await this.friendRequest.removeFriendRequest(friendId, request.user.id);
-		this.friendGateway.cancelFriendRequest(request.user.id, friendId);
+		this.notifications.cancelFriendRequest(request.user.id, friendId);
 		return friendRequest;
 	}
 

@@ -1,29 +1,20 @@
 import { useState, useEffect } from "react";
-import "./Profile.css"
+import "./Profile.css";
+import InitAchievements from "../Achievements/Achievements";
 
-export default function Profile({ userId }) {
-	const [user, setUser] = useState(null);
+export default function Profile({ user }) {
 	const [matchData, setMatchData] = useState(null);
 
 	useEffect(() => {
-		// Fetch user data
-		fetch(`http://localhost:3001/users/${userId}`, {
-			method: "GET",
-			credentials: "include",
-		})
-			.then((response) => response.json())
-			.then((data) => setUser(data))
-			.catch((error) => console.error(error));
-
 		// Fetch match data
-		fetch(`http://localhost:3001/users/${userId}/matchs`, {
+		fetch(`http://localhost:3001/users/${user.id}/matchs`, {
 			method: "GET",
 			credentials: "include",
 		})
 			.then((response) => response.json())
 			.then((data) => setMatchData(data))
 			.catch((error) => console.error(error));
-	}, [userId]);
+	}, [user]);
 
 	if (!user || !matchData) {
 		return <p>Loading...</p>;
@@ -97,28 +88,34 @@ function MatchList({ user, match }) {
 			<p>
 				Wins/Losses: {matchWon.length}/{matchLost.length}
 			</p>
-
+			<InitAchievements userId={user.id} showLocked={false} />
 			<h3>Matches</h3>
-			<table className="match-table">
-				<thead>
-					<tr>
-						<th>Winner</th>
-						<th>Loser</th>
-						<th>Winner Score</th>
-						<th>Looser Score</th>
-					</tr>
-				</thead>
-				<tbody>
-					{allMatches.map((match) => (
-						<tr key={`match-${match.id}`}>
-							<td>{match.winnerName}</td>
-							<td>{match.loserName}</td>
-							<td>{match.winnerScore}</td>
-							<td>{match.looserScore}</td>
+			{allMatches.length === 0 ? (
+				<p>No matches played.</p>
+			) : (
+				<table className="match-table">
+					<thead>
+						<tr>
+							<th>Winner</th>
+							<th>Loser</th>
+							<th>Winner Score</th>
+							<th>Loser Score</th>
 						</tr>
-					))}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{allMatches.map((match) => (
+							<tr key={`match-${match.id}`}>
+								<td>{match.winnerName}</td>
+								<td>{match.loserName}</td>
+								<td>{match.winnerScore}</td>
+								<td>{match.looserScore}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			)}
 		</div>
 	);
 }
+
+///

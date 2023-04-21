@@ -4,12 +4,12 @@ import { FriendsService } from "./friends.service";
 import { FriendsController } from "./friends.controller";
 import { FriendRequestService } from "./friend-request.service";
 import { RedisModule } from "../redis/redis.module";
-import { FriendsGateway } from "./friends.gateway";
+import { NotificationsGateway } from "../notifications/notifications.gateway";
 
 @Module({
 	imports: [PrismaModule, RedisModule],
 	controllers: [FriendsController],
-	providers: [FriendsService, FriendRequestService, FriendsGateway],
-	exports: [FriendsService, FriendsGateway],
+	providers: [FriendsService, FriendRequestService, NotificationsGateway],
+	exports: [FriendsService, NotificationsGateway],
 })
 export class FriendsModule { }

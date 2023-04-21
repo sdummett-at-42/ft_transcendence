@@ -14,7 +14,6 @@ import InitAchievements from "./Pages/Achievements/Achievements";
 import InitStats from "./Pages/Stats/Stats";
 import Settings from "./Pages/Settings/Settings";
 import ChatLogin from "./Pages/Chat/ChatLogin";
-import { useEffect, useState } from "react";
 import TwoFactor from "./Pages/Login/TwoFactor/TwoFactor";
 import { UserContext } from "./context/UserContext";
 import { useContext } from "react";
@@ -27,25 +26,36 @@ function App() {
 		<div className="App">
 			<Routes>
 				<Route path="/home" element={<Layout children={<Home />} />} />
-				<Route path="/lobby" element={<Layout children={<Lobby />} />} />
+				<Route
+					path="/lobby"
+					element={<Layout children={<Lobby />} />}
+				/>
 				{user ? (
 					<Route
 						path="/profile"
-						element={<Layout children={<Profile userId={user.id} />} />}
+						element={<Layout children={<Profile user={user} />} />}
 					/>
 				) : null}
 				<Route
 					path="/settings"
 					element={<Layout children={<Settings />} />}
 				/>
-				<Route
-					path="/unauthorized"
-					element={<Unauthorized />}
-				/>
-				<Route
-					path="/achievements"
-					element={<Layout children={<InitAchievements />} />}
-				/>
+				<Route path="/unauthorized" element={<Unauthorized />} />
+				{user ? (
+					<Route
+						path="/achievements"
+						element={
+							<Layout
+								children={
+									<InitAchievements
+										userId={user.id}
+										showLocked={true}
+									/>
+								}
+							/>
+						}
+					/>
+				) : null}
 				<Route
 					path="/stats"
 					element={<Layout children={<InitStats />} />}
@@ -61,7 +71,7 @@ function App() {
 				<Route path="/loading" element={<Loading />} />
 			</Routes>
 		</div>
-	)
+	);
 }
 
 export default App;

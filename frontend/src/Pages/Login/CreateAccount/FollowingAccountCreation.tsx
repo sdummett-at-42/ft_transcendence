@@ -7,7 +7,7 @@ import { UserContext } from "../../../context/UserContext";
 import Loading from "../../Loading/Loading";
 
 export default function FollowingAccountCreation() {
-	const { user, isLoading } = useContext(UserContext);
+	const { user, isLoading, setLastUpdate } = useContext(UserContext);
 	const [image, setImage] = useState("");
 	const [loading, setLoading] = useState(true);
 	const usernameInputRef = useRef(null);
@@ -71,6 +71,7 @@ export default function FollowingAccountCreation() {
 			}),
 		}).then((res) => {
 			if (res.status == 200) {
+				setLastUpdate(Date.now());
 				naviguate("/home");
 				return;
 			}

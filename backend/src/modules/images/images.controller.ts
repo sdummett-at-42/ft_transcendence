@@ -29,28 +29,28 @@ export class ImagesController {
 	@Patch(':id')
 	@HttpCode(200)
 	//@UseGuards(BodySizeGuard)
-	@UseInterceptors(FileInterceptor('file'))
+	@UseInterceptors(FileInterceptor('image'))
 	@ApiOkResponse({ description: 'Updates the image.' })
 	//@ApiPayloadTooLargeResponse({ description: 'The file is too large. The maximum file size is 2KB' })
 	@ApiBadRequestResponse({ description: 'Invalid file type. It must be a PNG or JPEG file.' })
 	@ApiUnauthorizedResponse({ description: 'You are not authorized to update this image' })
-	async updateImage(@UploadedFile() file: any, @Param('id', ParseIntPipe) id: number, @Req() request) {
+	async updateImage(@UploadedFile() image: any, @Param('id', ParseIntPipe) id: number, @Req() request) {
 		if (request.user.id != id)
 			throw new HttpException('You are not authorized to update this image', HttpStatus.UNAUTHORIZED);
-		const{ buffer } = file;
+		const{ buffer } = image;
 		const imageBase64 = buffer.toString('base64');
-		if (file.mimetype !== 'image/png' && file.mimetype !== 'image/jpeg')
-			throw new BadRequestException('Invalid file type');
+		if (image.mimetype !== 'image/png' && image.mimetype !== 'image/jpeg')
+			throw new BadRequestException('Invalid image type, server supports only PNG and JPEG images');
 
-		const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
-		const jpegSignature = [0xFF, 0xD8, 0xFF];
-		const fileSignature = imageBase64.substring(0, 24).split(',').map((s) => parseInt(s, 16));
-		if (file.mimetype === 'image/png' && !fileSignature.every((v, i) => v === pngSignature[i]))
-			throw new BadRequestException('Invalid file type');
-		if (file.mimetype === 'image/jpeg' && !fileSignature.every((v, i) => v === jpegSignature[i]))
-			throw new BadRequestException('Invalid file type');
+		// const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+		// const jpegSignature = [0xFF, 0xD8, 0xFF];
+		// const imageSignature = imageBase64.substring(0, 24).split(',').map((s) => parseInt(s, 16));
+		// if (image.mimetype === 'image/png' && !imageSignature.every((v, i) => v === pngSignature[i]))
+		// 	throw new BadRequestException('Invalid image type');
+		// if (image.mimetype === 'image/jpeg' && !imageSignature.every((v, i) => v === jpegSignature[i]))
+		// 	throw new BadRequestException('Invalid image type');
 
-		return this.images.updateImage(imageBase64, file.mimetype, id);
+		return this.images.updateImage(imageBase64, image.mimetype, id);
 	}
 
 	@Delete(':id')

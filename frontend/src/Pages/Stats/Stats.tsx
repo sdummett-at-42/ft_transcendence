@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Stats.css";
+import InitAchievements from "../Achievements/Achievements";
+import Profile from "../Profile/Profile";
 
 export default function InitStats() {
 	const [users, setUsers] = useState([]);
@@ -29,6 +31,10 @@ function UserList({ users }) {
 		setSelectedUser(user);
 	};
 
+	const filteredUsers = users.filter((user) => {
+		return user.matchWon.length + user.matchLost.length > 0;
+	});
+
 	return (
 		<div>
 			<table>
@@ -41,27 +47,34 @@ function UserList({ users }) {
 						<th>Matches Played</th>
 					</tr>
 				</thead>
-				<tbody>
-					{users.map((user, index) => (
-						<tr key={user.id} onClick={() => handleUserClick(user)}>
-							<td>{index + 1}</td>
-							<td>{user.elo}</td>
-							<td>
-								<img
-									src={user.profilePicture}
-									alt="Profile"
-									className="profile-picture"
-								/>
-								{user.name}
-							</td>
-							<td>{user.matchWon.length}</td>
-							<td>
-								{user.matchWon.length + user.matchLost.length}
-							</td>
-						</tr>
-					))}
-				</tbody>
+				{filteredUsers.length === 0 ? null : (
+					<tbody>
+						{filteredUsers.map((user, index) => (
+							<tr
+								key={user.id}
+								onClick={() => handleUserClick(user)}
+							>
+								<td>{index + 1}</td>
+								<td>{user.elo}</td>
+								<td>
+									<img
+										src={user.profilePicture}
+										alt="Profile"
+										className="profile-picture"
+									/>
+									{user.name}
+								</td>
+								<td>{user.matchWon.length}</td>
+								<td>
+									{user.matchWon.length +
+										user.matchLost.length}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				)}
 			</table>
+			{filteredUsers.length === 0 ? <p>No users to display</p> : null}
 			{selectedUser && (
 				<UserPopup
 					user={selectedUser}
@@ -85,14 +98,15 @@ function UserPopup({ user, onClose }) {
 				<button className="close-button" onClick={onClose}>
 					X
 				</button>
-				<h2>{user.name}</h2>
+				<Profile user={user} />
+				{/* <h2>{user.name}</h2>
 				<img
 					src={user.profilePicture}
 					alt="Profile"
 					className="profile-picture"
 				/>
 				<p>Wins: {user.matchWon.length}</p>
-				<p>Losses: {user.matchLost.length}</p>
+				<p>Losses: {user.matchLost.length}</p> */}
 				{/* Add more details as needed */}
 			</div>
 		</div>
