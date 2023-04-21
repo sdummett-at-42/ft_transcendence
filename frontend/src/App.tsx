@@ -60,6 +60,10 @@ function App() {
 					path="/stats"
 					element={<Layout children={<InitStats />} />}
 				/>
+				<Route
+					path="/chat"
+					element={<Layout children={<ChatLogin />} />}
+				/>
 				<Route path="/" element={<LoginSelector />} />
 				<Route path="/register" element={<CreateAccount />} />
 				<Route

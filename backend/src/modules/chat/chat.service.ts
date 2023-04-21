@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConnectedSocket } from '@nestjs/websockets';
 import { RedisService } from 'src/modules/redis/redis.service';
-import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto, UninviteUserDto, GetRoomMsgHistDto, sendDMDto } from './chat.dto';
+import { CreateRoomDto, LeaveRoomDto, JoinRoomDto, BanUserDto, MuteUserDto, InviteUserDto, UnbanUserDto, UnmuteUserDto, SendMessageDto, UpdateRoomDto, KickUserDto, AddRoomAdminDto, RemoveRoomAdminDto, GiveOwnershipDto, BlockUserDto, UnblockUserDto, UninviteUserDto, GetRoomMsgHistDto, sendDMDto, GetDmHistDto } from './chat.dto';
 import { Event } from './chat-event.enum';
 import * as argon2 from 'argon2';
 import { PrismaService } from "nestjs-prisma";
@@ -12,7 +12,7 @@ const EXPIRATION_TIME = 2 * 24 * 60 * 60;
 export class ChatService {
 
 	// NOTE: When server sends message to the room, we should replace ${userId} with the pseudo of the user instead.
-	constructor(private readonly redis: RedisService, private readonly prisma: PrismaService) { }
+	constructor(private readonly redis: RedisService, private readonly prisma: PrismaService) {	 }
 
 	async afterInit() {
 		// Delete all the rooms afterInit ?
@@ -96,14 +96,18 @@ export class ChatService {
 		const owner = await this.redis.getRoomOwner(roomName);
 		let admins = (await this.redis.getRoomAdmins(roomName)).map(Number);
 		let members = (await this.redis.getRoomMembers(roomName)).map(Number);
+		let banned = (await this.redis.getRoomBanned(roomName)).map(Number);
+		let muted = (await this.redis.getRoomAllMuted(roomName)).map(Number);
 		const memberList = {
 			owner: owner,
 			admins: admins,
 			members: members,
+			banned: banned,
+			muted: muted,
 		}
 		return memberList;
 	}
-
+	//test
 	async createRoom(socket, dto: CreateRoomDto, server) {
 		const room = await this.redis.getRoom(dto.roomName);
 		if (room.length > 0) {
@@ -120,6 +124,7 @@ export class ChatService {
 		let isProtected = false;
 		if (dto.password != "")
 			isProtected = true;
+		await this.redis.setCreatedAt(dto.roomName);
 		await this.redis.setRoomName(dto.roomName);
 		await this.redis.setRoomOwner(dto.roomName, socket.data.userId);
 		await this.redis.setRoomAdmin(dto.roomName, socket.data.userId);
@@ -128,12 +133,15 @@ export class ChatService {
 		await this.redis.setRoomPassword(dto.roomName, await argon2.hash(dto.password), JSON.stringify(isProtected));
 		await this.redis.setUserRoom(socket.data.userId, dto.roomName);
 
+
+		// console.log("Je passe la dedans");
 		socket.emit(Event.roomCreated, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
 			message: `Room ${dto.roomName} has been created.`
 		});
 
+		let vis = await this.redis.getRoomVisibility(dto.roomName);
 		const sockets = server.sockets.sockets;
 		sockets.forEach((value, key) => {
 			if (value.data.userId === socket.data.userId) {
@@ -141,6 +149,8 @@ export class ChatService {
 				value.emit(Event.roomJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),
+					public: vis,
+					protected :isProtected, 
 					message: `You have joined room ${dto.roomName}.`
 				})
 			}
@@ -209,8 +219,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${userId} has left the room ${dto.roomName}.`
+			message: ` has left the room ${dto.roomName}.`
 		});
 	}
 
@@ -288,17 +299,25 @@ export class ChatService {
 		await this.redis.unsetRoomInvited(dto.roomName, +userId);
 
 		console.debug(`User ${userId} is joining room ${dto.roomName}`);
-
+		let isProtected = false;
+		if (dto.password != "")
+			isProtected = true;
 		await this.redis.setRoomMember(dto.roomName, +userId);
 		await this.redis.setUserRoom(+userId, dto.roomName);
+		let vis = await this.redis.getRoomVisibility(dto.roomName);
+		
 
 		const sockets = server.sockets.sockets;
 		sockets.forEach((value, key) => {
 			if (value.data.userId === socket.data.userId) {
+				console.log(value.data.userId);
 				value.join(dto.roomName)
-				value.join(Event.roomJoined, {
+				console.log("Je passe ici2", vis);
+				socket.emit(Event.roomJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),
+					public: vis,
+					protected :isProtected, 
 					message: `You have joined room ${dto.roomName}.`,
 				})
 			}
@@ -308,8 +327,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +socket.data.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${socket.data.userId} has joined the room ${dto.roomName}.`
+			message: ` has joined the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -420,8 +440,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been kicked from the room ${dto.roomName}.`
+			message: ` has been kicked from the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -548,8 +569,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been banned from the room ${dto.roomName}.`
+			message: ` has been banned from the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -641,8 +663,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been unbanned from the room ${dto.roomName}.`
+			message: ` has been unbanned from the room ${dto.roomName}.`
 		});
 	}
 
@@ -760,8 +783,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been muted from the room ${dto.roomName} for ${dto.timeout} secs.`
+			message: ` has been muted from the room ${dto.roomName} for ${dto.timeout} secs.`
 		});
 	}
 
@@ -857,8 +881,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been unmuted from the room ${dto.roomName}.`
+			message: ` has been unmuted from the room ${dto.roomName}.`
 		});
 	}
 
@@ -948,6 +973,14 @@ export class ChatService {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
 			message: `User ${userId} has been succesfully invited to room ${dto.roomName}.`,
+		});
+
+		server.to(dto.roomName).emit(Event.roomMsgReceived, {
+			roomName: dto.roomName,
+			userId: -1,
+			targetId: +dto.userId,
+			timestamp: new Date().toISOString(),
+			message: ` has been succesfully invited to room ${dto.roomName}.`,
 		});
 	}
 
@@ -1121,8 +1154,14 @@ export class ChatService {
 		socket.emit(Event.roomUpdated, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
+			public: dto.visibility,
+			protected :isProtected, 
 			message: `Room ${dto.roomName} has been updated.`,
 		})
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList: await this.getMemberList(dto.roomName),
+		});
 	}
 
 	async addRoomAdmin(socket, dto: AddRoomAdminDto, server) {
@@ -1207,8 +1246,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been granted admin in the room ${dto.roomName}.`
+			message: ` has been granted admin in the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -1299,8 +1339,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been demoted to a normal user in the room ${dto.roomName}.`
+			message: ` has been demoted to a normal user in the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -1381,8 +1422,9 @@ export class ChatService {
 		server.to(dto.roomName).emit(Event.roomMsgReceived, {
 			roomName: dto.roomName,
 			userId: -1,
+			targetId: +dto.userId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} is the new owner of the room ${dto.roomName}.`
+			message: ` is the new owner of the room ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -1393,8 +1435,9 @@ export class ChatService {
 
 	async getRoomsList(socket, dto, server) {
 		const roomsList = [];
+		// console.debug("here0");
 		const roomNames = await this.redis.getRoomNames();
-
+		// console.debug("here1");
 		await Promise.all(roomNames.map(async (roomName) => {
 			if (await this.redis.getRoomVisibility(roomName) == "public") {
 				let isProtected = false;
@@ -1407,7 +1450,6 @@ export class ChatService {
 				});
 			}
 		}));
-
 		console.debug(`Sending public rooms to user ${socket.data.userId}`);
 		socket.emit(Event.roomsListReceived, {
 			roomsList,
@@ -1417,126 +1459,73 @@ export class ChatService {
 	async blockUser(socket, dto: BlockUserDto, server) {
 		const userId: string = socket.data.userId.toString();
 
-		const room = await this.redis.getRoom(dto.roomName);
-		if (room.length === 0) {
-			console.debug(`Room ${dto.roomName} doesn't exist`);
-			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `Room ${dto.roomName} doesn't exists.`
-			});
-			return;
-		}
-
-		const members = await this.redis.getRoomMembers(dto.roomName);
-		if (members.includes(userId) === false) {
-			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
-			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are not member in room ${dto.roomName}.`,
-			});
-			return;
-		}
-
-		if (userId == dto.userId.toString()) {
+		if (userId == dto.toUserId.toString()) {
 			console.debug(`User ${socket.data.userId} cannot block himself`);
 			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
+				userId: dto.toUserId,
 				timestamp: new Date().toISOString(),
 				message: `You cannot block yourself.`
 			});
 			return;
 		}
 
-		const usersblocked = await this.redis.getRoomUsersBlocked(dto.roomName, +userId);
-		if (usersblocked.includes(dto.userId)) {
-			console.debug(`User ${dto.userId} is already blocked from room ${dto.roomName} by user ${userId}`);
+		const usersblocked = await this.redis.getUsersBlocked(dto.fromUserId);
+		if (usersblocked.includes(dto.toUserId)) {
+			console.debug(`User ${dto.toUserId} is already blocked by user ${userId}`);
 			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
+				userId: dto.toUserId,
 				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is already blocked in room ${dto.roomName} by you.`
+				message: `User ${dto.toUserId} is already blocked by you.`
 			});
 			return;
 		}
 
-		if (members.includes(dto.userId.toString()) === false) {
-			console.debug(`User ${dto.userId} is not member in room ${dto.roomName}.`);
-			socket.emit(Event.userNotBlocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
-			});
-			return;
-		}
+		console.debug(`User ${socket.data.userId} is blocking user ${dto.toUserId}`);
 
-		console.debug(`User ${socket.data.userId} is blocking user ${dto.userId} from room ${dto.roomName}`);
-
-		await this.redis.setRoomUserBlocked(dto.roomName, +userId, dto.userId);
+		await this.redis.setUserBlocked( +userId, dto.toUserId);
 
 		socket.emit(Event.userBlocked, {
-			roomName: dto.roomName,
+			userId: dto.toUserId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been successfully blocked.`,
-			userId: dto.userId,
+			message: `User ${dto.toUserId} has been successfully blocked.`,
+			fromuserId: dto.fromUserId,
 		})
 	}
 
 	async unblockUser(socket, dto: UnblockUserDto, server) {
 		const userId: string = socket.data.userId.toString();
 
-		const room = await this.redis.getRoom(dto.roomName);
-		if (room.length === 0) {
-			console.debug(`Room ${dto.roomName} doesn't exist`);
-			socket.emit(Event.userNotUnblocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `Room ${dto.roomName} doesn't exists.`
-			});
-			return;
-		}
 
-		const members = await this.redis.getRoomMembers(dto.roomName);
-		if (members.includes(userId) === false) {
-			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
-			socket.emit(Event.userNotUnblocked, {
-				roomName: dto.roomName,
-				timestamp: new Date().toISOString(),
-				message: `You are not member in room ${dto.roomName}.`,
-			});
-			return;
-		}
-
-		if (userId == dto.userId.toString()) {
+		if (userId == dto.toUserId.toString()) {
 			console.debug(`User ${socket.data.userId} cannot unblock himself`);
 			socket.emit(Event.userNotUnblocked, {
-				roomName: dto.roomName,
+				userId: dto.toUserId,
 				timestamp: new Date().toISOString(),
 				message: `You cannot unblock yourself.`
 			});
 			return;
 		}
 
-		const userBlocked = await this.redis.getRoomUsersBlocked(dto.roomName, +userId);
-		if (userBlocked.includes(dto.userId) == false) {
-			console.debug(`User ${dto.userId} is not blocked from room ${dto.roomName} by user ${userId}`);
+		const userBlocked = await this.redis.getUsersBlocked(dto.fromUserId);
+		if (userBlocked.includes(dto.toUserId) == false) {
+			console.debug(`User ${dto.toUserId} is not blocked by user ${userId}`);
 			socket.emit(Event.userNotUnblocked, {
-				roomName: dto.roomName,
+				userId: dto.toUserId,
 				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not blocked by you in room ${dto.roomName}.`
+				message: `User ${dto.toUserId} is not blocked by you.`
 			});
 			return;
 		}
 
-		console.debug(`User ${socket.data.userId} is unblocking user ${dto.userId} from room ${dto.roomName}`);
+		console.debug(`User ${socket.data.userId} is unblocking user ${dto.toUserId}`);
 
-		await this.redis.unsetRoomUserBlocked(dto.roomName, +userId, dto.userId);
+		await this.redis.unsetUserBlocked(+userId, dto.toUserId);
 
 		socket.emit(Event.userUnblocked, {
-			roomName: dto.roomName,
+			userId: dto.toUserId,
 			timestamp: new Date().toISOString(),
-			message: `User ${dto.userId} has been successfully unblocked.`,
-			userId: dto.userId,
+			message: `User ${dto.toUserId} has been successfully unblocked.`,
+			fromuserId: dto.fromUserId,
 		})
 	}
 
@@ -1599,41 +1588,112 @@ export class ChatService {
 			return;
 		}
 
+		const userBlocked = await this.redis.getUsersBlocked(dto.userId);
+		console.log("userBlock", userBlocked, +userId);
+		if (userBlocked.includes(+userId)) {
+			console.log("here??");
+			socket.emit(Event.DMNotSended, {
+				userId: dto.userId,
+				timestamp: new Date().toISOString(),
+				message: `User ${dto.userId} has blocked you.`,
+			});
+			return;
+		}
+		
 		const sockets = await server.fetchSockets();
-		const receiverSockets = sockets.filter(s => {
-			return s.data.userId === dto.userId;
-		});
-
+		// console.log("userId", userId);
 		const currentTimestamp = Date.now();
+		socket.emit(Event.DMReceived, {
+			userId: +userId,
+			timestamp: new Date(currentTimestamp).toISOString(),
+			message: dto.message,
+		})
+		socket.emit(Event.dmUpdated, {
+			userId: +dto.userId, 
+			timestamp: new Date().toISOString(),
+			message: `Room ${dto.userId} has been updated.`,
+			fromId : +userId,
+		})
+		const receiverSockets = sockets.filter(s => {
+			return s.data.userId === dto.userId ;
+		});
+		console.log("receiverSockets", receiverSockets.length);
 		this.redis.setDm(+userId, dto.userId, new Date(currentTimestamp).toISOString(), dto.message, EXPIRATION_TIME);
 		if (receiverSockets.length === 0) {
 			console.debug(`User ${userId} is sending a DM to user ${dto.userId} (disconnected)`);
 			await this.redis.setUserUnreadDM(+userId, dto.userId);
 			return;
 		}
-
-		console.debug(`User ${userId} is sending a DM to user ${dto.userId}`);
 		receiverSockets.forEach(socket => {
+			// console.debug("socket",socket);
 			socket.emit(Event.DMReceived, {
 				userId: +userId,
 				timestamp: new Date(currentTimestamp).toISOString(),
 				message: dto.message,
 			})
+			socket.emit(Event.dmUpdated, {
+				userId: +userId,
+				timestamp: new Date().toISOString(),
+				message: `Room ${dto.userId} has been updated.`,
+			})
 		});
 	}
+
+	async getDmHist(socket, dto: GetDmHistDto, server) {
+		const userId: string = socket.data.userId.toString();
+
+		const dms = await this.redis.getDm(+userId, dto.userId);
+		socket.emit(Event.dmHist, {
+			userId: dto.userId,
+			msgHist: dms,
+		})
+	}
+
 
 	async notifsRead(socket, dto, server) {
 		await this.redis.unsetUserUnreadDM(socket.data.userId);
 		// unsetUnreadRoomMsg <== TODO
 	}
 
+	// async getUserRooms(socket, dto, server) {
+	// 	const rooms = await this.redis.getUserRooms(socket.data.userId)
+	// 	socket.emit(Event.userRooms, {rooms});
+	// }
 	async getUserRooms(socket, dto, server) {
-		const rooms = await this.redis.getUserRooms(socket.data.userId)
-		socket.emit(Event.userRooms, {rooms});
-	}
+		const roomsList = [];
+		const roomNames = await this.redis.getUserRooms(socket.data.userId)
+		await Promise.all(roomNames.map(async (roomName) => {
+			let ifpublic = "private";
+			let ifprotected = false;
+			if (await this.redis.getRoomVisibility(roomName) == "public") 
+				ifpublic = "public";
+			if (await this.redis.getRoomProtection(roomName) == "true")
+				ifprotected  = true;
 
+				roomsList.push({
+					roomName,
+					protected: ifprotected, 
+					public : ifpublic,
+					// timestamp: new Date().toISOString(),
+					created_at: await this.redis.getCreatedAt(roomName),
+				});
+			}
+		));
+		socket.emit(Event.userRooms, {
+			roomsList,
+		})
+	}
 	async getDmsList(socket, dto, server) {
 		const dms = await this.redis.getDmList(socket.data.userId);
 		socket.emit(Event.dmsList, { dms });
+	}
+
+	async getRoomMembers(socket, dto, server) {
+		console.log("dto.roomName",dto.roomName);
+		console.log(await this.getMemberList(dto.roomName))
+		socket.emit(Event.roomMembers, {
+			roomName: dto.roomName,
+			memberList: await this.getMemberList(dto.roomName),
+		});
 	}
 }

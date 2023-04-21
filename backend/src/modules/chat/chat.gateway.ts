@@ -1,7 +1,7 @@
 import { ConnectedSocket, WebSocketServer, MessageBody, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema, KickUserSchema, AddRoomAdminSchema, RemoveRoomAdminSchema, GiveOwnershipSchema, BlockUserSchema, UnblockUserSchema, UninviteUserSchema, GetRoomMsgHistSchema, sendDMSchema } from './chat.dto';
+import { CreateRoomSchema, LeaveRoomSchema, JoinRoomSchema, BanUserSchema, MuteUserSchema, InviteUserSchema, UnbanUserSchema, UnmuteUserSchema, SendMessageSchema, UpdateRoomSchema, KickUserSchema, AddRoomAdminSchema, RemoveRoomAdminSchema, GiveOwnershipSchema, BlockUserSchema, UnblockUserSchema, UninviteUserSchema, GetRoomMsgHistSchema, sendDMSchema, GetDmHistSchema } from './chat.dto';
 import { Injectable } from '@nestjs/common';
 import { Event } from './chat-event.enum';
 
@@ -12,6 +12,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	server: Server;
 
 	constructor(private readonly chat: ChatService) { }
+
+	async onModuleInit() {
+		this.server.disconnectSockets();
+	}
 
 	async afterInit(server: Server) {
 		await this.chat.afterInit();
@@ -37,6 +41,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage(Event.createRoom)
 	async onCreateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
+		// console.log("times");
 		if (dto === undefined) {
 			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
@@ -347,5 +352,29 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.getDmsList)
 	onGetDmsList(@ConnectedSocket() socket) {
 		this.chat.getDmsList(socket, null, this.server);
+	}
+
+	@SubscribeMessage(Event.getRoomMembers)
+	onGetRoomMembers(@ConnectedSocket() socket, @MessageBody() dto) {
+		if (!dto || !dto.roomName) {
+			console.log("dto or dto.roomName undefined");
+			return;
+		}
+		this.chat.getRoomMembers(socket, dto, this.server);
+	}
+
+	@SubscribeMessage(Event.getDmHist)
+	onGetDmHist(@ConnectedSocket() socket, @MessageBody() dto) {
+		if (dto === undefined) {
+			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
+			return;
+		}
+		const { error } = GetDmHistSchema.validate(dto);
+		if (error) {
+			console.log(error.message);
+			socket.emit(Event.dataError, { message: error.message });
+			return;
+		}
+		this.chat.getDmHist(socket, dto, this.server);
 	}
 }

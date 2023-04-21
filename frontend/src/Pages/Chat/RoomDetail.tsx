@@ -1,116 +1,240 @@
 import React, { FC } from 'react';
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faBan, faPlus, faVolumeXmark, faPersonRunning} from '@fortawesome/free-solid-svg-icons';
-import { faMessageSlash} from '@fortawesome/free-solid-svg-icons';
+import { faBan, faPlus, faVolumeXmark, faPersonRunning } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Setting from './Setting';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { io, Socket } from "socket.io-client";
+import { createContext, useContext } from "react";
+import { DatabaseContext } from './ChatLogin';
+import InvitedConfirm from './InvitedConfirm';
+import MemberList from './MemberList';
+import Profile from './Profile';
+import "./chat.scss"
 
 interface RoomDetailProps {
-  socket: Socket;
+  socket: Socket,
+  onListClick: (list: string, id: number, ifDM: boolean) => void,
+  roomName: string,
+  onUpdate: () => void,
+  UserId: Number,
+  ifDM: boolean,
 }
-
-const RoomDetail: FC<RoomDetailProps> = () => {
+export default function RoomDetail(props: RoomDetailProps) {
   const [show, setShow] = useState(false);
-  const close = () => {
-    setShow(false);
-  };
-  // const handleSettingChange = (event) => {
+  const [inputInvite, setInputInvite] = useState("");
+  const [input, setInput] = useState("");
+  const database = useContext(DatabaseContext);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [message, setMessage] = useState("");
+  const [roomNameInvite, setRoomNameInvite] = useState("");
+  const [userId, setUserId] = useState(0);
+  const [ifAdmin, setIfAdmin] = useState(false);
+  const [adminList, setAdminList] = useState([]);
 
-  //   const { name, value } = event.target;
-  //   setFormData({
-  //     ...formData,
-  //     [name]: value
-  //   });
-  // };
- return (
-  <div className="chatinfo">
-      <div className="chat-info-header clearfix">
-      <div className='chat-info-title'>Room Info</div>
-        <div className='chat-info-subtitle'>Accessibility</div>
-        {/* <button  onClick={() => {
-          setShow(true);}} >Change</button>
-          <Setting         isVisible={show}
-            socket={socket}
-            footer={<button>Cancel</button>}
-            onClose={() => setShow(false)} /> */}
-            <div className='chat-info-subtitle'>Public</div>
-            <div className='chat-info-subtitle'>Invite a friend</div>
-            <input placeholder="Name"></input>
-            <i className="fa fa-plus" aria-hidden="true"></i>
-           <FontAwesomeIcon icon={faPlus} size="2x"/>
-           <div className='chat-info-subtitle'>Ban a Member</div>
-           <input placeholder="Name"></input>
-           <FontAwesomeIcon icon={faBan} size="2x"/>
-           <div className='chat-info-subtitle'>Mute a Member</div>
-           <input placeholder="Name"></input>
-           <FontAwesomeIcon icon={faVolumeXmark} />
-           <div className='chat-info-subtitle'>Kick a Member</div>
-           <input placeholder="Name"></input>
-           <FontAwesomeIcon icon={faPersonRunning} />
-           {/* <FontAwesomeIcon icon={faKickstarterK} size="1.5x"/> */}
-      </div>
-      <div className="chat-info-header clearfix">
-        <div className='chat-info-memberlist'>Member List</div>
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_08.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Monica Ward</div>
-                <div className="status">
-                  <i className="fa fa-circle online"></i> Admin
-                </div>    
-              </div>             
-            </li>
-            <button>Play</button><button>Message</button><button>...</button>
-            {/* <button>Play</button><button>Message</button><button>Block</button> */}
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_03.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Mike Thomas</div>
-                <div className="status">
-                  <i className="fa fa-circle online"></i> Member
+  const findInDatabase = (name) => {
+    let user = database.find((user) => user.name === name);
+    if (user === undefined) {
+      props.onUpdate();
+      const interval = setInterval(() => {
+        user = database.find((user) => user.name === name);
+        if (user !== undefined) {
+          clearInterval(interval);
+          setUserId(user.id);
+          alert("Can not find the user, please try again.");
+        }
+      }, 1000);
+    } else {
+      setUserId(user.id);
+    }
+    return userId;
+  };
+
+  const handleInvite = () => {
+    let userId = findInDatabase(inputInvite);
+    if (userId == 0) {
+      alert("User not found. Please try again.");
+      return;
+    }
+    const payload = {
+      roomName: props.roomName,
+      userId: userId,
+    }
+    props.socket.emit("inviteUser", payload);
+    setInputInvite("");
+  }
+
+  const handleBan = () => {
+    let userId = findInDatabase(input);
+    if (userId == 0) {
+      alert("User not found. Please try again.");
+      return;
+    }
+    const payload = {
+      roomName: props.roomName,
+      userId: userId,
+    }
+    props.socket.emit("banUser", payload);
+    setInput("");
+  }
+  const handleUnBan = () => {
+    let userId = findInDatabase(input);
+    if (userId == 0) {
+      alert("User not found. Please try again.");
+      return;
+    }
+    const payload = {
+      roomName: props.roomName,
+      userId: userId,
+    }
+    props.socket.emit("unbanUser", payload);
+    setInput("");
+  }
+  const handleMute = () => {
+    let userId = findInDatabase(input);
+    if (userId == 0) {
+      alert("User not found. Please try again.");
+      return;
+    }
+    const payload = {
+      roomName: props.roomName,
+      userId: userId,
+      timeout: 60,
+    }
+    props.socket.emit("muteUser", payload);
+    setInput("");
+  }
+
+  const handleKick = () => {
+    let userId = findInDatabase(input);
+    if (userId == 0) {
+      alert("User not found. Please try again.");
+      return;
+    }
+    const payload = {
+      roomName: props.roomName,
+      userId: userId,
+    }
+    props.socket.emit("kickUser", payload);
+    setInput("");
+  }
+  const handleInvited = useCallback((payload) => {
+    setMessage(payload.message);
+    setRoomNameInvite(payload.roomName);
+    setShowConfirm(true);
+  }, [])
+
+  const handleNotInvite = useCallback((payload) => {
+    alert(payload.message);
+  }, [])
+
+  const handleAdminList = useCallback((payload) => {
+    setAdminList(payload.memberList.admins);
+  }, [props.UserId, adminList])
+
+  const handleCheckIfAdmin = useCallback((payload) => {
+    console.log("handleCheckIfAdmin", payload)
+    if (payload.roomName !== props.roomName) {
+      console.log("update not this room!");
+      return;
+    }
+    setAdminList(payload.memberList.admins);
+  }, [props.UserId, props.roomName, ifAdmin, adminList])
+
+  const handleMessagAction = useCallback((payload)=>{
+    alert(payload.message);
+  },[])
+
+  useEffect(()=>{
+    if (!database){
+      console.log("databse does not exist!")
+      props.onUpdate();
+    }
+  },[])
+  useEffect(() => {
+    if (adminList.includes(props.UserId))
+      setIfAdmin(true);
+    else
+      setIfAdmin(false);
+  }, [adminList]);
+  useEffect(() => {
+      props.socket.on("invited", handleInvited);
+      props.socket.on("userNotInvited", handleNotInvite);
+      props.socket.on("memberListUpdated", handleCheckIfAdmin);
+      props.socket.on("roomMembers", handleAdminList);
+      props.socket.on("userNotBanned", handleMessagAction);
+      props.socket.on("userBanned", handleMessagAction);
+      props.socket.on("userNotUnbanned", handleMessagAction);
+      props.socket.on("unbanned", handleMessagAction);
+      props.socket.on("userNotMuted", handleMessagAction);
+      props.socket.on("userMuted", handleMessagAction);
+      props.socket.on("userNotKicked", handleMessagAction);
+      props.socket.on("userKicked", handleMessagAction);
+    return () => {
+        props.socket.off("invited", handleInvited);
+        props.socket.off("userNotInvited", handleNotInvite);
+        props.socket.off("memberListUpdated", handleCheckIfAdmin);
+        props.socket.off("roomMembers", handleAdminList);
+        props.socket.off("userNotBanned", handleMessagAction);
+        props.socket.off("userBanned", handleMessagAction);
+        props.socket.off("userNotUnbanned", handleMessagAction);
+        props.socket.off("unbanned", handleMessagAction);
+        props.socket.off("userNotMuted", handleMessagAction);
+        props.socket.off("userMuted", handleMessagAction);
+        props.socket.off("userNotKicked", handleMessagAction);
+        props.socket.off("userKicked", handleMessagAction);
+    };
+  }, [props.socket, handleInvited, handleNotInvite, handleCheckIfAdmin,handleAdminList, handleMessagAction]);
+
+  return (
+    (!props.ifDM) && props.roomName ? (
+      <div className="chatinfo col-lg-3">
+        <div className="chat-info-header clearfix">
+          <div className='chat-info-title'>Room Info
+            {ifAdmin ? (
+              <button onClick={() => {
+                setShow(true);
+              }} >Setting</button>
+            ) : null}
+            <Setting isVisible={show}
+              socket={props.socket}
+              onClose={() => setShow(false)}
+              roomName={props.roomName}
+              onUpdate={props.onUpdate} />
+            <InvitedConfirm isVisible={showConfirm}
+              RoomName={roomNameInvite}
+              onClose={() => setShowConfirm(false)}
+              socket={props.socket}
+              message={message} /></div>
+          <div className='chat-info-subtitle'>Invite a friend</div>
+          <div className="chat-info-form">
+            <input placeholder="Name" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)} />
+            <button onClick={handleInvite}><FontAwesomeIcon icon={faPlus} /></button>
+          </div>
+          {ifAdmin ? (
+            <>
+                <div className='chat-info-subtitle'>Moderate user</div>
+                <div className="chat-info-form">
+                <input placeholder="Name" value={input} onChange={(e) => setInput(e.target.value)} ></input>
+                <div className="dropdown" id="drop-down">
+                  <span>Action</span>
+                  <label>
+                    <input type="checkbox" />
+                    <ul>
+                      <li onClick= {handleMute}val="Mute">Mute</li>
+                      <li onClick= {handleKick} val="Kick">Kick</li>
+                      <li onClick= {handleBan} val="Ban">Ban</li>
+                      <li onClick= {handleUnBan}val="Unban">Unban</li>
+                    </ul>
+                  </label>
                 </div>
-              </div>
-            </li>
-            <button>Play</button><button>Message</button><button>...</button>
-            {/* <button>Play</button><button>Message</button><button>Block</button> */}
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_05.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Ginger Johnston</div>
-                <div className="status">
-                  <i className="fa fa-circle online"></i> online
-                </div>
-              </div>
-            </li>
-            <button>Play</button><button>Message</button><button>...</button>
-            {/* <button>Play</button><button>Message</button><button>Block</button> */}
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_06.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Tracy Carpenter</div>
-                <div className="status">
-                  <i className="fa fa-circle offline"></i> left 30 mins ago
-                </div>
-              </div>
-            </li>
-            <button>Play</button><button>Message</button><button>Block</button>
-            <li className="clearfix">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_07.jpg" alt="avatar" />
-              <div className="about">
-                <div className="name">Christian Kelly</div>
-                <div className="status">
-                  <i className="fa fa-circle offline"></i> left 10 hours ago
-                </div>
-              </div>
-            </li>
-            <button>Play</button><button>Message</button><button>...</button>
-            {/* <button>Play</button><button>Message</button><button>Block</button> */}
-            
-      </div>
-  </div>
- );
+             </div>
+             </>
+          ) : null}
+          {/* (props.ifDM) ? <Profile socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />  */}
+        </div>
+        <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />
+      </div>) : ((props.ifDM) ? <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} /> : <div className="chatinfo" ></div>)
+  );
 }
 
-export default RoomDetail;

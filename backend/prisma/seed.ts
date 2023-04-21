@@ -7,6 +7,10 @@ async function main() {
 	// const fs = require('fs');
 	// const imageBuffer = fs.readFileSync('./default-profile-picture.png');
 	// const imageBase64 = imageBuffer.toString('base64');
+	const fs = require('fs');
+	// const imageBuffer = fs.readFileSync('./default-profile-picture.png');
+	// const imageBase64 = imageBuffer.toString('base64');
+	const imageBase64 = "ABC";
 
 	// Default user
 	const defaultUser = await prisma.user.upsert({

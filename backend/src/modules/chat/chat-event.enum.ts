@@ -77,4 +77,9 @@ export enum Event {
 	userRooms = "userRooms",
 	getDmsList = "getDmsList",
 	dmsList = "dmsList",
+	getRoomMembers = "getRoomMembers",
+	roomMembers = "roomMembers",
+	getDmHist = "getDmHist",
+	dmHist = "dmHist",
+	dmUpdated = "dmUpdated",
 }
