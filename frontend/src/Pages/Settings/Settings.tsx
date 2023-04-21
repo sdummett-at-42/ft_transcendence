@@ -278,29 +278,27 @@ export default function Settings() {
 
 	useEffect(() => {
 		const blob = document.getElementById("blob");
+		const maxBlobHeight = window.innerHeight * 0.5;
 	
 		window.onpointermove = (event: PointerEvent) => {
-		  const { clientX, clientY } = event;
-	
-		console.log(clientX, clientY);
-		if (clientY < 300) {
-			blob?.animate(
+			const { clientX, clientY } = event;
+		  	if (clientY < maxBlobHeight) {
+				blob?.animate(
+					{
+				  		left: `${clientX}px`,
+					},
+					{ duration: 3000, fill: "forwards" }
+			  	);
+			} else {
+		  		blob?.animate(
 				{
-				  left: `${clientX}px`,
-				//   top: `${clientY}px`,
+			  		left: `${clientX}px`,
+			  		top: `${clientY}px`,
 				},
 				{ duration: 3000, fill: "forwards" }
-			  );
-		} else {
-		  	blob?.animate(
-			{
-			  left: `${clientX}px`,
-			  top: `${clientY}px`,
-			},
-			{ duration: 3000, fill: "forwards" }
-		  );
-		}
-	};
+		  		);
+			}
+		};
 	}, []);
 
 	return (
