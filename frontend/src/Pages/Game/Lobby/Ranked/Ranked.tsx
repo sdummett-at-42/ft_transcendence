@@ -3,7 +3,7 @@ import "./Ranked.css"
 import { UserContext } from "../../../../context/UserContext";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons"
-import Popup from "./Popup/Popup.tsx"
+import Popup from "../../../Popup/Popup.tsx";
 
 export default function Ranked(props) {
 
@@ -74,8 +74,13 @@ export default function Ranked(props) {
                             <span aria-hidden className="cybr-btn__glitch">Trouver un match_</span>
                             <span aria-hidden className="cybr-btn__tag">R25</span>
                         </button>
-                        <Popup isOpen={isOpen} onClose={handleClose}>
-                            <h2>En attente d'un adversaire...</h2>
+                        <Popup isOpen={isOpen}>
+                            <div>
+                                <h2>En attente d'un adversaire...</h2>
+                                <button onClick={handleClose}>
+                                    Annuler
+                                </button>
+                            </div>
                         </Popup>
                     </div>
                 </div>

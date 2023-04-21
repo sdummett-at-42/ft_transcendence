@@ -1,35 +1,9 @@
+/*** -----Settings----- ***/
+
 .Settings {
 	color: #fff;
 	font-size: 16px;
 	padding: 20px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
-.Settings-profile {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
-.Settings-profile-picture {
-	height: 5vmin;
-    width: 5vmin;
-    border-radius: 50%;
-}
-
-.Settings-profile-video-playload {
-	height: 15vmin;
-    width: 15vmin;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-.Settings-profile-image-playload {
-	height: 15vmin;
-    width: 15vmin;
-    border-radius: 50%;
 }
 
 .Settings h2 {
@@ -44,23 +18,7 @@
 	margin-bottom: 10px;
 }
 
-.Settings label {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	margin-bottom: 10px;
-}
-
-.Settings input[type="text"] {
-	padding: 5px;
-	border: none;
-	background-color: #424242;
-	color: #fff;
-	border-radius: 3px;
-	margin-left: 10px;
-}
-
-.Settings button {
+.Settings-button {
 	padding: 10px;
 	background-color: #4285f4;
 	color: #fff;
@@ -71,26 +29,200 @@
 	margin-right: 10px;
 }
 
-.Settings button:hover {
+.Settings-button:hover {
 	background-color: #3367d6;
 }
 
-.Settings img {
-	max-width: 100%;
-	height: auto;
+.Settings-input {
+	padding: 5px;
+	border: none;
+	background-color: #424242;
+	color: #fff;
+	border-radius: 3px;
+}
+
+.Settings-label {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	margin-bottom: 10px;
 }
 
-.Settings .qr-code {
+.Settings-error {
+	color: red;
+	font-size: 14px;
+	margin-top: 0;
+	margin-bottom: 10px;
+}
+
+/*** -----Settings-recap----- ***/
+
+.Settings-recap {
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-bottom: 10px;
+	border-bottom: 1px solid rgb(255, 255, 255, 0.1);
+}
+
+/*** -----Settings-profile----- ***/
+
+.Settings-profile {
+	padding-top: 20px;
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	border-bottom: 1px solid rgb(255, 255, 255, 0.1);
+	padding-bottom: 10px;
+}
+
+/* Settings-profile-picture */
+
+.Settings-profile-picture {
+	height: 15vmin;
+    width: 15vmin;
+    border-radius: 50%;
+	margin-bottom: 10px;
+}
+
+.Settings-profile-playload {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-profile-video-playload {
+	height: 15vmin;
+    width: 15vmin;
+    object-fit: cover;
+    border-radius: 50%;
+	margin-bottom: 10px;
+}
+
+.Settings-profile-image {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-profile-image-playload {
+	height: 15vmin;
+    width: 15vmin;
+    border-radius: 50%;
+	margin-bottom: 10px;
+}
+
+.Settings-profile-image-buttons {
+	display: flex;
+	align-items: center;
+}
+
+.Settings-upload-button {
+	margin-top: 0;
+	margin-right: 0;
+}
+
+.Settings-upload-button:hover {
+	background-color: green;
+}
+
+/* Settings-profile-name */
+
+.Settings-profile-name {
+	width: 50vw;
 	margin-top: 10px;
-	margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-top: 10px;
+	border-top: 2px dashed rgb(255, 255, 255, 0.1);
 }
 
-.Settings .qr-code label {
-	display: inline-block;
-	margin-right: 10px;
+#Settings-file-upload {
+	margin-bottom: 0;
 }
 
-.Settings .qr-code input[type="text"] {
-	margin-left: 5px;
+/*** ------Settings-account------ ***/
+
+.Settings-account {
+	padding-top: 20px;
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	border-bottom: 1px solid rgb(255, 255, 255, 0.1);
+	padding-bottom: 10px;
+}
+
+/* Settings-2fa-popup */
+
+.Settings-2fa-popup {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-2fa-popup-label {
+	margin-top: 10px;
+}
+
+.Settings-2fa-popup-buttons {
+	display: flex;
+	align-self: space-around ;
+}
+
+/*** -----Settings-delete-account----- ***/
+
+.Settings-delete-account {
+	padding-top: 20px;
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-delete-account-button {
+	border: 1px solid red;
+	border-radius: 3px;
+	background-color: transparent;
+}
+
+.Settings-delete-account-button:hover {
+	transition: background-color 0.5s;
+	background-color: red;
+}
+
+/* Settings-delete-account-popup */
+
+.Settings-delete-account-popup {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-delete-account-popup-buttons {
+	display: flex;
+	align-self: space-around ;
+}
+
+.Settings-delete-account-button-final {
+	border: 1px solid red;
+	border-radius: 3px;
+	background-color: transparent;
+}
+
+.Settings-delete-account-button-final:hover {
+	background-color: transparent;
+	cursor: not-allowed;
+}
+
+#Settings-delete-button {
+	transition: background-color 0.5s ease-in-out;
+	background-color: red;
+}
+
+#Settings-delete-button:hover {
+	cursor: pointer;
 }
