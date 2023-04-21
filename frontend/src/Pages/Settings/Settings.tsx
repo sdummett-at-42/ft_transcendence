@@ -19,7 +19,32 @@ export default function Settings() {
 	const [isDfaOpen, setDfaIsOpen] = useState(false);
 	const [isDelOpen, setDelIsOpen] = useState(false);
 	const [password, setPassword] = useState("");
-
+	
+	useEffect(() => {
+		const blob = document.getElementById("blob");
+		const maxBlobHeight = window.innerHeight * 0.5;
+		
+		window.onpointermove = (event: PointerEvent) => {
+			const { clientX, clientY } = event;
+			if (clientY < maxBlobHeight) {
+				blob?.animate(
+					{
+						left: `${clientX}px`,
+					},
+					{ duration: 3000, fill: "forwards" }
+				);
+			} else {
+				blob?.animate(
+					{
+						left: `${clientX}px`,
+						top: `${clientY}px`,
+					},
+					{ duration: 3000, fill: "forwards" }
+				);
+			}
+		};
+	}, []);
+			
 	if (!user) {
 		return <p>Loading...</p>;
 	}
@@ -276,30 +301,6 @@ export default function Settings() {
 		}));
     };
 
-	useEffect(() => {
-		const blob = document.getElementById("blob");
-		const maxBlobHeight = window.innerHeight * 0.5;
-	
-		window.onpointermove = (event: PointerEvent) => {
-			const { clientX, clientY } = event;
-		  	if (clientY < maxBlobHeight) {
-				blob?.animate(
-					{
-				  		left: `${clientX}px`,
-					},
-					{ duration: 3000, fill: "forwards" }
-			  	);
-			} else {
-		  		blob?.animate(
-				{
-			  		left: `${clientX}px`,
-			  		top: `${clientY}px`,
-				},
-				{ duration: 3000, fill: "forwards" }
-		  		);
-			}
-		};
-	}, []);
 
 	return (
 		<div>

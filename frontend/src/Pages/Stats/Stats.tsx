@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Stats.css";
 import InitAchievements from "../../Achievements/Achievements";
-import Profile from "../../Profile/Profile";
+import Profile from "../Profile/Profile";
 
 export default function InitStats() {
 	const [users, setUsers] = useState([]);
@@ -51,7 +51,7 @@ function UserList({ users }) {
 					<tbody>
 						{filteredUsers.map((user, index) => (
 							<tr
-								key={user.id}
+								key={user.iSettingsd}
 								onClick={() => handleUserClick(user)}
 							>
 								<td>{index + 1}</td>
