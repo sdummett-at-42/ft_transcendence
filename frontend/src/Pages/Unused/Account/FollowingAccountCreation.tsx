@@ -14,6 +14,24 @@ export default function FollowingAccountCreation() {
 	const naviguate = useNavigate();
 	const location = useLocation();
 	const myProps = location.state;
+	const [myUser, setMyUser] = useState({});
+
+
+	useEffect(() => {
+		async function fetchData() {
+			const res = await fetch(`http://localhost:3001/users/me`, {
+				method: "GET",
+				headers: { "Content-Type": "application/json" },
+				credentials: "include",
+			}).then((response) => {
+					if (response.status == 200) {
+						return (response.json());
+					}
+			});
+			setMyUser(res);
+		}
+		fetchData();
+	}, [])
 
 	// Get a random image from Unsplash API
 	useEffect(() => {
@@ -28,8 +46,8 @@ export default function FollowingAccountCreation() {
 				}
 			);
 			const data = await response.json();
+			// console.log(data);
 			setImage(data.urls.regular);
-			console.log(data.urls.regular);
 			setLoading(false);
 		}
 		fetchData();
@@ -61,6 +79,24 @@ export default function FollowingAccountCreation() {
 			return;
 		}
 
+		fetch(`http://localhost:3001/images/${myUser.id}`, {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+			body: JSON.stringify({
+				image: image,
+			}),
+		})
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error("Failed to update image");
+				}
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+
+
 		fetch("http://localhost:3001/users/me", {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
@@ -68,7 +104,7 @@ export default function FollowingAccountCreation() {
 			body: JSON.stringify({
 				name: username,
 				// email: JSON.stringify(myProps.email).slice(1, -1),
-				profilePicture: image,
+				// profilePicture: image,
 			}),
 		}).then((res) => {
 			if (res.status == 200) {

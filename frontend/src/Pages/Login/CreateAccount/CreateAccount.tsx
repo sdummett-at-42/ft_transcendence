@@ -1,19 +1,17 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useContext, useEffect } from "react";
 import "./CreateAccount.css";
 import Logo42 from "../../../assets/42_Logo.png";
+import Joi from "joi";
+import validEmail from "../../../assets/validEmail";
+import Loading from "../../Loading/Loading";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAnglesLeft } from "@fortawesome/free-solid-svg-icons";
-import Joi from "joi";
-import validEmail from "../../../assets/validEmail";
-import { useEffect } from "react";
-import { useContext } from "react";
 import { UserContext } from "../../../context/UserContext";
-import Loading from "../../Loading/Loading";
 import { SHA256 } from "crypto-js"
 
 export default function CreateAccount() {
-	const { user, isLoading } = useContext(UserContext);
+	const { user, setLastUpdate ,isLoading } = useContext(UserContext);
 
 	const schema = Joi.object({
 		username: Joi.string().min(3).max(16).required(),
@@ -97,8 +95,8 @@ export default function CreateAccount() {
 			}),
 		}).then((res) => {
 			if (res.status == 201) {
-				const myProps = { name: username, email: email };
-				naviguate("/register/finalization", { state: myProps });
+				setLastUpdate(Date.now());
+				naviguate("/home");
 				return;
 			} else if (res.status == 409) {
 				// Conflict

@@ -1,9 +1,35 @@
 .Settings {
-	background-color: #242424;
 	color: #fff;
-	font-family: sans-serif;
 	font-size: 16px;
 	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-profile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-profile-picture {
+	height: 5vmin;
+    width: 5vmin;
+    border-radius: 50%;
+}
+
+.Settings-profile-video-playload {
+	height: 15vmin;
+    width: 15vmin;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.Settings-profile-image-playload {
+	height: 15vmin;
+    width: 15vmin;
+    border-radius: 50%;
 }
 
 .Settings h2 {
@@ -19,7 +45,9 @@
 }
 
 .Settings label {
-	display: block;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	margin-bottom: 10px;
 }
 

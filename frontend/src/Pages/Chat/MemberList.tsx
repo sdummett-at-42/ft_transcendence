@@ -101,6 +101,7 @@ export default function MemberList(props: MemberListProps) {
             setMembers(payload.memberList);
         }, [members])
         useEffect(() => {
+            if(props.socket){
             props.socket.on("roomMembers", handleMemberList);
             props.socket.on("memberListUpdated", handleMemberUpdate);
             props.socket.on("userBlocked", (payload) => {
@@ -115,6 +116,7 @@ export default function MemberList(props: MemberListProps) {
             props.socket.on("userNotUnblocked", (payload) => {
                 alert(payload.message);
             });
+        }
             return () => {
                 if (props.socket) {
                     props.socket.off("roomMembers", handleMemberList);

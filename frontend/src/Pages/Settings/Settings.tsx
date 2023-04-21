@@ -1,23 +1,35 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./Settings.css";
+import loadingGif from "../../assets/Loading.mp4";
 import { UserContext } from "../../context/UserContext";
 import { useContext } from "react";
 
 export default function Settings() {
-	// const [user, setUser] = useState(null);
 	const { user, setLastUpdate } = useContext(UserContext);
 
 	const [qrCode, setQrCode] = useState(null);
 	const [otpCode, setOtpCode] = useState("");
 	const [is2faEnabled, setIs2faEnabled] = useState(false);
 	const [selectedFile, setSelectedFile] = useState(null);
+	const [nameInput, setNameInput] = useState("");
+	const [errorMessage, setErrorMessage] = useState("");
+	const [image, setImage] = useState("");
+	const [loading, setLoading] = useState(true);
 
 	if (!user) {
 		return <p>Loading...</p>;
 	}
 
 	const handleFileChange = (event) => {
-		setSelectedFile(event.target.files[0]);
+		setLoading(true);
+		const file = event.target.files[0];
+		const reader = new FileReader();
+		reader.readAsDataURL(file);
+		reader.onloadend = () => {
+			setImage(reader.result);
+			setSelectedFile(event.target.files[0]);
+			setLoading(false);
+		};
 	};
 
 	const handleUpload = async () => {
@@ -44,17 +56,26 @@ export default function Settings() {
 	};
 
 	function handleNameChange() {
-		console.log("handleNameChange");
+		if (nameInput.length === 0) {
+			setErrorMessage("Name should be 1 character or more");
+			return;
+		} else if (nameInput.length > 15) {
+			setErrorMessage("Name should not exceed 15 characters");
+			return;
+		}
 		fetch("http://localhost:3001/users/me", {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
 			body: JSON.stringify({
-				name: user.name,
+				name: nameInput,
 			}),
 		})
-			.then((response) => {
-				if (!response.ok) {
+			.then(async (response) => {
+				if (response.ok) {
+					setLastUpdate(Date.now());
+				} else {
+					console.log(await response.json());
 					throw new Error("Failed to update name");
 				}
 			})
@@ -63,13 +84,17 @@ export default function Settings() {
 			});
 	}
 
+	function handleChange(event) {
+		setNameInput(event.target.value);
+		setErrorMessage("");
+	}
+
 	function handlePasswordChange() {
 		console.log("handlePasswordChange");
 		// TODO: Implement password change
 	}
 
 	function handleLogout() {
-		console.log("handleLogout");
 		fetch("http://localhost:3001/auth/logout", {
 			method: "DELETE",
 			credentials: "include",
@@ -83,7 +108,6 @@ export default function Settings() {
 	}
 
 	function handleAccountDeletion() {
-		console.log("handleAccountDeletion");
 		fetch("http://localhost:3001/users/me", {
 			method: "DELETE",
 			credentials: "include",
@@ -153,65 +177,92 @@ export default function Settings() {
 
 	return (
 		<div className="Settings">
-			<h2>Settings</h2>
+
+			<h2>Paramètres</h2>
 			<img
 				src={user.profilePicture}
-				alt="Profile"
-				className="profile-picture"
+				alt="Photo de profil"
+				className="Settings-profile-picture"
 			/>
-			<p>Logged in as {user.name}</p>
-			<div>
-				<h2>User Profile</h2>
-				<img src={user.profile} alt="User Profile" />
-				<br />
-				<label htmlFor="file-upload">
-					Choose a new profile picture:
-				</label>
-				<input
-					type="file"
-					id="file-upload"
-					accept="image/*"
-					onChange={handleFileChange}
-				/>
-				<br />
-				<button onClick={handleUpload}>Upload</button>
-			</div>
-			<div>
-				<label>
-					Name:
+			<p>Connecté en tant que {user.name}</p>
+
+			<div className="Settings-profile">
+				<h2>Votre profil:</h2>
+
+				<div className="Settings-profile-image">
+					<label htmlFor="file-upload">
+						Modifiez votre photo de profil:
+					</label>
+					<div>
+						{loading ? (
+							<video
+								src={loadingGif}
+								autoPlay
+								loop
+								muted
+								className="Settings-profile-video-playload"
+							/>
+						) : (
+							<div>
+								{image && (
+									<img
+										src={image}
+										alt="Nouvelle image de profil"
+										className="Settings-profile-image-playload"
+									/>
+								)}
+							</div>
+						)}
+					</div>
+					<br />
 					<input
-						type="text"
-						value={user.name}
-						onChange={(event) =>
-							setUser({ ...user, name: event.target.value })
-						}
+						type="file"
+						id="file-upload"
+						accept="image/*"
+						onChange={handleFileChange}
 					/>
-				</label>
-				<button onClick={handleNameChange}>Change Name</button>
-			</div>
-			<button onClick={handleLogout}>Logout</button>
-			<button onClick={handleAccountDeletion}>Delete Account</button>
-			{qrCode && !is2faEnabled && (
+					<br />
+					<button onClick={handleUpload}>Upload</button>
+				</div>
+
 				<div>
-					<img src={`${qrCode.base64Qrcode}`} />
 					<label>
-						OTP Code:
+						Name:
 						<input
 							type="text"
-							value={otpCode}
-							onChange={(event) => setOtpCode(event.target.value)}
-						/>
+							value={nameInput}
+							onChange={handleChange}
+							/>
 					</label>
-					<button onClick={handleVerifyOtp}>Verify</button>
+					{errorMessage && <div>{errorMessage}</div>}
+					<button onClick={handleNameChange}>Change Name</button>
 				</div>
-			)}
-			<button onClick={handle2faToggle}>
-				{qrCode && !is2faEnabled
-					? "Regenerate"
-					: is2faEnabled
-					? "Disable 2FA"
-					: "Enable 2FA"}
-			</button>
+			</div>
+			<div className="Settings-account">
+				<button onClick={handleLogout}>Logout</button>
+				<button onClick={handleAccountDeletion}>Delete Account</button>
+				{qrCode && !is2faEnabled && (
+					<div>
+						<img src={`${qrCode.base64Qrcode}`} />
+						<label>
+							OTP Code:
+							<input
+								type="text"
+								value={otpCode}
+								onChange={(event) => setOtpCode(event.target.value)}
+							/>
+						</label>
+						<button onClick={handleVerifyOtp}>Verify</button>
+					</div>
+				)}
+				<button onClick={handle2faToggle}>
+					{qrCode && !is2faEnabled
+						? "Regenerate"
+						: is2faEnabled
+						? "Disable 2FA"
+						: "Enable 2FA"}
+				</button>
+			</div>
 		</div>
 	);
 }

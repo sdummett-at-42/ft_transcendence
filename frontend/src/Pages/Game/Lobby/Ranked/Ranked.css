@@ -420,3 +420,11 @@ body .cybr-btn + .cybr-btn {
 .cybr-btn:nth-of-type(2) {
     --primary-hue: 260;
 }
+
+.Ranked-popup {
+  color: whitesmoke;
+}
+
+.Ranked-popup-close:hover {
+  color: #ff0000;
+}
