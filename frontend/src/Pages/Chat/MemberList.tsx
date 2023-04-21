@@ -7,6 +7,7 @@ import { createContext, useContext } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faUnlock, faMessage, faTableTennis, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import "./chat.scss"
+import ProfilePopup from './ProfilePopup';
 
 interface MemberListProps {
     socket: Socket,
@@ -19,6 +20,7 @@ export default function MemberList(props: MemberListProps) {
     const database = useContext(DatabaseContext);
     const [item, setItem] = useState([]);
     const [members, setMembers] = useState({ owner: '', admins: [], members: [] });
+    const [showProfile, setShowProfile] = useState(false)
 
     const hanldeDM = (id, name) => {
         console.log("handleDM", id, name)
@@ -80,12 +82,14 @@ export default function MemberList(props: MemberListProps) {
                             </li>
 
                             {/* play, message, block */}
-                            {user.id === props.UserId ? <div className="col-lg-6"></div> : (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
+                            {user.id === props.UserId ? 
+                                <div className="col-lg-6"></div> : 
+                                (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faLock} onClick={() => handleblock(user.id, user.name)} size="lg" /></button>
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faUnlock} onClick={() => handleUnblock(user.id, user.name)} size="lg" /></button>
-                                <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => handleProfile(user.id, user.name)} size="lg" /></button>
+                                <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => {setShowProfile(true)}} size="lg" /></button>
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} onClick={() => handlePlay(user.id, user.name)} size="lg" /></button>
-                                <button className="PendingFriend-button" ><FontAwesomeIcon icon={faEllipsisVertical} size="lg" /></button>
+                                <ProfilePopup isVisible={showProfile} onClose={() => setShowProfile(false)} UserId={props.UserId} />
                             </div>)}
                         </React.Fragment>
                     );
