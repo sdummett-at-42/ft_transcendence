@@ -53,6 +53,7 @@ export default function Setting(props: SettingProps) {
     alert(payload.message);
   }, []);
   useEffect(() => {
+    if(props.socket){
       props.socket.on("roomAdminAdded", (payload) => {
         // console.log("roomAdminAdded", payload);
       })
@@ -61,11 +62,14 @@ export default function Setting(props: SettingProps) {
       })
       props.socket.on("roomUpdated", handleRoomUpdated);
       props.socket.on("roomNotUpdated", handleRoomNotUpdated);
+    }
     return () => {
+      if(props.socket){
         props.socket.off("roomAdminAdded");
         props.socket.off("roomAdminNotAdded");
         props.socket.off("roomUpdated", handleRoomUpdated);
         props.socket.off("roomNotUpdated", handleRoomNotUpdated);
+      }
     };
   }, [props.socket]);
   return !props.isVisible ? null : (

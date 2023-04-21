@@ -59,6 +59,7 @@ export default function Profile(props: ProfileProps) {
     }, [props.roomName, user, database])
 
     useEffect(() => {
+        if(props.socket){
         props.socket.on("userBlocked", (payload) => {
             alert(payload.message);
         })
@@ -71,6 +72,7 @@ export default function Profile(props: ProfileProps) {
         props.socket.on("userNotUnblocked", (payload) => {
             alert(payload.message);
         });
+        }
         return () => {
             if (props.socket) {
                 props.socket.off("userBlocked");

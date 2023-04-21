@@ -20,7 +20,7 @@ export class GameGateway {
 
   // Connection
   async handleConnection(socket: Socket) {
-    // console.log('New client connected game:', socket.id);
+    console.log('New client connected game:', socket.id);
     const res = await this.lobbyService.handleConnection(socket);
     if (res !== null && this.gameService.onMatch(res.game)) 
     {
@@ -34,11 +34,13 @@ export class GameGateway {
 
   // Disconnection
   async handleDisconnect(socket: Socket) {
-    // console.log(`Client disconnected game: ${socket.id}`);
+    console.log(`Client disconnected game: ${socket.id}`);
     // return any or {game : Game, id : number}
     const res = await this.lobbyService.handleDisconnection(socket);
     if (res !== null && this.gameService.onMatch(res.game))
       this.gameService.pauseGame(res.game, res.id);
+    else
+      this.lobbyService.lobbyLeaveQueue(socket);
   }
 
   /* **** *\
@@ -80,7 +82,7 @@ export class GameGateway {
   // socket.emit("Mouvement", {roomId : room, data : data});
   @SubscribeMessage(EventGame.playerMouvement)
   MouvementMessage(client: any, payload: {roomId : number, data : Coordonnee}) : void {
-    //console.log("MouvementMessage");
+    console.log("MouvementMessage");
 
     // get game by gameid from client
     const gameId = Number(client.data.ingame); // string to number
@@ -96,7 +98,7 @@ export class GameGateway {
 
   @SubscribeMessage(EventGame.playerClickCanvas)
   ClickCanvasMessage(client: any) : void {
-    // console.log("click");
+    console.log("click");
     // get game by gameid from client
     const gameId = Number(client.data.ingame);
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
@@ -112,32 +114,43 @@ export class GameGateway {
   @SubscribeMessage(EventGame.playerJoinGame)
   JoinGameMessage(client: any, roomId : string) : void {
     console.log(`Gateway : player has join game`);
+    console.log("roomId", roomId);
   
     // get game by gameid from client
-    const gameId = Number(client.data.ingame); // string to number
+    // const gameId = Number(client.data.ingame); // string to number
+    const gameId = Number(roomId); // string to number
+
+    console.log("gameId fromt client data:", gameId);
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
+    
     if (game === undefined || !this.gameService.onMatch(game)) {
       console.log("No game join");
+      if (game === undefined)
+        console.log("game undefined");
+      else
+        console.log("pas en match")
       return ;
     }
-    this.gameService.joinGame(this.server, game, client, roomId);
+    this.gameService.joinGame(this.server, game, client, "game" + roomId);
   }
 
   /* ***** *\
   |* lobby *|
   \* ***** */
 
+  // button join/lave Q
+
   @SubscribeMessage(EventGame.playerJoinQueue)
   JoinLobbyMessage(client: any) : void {
-    // console.log(`Gateway : player has join queue`);
+    console.log(`Gateway : player has join queue`);
     // function check every second if 2 player match
     this.lobbyService.lobbyJoinQueue(client);
   }
 
   @SubscribeMessage(EventGame.playerLeaveQueue)
   LeaveLobbyMessage(client: any) : void {
-    // console.log(`Gateway : player has leave queue`);
+    console.log(`Gateway : player has leave queue`);
     // function cancel Queue (delete from [] user search)
     this.lobbyService.lobbyLeaveQueue(client);
   }

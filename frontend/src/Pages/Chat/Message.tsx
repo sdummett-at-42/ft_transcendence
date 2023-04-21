@@ -197,6 +197,7 @@ export default function Message(props: MessageProps) {
   }, [messageList])
 
   useEffect(() => {
+    if(props.socket){
       props.socket.on("roomMsgHistReceived", handleMessagesReceived);
       props.socket.on("roomMsgReceived", handleMessages);
       props.socket.on("dmHist", handleDMReceived);
@@ -210,7 +211,9 @@ export default function Message(props: MessageProps) {
       props.socket.on("roomMsgNotSended", (payload) => {
         alert(payload.message);
       });
+    }
     return () => {
+      if(props.socket){
         props.socket.off("roomMsgHistReceived", handleMessagesReceived);
         props.socket.off("roomMsgReceived", handleMessages);
         props.socket.off("dmHist", handleDMReceived);
@@ -218,6 +221,7 @@ export default function Message(props: MessageProps) {
         props.socket.off("userInvited");
         props.socket.off("DMNotSended");
         props.socket.off("roomMsgNotSended");
+      }
     };
   }, [props.socket, handleMessagesReceived, handleMessages, handleDMReceived, handleDMupdate]);
 
