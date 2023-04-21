@@ -53,26 +53,6 @@ export default function Game() {
     // Handle the socket events
     useEffect(() => {
 
-        async function fetchPage(urlId: number) {
-			const [userAchievementsRes, allAchievementsRes] = await Promise.all(
-				[
-					fetch(
-						`http://localhost:3001/gm`,
-						{
-							method: "GET",
-							headers: { "Content-Type": "application/json" },
-							credentials: "include",
-						}
-					),
-					fetch("http://localhost:3001/achievements", {
-						method: "GET",
-						headers: { "Content-Type": "application/json" },
-						credentials: "include",
-					}),
-				]
-			);
-
-
         gameSocketRef.current.on('image', handleImage);
         gameSocketRef.current.on('score', handleScore);
         gameSocketRef.current.on('VictoryScore', handleVictoryScore);
