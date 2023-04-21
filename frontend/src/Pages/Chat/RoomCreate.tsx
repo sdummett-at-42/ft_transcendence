@@ -34,21 +34,22 @@ export default function RoomCreate(props: RoomCreatProps) {
   const handleCloseAfterRoomCreated = useCallback((payload) => {
     props.onClose()
   }, []);
+  const handleAlertmessage = useCallback((payload) => {
+    alert(payload.message);
+}, [])
 
   useEffect(() => {
     if (props.socket) {
       props.socket.on("roomCreated", handleCloseAfterRoomCreated);
-      props.socket.on("roomNotCreated", (payload) => {
-        alert(payload.message);
-      });
+      props.socket.on("roomNotCreated", handleAlertmessage);
     }
     return () => {
       if (props.socket) {
         props.socket.off('roomCreated', handleCloseAfterRoomCreated);
-        props.socket.off('roomNotCreated');
+        props.socket.off('roomNotCreated',handleAlertmessage);
       }
     };
-  }, [props.socket, handleCloseAfterRoomCreated]);
+  }, [props.socket, handleCloseAfterRoomCreated,handleAlertmessage]);
 
   return !props.isVisible ? null : (
     <div className="modal" onClick={props.onClose}>

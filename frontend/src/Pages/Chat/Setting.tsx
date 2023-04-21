@@ -48,30 +48,25 @@ export default function Setting(props: SettingProps) {
     console.log("handleRoomsUpdate", payload);
     props.onClose();
   }, []);
-  const handleRoomNotUpdated = useCallback((payload) => {
-    console.log("roomNotUpdated", payload);
+  const handleAlertmessage = useCallback((payload) => {
     alert(payload.message);
   }, []);
   useEffect(() => {
     if(props.socket){
-      props.socket.on("roomAdminAdded", (payload) => {
-        // console.log("roomAdminAdded", payload);
-      })
-      props.socket.on("roomAdminNotAdded", (payload) => {
-        alert(payload.message);
-      })
+      props.socket.on("roomAdminAdded", handleAlertmessage);
+      props.socket.on("roomAdminNotAdded", handleAlertmessage);
       props.socket.on("roomUpdated", handleRoomUpdated);
-      props.socket.on("roomNotUpdated", handleRoomNotUpdated);
+      props.socket.on("roomNotUpdated", handleAlertmessage);
     }
     return () => {
       if(props.socket){
-        props.socket.off("roomAdminAdded");
-        props.socket.off("roomAdminNotAdded");
+        props.socket.off("roomAdminAdded",handleAlertmessage);
+        props.socket.off("roomAdminNotAdded",handleAlertmessage);
         props.socket.off("roomUpdated", handleRoomUpdated);
-        props.socket.off("roomNotUpdated", handleRoomNotUpdated);
+        props.socket.off("roomNotUpdated", handleAlertmessage);
       }
     };
-  }, [props.socket]);
+  }, [props.socket, handleAlertmessage, handleRoomUpdated]);
   return !props.isVisible ? null : (
     <div className="modal" onClick={props.onClose}>
       <div className="modal-dialog" onClick={e => e.stopPropagation()}>

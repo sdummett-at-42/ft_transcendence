@@ -57,31 +57,25 @@ export default function Profile(props: ProfileProps) {
             console.log("find", database.find((user) => user.name === props.roomName))
         }
     }, [props.roomName, user, database])
-
+    const handleAlertmessage = useCallback((payload) => {
+        alert(payload.message);
+    }, [])
     useEffect(() => {
         if(props.socket){
-        props.socket.on("userBlocked", (payload) => {
-            alert(payload.message);
-        })
-        props.socket.on("userNotBlocked", (payload) => {
-            alert(payload.message);
-        })
-        props.socket.on("userUnblocked", (payload) => {
-            alert(payload.message);
-        });
-        props.socket.on("userNotUnblocked", (payload) => {
-            alert(payload.message);
-        });
-        }
+        props.socket.on("userBlocked", handleAlertmessage);
+        props.socket.on("userNotBlocked", handleAlertmessage);
+        props.socket.on("userUnblocked", handleAlertmessage);
+        props.socket.on("userNotUnblocked", handleAlertmessage);
+        }        
         return () => {
             if (props.socket) {
-                props.socket.off("userBlocked");
-                props.socket.off("userNotBlocked");
-                props.socket.off("userUnblocked");
-                props.socket.off("userNotUnblocked");
+                props.socket.off("userBlocked",handleAlertmessage);
+                props.socket.off("userNotBlocked",handleAlertmessage);
+                props.socket.off("userUnblocked",handleAlertmessage);
+                props.socket.off("userNotUnblocked",handleAlertmessage);
             }
         };
-    }, [props.socket]);
+    }, [props.socket,handleAlertmessage]);
     return (
         user? 
         <div className="chatinfo">

@@ -195,22 +195,18 @@ export default function Message(props: MessageProps) {
     // console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
     setMessageList(payload.msgHist);
   }, [messageList])
-
+  const handleAlertmessage = useCallback((payload) => {
+    alert(payload.message);
+}, [])
   useEffect(() => {
     if(props.socket){
       props.socket.on("roomMsgHistReceived", handleMessagesReceived);
       props.socket.on("roomMsgReceived", handleMessages);
       props.socket.on("dmHist", handleDMReceived);
       props.socket.on("DMReceived", handleDMupdate);
-      props.socket.on("DMNotSended", (payload) => {
-        alert(payload.message);
-      })
-      props.socket.on("userInvited", (payload) => {
-        alert(payload.message);
-      });
-      props.socket.on("roomMsgNotSended", (payload) => {
-        alert(payload.message);
-      });
+      props.socket.on("DMNotSended", handleAlertmessage);
+      props.socket.on("userInvited", handleAlertmessage);
+      props.socket.on("roomMsgNotSended", handleAlertmessage);
     }
     return () => {
       if(props.socket){
@@ -218,12 +214,12 @@ export default function Message(props: MessageProps) {
         props.socket.off("roomMsgReceived", handleMessages);
         props.socket.off("dmHist", handleDMReceived);
         props.socket.off("DMReceived", handleDMupdate);
-        props.socket.off("userInvited");
-        props.socket.off("DMNotSended");
-        props.socket.off("roomMsgNotSended");
+        props.socket.off("userInvited",handleAlertmessage);
+        props.socket.off("DMNotSended", handleAlertmessage);
+        props.socket.off("roomMsgNotSended", handleAlertmessage);
       }
     };
-  }, [props.socket, handleMessagesReceived, handleMessages, handleDMReceived, handleDMupdate]);
+  }, [props.socket, handleMessagesReceived, handleMessages, handleDMReceived, handleDMupdate, handleAlertmessage]);
 
   return (
     props.roomName ? (

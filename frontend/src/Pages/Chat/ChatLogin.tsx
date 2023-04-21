@@ -110,12 +110,12 @@ export default function ChatLogin() {
   }, []);
 
   useEffect(() => {
-    if(socket){
-    socket.on("memberListUpdated", handleUpdateDatabase);
+    if (socket) {
+      socket.on("memberListUpdated", handleUpdateDatabase);
     }
     return () => {
-      if(socket){
-      socket.off("memberListUpdated", handleUpdateDatabase);
+      if (socket) {
+        socket.off("memberListUpdated", handleUpdateDatabase);
       }
     };
   }, [socket, handleUpdateDatabase]);

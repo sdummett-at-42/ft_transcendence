@@ -60,84 +60,79 @@ export default function MemberList(props: MemberListProps) {
 
         }
     }
-        useEffect(() => {
-            //  console.log("members2222", members);
-            setItem(members.members.map((each, index) => {
-                if (database) {
-                    let user = database.find((user) => user.id === each);
-                    let role = "member";
-                    if (members.owner.includes(each) == true)
-                        role = "Owner";
-                    else if (members.admins.includes(each) == true)
-                        role = "Admin";
-                    return (
-                        <React.Fragment key={index}>
-                            <li className="clearfix col-lg-6 " key={each}>
-                                <img src={user.profilePicture} alt="avatar" />
-                                <div className="about">
-                                    <div className="name ">{user.name}</div>
-                                    <div className="status">
-                                        <i className="fa fa-circle online"></i> {role}</div>
-                                </div>
-                            </li>
+    useEffect(() => {
+        //  console.log("members2222", members);
+        setItem(members.members.map((each, index) => {
+            if (database) {
+                let user = database.find((user) => user.id === each);
+                let role = "member";
+                if (members.owner.includes(each) == true)
+                    role = "Owner";
+                else if (members.admins.includes(each) == true)
+                    role = "Admin";
+                return (
+                    <React.Fragment key={index}>
+                        <li className="clearfix col-lg-6 " key={each}>
+                            <img src={user.profilePicture} alt="avatar" />
+                            <div className="about">
+                                <div className="name ">{user.name}</div>
+                                <div className="status">
+                                    <i className="fa fa-circle online"></i> {role}</div>
+                            </div>
+                        </li>
 
-                            {/* play, message, block */}
-                            {user.id === props.UserId ? 
-                                <div className="col-lg-6"></div> : 
-                                (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
+                        {/* play, message, block */}
+                        {user.id === props.UserId ?
+                            <div className="col-lg-6"></div> :
+                            (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faLock} onClick={() => handleblock(user.id, user.name)} size="lg" /></button>
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faUnlock} onClick={() => handleUnblock(user.id, user.name)} size="lg" /></button>
-                                <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => {setShowProfile(true)}} size="lg" /></button>
+                                <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => { setShowProfile(true) }} size="lg" /></button>
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} onClick={() => handlePlay(user.id, user.name)} size="lg" /></button>
                                 <ProfilePopup isVisible={showProfile} onClose={() => setShowProfile(false)} UserId={props.UserId} />
                             </div>)}
-                        </React.Fragment>
-                    );
-                }
-            })
-            );
-        }, [database, members]);
-        const handleMemberList = useCallback((payload) => {
-            setMembers(payload.memberList);
-        }, [members])
-        const handleMemberUpdate = useCallback((payload) => {
-            console.log("handleMemberUpdate", payload)
-            setMembers(payload.memberList);
-        }, [members])
-        useEffect(() => {
-            if(props.socket){
+                    </React.Fragment>
+                );
+            }
+        })
+        );
+    }, [database, members]);
+    const handleMemberList = useCallback((payload) => {
+        setMembers(payload.memberList);
+    }, [members])
+    const handleMemberUpdate = useCallback((payload) => {
+        console.log("handleMemberUpdate", payload)
+        setMembers(payload.memberList);
+    }, [members])
+    const handleAlertmessage = useCallback((payload) => {
+        alert(payload.message);
+    }, [])
+    useEffect(() => {
+        if (props.socket) {
             props.socket.on("roomMembers", handleMemberList);
             props.socket.on("memberListUpdated", handleMemberUpdate);
-            props.socket.on("userBlocked", (payload) => {
-                alert(payload.message);
-            })
-            props.socket.on("userNotBlocked", (payload) => {
-                alert(payload.message);
-            })
-            props.socket.on("userUnblocked", (payload) => {
-                alert(payload.message);
-            });
-            props.socket.on("userNotUnblocked", (payload) => {
-                alert(payload.message);
-            });
+            props.socket.on("userBlocked", handleAlertmessage);
+            props.socket.on("userNotBlocked", handleAlertmessage);
+            props.socket.on("userUnblocked", handleAlertmessage);
+            props.socket.on("userNotUnblocked", handleAlertmessage);
         }
-            return () => {
-                if (props.socket) {
-                    props.socket.off("roomMembers", handleMemberList);
-                    props.socket.off("memberListUpdated", handleMemberUpdate);
-                    props.socket.off("userBlocked");
-                    props.socket.off("userNotBlocked");
-                    props.socket.off("userUnblocked");
-                    props.socket.off("userNotUnblocked");
-                }
-            };
-        }, [props.socket, handleMemberList, handleMemberUpdate]);
-        return (
-            <div className="chat-info-header-2 clearfix">
-                <div className='chat-info-member-list'>Member List </div>
-                <div className="row">
-                    {item}
-                </div>
+        return () => {
+            if (props.socket) {
+                props.socket.off("roomMembers", handleMemberList);
+                props.socket.off("memberListUpdated", handleMemberUpdate);
+                props.socket.off("userBlocked", handleAlertmessage);
+                props.socket.off("userNotBlocked", handleAlertmessage);
+                props.socket.off("userUnblocked", handleAlertmessage);
+                props.socket.off("userNotUnblocked", handleAlertmessage);
+            }
+        };
+    }, [props.socket, handleMemberList, handleMemberUpdate, handleAlertmessage]);
+    return (
+        <div className="chat-info-header-2 clearfix">
+            <div className='chat-info-member-list'>Member List </div>
+            <div className="row">
+                {item}
             </div>
-        );
-    };
+        </div>
+    );
+};
