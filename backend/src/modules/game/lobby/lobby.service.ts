@@ -1,8 +1,7 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { RedisService } from 'src/modules/redis/redis.service';
 import { Response } from 'express';
-import * as fs from "fs";
 import { Player, Game, Square, Circle, BlackHole } from '../entities/game.entities';
 import { GameGateway } from '../game.gateway'
 import { EventGame } from '../game-event.enum';
@@ -119,9 +118,6 @@ export class LobbyService {
         
         // check gap elo
         if (p1.threshold >= diff && p2.threshold >= diff) {
-            // console.log("match found");
-            // console.log(p1);
-            // console.log(p2);
             return true;
         }
         return (false)
