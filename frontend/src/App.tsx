@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Routes, Route } from "react-router-dom";
 import LoginSelector from "./Pages/Login/LoginSelector";
 import CreateAccount from "./Pages/Login/CreateAccount/CreateAccount";
@@ -14,9 +14,8 @@ import InitStats from "./Pages/Stats/Stats";
 import Settings from "./Pages/Settings/Settings";
 import ChatLogin from "./Pages/Chat/ChatLogin";
 import TwoFactor from "./Pages/Login/TwoFactor/TwoFactor";
-import { UserContext } from "./context/UserContext";
-import { useContext } from "react";
 import Loading from "./Pages/Loading/Loading";
+import { UserContext } from "./context/UserContext";
 
 function App() {
 	const { user } = useContext(UserContext);

@@ -1,8 +1,9 @@
-import React, { useContext, useRef } from "react";
+import React, { useContext, useRef, useState } from "react";
 import "./Ranked.css"
 import { UserContext } from "../../../../context/UserContext";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons"
+import Popup from "./Popup/Popup.tsx"
 
 export default function Ranked(props) {
 
@@ -40,6 +41,17 @@ export default function Ranked(props) {
         }, 30);
     }
 
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleButtonClick = () => {
+        setIsOpen(true);
+        gameSocketRef.current.emit('joinQueue');
+    };
+
+    const handleClose = () => {
+        setIsOpen(false);
+    };
+
     return (
     <div>
         <div className="Lobby-queue">
@@ -57,11 +69,14 @@ export default function Ranked(props) {
                             <span className="name" data-value={user.name} onMouseOver={onMouseOver} ref={h1Ref}>{user.name}</span>
                             <p className="link" >{user.elo}</p>
                         </div>
-                        <button className="cybr-btn" onClick={() => gameSocketRef.current.emit('joinQueue')}>
+                        <button className="cybr-btn" onClick={handleButtonClick}>
                             Trouver un match<span aria-hidden>_</span>
                             <span aria-hidden className="cybr-btn__glitch">Trouver un match_</span>
                             <span aria-hidden className="cybr-btn__tag">R25</span>
                         </button>
+                        <Popup isOpen={isOpen} onClose={handleClose}>
+                            <h2>En attente d'un adversaire...</h2>
+                        </Popup>
                     </div>
                 </div>
             </div>
