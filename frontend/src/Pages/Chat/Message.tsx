@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { Socket } from "socket.io-client";
 import { useState, useEffect, useCallback } from 'react';
-import { createContext, useContext } from "react";
+import { useContext } from "react";
 import "./chat.scss"
 import { DatabaseContext } from './ChatLogin';
 

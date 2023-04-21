@@ -6,7 +6,7 @@ import Message from './Message';
 import RoomDetail from "./RoomDetail";
 import "./chat.scss"
 // import { socket } from "./Socket";
-import { createContext, useContext } from "react";
+import { createContext } from "react";
 export const DatabaseContext = createContext();
 import { io } from "socket.io-client";
 import Cookies from 'js-cookie';
@@ -146,7 +146,7 @@ export default function ChatLogin() {
     return <div>Connecting to server...</div>;
   } else {
     return (
-      <div className="chat-body">
+      <div className="Chat-body">
         <div className="containerhere containerhere clearfix">
           <div className="row">
             <DatabaseContext.Provider value={database}>

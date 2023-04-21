@@ -36,6 +36,7 @@
 
 .SearchBar-results-list {
     position: absolute;
+    z-index: 1;
     color:#242424;
     width: 23%;
     background-color: white;
@@ -49,10 +50,8 @@
     overflow-y: auto;
 }
 
-
 .SearchBar-search-result {
     padding: 10px 20px;
-    font-family: Helvetica, sans-serif;
 }
 
 .SearchBar-search-result:hover {

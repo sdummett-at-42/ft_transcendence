@@ -2,7 +2,7 @@ FROM node:19.7.0-alpine3.17
 
 WORKDIR /app
 
-ADD package*.json /app
+ADD package*.json /app/
 
 RUN npm install
 

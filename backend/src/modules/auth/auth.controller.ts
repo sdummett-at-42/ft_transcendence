@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Delete, Body, Req, Request, Res, Response, UseGuards, HttpCode } from "@nestjs/common";
-import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
+import { Controller, Get, Post, Delete, Body, Req, Request, Res, Response, UseGuards, HttpCode, Patch } from "@nestjs/common";
+import { ApiBadRequestResponse, ApiBody, ApiConflictResponse, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import * as otplib from 'otplib';
 import * as qrcode from 'qrcode';
 import { AuthenticatedGuard } from "./utils/authenticated.guard";
@@ -8,6 +8,9 @@ import { AuthGuard } from "@nestjs/passport";
 import { OtpDto } from "./dto/otp.dto";
 import { AuthService } from "./auth.service";
 import { SecretQrCodeEntity } from "./utils/2fa.entity";
+import { LocalDto } from "./dto/local.dto";
+
+
 
 @Controller("auth")
 @ApiTags('auth')
@@ -16,8 +19,13 @@ export class AuthController {
 	constructor(private readonly auth: AuthService) { }
 
 	@Post('/local')
+	@HttpCode(201)
+	@ApiCreatedResponse({ description: 'Successfully register/log a user.'})
+	@ApiBadRequestResponse({ description: 'There is a problem with the payload or the password is wrong.'})
+	@ApiNotFoundResponse({ description: 'The username used to log the user isn\'t found.'})
+	@ApiConflictResponse({ description: 'email or username is already in use or the login method is not the one used when registered.'})
 	@UseGuards(AuthGuard('local'))
-	localRegister() {}
+	localRegister(@Body() dto: LocalDto) {}
 
 	// @Get('/local/forget')
 	// @UseGuards(AuthGuard('local'))
@@ -38,7 +46,7 @@ export class AuthController {
 	@ApiNoContentResponse({ description: 'User has been logged out.'})
 	@UseGuards(AuthenticatedGuard)
 	async logout(@Request() req, @Response() res) {
-		this.auth.disconnectUserSockets(req.user.id);
+		// this.auth.disconnectUserSockets(req.user.id);
 		req.logout(() => {
 			const user = req.user;
 			res.send(user);
@@ -77,34 +85,12 @@ export class AuthController {
 		});
 	}
 
-	@Get('google/login')
-	@HttpCode(200)
-	@UseGuards(AuthGuard('google'))
-	handleGoogleLogin() { }
-
-	@Get('/google/callback')
-	@HttpCode(200)
-	@UseGuards(AuthGuard('google'))
-	async googleCallback(@Req() req, @Res() res) {
-		const userId = req.user.id;
-		const email = req.user.email;
-		const twofactorEnabled = await this.auth.get2faIsEnabled(userId);
-
-		if (twofactorEnabled)
-			return this.handle2fa(userId, email, res);
-
-		req.logIn(req.user, (err) => {
-			if (err) {
-				console.log(`Login Failed : ${err}`);
-				res.send({message: "Login user failed."})
-				return;
-			}
-			res.send({
-				message: "Logged successfully.",
-				twofactorEnabled: false,
-				twofactorValidated: false,
-			})
-		});
+	@Patch('2fa/disable')
+	@HttpCode(201)
+	@ApiCreatedResponse({ description: '2FA Disabled' })
+	@UseGuards(AuthenticatedGuard)
+	async disableTwoFa(@Req() req) {
+		await this.auth.update2faIsEnabled(req.user.id, false);
 	}
 
 	// Generate a secret for activating 2fa
@@ -196,11 +182,6 @@ export class AuthController {
 			path: "/",
 		});
 		res.setHeader('Set-Cookie', cookie);
-		res.send({
-			message: "Partially logged, 2FA enabled.",
-			twofactorEnabled: true,
-			twofactorValidated: false,
-		});
-		res.status(302).redirect("http://localhost:5173/home")
+		res.status(302).redirect("http://localhost:5173/login/2fa")
 	}
 }

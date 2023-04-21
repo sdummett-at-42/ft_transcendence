@@ -120,7 +120,7 @@ export class AuthService {
 	}
 
 	async update2faIsEnabled(userId: number, isEnabled: boolean) {
-		return await this.users.update2faIsEnabled(userId, false);
+		return await this.users.update2faIsEnabled(userId, isEnabled);
 	}
 
 	getIssuer() {

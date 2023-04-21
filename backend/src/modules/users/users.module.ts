@@ -5,7 +5,6 @@ import { PrismaModule } from 'nestjs-prisma';
 import { ImagesService } from '../images/images.service';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { ChatService } from '../chat/chat.service';
 // import { ChatModule } from '../chat/chat.module';
 
 @Module({
@@ -15,7 +14,7 @@ import { ChatService } from '../chat/chat.service';
 			provide: APP_GUARD,
 			useClass: ThrottlerGuard
 		}],
-	imports: [PrismaModule],// ChatModule],
+	imports: [PrismaModule],
 	exports: [UsersService],
 })
 export class UsersModule { }

@@ -36,7 +36,7 @@ export default function RoomCreate(props: RoomCreatProps) {
   }, []);
 
   useEffect(() => {
-    if(props.socket){
+    if (props.socket) {
       props.socket.on("roomCreated", handleCloseAfterRoomCreated);
       props.socket.on("roomNotCreated", (payload) => {
         alert(payload.message);

@@ -11,6 +11,8 @@ import { ImagesModule } from './modules/images/images.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { UsersModule } from './modules/users/users.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { GameModule } from './modules/game/game.module';
+import { AchievementModule } from './modules/achievements/achievements.module';
 
 @Module({
 	imports: [
@@ -27,9 +29,6 @@ import { ChatModule } from './modules/chat/chat.module';
 				FORTYTWO_CLIENT_ID: Joi.string().required(),
 				FORTYTWO_CLIENT_SECRET: Joi.string().required(),
 				FORTYTWO_CALLBACK_URL: Joi.string().required(),
-				GOOGLE_CLIENT_ID: Joi.string().required(),
-				GOOGLE_CLIENT_SECRET: Joi.string().required(),
-				GOOGLE_CALLBACK_URL: Joi.string().required(),
 				ISSUER: Joi.string().required(),
 			})
 		}),
@@ -40,6 +39,7 @@ import { ChatModule } from './modules/chat/chat.module';
 		ImagesModule,
 		FriendsModule,
 		ChatModule,
+		AchievementModule,
 		PassportModule.register({ session: true }),
 		ThrottlerModule.forRootAsync({
 			imports: [ConfigModule],
@@ -49,6 +49,7 @@ import { ChatModule } from './modules/chat/chat.module';
 				limit: configService.get('THROTTLER_LIMIT'),
 			}),
 		}),
+		GameModule,
 	],
 	providers: [AppService],
 })

@@ -86,7 +86,6 @@
   
 .LoginSelector-card-title,
 .LoginSelector-card-subtitle {
-    font-family: "Anek Latin", sans-serif;
     font-weight: 400;
     margin: 0px;
 }
@@ -160,15 +159,30 @@
     gap: 1.5rem;
 }
 
-.LoginSelector-button-video {
+.FortyTwoLogin-button {
+    cursor:pointer;
+    border-radius: 0.5vmin;
+    margin-top: 1.5vmin;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border: 1px solid #00b9bb;
+    color: white;
+    text-decoration: none;
     background-color: transparent;
 }
 
-.Button-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.3;
+.FortyTwoLogin-button:hover {
+    transition: background-color 300ms;
+    background-color: #00b9bb;
+}
+
+.FortyTwoLogin-button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    gap: 1.5rem;
 }
 
 .LoginSelector-button > .LoginSelector-button-image {
@@ -178,7 +192,6 @@
 
 .LoginSelector-button > .LoginSelector-button-content > .LoginSelector-button-text {
     flex-grow: 1;
-    font-family: 'Verdana', Geneva, Tahoma, sans-serif;
 }
 
 .LoginSelector-create-account {

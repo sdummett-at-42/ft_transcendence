@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
+import { Injectable, HttpException, HttpStatus, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "nestjs-prisma";
 import { FriendsService } from "./friends.service";
 
@@ -9,6 +9,10 @@ export class FriendRequestService {
 	async sendFriendRequest(id: number, friendId: number) {
 		if (+id === +friendId)
 			throw new HttpException('You cannot send a friend request to yourself', HttpStatus.BAD_REQUEST);
+
+		const friend = await this.prisma.user.findUnique({where: {id: friendId}});
+		if (!friend)
+			throw new NotFoundException(`Friend with user id ${friendId} not found.`);
 
 		const friendRequest = await this.prisma.friendRequest.findUnique({
 			where: {
@@ -103,7 +107,7 @@ export class FriendRequestService {
 		return this.friends.addFriend(id, friendId);
 	}
 
-	async declineFriendRequest(id: number, friendId: number) {
+	async removeFriendRequest(id: number, friendId: number) {
 		const friendRequest = await this.prisma.friendRequest.findUnique({
 			where: {
 				senderId_receiverId: {

@@ -1,11 +1,12 @@
-import { Controller, Get, UseGuards, Req, ParseIntPipe, Post, Patch, Delete, Body, HttpCode } from "@nestjs/common";
+import { Controller, Get, UseGuards, Req, ParseIntPipe, Post, Patch, Delete, Body, HttpCode, BadRequestException } from "@nestjs/common";
 import { AuthenticatedGuard } from "src/modules/auth/utils/authenticated.guard";
 import { ContentTypeGuard } from "src/shared/content-type.guard";
 import { FriendsService } from "./friends.service";
 import { FriendRequestService } from "./friend-request.service";
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserEntity } from "src/modules/users/entities/user.entity";
-import { FriendsGateway } from "./friends.gateway";
+import { CreateFriendRequestDto } from "./dto/friends.dto";
+import { NotificationsGateway } from "../notifications/notifications.gateway";
 
 @ApiTags('friends')
 @Controller('friends')
@@ -14,7 +15,7 @@ export class FriendsController {
 	constructor(
 		private readonly friends: FriendsService,
 		private readonly friendRequest: FriendRequestService,
-		private readonly friendGateway: FriendsGateway) { }
+		private readonly notifications: NotificationsGateway) { }
 
 	@Get()
 	@HttpCode(200)
@@ -38,12 +39,13 @@ export class FriendsController {
 	@HttpCode(201)
 	@UseGuards(ContentTypeGuard)
 	@ApiCreatedResponse({ type: UserEntity, description: 'Sends a friend request' })
+	@ApiNotFoundResponse({ description: 'The friend doesnt exits'})
 	async sendFriendRequest(
-		@Req() request ,
-		@Body('friendId') friendId: number,
+		@Body() dto: CreateFriendRequestDto,
+		@Req() request
 	) {
-		const friendRequest = await this.friendRequest.sendFriendRequest(request.user.id, friendId);
-		this.friendGateway.sendFriendRequest(request.user.id, friendId);
+		const friendRequest = await this.friendRequest.sendFriendRequest(request.user.id, dto.friendId);
+		this.notifications.sendFriendRequest(request.user.id, dto.friendId);
 		return friendRequest;
 	}
 
@@ -56,19 +58,32 @@ export class FriendsController {
 		@Body('friendId') friendId: number,
 	) {
 		const friendRequest = await this.friendRequest.acceptFriendRequest(request.user.id, friendId);
-		this.friendGateway.acceptFriendRequest(friendId, request.user.id);
+		this.notifications.acceptFriendRequest(friendId, request.user.id);
 		return friendRequest;
 	}
 
-	@Delete('requests')
+	@Delete('requests/received')
 	@HttpCode(204)
 	@UseGuards(ContentTypeGuard)
-	@ApiNoContentResponse({ type: UserEntity, description: 'Declines a friend request' })
+	@ApiNoContentResponse({ type: UserEntity, description: 'Declines a received friend request' })
 	async declineFriendRequest(
 		@Req() request ,
 		@Body('friendId') friendId: number,
 	) {
-		return this.friendRequest.declineFriendRequest(request.user.id, friendId);
+		return this.friendRequest.removeFriendRequest(request.user.id, friendId);
+	}
+
+	@Delete('requests/sended')
+	@HttpCode(204)
+	@UseGuards(ContentTypeGuard)
+	@ApiNoContentResponse({ type: UserEntity, description: 'Remove a sent friend request' })
+	async removeFriendRequest(
+		@Req() request ,
+		@Body('friendId') friendId: number,
+	) {
+		const friendRequest = await this.friendRequest.removeFriendRequest(friendId, request.user.id);
+		this.notifications.cancelFriendRequest(request.user.id, friendId);
+		return friendRequest;
 	}
 
 	@Get('requests/sended')
