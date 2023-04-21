@@ -29,6 +29,7 @@ export default function FollowingAccountCreation() {
 			);
 			const data = await response.json();
 			setImage(data.urls.regular);
+			console.log(data.urls.regular);
 			setLoading(false);
 		}
 		fetchData();
@@ -66,7 +67,7 @@ export default function FollowingAccountCreation() {
 			credentials: "include",
 			body: JSON.stringify({
 				name: username,
-				email: JSON.stringify(myProps.email).slice(1, -1),
+				// email: JSON.stringify(myProps.email).slice(1, -1),
 				profilePicture: image,
 			}),
 		}).then((res) => {

@@ -146,7 +146,7 @@ export default function ChatLogin() {
     return <div>Connecting to server...</div>;
   } else {
     return (
-      <div >
+      <div className="Chat-body">
         <div className="containerhere containerhere clearfix">
           <div className="row">
             <DatabaseContext.Provider value={database}>

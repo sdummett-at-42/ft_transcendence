@@ -5,11 +5,7 @@ import { ChatService } from "./chat.service";
 
 @Module({
 	imports: [RedisModule, PrismaModule],
-<<<<<<< HEAD
 	controllers: [],
-=======
-	controllers: [FileController],
->>>>>>> wlo
 	providers: [ChatService],
 	exports: [ChatService],
 })

@@ -73,36 +73,6 @@ export class UsersService {
 		});
 	}
 
-	async createWithPasswd(loginMethod: LoginMethod, email: string, username: string, password: string, image: { base64: string, mimeType: string }) {
-		const user = await this.prisma.user.create({
-			data: {
-				email,
-				name: username,
-				password,
-				loginMethod,
-			},
-		});
-
-		await this.images.create(
-			image.base64,
-			image.mimeType,
-			user.name,
-			user.id,
-		);
-		return this.prisma.user.update({
-			where: { id: user.id },
-			data: {
-				profilePicture: `http://localhost:3001/images/${user.id}`,
-			},
-			select: {
-				id: true,
-				name: true,
-				profilePicture: true,
-				elo: true,
-			},
-		});
-	}
-
 	findAllUsers() {
 		return this.prisma.user.findMany({
 			where: {

@@ -5,7 +5,7 @@ $blue: #b8d4f6;
 $bluebuttom:#215ea9;
 $orange: #E38968;
 $gray: #92959E;
-body {
+.Chat-body {
     background: #0b0b0b;
     font: 14px/20px "Lato", Arial, sans-serif;
     padding: 40px 0;
@@ -82,7 +82,7 @@ ul {
     }
 }
 
-img {
+.Chat-body > img {
     float: left;
 }
 
