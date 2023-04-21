@@ -6,7 +6,7 @@ import { Shape } from "../../../../../backend/src/modules/game/entities/game.ent
 
 export default function Game() {
     const id = window.location.pathname.split('/')[2];
-    const room = "game" + id;
+    // const room = "game" + id;
 
     const { user, gameSocketRef } = useContext(UserContext);
 
@@ -31,10 +31,14 @@ export default function Game() {
             setScoreP2(data.score);
     }
 
-    const handleVictory = (data) => {
+    const handleVictoryScore = (data) => {
         // TODO
-        // victory
-        // ajouter victory abandon
+        // victoryScore
+    }
+
+    const handleVictoryAbandon = (data) => {
+        // TODO
+        // victory abandon
     }
 
     const handleTimer = (data) => {
@@ -49,23 +53,45 @@ export default function Game() {
     // Handle the socket events
     useEffect(() => {
 
+        async function fetchPage(urlId: number) {
+			const [userAchievementsRes, allAchievementsRes] = await Promise.all(
+				[
+					fetch(
+						`http://localhost:3001/gm`,
+						{
+							method: "GET",
+							headers: { "Content-Type": "application/json" },
+							credentials: "include",
+						}
+					),
+					fetch("http://localhost:3001/achievements", {
+						method: "GET",
+						headers: { "Content-Type": "application/json" },
+						credentials: "include",
+					}),
+				]
+			);
+
+
         gameSocketRef.current.on('image', handleImage);
         gameSocketRef.current.on('score', handleScore);
-        gameSocketRef.current.on('VictoryScore', handleVictory);
+        gameSocketRef.current.on('VictoryScore', handleVictoryScore);
+        gameSocketRef.current.on('VictoryScore', handleVictoryAbandon);
         gameSocketRef.current.on('gameTimer', handleTimer);
         // gameSocketRef.current.on('connect', handleConnectGame);
 
         return () => {
             gameSocketRef.current.off('image', handleImage);
             gameSocketRef.current.off('score', handleScore);
-            gameSocketRef.current.off('VictoryScore', handleVictory);
+            gameSocketRef.current.off('VictoryScore', handleVictoryScore);
+            gameSocketRef.current.off('VictoryScore', handleVictoryAbandon);
             gameSocketRef.current.off('gameTimer', handleTimer);
             // gameSocketRef.current.on('connect', handleConnectGame);
         };
     }, [
         handleImage,
-        // handleScore,
-        handleVictory,
+        handleVictoryScore,
+        handleVictoryAbandon,
         handleTimer,
         // handleConnectGame,
         gameSocketRef
@@ -77,7 +103,7 @@ export default function Game() {
             <div id="timer">Time = {timer}</div>
             <div id="Scorep1">Player 1 = {scoreP1}</div>
             <div id="Scorep2">Player 2 = {scoreP2}</div>
-            <Canvas elements={elements} room={room} socketRef={gameSocketRef}/>
+            <Canvas elements={elements} idGame={id} socketRef={gameSocketRef}/>
         </div>
     )
 }
