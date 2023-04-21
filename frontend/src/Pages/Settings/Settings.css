@@ -16,7 +16,6 @@
 .Settings-profile-picture {
 	height: 5vmin;
     width: 5vmin;
-    object-fit: cover;
     border-radius: 50%;
 }
 
