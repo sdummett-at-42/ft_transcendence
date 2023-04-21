@@ -14,6 +14,7 @@ interface MemberListProps {
     onListClick: (list: string, id: number, ifDM: boolean) => void,
     roomName: string,
     UserId: Number,
+    blockList : Number[],
 }
 
 export default function MemberList(props: MemberListProps) {
@@ -21,6 +22,7 @@ export default function MemberList(props: MemberListProps) {
     const [item, setItem] = useState([]);
     const [members, setMembers] = useState({ owner: '', admins: [], members: [] });
     const [showProfile, setShowProfile] = useState(false)
+    const [newblockList, setNewBlockList] = useState([]);
 
     const hanldeDM = (id, name) => {
         console.log("handleDM", id, name)
@@ -60,6 +62,10 @@ export default function MemberList(props: MemberListProps) {
 
         }
     }
+    useEffect(()=>{
+        console.log(props.blockList);
+        setNewBlockList(props.blockList);
+    },[])
     useEffect(() => {
         //  console.log("members2222", members);
         setItem(members.members.map((each, index) => {
@@ -85,8 +91,9 @@ export default function MemberList(props: MemberListProps) {
                         {user.id === props.UserId ?
                             <div className="col-lg-6"></div> :
                             (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
-                                <button className="PendingFriend-button"><FontAwesomeIcon icon={faLock} onClick={() => handleblock(user.id, user.name)} size="lg" /></button>
-                                <button className="PendingFriend-button"><FontAwesomeIcon icon={faUnlock} onClick={() => handleUnblock(user.id, user.name)} size="lg" /></button>
+                                { newblockList.includes(user.id) ? 
+                                <><button id={newblockList[0]} ><FontAwesomeIcon icon={faUnlock} onClick={() => handleUnblock(user.id, user.name)} size="lg" /></button> </> : 
+                                <><button ><FontAwesomeIcon icon={faLock} onClick={() => handleblock(user.id, user.name)} size="lg" /></button></>}
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => { setShowProfile(true) }} size="lg" /></button>
                                 <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} onClick={() => handlePlay(user.id, user.name)} size="lg" /></button>
                                 <ProfilePopup isVisible={showProfile} onClose={() => setShowProfile(false)} UserId={props.UserId} />
@@ -104,6 +111,15 @@ export default function MemberList(props: MemberListProps) {
         console.log("handleMemberUpdate", payload)
         setMembers(payload.memberList);
     }, [members])
+    const handleBlockUpdate = useCallback((payload) => {
+        if (newblockList.includes(payload.userId) ==  false)
+            setNewBlockList(array =>[...array, payload.userId]);
+    }, [newblockList])
+    const handleUnblockUpdate = useCallback((payload) => {
+            setNewBlockList((prev) => {
+                return prev.filter((id) => id !== payload.userId);
+            });
+    }, [newblockList])
     const handleAlertmessage = useCallback((payload) => {
         alert(payload.message);
     }, [])
@@ -111,28 +127,31 @@ export default function MemberList(props: MemberListProps) {
         if (props.socket) {
             props.socket.on("roomMembers", handleMemberList);
             props.socket.on("memberListUpdated", handleMemberUpdate);
-            props.socket.on("userBlocked", handleAlertmessage);
+            props.socket.on("userBlocked", handleBlockUpdate);
             props.socket.on("userNotBlocked", handleAlertmessage);
-            props.socket.on("userUnblocked", handleAlertmessage);
+            props.socket.on("userUnblocked", handleUnblockUpdate);
             props.socket.on("userNotUnblocked", handleAlertmessage);
+            // props.socket.on("userBlockList", handleBlockList);
         }
         return () => {
             if (props.socket) {
                 props.socket.off("roomMembers", handleMemberList);
                 props.socket.off("memberListUpdated", handleMemberUpdate);
-                props.socket.off("userBlocked", handleAlertmessage);
+                props.socket.off("userBlocked", handleBlockUpdate);
                 props.socket.off("userNotBlocked", handleAlertmessage);
-                props.socket.off("userUnblocked", handleAlertmessage);
+                props.socket.off("userUnblocked", handleUnblockUpdate);
                 props.socket.off("userNotUnblocked", handleAlertmessage);
+                // props.socket.off("userBlockList", handleBlockList);
             }
         };
-    }, [props.socket, handleMemberList, handleMemberUpdate, handleAlertmessage]);
+    }, [props.socket, handleMemberList, handleMemberUpdate, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate]);
     return (
         <div className="chat-info-header-2 clearfix">
             <div className='chat-info-member-list'>Member List </div>
             <div className="row">
-                {item}
+                {item} 
             </div>
+            <h1>||||{newblockList}|||||</h1>
         </div>
     );
 };

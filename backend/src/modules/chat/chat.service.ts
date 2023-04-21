@@ -1455,6 +1455,15 @@ export class ChatService {
 			roomsList,
 		})
 	}
+	
+	async getBlockList(socket,dto, server){
+		console.log("here??")
+		const userId: string = socket.data.userId.toString();
+		const usersblocked = await this.redis.getUsersBlocked(+userId);
+		socket.emit(Event.userBlockList, {
+			list: usersblocked,
+		});
+	}
 
 	async blockUser(socket, dto: BlockUserDto, server) {
 		const userId: string = socket.data.userId.toString();
@@ -1494,8 +1503,7 @@ export class ChatService {
 
 	async unblockUser(socket, dto: UnblockUserDto, server) {
 		const userId: string = socket.data.userId.toString();
-
-
+		
 		if (userId == dto.toUserId.toString()) {
 			console.debug(`User ${socket.data.userId} cannot unblock himself`);
 			socket.emit(Event.userNotUnblocked, {

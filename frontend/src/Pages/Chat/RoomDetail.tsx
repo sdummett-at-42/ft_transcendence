@@ -19,6 +19,7 @@ interface RoomDetailProps {
   onUpdate: () => void,
   UserId: Number,
   ifDM: boolean,
+  blockList : Number[],
 }
 export default function RoomDetail(props: RoomDetailProps) {
   const [show, setShow] = useState(false);
@@ -237,7 +238,8 @@ export default function RoomDetail(props: RoomDetailProps) {
           ) : null}
           {/* (props.ifDM) ? <Profile socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />  */}
         </div>
-        <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />
+        <h1>||{props.blockList}||</h1>
+        <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList}/>
       </div>) : ((props.ifDM) ? <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} /> : <div className="chatinfo" ></div>)
   );
 }

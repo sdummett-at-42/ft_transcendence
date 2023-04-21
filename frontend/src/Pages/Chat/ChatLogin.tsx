@@ -1,6 +1,6 @@
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import React from "react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useCallback } from 'react';
 import ChatroomList from "./ChatroomList";
 import Message from './Message';
 import RoomDetail from "./RoomDetail";
@@ -22,6 +22,7 @@ export default function ChatLogin() {
   const [ifDM, setIfDM] = useState(false);
   const [toDMID, setToDMID] = useState({ id: 0, name: "" });
   const [ifDataReady, setifDataReady] = useState(false);
+  const [blockList, setBlockList] = useState([]);
 
   const handleUpdateDatabase = async () => {
     await fetch("http://localhost:3001/users/", {
@@ -70,6 +71,11 @@ export default function ChatLogin() {
   const handleChildComponentUpdate = () => {
     setShouldUpdateDatabase(true);
   };
+
+  const handleBlockList = useCallback((payload) =>{
+    console.log("handleBlockList", payload);
+    setBlockList(payload.list);
+},[blockList])
 
   useEffect(() => {
     if (shouldUpdateDatabase) {
@@ -130,6 +136,7 @@ export default function ChatLogin() {
       setIfSocket(true)
       socket.emit("getUserRooms");
       socket.emit("getDmsList");
+      socket.emit("getBlockList");
       console.log('Socket connected');
     });
     socket.on('disconnect', () => {
@@ -141,6 +148,16 @@ export default function ChatLogin() {
       socket.disconnect();
     };
   }, []);
+  useEffect(() => {
+    if (socket){
+      socket.on('userBlockList',handleBlockList);
+    }
+    return()=>{
+      if (socket){
+        socket.off('userBlockList',handleBlockList);
+      }
+    }
+  },[handleBlockList]);
 
   if (ifsocket == false) {
     return <div>Connecting to server...</div>;
@@ -149,10 +166,11 @@ export default function ChatLogin() {
       <div className="Chat-body">
         <div className="containerhere containerhere clearfix">
           <div className="row">
+            |||{typeof(blockList)}
             <DatabaseContext.Provider value={database}>
               <ChatroomList socket={socket} onListClick={handleListClick} onUpdate={handleChildComponentUpdate} ifDM={ifDM} toDMID={toDMID} ifDataReady={ifDataReady} />
               <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={userId} onUpdate={handleChildComponentUpdate} />
-              <RoomDetail socket={socket} onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId={userId} ifDM={ifDM} />
+              <RoomDetail socket={socket} onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId={userId} ifDM={ifDM} blockList={blockList}/>
             </DatabaseContext.Provider>
           </div>
         </div>

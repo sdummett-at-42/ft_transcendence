@@ -51,7 +51,7 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
   }, [])
 
   useEffect(() => {
-    if(props.socket){
+    if (props.socket) {
       props.socket.on("roomJoined", handleCloseAfterRoomCreated);
       props.socket.on("roomNotJoined", handleNotJoined);
     }
@@ -61,7 +61,7 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
         props.socket.off("roomNotJoined", handleNotJoined);
       }
     };
-  }, [props.socket,handleCloseAfterRoomCreated, handleNotJoined]);
+  }, [props.socket, handleCloseAfterRoomCreated, handleNotJoined]);
 
   return (
     <div >
