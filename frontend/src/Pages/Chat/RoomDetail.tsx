@@ -158,6 +158,7 @@ export default function RoomDetail(props: RoomDetailProps) {
       setIfAdmin(false);
   }, [adminList]);
   useEffect(() => {
+    if(props.socket){
       props.socket.on("invited", handleInvited);
       props.socket.on("userNotInvited", handleNotInvite);
       props.socket.on("memberListUpdated", handleCheckIfAdmin);
@@ -170,7 +171,9 @@ export default function RoomDetail(props: RoomDetailProps) {
       props.socket.on("userMuted", handleMessagAction);
       props.socket.on("userNotKicked", handleMessagAction);
       props.socket.on("userKicked", handleMessagAction);
+    }
     return () => {
+      if(props.socket){
         props.socket.off("invited", handleInvited);
         props.socket.off("userNotInvited", handleNotInvite);
         props.socket.off("memberListUpdated", handleCheckIfAdmin);
@@ -183,6 +186,7 @@ export default function RoomDetail(props: RoomDetailProps) {
         props.socket.off("userMuted", handleMessagAction);
         props.socket.off("userNotKicked", handleMessagAction);
         props.socket.off("userKicked", handleMessagAction);
+      }
     };
   }, [props.socket, handleInvited, handleNotInvite, handleCheckIfAdmin,handleAdminList, handleMessagAction]);
 

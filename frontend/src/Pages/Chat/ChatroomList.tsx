@@ -139,6 +139,7 @@ export default function ChatroomList(props: ChatroomListProps) {
     }
   },[])
   useEffect(() => {
+    if(props.socket){
     props.socket.on("userRooms", handleRoomsListReceived);
     props.socket.on("dmsList", handleDMRoomsListReceived);
     props.socket.on("roomCreated", handleRoomCreated);
@@ -150,7 +151,9 @@ export default function ChatroomList(props: ChatroomListProps) {
     props.socket.on("kicked", handleKickEvent);
     // console.log("received");
     // console.log(props.socket.listeners("roomsListReceived"));
+    }
     return () => {
+      if(props.socket){
       // Log the event listeners to the console
       props.socket.off("userRooms", handleRoomsListReceived);
       props.socket.off("dmsList", handleDMRoomsListReceived);
@@ -161,6 +164,7 @@ export default function ChatroomList(props: ChatroomListProps) {
       props.socket.off("dmUpdated", handlDMlistupdated);
       props.socket.off("banned", handleBanEvent);
       props.socket.off("kicked", handleKickEvent);
+      }
     }
   }, [props.socket, handleRoomsListReceived, handleDMRoomsListReceived, handleRoomCreated, handleRoomJoined, handleRoomDeleted, handleRoomsUpdate ,handlDMlistupdated, handleBanEvent, handleKickEvent]);
 
