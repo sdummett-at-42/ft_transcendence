@@ -100,7 +100,7 @@ export class GameService {
                     // if player 1 pause
                     const dateActual = new Date().getTime();
 
-
+//
                     // je veux check si un joueur a consommer sa duree total de pause
                     // stocker duree total pause joueur dans resume
 
