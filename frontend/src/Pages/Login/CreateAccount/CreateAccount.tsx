@@ -14,7 +14,7 @@ export default function CreateAccount() {
 	const { user, setLastUpdate ,isLoading } = useContext(UserContext);
 
 	const schema = Joi.object({
-		username: Joi.string().min(3).max(16).required(),
+		username: Joi.string().min(3).max(16).alphanum().required(),
 		email: Joi.string()
 			.email({ tlds: { allow: validEmail } })
 			.required(),
