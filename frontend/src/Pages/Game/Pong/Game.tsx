@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 import "./Game.css"
 import Canvas from "./Canvas";
 import { UserContext } from "../../../context/UserContext"
-import { Shape } from "../../../../../backend/src/modules/game/entities/game.entities"
+import { Shape, Player } from "../../../../../backend/src/modules/game/entities/game.entities"
 import { useNavigate } from "react-router-dom";
 
 export default function Game() {
@@ -13,12 +13,15 @@ export default function Game() {
     // const room = "game" + id;
 
     const { user, gameSocketRef } = useContext(UserContext);
-    const [boolSocket, setBoolSocket] = useState(false); 
+    const [boolSocket, setBoolSocket] = useState(false);
 
     const [scoreP1, setScoreP1] = useState<number>(0);
     const [scoreP2, setScoreP2] = useState<number>(0);
     const [timer, setTimer] = useState<number>(0);
     const [elements, setElements] = useState<Shape[]>([]);
+    const [victory, setVictory] = useState<Array<any>>([]);
+
+
 
     const gameSocketTemp = useRef({});
     if (!boolSocket) {
@@ -55,49 +58,42 @@ export default function Game() {
             setScoreP2(data.score);
     }
 
-    const handleVictoryScore = (data) => {
+    const handleVictory = (data : {type : Boolean, winner : Player, loser : Player} ) => {
+        // data= {Bollean, p1, p2}
+        // false = score  true = abandon
         // TODO
         // victoryScore
+        setVictory([data.type , data.winner, data.loser]);
     }
 
-    const handleVictoryAbandon = (data) => {
-        // TODO
-        // victory abandon
-    }
+    // const handleVictoryAbandon = (data) => {
+    //     // data= {winner : number, p1, p2}
+    //     setVictory([data.winner, data.p1, data.p2]);
+    // }
 
     const handleTimer = (data) => {
         setTimer(data);
     }
-
-    // const handleConnectGame = () => {
-    //     const msg = "User have join the game Y has player X.";
-    //     gameSocketRef.current.emit("joinGame", {roomId : room, message : msg});
-    // }
 
     // Handle the socket events
     useEffect(() => {
 
         gameSocketTemp.current.on('image', handleImage);
         gameSocketTemp.current.on('score', handleScore);
-        gameSocketTemp.current.on('VictoryScore', handleVictoryScore);
-        gameSocketTemp.current.on('VictoryScore', handleVictoryAbandon);
+        gameSocketTemp.current.on('victory', handleVictory);
         gameSocketTemp.current.on('gameTimer', handleTimer);
-        // gameSocketTemp.current.on('connect', handleConnectGame);
 
         return () => {
             gameSocketTemp.current.off('image', handleImage);
             gameSocketTemp.current.off('score', handleScore);
-            gameSocketTemp.current.off('VictoryScore', handleVictoryScore);
-            gameSocketTemp.current.off('VictoryScore', handleVictoryAbandon);
+            gameSocketTemp.current.off('victory', handleVictory);
             gameSocketTemp.current.off('gameTimer', handleTimer);
-            // gameSocketTemp.current.on('connect', handleConnectGame);
         };
     }, [
         handleImage,
-        handleVictoryScore,
-        handleVictoryAbandon,
+        handleScore,
+        handleVictory,
         handleTimer,
-        // handleConnectGame,
         gameSocketTemp
     ]);
 
@@ -134,12 +130,17 @@ export default function Game() {
     //     console.log("Error:", error);
     //   });
 
+    // TODO
+    // Cas win ?
+
+    // Cas not end ?
     return (
         <div>
             <h1>Game</h1>
             <div id="timer">Time = {timer}</div>
             <div id="Scorep1">Player 1 = {scoreP1}</div>
             <div id="Scorep2">Player 2 = {scoreP2}</div>
+            <div id="Victory">Victory = {JSON.stringify(victory)}</div>
             <Canvas elements={elements} idGame={id} socketRef={gameSocketTemp}/>
         </div>
     )

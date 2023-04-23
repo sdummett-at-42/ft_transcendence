@@ -32,14 +32,25 @@ export class LobbyService {
     }
 
     // Add user [] 
-    lobbyJoinQueue(client : Socket) {
+    async lobbyJoinQueue(client : Socket) {
         // console.log("lobby join Queue:", client.data);
         //TODO check if in game (boolean)
 
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
 
         if (index === -1) { // Check if player already in Q
-            const player = new Player(client.data);
+            const prismData = await this.prisma.user.findUnique({
+                where: { id : client.data.userId },
+                select: {
+                    name: true,
+                    elo: true,
+                },
+            });
+
+            //id, name, elo, socket
+            const data = {id : client.data.userId, name : prismData.name, elo : prismData.elo , socket : client.data.socket}
+
+            const player = new Player(data);
             this.users.push({ player, threshold : this.BaseThreshold});
             if (this.queueInterval === undefined)
                 this.queueInterval = setInterval(this.intervalQueueFunction.bind(this), 500);
@@ -308,7 +319,7 @@ export class LobbyService {
         // console.log("socket:", socket.handshake.headers.referer);
 
         console.log(socket.handshake.auth);
-        if (!socket.handshake.auth.url)
+        if (!socket.handshake.auth.url) // lobby nothing to do
             return null;
 
         const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
@@ -317,20 +328,16 @@ export class LobbyService {
 
         console.log("getUrl size = ", getUrl.length);
 
-        if (getUrl.length < 3 || getUrl.length > 4) {
+        if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
             console.log("lobby service connect: not /game or /game/:id");
             return null;
-        } else if (getUrl.length === 3 && getUrl[2] === "game") { // in lobby
-            // console.log("socket in: /game");
-            //socket.join(`game`);
-        } else if (getUrl.length === 4 && getUrl[2] === "game") {
+        } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
             //TODO
             // check if game exist| ingame| finish
-            // faire que le front envoie l'id de la game ?
+
             console.log("socket in: /game/:id");
 
             const gameId = getUrl.pop();
-            console.log("gameId =", gameId);
             
             const index = this.games.findIndex(games => games.id === Number(gameId));
             const game : Game = this.games[index];
@@ -338,15 +345,13 @@ export class LobbyService {
             //console.log("game:", game);
             if (game) {
                 console.log("p1 id:", game.p1.id);
-                console.log("i2 id:", game.p2.id);
+                console.log("p2 id:", game.p2.id);
             }
-
-
 
             if (game === undefined || game.p1.id === undefined || game.p2.id === undefined)
                 return null;
 
-            // if in game at player pause his game
+            // if in game at player resume his game
             if (game.p1.id === userId) // p1 connec
                 return {game : game, id : game.p1.id};
             if (game.p2.id === userId) // p2 connect
@@ -390,22 +395,24 @@ export class LobbyService {
         // TODO
         // check si avec https j'ai encore acces a headers.referer
 
-        const gameId = socket.handshake.auth.url.split('/').pop();
-
-        if (gameId === "") {
-            console.log("lobby service disconnect: not /game or /game/:id");
-            return null;
-        } else if (gameId === "game") { // not in game
-            // console.log("disconnect socket in: /game");
-            // check is player is in Q
+        if (!socket.handshake.auth.url) {// lobby and leave Q if player in Q
             const index = this.users.findIndex(users => users.player.id === userId);
             if (index !== -1)
                 this.users.splice(index, 1);
-        } else {
+            return null;
+        }
+
+        const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
+
+        if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
+            console.log("lobby service disconnect: not /game or /game/:id");
+            return null;
+        } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
             //TODO
             // check if game exist| ingame| finish
             // console.log("disconnect in game/:id");
 
+            const gameId = getUrl.pop();
             const index = this.games.findIndex(games => games.id === Number(gameId));
             const game : Game = this.games[index];
 
@@ -420,7 +427,6 @@ export class LobbyService {
                 return {game : game, id :game.p2.id};
             }
             // else spec
-
         }
         return null;
     }

@@ -35,8 +35,12 @@ export class GameGateway {
       console.log("not resume game");
       if (res === null)
         console.log("handle connection return null");
-      else
-        console.log("Pas de match toruve");
+      else {
+        // TODO send typevictory
+        console.log("Match termine");
+        const game = res.game;
+        game.server.to(socket.id).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser});
+      }
 
     }
   }

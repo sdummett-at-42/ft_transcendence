@@ -480,29 +480,40 @@ export class GameService {
 
         // console.log("++++++ VICTOIRE SCORE");
 
+        game.typewin = false; // win by score
+
         // get who win
         let scoreP1;
         let scoreP2;
         if (game.p1.score > game.p2.score) {
             scoreP1 = 1;
             scoreP2 = 0;
+            // calcul new elo
+        this.newElo(game, scoreP1, scoreP2)
+            game.winner = game.p1 ;
+            game.loser = game.p2;
         }
         else if (game.p1.score < game.p2.score) {
             scoreP1 = 0;
             scoreP2 = 1;
+            // calcul new elo
+            this.newElo(game, scoreP1, scoreP2)
+            game.winner = game.p2 ;
+            game.loser = game.p1;
         }
         else {
             // TODO
             // check si elo > elo
+            console.log("ALERTE EGALITE");
             scoreP1 = 0.5;
             scoreP2 = 0.5;
         }
 
         // calcul new elo
-        this.newElo(game, scoreP1, scoreP2)
+        // this.newElo(game, scoreP1, scoreP2)
 
         // send to front type of victory
-        game.server.to(game.roomId).emit(EventGame.gameVictoryScore, {p1 : game.p1, p2 : game.p2})
+        game.server.to(game.roomId).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser})
         return -1;
     }
 
@@ -510,19 +521,25 @@ export class GameService {
         // stop game
         this.stopGame(game.server, game);
 
+        game.typewin = true; // win by giveup
+
         // winner == 1 -> player 1 win
         // winner == 2 -> player 2 win
 
         // console.log("++++++ VICTOIRE ABANDON");
         // get who win + calcul new elo
-        if (winner === 1) // p1 win
+        if (winner === 1) { // p1 win
             this.newElo(game, 1, 0);
-        else if (winner === 2) // p2 win
+            game.winner = game.p1 ;
+            game.loser = game.p2;
+        }
+        else if (winner === 2) { // p2 win
             this.newElo(game, 0, 1);
+            game.winner = game.p2;
+            game.loser = game.p1 ;
+        }
 
-        // TODO
-        // change to gamevictoryGiveup
-        game.server.to(game.roomId).emit(EventGame.gameVictoryScore, {p1 : game.p1, p2 : game.p2})
+        game.server.to(game.roomId).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser})
     }
 
     private async newElo(game : Game, scoreP1 : number, scoreP2 : number) {
@@ -539,10 +556,12 @@ export class GameService {
         // TODO
         // Check if ranked game
 
-        this.updateElo(game.p1.id ,this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
-        this.updateElo(game.p2.id ,this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
+        this.updateElo(game.p1.id, game.p1.elo, game.p1.eloChange = this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
+        this.updateElo(game.p2.id, game.p2.elo, game.p2.eloChange = this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
     
-        this.updatePrisma(game, scoreP1, scoreP2, p1Prisma, p2Prisma);
+        // this.updatePrisma(game, scoreP1, scoreP2, p1Prisma, p2Prisma);
+        console.log("elo change p1", game.p1.eloChange);
+        console.log("elo change p2", game.p2.eloChange);
 
         // const userqwe = await this.prisma.user.findMany();
         // console.log("sub modif**********", userqwe);
@@ -552,9 +571,9 @@ export class GameService {
         const k = this.getKFactor(gamesPlayed);
         const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - oldElo) / 400));
         const eloChange = k * (score - expectedScore);
-        const newElo = oldElo + eloChange;
+        // const newElo = oldElo + eloChange;
       
-        return Math.round(newElo);
+        return Math.round(eloChange);
     }
       
     private getKFactor(gamesPlayed: number): number {
@@ -567,7 +586,8 @@ export class GameService {
         
     }
 
-    private async updateElo(id : number, newElo : number){
+    private async updateElo(id : number, oldElo : number, eloChange : number){
+        const newElo = oldElo + eloChange;
         const user = await this.prisma.user.update({
             where: { id },
             data: {
