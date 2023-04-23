@@ -306,6 +306,7 @@ export default function Settings() {
 						src={user.profilePicture}
 						alt="Photo de profil"
 						className="Settings-profile-picture"
+						draggable="false"
 					/>
 					<p>Connecté en tant que {user.name}</p>
 					<button
@@ -339,6 +340,7 @@ export default function Settings() {
 										src={image}
 										alt="Nouvelle image de profil"
 										className="Settings-profile-image-playload"
+										draggable="false"
 									/>
 									)}
 								</div>
@@ -399,7 +401,7 @@ export default function Settings() {
 						{qrCode && !user.twofactorIsEnabled && (
 							<div className="Settings-2fa-popup">
 								<h3>Scannez le QR code avec votre téléphone</h3>
-								<img src={`${qrCode.base64Qrcode}`} />
+								<img src={`${qrCode.base64Qrcode}`} draggable="false" />
 								<label className="Settings-label Settings-2fa-popup-label">
 									Entrez le code à 6 chiffres:
 									<input

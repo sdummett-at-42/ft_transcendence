@@ -7,7 +7,7 @@ import Loading from "../../Loading/Loading";
 import "./TwoFactor.css";
 
 export default function TwoFactor() {
-	const { user, isLoading } = useContext(UserContext);
+	const { user, isLoading, setLastUpdate } = useContext(UserContext);
 	const navigate = useNavigate();
 	const [otp, setOtp] = useState("");
 	const [error, setError] = useState("");
@@ -23,6 +23,7 @@ export default function TwoFactor() {
 		})
 			.then((response) => {
 				if (response.ok) {
+					setLastUpdate(Date.now());
 					navigate("/home");
 				} else if (response.status === 401) {
 					navigate("/");
@@ -61,6 +62,7 @@ export default function TwoFactor() {
 						className={`auth-input ${isShaking ? "shake" : ""}`}
 						value={otp}
 						onChange={(event) => setOtp(event.target.value)}
+						autoFocus
 					/>
 					<button type="submit" className="auth-button">
 						Login

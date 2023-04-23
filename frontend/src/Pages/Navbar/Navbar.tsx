@@ -24,6 +24,7 @@ export default function Navbar() {
 							className="LoginSelector-invert-effect Navbar-logo"
 							src={Logo42}
 							alt="Logo-ecole-42"
+							draggable="false"
 						/>
 					</Link>
 					<Link
@@ -75,6 +76,7 @@ export default function Navbar() {
 										className="Navbar-logo"
 										src={user.profilePicture}
 										alt="myProfilePicture"
+										draggable="false"
 									/>
 									<div id="Navbar-profil-name">
 										{user.name}
