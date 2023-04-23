@@ -10,7 +10,7 @@ import Unauthorized from "./Pages/Errors/Unauthorized/Unauthorized";
 import Lobby from "./Pages/Game/Lobby/Lobby";
 import Game from "./Pages/Game/Pong/Game";
 import InitAchievements from "./Pages/Achievements/Achievements";
-import InitStats from "./Pages/Stats/Stats";
+import InitStats from "./Pages//Stats/Stats";
 import Settings from "./Pages/Settings/Settings";
 import ChatLogin from "./Pages/Chat/ChatLogin";
 import TwoFactor from "./Pages/Login/TwoFactor/TwoFactor";

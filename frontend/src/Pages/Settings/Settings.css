@@ -1,66 +1,26 @@
+/*** -----Settings----- ***/
+
 .Settings {
 	color: #fff;
 	font-size: 16px;
-	padding: 20px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
-.Settings-profile {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
-.Settings-profile-picture {
-	height: 5vmin;
-    width: 5vmin;
-    border-radius: 50%;
-}
-
-.Settings-profile-video-playload {
-	height: 15vmin;
-    width: 15vmin;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-.Settings-profile-image-playload {
-	height: 15vmin;
-    width: 15vmin;
-    border-radius: 50%;
+	padding-top: 15px;
 }
 
 .Settings h2 {
 	font-size: 24px;
 	font-weight: bold;
 	margin-top: 0;
-	margin-bottom: 20px;
+	margin-bottom: 15px;
+	z-index: 3;
 }
 
 .Settings p {
 	margin-top: 0;
 	margin-bottom: 10px;
+	z-index: 3;
 }
 
-.Settings label {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	margin-bottom: 10px;
-}
-
-.Settings input[type="text"] {
-	padding: 5px;
-	border: none;
-	background-color: #424242;
-	color: #fff;
-	border-radius: 3px;
-	margin-left: 10px;
-}
-
-.Settings button {
+.Settings-button {
 	padding: 10px;
 	background-color: #4285f4;
 	color: #fff;
@@ -69,28 +29,253 @@
 	cursor: pointer;
 	margin-top: 10px;
 	margin-right: 10px;
+	z-index: 3;
 }
 
-.Settings button:hover {
+.Settings-button:hover {
 	background-color: #3367d6;
 }
 
-.Settings img {
-	max-width: 100%;
-	height: auto;
+.Settings-input {
+	z-index: 3;
+	padding: 5px;
+	border: none;
+	background-color: #424242;
+	color: #fff;
+	border-radius: 3px;
+}
+
+.Settings-label {
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	margin-bottom: 10px;
 }
 
-.Settings .qr-code {
+.Settings-error {
+	z-index: 3;
+	color: red;
+	font-size: 14px;
+	margin-top: 0;
+	margin-bottom: 10px;
+}
+
+/*** -----Settings-recap----- ***/
+
+.Settings-recap {
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-bottom: 10px;
+	z-index: 3;
+}
+
+/*** -----Settings-profile----- ***/
+
+.Settings-profile {
+	z-index: 3;
+	padding-top: 20px;
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-bottom: 10px;
+}
+
+/* Settings-profile-picture */
+
+.Settings-profile-picture {
+	z-index: 3;
+	height: 15vmin;
+    width: 15vmin;
+    border-radius: 50%;
+	margin-bottom: 10px;
+}
+
+.Settings-profile-playload {
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-profile-video-playload {
+	z-index: 3;
+	height: 15vmin;
+    width: 15vmin;
+    object-fit: cover;
+    border-radius: 50%;
+	margin-bottom: 10px;
+}
+
+.Settings-profile-image {
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-profile-image-playload {
+	z-index: 3;
+	height: 15vmin;
+    width: 15vmin;
+    border-radius: 50%;
+	margin-bottom: 10px;
+}
+
+.Settings-profile-image-buttons {
+	z-index: 3;
+	display: flex;
+	align-items: center;
+}
+
+.Settings-upload-button {
+	z-index: 3;
+	margin-top: 0;
+	margin-right: 0;
+}
+
+.Settings-upload-button:hover {
+	background-color: green;
+}
+
+/* Settings-profile-name */
+
+.Settings-profile-name {
+	z-index: 3;
+	width: 50vw;
 	margin-top: 10px;
-	margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-top: 10px;
+	border-top: 2px dashed rgb(255, 255, 255, 0.1);
 }
 
-.Settings .qr-code label {
-	display: inline-block;
-	margin-right: 10px;
+#Settings-file-upload {
+	z-index: 3;
+	margin-bottom: 0;
 }
 
-.Settings .qr-code input[type="text"] {
-	margin-left: 5px;
+/*** ------Settings-account------ ***/
+
+.Settings-account {
+	z-index: 3;
+	padding-top: 20px;
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-bottom: 10px;
+}
+
+/* Settings-2fa-popup */
+
+.Settings-2fa-popup {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-2fa-popup-label {
+	margin-top: 10px;
+}
+
+.Settings-2fa-popup-buttons {
+	display: flex;
+	align-self: space-around ;
+}
+
+/*** -----Settings-delete-account----- ***/
+
+.Settings-delete-account {
+	z-index: 3;
+	padding-top: 20px;
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-delete-account-button {
+	z-index: 3;
+	border: 1px solid red;
+	border-radius: 3px;
+	background-color: transparent;
+}
+
+.Settings-delete-account-button:hover {
+	transition: background-color 0.5s;
+	background-color: red;
+}
+
+/* Settings-delete-account-popup */
+
+.Settings-delete-account-popup {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.Settings-delete-account-popup-buttons {
+	display: flex;
+	align-self: space-around ;
+}
+
+.Settings-delete-account-button-final {
+	border: 1px solid red;
+	border-radius: 3px;
+	background-color: transparent;
+}
+
+.Settings-delete-account-button-final:hover {
+	background-color: transparent;
+	cursor: not-allowed;
+}
+
+#Settings-delete-button {
+	transition: background-color 0.5s ease-in-out;
+	background-color: red;
+}
+
+#Settings-delete-button:hover {
+	cursor: pointer;
+}
+
+@keyframes rotate {
+	from {
+	  rotate: 0deg;
+	}
+	
+	50% {
+	  scale: 1 1.5;
+	}
+	
+	to {
+	  rotate: 360deg;
+	}
+}
+  
+#blob {
+	background-color: white;
+	height: 34vmax;
+	aspect-ratio: 1;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	translate: -50% -50%;
+	border-radius: 50%;
+	background: linear-gradient(to right, aquamarine, mediumpurple);
+	animation: rotate 20s infinite;
+	opacity: 0.8;
+}
+  
+#blur {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	z-index: 0;
+	backdrop-filter: blur(12vmax);
 }

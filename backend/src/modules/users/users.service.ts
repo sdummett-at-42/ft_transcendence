@@ -128,7 +128,8 @@ export class UsersService {
 				profilePicture: true,
 				elo: true,
 				email: true,
-				twofactorIsEnabled: true
+				twofactorIsEnabled: true,
+				loginMethod: true,
 			},
 		});
 		if (!user || user.id === 0) throw new HttpException('User not found', 404);
@@ -214,7 +215,7 @@ export class UsersService {
 	async getAchievements(id: number) {
 		return await this.prisma.user.findUnique({
 			where: { id },
-			select: { achievements: true},
+			select: { achievements: true },
 		})
 	}
 
