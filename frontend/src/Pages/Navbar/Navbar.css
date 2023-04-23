@@ -16,6 +16,8 @@
     top: 0;
     font-size: large;
     border-bottom: 1px solid rgb(255, 255, 255, 0.1);
+    z-index: 1;
+    background-color: #242424;
 }
 
 .Navbar-nav > .Navbar-nav-section {
@@ -69,6 +71,7 @@
 }
 
 #Navbar-profil-picture {
+    z-index: 1;
     height: 5vmin;
     width: 5vmin;
     object-fit: cover;

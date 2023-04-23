@@ -22,26 +22,14 @@ export default function Settings() {
 	
 	useEffect(() => {
 		const blob = document.getElementById("blob");
-		const maxBlobHeight = window.innerHeight * 0.5;
+		// const maxBlobHeight = window.innerHeight * 0.5;
 		
 		window.onpointermove = (event: PointerEvent) => {
 			const { clientX, clientY } = event;
-			if (clientY < maxBlobHeight) {
-				blob?.animate(
-					{
-						left: `${clientX}px`,
-					},
-					{ duration: 3000, fill: "forwards" }
-				);
-			} else {
-				blob?.animate(
-					{
-						left: `${clientX}px`,
-						top: `${clientY}px`,
-					},
-					{ duration: 3000, fill: "forwards" }
-				);
-			}
+			blob?.animate({
+				left: `${clientX}px`,
+				top: `${clientY}px`,
+			}, { duration: 3000, fill: "forwards" });
 		};
 		console.log(`Settings: ${JSON.stringify(user)}`)
 	}, []);
@@ -100,6 +88,11 @@ export default function Settings() {
 		}
 	};
 
+
+	function isAlphanumeric(str: string): boolean {
+		return (/^[a-zA-Z0-9]+$/.test(str));
+	  }
+
 	function handleNameChange() {
 		setErrorMessage((prevErrors) => ({
 			...prevErrors,
@@ -118,6 +111,12 @@ export default function Settings() {
 			setErrorMessage((prevErrors) => ({
 				...prevErrors,
 				username: "Le nom doit contenir au plus 15 caractères",
+			}));
+			return;
+		} else if (!isAlphanumeric(nameInput)) {
+			setErrorMessage((prevErrors) => ({
+				...prevErrors,
+				username: "Le nom ne doit contenir que des caractères alphanumériques",
 			}));
 			return;
 		}

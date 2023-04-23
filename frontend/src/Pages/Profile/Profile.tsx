@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Profile.css";
 import InitAchievements from "../Achievements/Achievements";
 
@@ -31,29 +31,45 @@ function MatchList({ user, match }) {
 	const { matchWon, matchLost } = match;
 
 	const [allMatches, setAllMatches] = useState([]);
+	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const nameRef = useRef<HTMLHeadingElement>(null);
+
+    let interval = null;
+
+    const onMouseOver = (event: React.MouseEvent<HTMLHeadingElement>) => {  
+        let iteration = 0;
+
+        clearInterval(interval);
+
+        interval = setInterval(() => {
+            if (!nameRef.current) return;
+            nameRef.current.innerText = nameRef.current.dataset.value
+                .split("")
+                .map((letter, index) => {
+                    if(index < iteration) {
+                        return nameRef.current?.dataset.value[index];
+                    }
+                    return letters[Math.floor(Math.random() * 26)]
+                })
+                .join("");
+
+            if(iteration >= nameRef.current.dataset.value.length){ 
+                clearInterval(interval);
+            }
+
+            iteration += 1 / 3;
+        }, 30);
+    }
 
 	useEffect(() => {
 		const blob = document.getElementById("blob");
-		const maxBlobHeight = window.innerHeight * 0.5;
 		
 		window.onpointermove = (event: PointerEvent) => {
 			const { clientX, clientY } = event;
-			if (clientY < maxBlobHeight) {
-				blob?.animate(
-					{
-						left: `${clientX}px`,
-					},
-					{ duration: 3000, fill: "forwards" }
-				);
-			} else {
-				blob?.animate(
-					{
-						left: `${clientX}px`,
-						top: `${clientY}px`,
-					},
-					{ duration: 3000, fill: "forwards" }
-				);
-			}
+			blob?.animate({
+				left: `${clientX}px`,
+				top: `${clientY}px`,
+			}, { duration: 3000, fill: "forwards" });
 		};
 	}, []);
 
@@ -109,18 +125,32 @@ function MatchList({ user, match }) {
 			<div className="Profile">
 
 				<div className="Profile-header">
-					<h2>{name}</h2>
-					<img
-						src={profilePicture}
-						alt="Profile"
-						className="profile-picture"
-					/>
-					<p>Elo: {elo}</p>
-					<p>
-						Wins/Losses: {matchWon.length}/{matchLost.length}
-					</p>
-					<InitAchievements userId={user.id} showLocked={false} />
+
+					<div className="Profile-screen-card">
+						<div className="Profile-screen-card-overlay"></div>  
+                    	<div className="Profile-screen-card-content">
+							<div className="Profile-screen-card-content-header">
+								<img
+									src={profilePicture}
+									alt={`Photo de profil de ${name}`}
+									className="profile-picture"
+								/>
+                        		<div className="Profile-screen-card-user">
+                            		<span className="Profile-screen-card-name" data-value={name} onMouseOver={onMouseOver} ref={nameRef}>{name}</span>
+									<p className="Profile-screen-card-elo">Elo :{elo}</p>
+                        		</div>
+							</div>
+						</div>
+					</div>
+
+								<p className="link">
+									Wins/Losses: {matchWon.length}/{matchLost.length}
+								</p>
+				<InitAchievements userId={user.id} showLocked={false} />
 				</div>
+
+
+				
 				<h3>Matches</h3>
 				{allMatches.length === 0 ? (
 					<p>No matches played.</p>
