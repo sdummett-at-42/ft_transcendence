@@ -154,16 +154,16 @@ export class LobbyService {
             // send to player join game's url
             //this.gameGateway.server
 
-            // const p1Socket = p1.player.socket;
-            // const p2Socket = p2.player.socket;
+            const p1Socket = p1.player.socket;
+            const p2Socket = p2.player.socket;
 
             // TODO
             // retirer car new front ne se deco pas
             
-            // p1.player.socket = undefined;
-            // p2.player.socket = undefined;
+            p1.player.socket = undefined;
+            p2.player.socket = undefined;
 
-            this.gameGateway.server.to(p1.player.socket).to(p2.player.socket).emit(EventGame.lobbyGoGame , game.id);
+            this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
 
     // const redirect = `${this.req.protocol}://${this.req.hostname}/game/${game.id}`;
     //const redirect = "http://localhost:3001/game/" + game.id;
@@ -307,7 +307,10 @@ export class LobbyService {
         // console.log("user : ", JSON.parse(session).passport.user);
         // console.log("socket:", socket.handshake.headers.referer);
 
-        console.log(socket.handshake.auth.url);
+        console.log(socket.handshake.auth);
+        if (!socket.handshake.auth.url)
+            return null;
+
         const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
 
         console.log("getUrl = ", getUrl);
@@ -332,7 +335,7 @@ export class LobbyService {
             const index = this.games.findIndex(games => games.id === Number(gameId));
             const game : Game = this.games[index];
 
-            console.log("game:", game);
+            //console.log("game:", game);
             if (game) {
                 console.log("p1 id:", game.p1.id);
                 console.log("i2 id:", game.p2.id);
