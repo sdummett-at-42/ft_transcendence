@@ -11,6 +11,7 @@ import {
 	Request,
 	Req,
 	HttpCode,
+	BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -21,6 +22,7 @@ import { ContentTypeGuard } from '../../shared/content-type.guard';
 import { ChatGateway } from '../chat/chat.gateway';
 import { UserMeEntity } from './entities/userme.entity';
 import { AchievementEntity } from './entities/achievements.entity';
+import * as argon2 from 'argon2';
 
 @Controller('users')
 @UseGuards(AuthenticatedGuard)
@@ -62,8 +64,18 @@ export class UsersController {
 	@Delete('me')
 	@HttpCode(204)
 	@ApiNoContentResponse({ type: UserEntity, description: 'Deletes the current user' })
-	async deleteMe(@Request() req) {
-		const user = await this.users.removeUser(req.user.id);
+	async deleteMe(@Request() req, @Body() dto: { password: string }) {
+		const user = await this.users.findByName(req.user.name);
+
+		if (user.loginMethod === 'LOCAL') {
+			if (dto.password === undefined)
+				throw new BadRequestException('Password is required');
+
+			if (await argon2.verify(user.password, dto.password) == false)
+				throw new BadRequestException('Wrong password');
+		}
+
+		await this.users.removeUser(req.user.id);
 		// this.chat.disconnectUserSockets(req.user.id);
 		req.logout((err) => {
 			return user;
@@ -94,14 +106,14 @@ export class UsersController {
 
 	@Get('me/achievements')
 	@HttpCode(200)
-	@ApiOkResponse({ type: AchievementEntity, description: 'Return an achievements array of the current user.'})
+	@ApiOkResponse({ type: AchievementEntity, description: 'Return an achievements array of the current user.' })
 	async getMyAchievements(@Request() req) {
 		return this.users.getAchievements(req.user.id);
 	}
 
 	@Get(':id/achievements')
 	@HttpCode(200)
-	@ApiOkResponse({ type: AchievementEntity, description: 'Return an achievements array of an user.'})
+	@ApiOkResponse({ type: AchievementEntity, description: 'Return an achievements array of an user.' })
 	async getUserAchievements(@Param('id', ParseIntPipe) id: number) {
 		const user = await this.users.findOneUserById(id);
 		if (!user)

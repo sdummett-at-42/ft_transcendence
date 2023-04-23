@@ -4,10 +4,11 @@ import loadingGif from "../../assets/Loading.mp4";
 import Popup from "../Popup/Popup.tsx";
 import { UserContext } from "../../context/UserContext";
 import { useContext } from "react";
+import { SHA256 } from "crypto-js";
 
 export default function Settings() {
 	const { user, setLastUpdate } = useContext(UserContext);
-	
+
 	const [qrCode, setQrCode] = useState(null);
 	const [otpCode, setOtpCode] = useState("");
 	const [is2faEnabled, setIs2faEnabled] = useState(false);
@@ -43,6 +44,7 @@ export default function Settings() {
 				);
 			}
 		};
+		console.log(`Settings: ${JSON.stringify(user)}`)
 	}, []);
 			
 	if (!user) {
@@ -73,7 +75,7 @@ export default function Settings() {
 			setErrorMessage((prevErrors) => ({
 				...prevErrors,
 				image: "Veuillez sélectionner une image",
-			})); 
+			}));
 			return;
 		}
 		const formData = new FormData();
@@ -116,7 +118,7 @@ export default function Settings() {
 		} else if (nameInput.length > 15) {
 			setErrorMessage((prevErrors) => ({
 				...prevErrors,
-				username: "Le nom doit contenir au plus 15 caractères"
+				username: "Le nom doit contenir au plus 15 caractères",
 			}));
 			return;
 		}
@@ -166,28 +168,30 @@ export default function Settings() {
 	}
 
 	function handleAccountDeletion() {
-		if (password.length === 0) {
+		console.log(`user login method is ${user.loginMethod}`);
+		if (password.length === 0 && user.loginMethod === "LOCAL") {
 			setErrorMessage((prevErrors) => ({
 				...prevErrors,
 				password: "Veuillez entrer votre mot de passe",
 			}));
 			return;
 		}
-		// TODO: Fetch user password from database and compare it to the one entered
-		// fetch("http://localhost:3001/users/me/password", {
-		// 	method: "PATCH",
-		// 	headers: { "Content-Type": "application/json" },
-		// 	credentials: "include",
-		// }).then((response) => {
-		// 	console.log(response);
-		// });
 
 		fetch("http://localhost:3001/users/me", {
 			method: "DELETE",
 			credentials: "include",
+			body: JSON.stringify({ password: SHA256(password).toString() }),
+			headers: { "Content-Type": "application/json" },
 		}).then((response) => {
-			handleDelClose();
-			window.location.href = "http://localhost:5173/";
+			if (response.status === 204) {
+				handleDelClose();
+				window.location.href = "http://localhost:5173/";
+			} else {	
+				setErrorMessage((prevErrors) => ({
+					...prevErrors,
+					password: "Mot de passe incorrect",
+				}));
+			}
 		});
 	}
 
@@ -228,6 +232,7 @@ export default function Settings() {
 				setIs2faEnabled(true);
 				handleDfaClose();
 				setOtpCode("");
+				setLastUpdate(Date.now());
 				// setIsQrCodeShown(false);
 			} else {
 				setErrorMessage((prevErrors) => ({
@@ -241,7 +246,7 @@ export default function Settings() {
 	}
 
 	async function handle2faToggle() {
-		if (!is2faEnabled) {
+		if (!user.twofactorIsEnabled) {
 			const response = await fetch(
 				"http://localhost:3001/auth/2fa/generate",
 				{
@@ -264,18 +269,19 @@ export default function Settings() {
 			setIs2faEnabled(false);
 			// setIsQrCodeShown(false);
 			setQrCode(null);
+			handleDfaClose();
+			setLastUpdate(Date.now());
 		}
 	}
 
-
 	const handleDfaOpen = () => {
-        setDfaIsOpen(true);
+		setDfaIsOpen(true);
 		handle2faToggle();
-    };
+	};
 
-    const handleDfaClose = () => {
+	const handleDfaClose = () => {
 		setOtpCode("");
-        setDfaIsOpen(false);
+		setDfaIsOpen(false);
 		setErrorMessage((prevErrors) => ({
 			...prevErrors,
 			username: "",
@@ -283,15 +289,15 @@ export default function Settings() {
 			otp: "",
 			password: "",
 		}));
-    };
+	};
 
 	const handleDelOpen = () => {
-        setDelIsOpen(true);
-    };
+		setDelIsOpen(true);
+	};
 
-    const handleDelClose = () => {
+	const handleDelClose = () => {
 		setPassword("");
-        setDelIsOpen(false);
+		setDelIsOpen(false);
 		setErrorMessage((prevErrors) => ({
 			...prevErrors,
 			username: "",
@@ -299,7 +305,7 @@ export default function Settings() {
 			otp: "",
 			password: "",
 		}));
-    };
+	};
 
 
 	return (
@@ -343,31 +349,31 @@ export default function Settings() {
 								<div>
 									{image && (
 										<img
-											src={image}
-											alt="Nouvelle image de profil"
-											className="Settings-profile-image-playload"
-										/>
+										src={image}
+										alt="Nouvelle image de profil"
+										className="Settings-profile-image-playload"
+									/>
 									)}
 								</div>
 							)}
 						</div>
-						<div className="Settings-profile-image-buttons">
-							<input
-								type="file"
-								id="Settings-file-upload"
-								className="Settings-label"
-								accept="image/*"
-								onChange={handleFileChange}
-							/>
-							<button
-								onClick={handleUpload}
-								className="Settings-button Settings-upload-button"
-							>
-								Valider
-							</button>
-						</div>
-						{errorMessage.image && <div className="Settings-error">{errorMessage.image}</div>}
 					</div>
+					<div className="Settings-profile-image-buttons">
+						<input
+							type="file"
+							id="Settings-file-upload"
+							className="Settings-label"
+							accept="image/*"
+							onChange={handleFileChange}
+						/>
+						<button
+							onClick={handleUpload}
+							className="Settings-button Settings-upload-button"
+						>
+							Valider
+						</button>
+					</div>
+					{errorMessage.image && <div className="Settings-error">{errorMessage.image}</div>}
 
 					<div className="Settings-profile-name">
 						<label className="Settings-label">
@@ -389,20 +395,21 @@ export default function Settings() {
 						</button>
 					</div>
 				</div>
+
 				<div className="Settings-account">
 					<h2>Sécurité</h2>
 					<button
 						onClick={handleDfaOpen}
 						className="Settings-button"
 					>
-						{qrCode && !is2faEnabled
+						{qrCode && !user.twofactorIsEnabled
 							? "Regénérer le QR code"
-							: is2faEnabled
+							: user.twofactorIsEnabled
 							? "Supprimer la double authentification"
 							: "Activer la double authentification"}
 					</button>
-					<Popup isOpen={isDfaOpen} onClose={handleDfaClose}>
-						{qrCode && !is2faEnabled && (
+						<Popup isOpen={isDfaOpen}>
+						{qrCode && !user.twofactorIsEnabled && (
 							<div className="Settings-2fa-popup">
 								<h3>Scannez le QR code avec votre téléphone</h3>
 								<img src={`${qrCode.base64Qrcode}`} />
@@ -413,14 +420,15 @@ export default function Settings() {
 										type="text"
 										value={otpCode}
 										onChange={(event) => setOtpCode(event.target.value)}
-									/>
+										autoFocus
+										/>
 								</label>
 								{errorMessage.otp && <div className="Settings-error">{errorMessage.otp}</div>}
 								<div className="Settings-2fa-popup-buttons">
 									<button
 										onClick={handleDfaClose}
 										className="Settings-button"
-									>
+										>
 										Annuler
 									</button>
 									<button
@@ -434,6 +442,7 @@ export default function Settings() {
 						)}
 					</Popup>
 				</div>
+
 				<div className="Settings-delete-account">
 					<h2>Suppression du compte</h2>
 					<button
@@ -444,17 +453,29 @@ export default function Settings() {
 					</button>
 					<Popup isOpen={isDelOpen}>
 						<div className="Settings-delete-account-popup">
-							<h3>Êtes-vous sûr de vouloir supprimer votre compte ?</h3>
-							<label className="Settings-label Settings-2fa-popup-label">
+							<h3>
+								Êtes-vous sûr de vouloir supprimer votre compte ?
+							</h3>
+
+							{user.loginMethod === "LOCAL" ? (
+								<label className="Settings-label Settings-2fa-popup-label">
 									Entrez votre mot de passe:
 									<input
 										className="Settings-input"
 										type="password"
 										value={password}
-										onChange={(event) => setPassword(event.target.value)}
+										onChange={(event) =>
+											setPassword(event.target.value)
+										}
+										autoFocus
 									/>
-							</label>
-							{errorMessage.password && <div className="Settings-error">{errorMessage.password}</div>}
+								</label>
+							) : null}
+							{errorMessage.password && (
+								<div className="Settings-error">
+									{errorMessage.password}
+								</div>
+							)}
 							<div className="Settings-delete-account-popup-buttons">
 								<button
 									onClick={handleDelClose}
@@ -465,7 +486,13 @@ export default function Settings() {
 								<button
 									onClick={handleAccountDeletion}
 									className="Settings-button Settings-delete-account-button-final"
-									id={password ? "Settings-delete-button" : ""}
+									id={
+										password
+											? "Settings-delete-button"
+											: user.loginMethod != "LOCAL"
+											? "Settings-delete-button"
+											: ""
+									}
 								>
 									Supprimer
 								</button>

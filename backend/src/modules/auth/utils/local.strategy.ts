@@ -12,13 +12,13 @@ const PASSWORD_MIN = 8;
 const USERNAME_MIN = 3;
 const USERNAME_MAX = 16;
 export const RegisterSchema = Joi.object({
-	username: Joi.string().min(USERNAME_MIN).max(USERNAME_MAX).required(),
+	username: Joi.string().min(USERNAME_MIN).max(USERNAME_MAX).alphanum().required(),
 	email: Joi.string().email().required(),
 	password: Joi.string().min(PASSWORD_MIN).required(),
 });
 
 export const LoginSchema = Joi.object({
-	username: Joi.string().min(USERNAME_MIN).max(USERNAME_MAX).required(),
+	username: Joi.string().min(USERNAME_MIN).max(USERNAME_MAX).alphanum().required(),
 	password: Joi.string().min(PASSWORD_MIN).required(),
 });
 

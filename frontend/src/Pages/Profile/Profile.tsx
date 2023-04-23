@@ -33,6 +33,31 @@ function MatchList({ user, match }) {
 	const [allMatches, setAllMatches] = useState([]);
 
 	useEffect(() => {
+		const blob = document.getElementById("blob");
+		const maxBlobHeight = window.innerHeight * 0.5;
+		
+		window.onpointermove = (event: PointerEvent) => {
+			const { clientX, clientY } = event;
+			if (clientY < maxBlobHeight) {
+				blob?.animate(
+					{
+						left: `${clientX}px`,
+					},
+					{ duration: 3000, fill: "forwards" }
+				);
+			} else {
+				blob?.animate(
+					{
+						left: `${clientX}px`,
+						top: `${clientY}px`,
+					},
+					{ duration: 3000, fill: "forwards" }
+				);
+			}
+		};
+	}, []);
+
+	useEffect(() => {
 		const fetchMatches = async () => {
 			// Combine the matchWon and matchLost arrays into a single array
 			const allMatches = [...matchWon, ...matchLost];
@@ -78,43 +103,50 @@ function MatchList({ user, match }) {
 	}, [matchWon, matchLost]);
 
 	return (
-		<div className="Profile">
-			<h2>{name}</h2>
-			<img
-				src={profilePicture}
-				alt="Profile"
-				className="profile-picture"
-			/>
-			<p>Elo: {elo}</p>
-			<p>
-				Wins/Losses: {matchWon.length}/{matchLost.length}
-			</p>
-			<InitAchievements userId={user.id} showLocked={false} />
-			<h3>Matches</h3>
-			{allMatches.length === 0 ? (
-				<p>No matches played.</p>
-			) : (
-				<table className="match-table">
-					<thead>
-						<tr>
-							<th>Winner</th>
-							<th>Loser</th>
-							<th>Winner Score</th>
-							<th>Loser Score</th>
-						</tr>
-					</thead>
-					<tbody>
-						{allMatches.map((match) => (
-							<tr key={`match-${match.id}`}>
-								<td>{match.winnerName}</td>
-								<td>{match.loserName}</td>
-								<td>{match.winnerScore}</td>
-								<td>{match.looserScore}</td>
+		<div>
+			<div id="blob"></div>
+			<div id="blur"></div>
+			<div className="Profile">
+
+				<div className="Profile-header">
+					<h2>{name}</h2>
+					<img
+						src={profilePicture}
+						alt="Profile"
+						className="profile-picture"
+					/>
+					<p>Elo: {elo}</p>
+					<p>
+						Wins/Losses: {matchWon.length}/{matchLost.length}
+					</p>
+					<InitAchievements userId={user.id} showLocked={false} />
+				</div>
+				<h3>Matches</h3>
+				{allMatches.length === 0 ? (
+					<p>No matches played.</p>
+				) : (
+					<table className="match-table">
+						<thead>
+							<tr>
+								<th>Winner</th>
+								<th>Loser</th>
+								<th>Winner Score</th>
+								<th>Loser Score</th>
 							</tr>
-						))}
-					</tbody>
-				</table>
-			)}
+						</thead>
+						<tbody>
+							{allMatches.map((match) => (
+								<tr key={`match-${match.id}`}>
+									<td>{match.winnerName}</td>
+									<td>{match.loserName}</td>
+									<td>{match.winnerScore}</td>
+									<td>{match.looserScore}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				)}
+			</div>
 		</div>
 	);
 }
