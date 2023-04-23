@@ -11,7 +11,6 @@ export default function Settings() {
 
 	const [qrCode, setQrCode] = useState(null);
 	const [otpCode, setOtpCode] = useState("");
-	const [is2faEnabled, setIs2faEnabled] = useState(false);
 	const [selectedFile, setSelectedFile] = useState(null);
 	const [nameInput, setNameInput] = useState("");
 	const [errorMessage, setErrorMessage] = useState({});
@@ -149,11 +148,6 @@ export default function Settings() {
 		setErrorMessage("");
 	}
 
-	function handlePasswordChange() {
-		console.log("handlePasswordChange");
-		// TODO: Implement password change
-	}
-
 	function handleLogout() {
 		fetch("http://localhost:3001/auth/logout", {
 			method: "DELETE",
@@ -229,11 +223,9 @@ export default function Settings() {
 
 			const { secretVerified } = await response.json();
 			if (secretVerified) {
-				setIs2faEnabled(true);
 				handleDfaClose();
 				setOtpCode("");
 				setLastUpdate(Date.now());
-				// setIsQrCodeShown(false);
 			} else {
 				setErrorMessage((prevErrors) => ({
 					...prevErrors,
@@ -257,7 +249,6 @@ export default function Settings() {
 			const qrCodeData = await response.json();
 			setQrCode(qrCodeData);
 			setOtpCode("");
-			// setIsQrCodeShown(true);
 		} else {
 			const response = await fetch(
 				"http://localhost:3001/auth/2fa/disable",
@@ -266,8 +257,6 @@ export default function Settings() {
 					credentials: "include",
 				}
 			);
-			setIs2faEnabled(false);
-			// setIsQrCodeShown(false);
 			setQrCode(null);
 			handleDfaClose();
 			setLastUpdate(Date.now());
@@ -306,7 +295,6 @@ export default function Settings() {
 			password: "",
 		}));
 	};
-
 
 	return (
 		<div>
