@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "nestjs-prisma";
 
-type BooleanFunction = () => boolean;
+type BooleanFunction = (number) => Promise<boolean>;
 
 interface Achievement {
 	// icon: string,
 	name: string
 	description: string,
-	functionHandler: BooleanFunction,
+	handler: any; // BooleanFunction,
 }
 
 @Injectable()
@@ -25,27 +25,59 @@ export class AchievementService {
 
 	achievementArray: Achievement[] = [
 		{
-			name: "Achievement name 1",
-			description: "This is the description of the achievement 1",
-			functionHandler: this.handleAch1,
+			name: "Gagner son premier match",
+			description: "Tu as gagné ton premier match ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkOneWin(userId),
 		},
 		{
-			name: "Achievement name 2",
-			description: "This is the description of the achievement 2",
-			functionHandler: this.handleAch2,
+			name: "Tu as gagné 10 matchs",
+			description: "Tu as gagné 10 matchs ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkTenWin(userId),
 		},
+		{
+			name: "Tu as gagné 100 matchs",
+			description: "Tu as gagné 100 matchs ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkHundredWin(userId),
+		},
+		{
+			name: "Tu as gagné 1000 matchs",
+			description: "Tu as gagné 1000 matchs ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkThousandWin(userId),
+		},
+		{
+			name: "Tu as gagné 10000 matchs",
+			description: "Tu as gagné 10000 matchs ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkTenThousandWin(userId),
+		},
+
 	];
 
-	/* achievement.name : "Achievement name 1" */
-	private handleAch1(): boolean {
-		console.log(`handle 'Achievement name 1' called`);
-		return true;
+	private async checkWin(userId: number) {
+		return this.prisma.match.count({
+			where: {
+				winnerId: userId
+			}
+		});
 	}
 
-	/* achievement.name : "Achievement name 2" */
-	private handleAch2(): boolean {
-		console.log(`handle 'Achievement name 2' called`);
-		return true;
+	private async checkOneWin(userId: number): Promise<boolean> {
+		return await this.checkWin(userId) >= 1;
+	}
+
+	private async checkTenWin(userId: number): Promise<boolean> {
+		return await this.checkWin(userId) >= 10;
+	}
+
+	private async checkHundredWin(userId: number): Promise<boolean> {
+		return await this.checkWin(userId) >= 100;
+	}
+
+	private async checkThousandWin(userId: number): Promise<boolean> {
+		return await this.checkWin(userId) >= 1000;
+	}
+
+	private async checkTenThousandWin(userId: number): Promise<boolean> {
+		return await this.checkWin(userId) >= 10000;
 	}
 
 	/**
@@ -75,7 +107,7 @@ export class AchievementService {
 		}
 	}
 
-	async checker(userId: number, achievementName: string) {
+	async checker(userId: number) {
 		/* Check if user exists and if the user
 		*  already have the achievement
 		*/
@@ -85,18 +117,16 @@ export class AchievementService {
 		});
 		if (!user)
 			return;
-		const hasAchievement = user.achievements.some((achievement) => achievement.name === achievementName);
-		if (hasAchievement)
-			return;
 
 		/* Iterate through the array of achievement to match
 		*  the name and then call the achievement handler
 		*/
 		for (const achievement of this.achievementArray) {
-			if (achievement.name === achievementName) {
-				const give = achievement.functionHandler();
+			const hasAchievement = user.achievements.some((achs) => achs.name === achievement.name);
+			if (!hasAchievement) {
+				const give = await achievement.handler(userId);
 				/* If the implemented handler returns true, so it means we are
-				 * allowed to give the achievement to the user
+				*  allowed to give the achievement to the user
 				*/
 				if (give) {
 					await this.prisma.user.update({
@@ -104,7 +134,7 @@ export class AchievementService {
 						data: { achievements: { connect: { name: achievement.name } } }
 					});
 				}
-				break;
+
 			}
 		}
 	}
