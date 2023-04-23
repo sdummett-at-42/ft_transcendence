@@ -28,7 +28,7 @@ export class GameGateway {
     if (res !== null && this.gameService.onMatch(res.game)) 
     {
       console.log("resume game");
-      this.gameService.joinGame(this.server, res.game, socket, res.game.roomId);
+      // this.gameService.joinGame(this.server, res.game, socket, res.game.roomId);
       this.gameService.resumeGame(res.game, res.id);
     }
     else{

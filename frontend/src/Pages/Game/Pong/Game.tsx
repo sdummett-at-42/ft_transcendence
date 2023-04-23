@@ -33,7 +33,7 @@ export default function Game() {
         
         console.log(`Socket connect to /game`);
         // peut etre emit join ici si pas fait
-        // gameSocketTemp.current.emit("joinGame", id)
+        gameSocketTemp.current.emit("joinGame", id)
         console.log(`Join /game/${id}`);
 
         setBoolSocket(true);
