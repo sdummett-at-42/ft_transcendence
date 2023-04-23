@@ -73,7 +73,8 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 		// Send an email with an url containing the random string
 
 		// Create the endpoint that handle email confirmation
-		const imageData = fs.readFileSync('./avatar.svg');
+		const num = Math.floor(Math.random() * 36) + 1;
+		const imageData = fs.readFileSync(`./svg/default-profile-picture-${num}.svg`);
 		const image: { base64: string, mimeType: string } = {
 			base64: Buffer.from(imageData).toString('base64'),
 			mimeType: 'image/svg+xml'
