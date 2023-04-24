@@ -72,6 +72,7 @@ model Image {
 
 model Achievement {
 	id					Int					@id @default(autoincrement())
+	icon				String
 	name				String				@unique
 	description			String
 	users				User[]

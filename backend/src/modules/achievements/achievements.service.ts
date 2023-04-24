@@ -4,7 +4,7 @@ import { PrismaService } from "nestjs-prisma";
 type BooleanFunction = (number) => Promise<boolean>;
 
 interface Achievement {
-	// icon: string,
+	icon: string,
 	name: string
 	description: string,
 	handler: any; // BooleanFunction,
@@ -25,86 +25,103 @@ export class AchievementService {
 
 	achievementArray: Achievement[] = [
 		{
+			icon: "",
 			name: "Gagner son premier match",
 			description: "Tu as gagné ton premier match ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkOneWin(userId),
 		},
 		{
+			icon: "",
 			name: "Gagner 10 matchs",
 			description: "Tu as gagné 10 matchs ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkTenWin(userId),
 		},
 		{
+			icon: "",
 			name: "Gagner 100 matchs",
 			description: "Tu as gagné 100 matchs ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkHundredWin(userId),
 		},
 		{
+			icon: "",
 			name: "Gagner 1000 matchs",
 			description: "Tu as gagné 1000 matchs ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkThousandWin(userId),
 		},
 		{
+			icon: "",
 			name: "Gagner 10000 matchs",
 			description: "Tu as gagné 10000 matchs ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkTenThousandWin(userId),
 		},
 		{
+			icon: "",
 			name: "Ajouter un ami",
 			description: "Tu as ajouté un ami ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkFriendAdded(userId, 1),
 		},
 		{
+			icon: "",
 			name: "Ajouter 10 amis",
 			description: "Tu as ajouté 10 amis ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkFriendAdded(userId, 10),
 		},
 		{
+			icon: "",
 			name: "Ajouter 100 amis",
 			description: "Tu as ajouté 100 amis ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkFriendAdded(userId, 100),
 		},
 		{
+			icon: "",
 			name: "Activer la 2FA",
 			description: "Tu as activé la 2FA ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkIf2faEnabled(userId),
 		},
 		{
+			icon: "",
 			name: "Etre premier au classement",
 			description: "Tu es premier au classement ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkRank(userId, 1),
 		},
 		{
+			icon: "",
 			name: "Etre deuxième au classement",
 			description: "Tu es deuxième au classement ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkRank(userId, 2),
 		},
 		{
+			icon: "",
 			name: "Etre troisième au classement",
 			description: "Tu es troisième au classement ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkRank(userId, 3),
 		},
 		{
+			icon: "",
 			name: "Atteindre exactement 42 elo",
 			description: "Tu as atteint 42 elo ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkFTElo(userId),
 		},
 		{
+			icon: "",
 			name: "Atteindre 1100 elo",
 			description: "Tu as atteint 1100 elo ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkElo(userId, 1100),
 		},
 		{
+			icon: "",
 			name: "Atteindre 1500 elo",
 			description: "Tu as atteint 1500 elo ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkElo(userId, 1500),
 		},
 		{
+			icon: "",
 			name: "Atteindre 1800 elo",
 			description: "Tu as atteint 1800 elo ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkElo(userId, 1800),
 		},
 		{
+			icon: "",
 			name: "Atteindre 2000 elo",
 			description: "Tu as atteint 2000 elo ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkElo(userId, 2000),
@@ -114,16 +131,19 @@ export class AchievementService {
 		// Perfect win
 
 		// {
+			// icon: "",
 		// 	name: "Etre admin",
 		// 	description: "Tu es admin ! Bravo ! 🏆",
 		// 	handler: async (userId: number) => await this.checkIfAdmin(userId),
 		// },
 		// {
+			// icon: "",
 		// 	name: "Envoyer son premier message",
 		// 	description: "Tu as envoyé ton premier message ! Bravo ! 🏆",
 		// 	handler: async (userId: number) => await this.checkMessageSent(userId),
 		// },
 		// {
+			// icon: "",
 		// 	name: "Creer son premier channel",
 		// 	description: "Tu as créé ton premier channel ! Bravo ! 🏆",
 		// 	handler: async (userId: number) => await this.checkChannelCreated(userId),
@@ -219,10 +239,12 @@ export class AchievementService {
 			await this.prisma.achievement.upsert({
 				where: { name: achievement.name },
 				update: {
+					icon: achievement.icon,
 					name: achievement.name,
 					description: achievement.description,
 				},
 				create: {
+					icon: achievement.icon,
 					name: achievement.name,
 					description: achievement.description
 				}
