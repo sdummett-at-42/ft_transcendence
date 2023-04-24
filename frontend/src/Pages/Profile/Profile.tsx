@@ -306,12 +306,6 @@ function MatchList({ user, match }) {
 									<p className="Profile-screen-card-text">Aucun match</p>
 								) : (
 									<table className="match-table">
-										{/* <thead>
-											<tr>
-												<th>Adversaire</th>
-												<th>Score</th>
-											</tr>
-										</thead> */}
 										<tbody>
 											{allMatches.map((match) => (
 												<tr key={`match-${match.id}`} className={`Profile-match-table-tr ${(match.winnerId === id) ? "Profile-match-table-win" : "Profile-match-table-losse"}`}>

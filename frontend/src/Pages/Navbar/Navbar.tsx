@@ -1,19 +1,13 @@
 import React, { useEffect, useContext } from "react";
 import "./Navbar.css";
-import { Link, useNavigate } from "react-router-dom";
 import Logo42 from "../../assets/42_Logo.png";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserGear } from "@fortawesome/free-solid-svg-icons";
 import { UserContext } from "../../context/UserContext";
 
 export default function Navbar() {
 	const { user } = useContext(UserContext);
-	const navigate = useNavigate();
-
-	// if (!user)  {
-	// 	navigate("/");
-	// 	return;
-	// }
 
 	return (
 		user && (
@@ -70,15 +64,15 @@ export default function Navbar() {
 									color: "whitesmoke",
 								}}
 							>
-								<div id="Navbar-profil">
+								<div id="Navbar-profile">
 									<img
-										id="Navbar-profil-picture"
+										id="Navbar-profile-picture"
 										className="Navbar-logo"
 										src={user.profilePicture}
-										alt="myProfilePicture"
+										alt="Ma Photo de profil"
 										draggable="false"
 									/>
-									<div id="Navbar-profil-name">
+									<div id="Navbar-profile-name">
 										{user.name}
 									</div>
 								</div>
