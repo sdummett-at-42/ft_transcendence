@@ -20,12 +20,32 @@ export class AuthController {
 
 	@Post('/local')
 	@HttpCode(201)
-	@ApiCreatedResponse({ description: 'Successfully register/log a user.'})
-	@ApiBadRequestResponse({ description: 'There is a problem with the payload or the password is wrong.'})
-	@ApiNotFoundResponse({ description: 'The username used to log the user isn\'t found.'})
-	@ApiConflictResponse({ description: 'email or username is already in use or the login method is not the one used when registered.'})
+	@ApiCreatedResponse({ description: 'Successfully register/log a user.' })
+	@ApiBadRequestResponse({ description: 'There is a problem with the payload or the password is wrong.' })
+	@ApiNotFoundResponse({ description: 'The username used to log the user isn\'t found.' })
+	@ApiConflictResponse({ description: 'email or username is already in use or the login method is not the one used when registered.' })
 	@UseGuards(AuthGuard('local'))
-	localRegister(@Body() dto: LocalDto) {}
+	async localRegister(@Body() dto: LocalDto, @Req() req, @Res() res) {
+		const userId = req.user.id;
+		const email = req.user.email;
+		const twofactorEnabled = await this.auth.get2faIsEnabled(userId);
+
+		if (twofactorEnabled) {
+			req.logout(() => {})
+			const cookie = await this.set2faCookie(userId, email);
+			res.setHeader('Set-Cookie', cookie);
+			res.status(202)
+			res.send();
+			return;
+		}
+
+		req.logIn(req.user, (err) => {
+			if (err) {
+				console.log('Login Failed');
+			}
+			res.status(201).send(req.user);
+		});
+	}
 
 	// @Get('/local/forget')
 	// @UseGuards(AuthGuard('local'))
@@ -36,14 +56,14 @@ export class AuthController {
 	@UseGuards(AuthGuard('2fa'))
 	@Post('2fa/validate')
 	@HttpCode(200)
-	@ApiOkResponse({ description: 'User has been logged in using 2FA.'})
+	@ApiOkResponse({ description: 'User has been logged in using 2FA.' })
 	@ApiUnauthorizedResponse({ description: 'User failed to logged in.' })
 	@ApiBadRequestResponse({ description: 'The payload is malformed.' })
 	twoFactorValidate(@Body() dto: OtpDto) { return { message: `Successfully logged using 2FA` } }
 
 	@Delete('logout')
 	@HttpCode(204)
-	@ApiNoContentResponse({ description: 'User has been logged out.'})
+	@ApiNoContentResponse({ description: 'User has been logged out.' })
 	@UseGuards(AuthenticatedGuard)
 	async logout(@Request() req, @Response() res) {
 		// this.auth.disconnectUserSockets(req.user.id);
@@ -55,14 +75,14 @@ export class AuthController {
 
 	@Get('42/login')
 	@HttpCode(200)
-	@ApiOkResponse({ description: 'Attempt to log user in using 42 oauth'})
+	@ApiOkResponse({ description: 'Attempt to log user in using 42 oauth' })
 	@ApiUnauthorizedResponse({ description: 'User failed to logged in.' })
 	@UseGuards(AuthGuard('42'))
 	handle42Login() { }
 
 	@Get('/42/callback')
 	@HttpCode(200)
-	@ApiOkResponse({ description: 'If 2FA not enabled, successfully logged user, else will need to provide OTP at the /auth/2fa/validate endpoint'})
+	@ApiOkResponse({ description: 'If 2FA not enabled, successfully logged user, else will need to provide OTP at the /auth/2fa/validate endpoint' })
 	@UseGuards(AuthGuard('42'))
 	async fortyTwoCallback(@Req() req, @Res() res) {
 		const userId = req.user.id;
@@ -99,7 +119,8 @@ export class AuthController {
 	@HttpCode(200)
 	@ApiOkResponse({
 		type: SecretQrCodeEntity,
-		description: 'Generate a secret in order to enable 2FA, the user must verify at /auth/2fa/verify to effectively enabled 2fa.' })
+		description: 'Generate a secret in order to enable 2FA, the user must verify at /auth/2fa/verify to effectively enabled 2fa.'
+	})
 	@UseGuards(AuthenticatedGuard)
 	async generate(@Res() res, @Req() req) {
 		const userId = req.user.id;
@@ -165,11 +186,11 @@ export class AuthController {
 		});
 	}
 
-	private async handle2fa(userId: number, email: string, res) {
+	private async set2faCookie(userId: number, email: string) {
 		let expirationTime: number;
 		let cookieValue = await this.auth.get2faCookie(userId);
 		if (!cookieValue) {
-			cookieValue = this.auth.generate2faId({userId, email})
+			cookieValue = this.auth.generate2faId({ userId, email })
 			expirationTime = 3 * 60; // 3 min in secs
 			await this.auth.set2faCookie(userId, cookieValue as string, expirationTime);
 		}
@@ -181,6 +202,11 @@ export class AuthController {
 			maxAge: expirationTime,
 			path: "/",
 		});
+		return cookie;
+
+	}
+	private async handle2fa(userId: number, email: string, res) {
+		const cookie = await this.set2faCookie(userId, email);
 		res.setHeader('Set-Cookie', cookie);
 		res.status(302).redirect("http://localhost:5173/login/2fa")
 	}
