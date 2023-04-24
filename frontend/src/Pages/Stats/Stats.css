@@ -8,6 +8,14 @@
 	color: #fff;
 }
 
+.Stats-table-empty {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
 .Stats-table-container {
 	height: 90vh;
 	width: 100%;
@@ -22,12 +30,12 @@
 }
 
 .Stats-table {
-	height: 100%;
 	width: 99%;
 	border: 1px solid #fff;
 	border-collapse: collapse;
 	margin-bottom: 7vh;
 }
+
 
 .Stats-table-head {
 	background-color: #242424;
@@ -109,6 +117,7 @@
   }
 
   .close-button {
+	z-index: 9999;
 	position: absolute;
 	top: 10px;
 	right: 10px;

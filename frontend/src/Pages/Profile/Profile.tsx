@@ -238,8 +238,8 @@ function MatchList({ user, match }) {
 		fetchUsers();
 	}, []);
 
-	const Opponent = (match) => {
-		const opponentId = match.winnerId === id ? match.looserId : match.winnerId;
+	const Opponent = (match, me) => {
+		const opponentId = match.winnerId === me.id ? match.looserId : match.winnerId;
 		const opponent = allUsers.find((user) => user.id === opponentId);
 		return opponent;
 	}
@@ -336,15 +336,15 @@ function MatchList({ user, match }) {
 													<tr
 														key={`match-${match.id}`}
 														className={`Profile-match-table-tr ${(match.winnerId === id) ? "Profile-match-table-win" : "Profile-match-table-losse"}`}
-														onClick={() => handleUserClick(Opponent(match))}
+														onClick={() => handleUserClick(Opponent(match, user))}
 													>
 														<td >
 															<div className="Profile-match-td">
-																<img src={Opponent(match).profilePicture} alt="Photo de profil de l'adversaire" className="Profile-match-picture" />
-																<p>{Opponent(match).name}</p>
+																<img src={Opponent(match, user).profilePicture} alt="Photo de profil de l'adversaire" className="Profile-match-picture" />
+																<p>{Opponent(match, user).name}</p>
 															</div>
 														</td>
-														<td>{match.winnerScore} / {match.looserScore} </td>
+														<td>{match.winnerScore}/{match.looserScore}</td>
 													</tr>
 												))}
 											</tbody>
@@ -354,6 +354,7 @@ function MatchList({ user, match }) {
 							</div>
 						</div>
 					</div>
+				</div>
 					{selectedUser && (
 						<Popup isOpen={isOpen}>
 							<div className="Profile-screen-card-popup">
@@ -363,13 +364,41 @@ function MatchList({ user, match }) {
 										<img
 											src={selectedUser.profilePicture}
 											alt={`Photo de profil de ${selectedUser.name}`}
-											className="profile-picture"
+											className="Profile-picture"
 											draggable="false"
 										/>
                         				<div className="Profile-screen-card-user">
-                            				<span className="Profile-screen-card-title" data-value={selectedUser.name} onMouseOver={NameCascade} ref={nameRef}>{selectedUser.name}</span>
+                            				<span className="Profile-screen-card-title">{selectedUser.name}</span>
 											<p className="Profile-screen-card-text">Elo :{selectedUser.elo}</p>
                         				</div>
+										<span className="Profile-screen-card-title">Historique</span>
+										<div className="Profile-match-container Profile-screen-card-text">
+
+											{allMatches.length === 0 ? (
+												<p className="Profile-screen-card-text">Aucun match</p>
+											) : (
+												<table className="Profile-match-table-popup">
+													<tbody>
+														{allMatches.map((match) => (
+															<tr
+																key={`match-${match.id}`}
+																className={`Profile-match-table-tr ${(match.winnerId === selectedUser.id) ? "Profile-match-table-win" : "Profile-match-table-losse"}`}
+																onClick={() => handleUserClick(Opponent(match, selectedUser))}
+															>
+																<td >
+																	<div className="Profile-match-td">
+																		<img src={Opponent(match, selectedUser).profilePicture} alt="Photo de profil de l'adversaire" className="Profile-match-picture" />
+																		<p>{Opponent(match, selectedUser).name}</p>
+																	</div>
+																</td>
+																<td>{match.winnerScore}/{match.looserScore}</td>
+															</tr>
+														))}
+													</tbody>
+												</table>
+											)}
+										</div>
+										<span className="Profile-screen-card-title">Succès</span>
 									</div>
 								</div>
 							</div>
@@ -378,7 +407,6 @@ function MatchList({ user, match }) {
 							</button>
 						</Popup>
 					)}
-				</div>
 			</div>
 		</div>
 	);

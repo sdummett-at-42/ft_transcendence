@@ -39,7 +39,7 @@ function UserList({ users }) {
 		<div>
 			<div className="Stats">
 				<h1>Classement</h1>
-				<div className={`${filteredUsers.length === 0 ? "" : "Stats-table-container"}`}>
+				<div className={`${filteredUsers.length === 0 ? "Stats-table-empty" : "Stats-table-container"}`}>
 					<table className="Stats-table">
 						<thead className="Stats-table-head">
 							<tr>
@@ -54,7 +54,7 @@ function UserList({ users }) {
 							<tbody className="Stats-table-body">
 								{filteredUsers.map((user, index) => (
 									<tr
-										key={index}
+										key={user.iSettingsd}
 										onClick={() => handleUserClick(user)}
 										className={`Stats-table-row ${index === 0 ? "Stats-table-row-first" : index === 1 ? "Stats-table-row-second" : index === 2 ? "Stats-table-row-third" : ""}`}
 									>

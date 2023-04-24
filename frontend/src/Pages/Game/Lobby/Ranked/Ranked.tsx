@@ -63,7 +63,7 @@ export default function Ranked(props) {
                 <div className="screen">  
                     <div className="screen-overlay"></div>  
                     <div className="screen-content">
-                        <img src={user.profilePicture} alt="user pp" className="screen-icon" />
+                        <img src={user.profilePicture} alt="user pp" className="Profile-picture" />
                         <div className="screen-user">
                             <span className="name" data-value={user.name} onMouseOver={onMouseOver} ref={h1Ref}>{user.name}</span>
                             <p className="link" >{user.elo}</p>
