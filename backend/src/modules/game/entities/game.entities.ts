@@ -99,16 +99,22 @@ export class Player {
     // if player got relaunch bullet
     relaunchBulletBool = false;
     
-    // player 1 or 2 ?
-    // id, name etc....
+    // End game set elo win/lose
+    eloChange?: number;
 
     // constructor(id : number, name : string, elo : number, eloTab : number[]) {
     constructor(data : any) {
         console.log("construcotr PLayer, data :", data);
-        this.id = data.userId;
+        this.id = data.id;
         this.name = data.name;
         this.elo = data.elo;
         this.socket = data.socket;
+
+        console.log("id:", this.id);
+        console.log("name:", this.name);
+        console.log("elo:", this.elo);
+        console.log("socket:", this.socket);
+
         //this.socket = data.socket;
         //this.eloTab = data.elo[];
     }
@@ -197,6 +203,13 @@ export class Game {
 
     // Game finish or not
     gameDone : Boolean = false; // true = finish
+
+    // Game end
+    typewin?: Boolean; // 0 score 1 abandon
+    winner?: Player;
+    loser?: Player;
+
+
 
     constructor(id : number, p1 : Player, p2 : Player) {
         this.id = id;

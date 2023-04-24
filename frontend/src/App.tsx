@@ -67,6 +67,10 @@ function App() {
 				<Route path="/login/2fa" element={<TwoFactor />} />
 				<Route path="/*" element={<Layout children={<NotFound />} />} />
 				<Route path="/loading" element={<Loading />} />
+				<Route
+					path="/game/:id"
+					element={<Layout children={<Game />} />}
+				/>
 			</Routes>
 		</div>
 	);
