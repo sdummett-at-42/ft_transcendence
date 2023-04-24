@@ -113,17 +113,7 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
     
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('click', handleMouseClick);
-    window.addEventListener('resize', () => {
-    if (!window.ResizeObserver) {
-        console.log("Console is open, disable automatic canvas resizing");
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
-        drawCanvas();
-      } else {
-        console.log("Console is closed, enable automatic canvas resizing");
-        resizeCanvas();
-      }
-    });
+    window.addEventListener('resize', resizeCanvas);
     
     // Draw canvas content
     drawCanvas();
