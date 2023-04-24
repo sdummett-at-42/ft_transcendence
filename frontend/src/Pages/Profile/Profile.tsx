@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./Profile.css";
 import InitAchievements from "../Achievements/Achievements";
+import Popup from "../Popup/Popup";
 
 
 export default function Profile({ user }) {
@@ -29,19 +30,22 @@ export default function Profile({ user }) {
 function MatchList({ user, match }) {
 	const { name, profilePicture, elo, id } = user;
 	const { matchWon, matchLost } = match;
-
+	
 	const [allMatches, setAllMatches] = useState([]);
+	const [allUsers, setAllUsers] = useState([]);
+	const [selectedUser, setSelectedUser] = useState(null);
+	const [isOpen, setIsOpen] = useState(false);
     const nameRef = useRef<HTMLHeadingElement>(null);
 	const succesRef = useRef<HTMLHeadingElement>(null);
 	const matchRef = useRef<HTMLHeadingElement>(null);
 	const historyRef = useRef<HTMLHeadingElement>(null);
+	const circle1Ref = useRef<SVGCircleElement>(null);
+	const circle2Ref = useRef<SVGCircleElement>(null);
 	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let nameinterval = null;
 	let succesinterval = null;
 	let matchinterval = null;
 	let historyinterval = null;
-	const circle1Ref = useRef<SVGCircleElement>(null);
-  	const circle2Ref = useRef<SVGCircleElement>(null);
 
     const NameCascade = (event: React.MouseEvent<HTMLHeadingElement>) => {  
         let iteration = 0;
@@ -118,7 +122,6 @@ function MatchList({ user, match }) {
         }, 30);
     }
 
-	
 	const HistoryCascade = (event: React.MouseEvent<HTMLHeadingElement>) => {  
         let iteration = 0;
 
@@ -223,12 +226,34 @@ function MatchList({ user, match }) {
 		fetchMatches();
 	}, [matchWon, matchLost]);
 
+	useEffect(() => {
+		const fetchUsers = async () => {
+			const res = await fetch("http://localhost:3001/users", {
+				method: "GET",
+				credentials: "include",
+			});
+			const data = await res.json();
+			setAllUsers(data);
+		};
+		fetchUsers();
+	}, []);
+
 	const Opponent = (match) => {
-		if (match.winnerId === id) {
-			return match.loserName;
-		} else {
-			return match.winnerName;
-		}
+		const opponentId = match.winnerId === id ? match.looserId : match.winnerId;
+		const opponent = allUsers.find((user) => user.id === opponentId);
+		return opponent;
+	}
+
+	const handleUserClick = (user) => {
+		setSelectedUser(user);
+	};
+
+	const handleOpen = () => {
+		setIsOpen(true);
+	};
+
+	const handleClose = () => {
+		setIsOpen(false);
 	};
 
 	return (
@@ -270,8 +295,7 @@ function MatchList({ user, match }) {
 									<div className="Profile-achivement-progress" style={{width: "0%"}}></div>
 								</div>
 								<div className="Profile-screen-achivement-user">
-									<p className="Profile-screen-card-text">Achievements</p>
-									<InitAchievements userId={user.id} showLocked={false} />
+									<InitAchievements userId={user.id} showLocked={true} />
 								</div>
 							</div>
 						</div>
@@ -301,26 +325,59 @@ function MatchList({ user, match }) {
 								<span className="Profile-screen-card-title" data-value="Historique" onMouseOver={HistoryCascade} ref={historyRef}>Historique</span>
 
 								<div className="Profile-match-container Profile-screen-card-text">
-
-								{allMatches.length === 0 ? (
-									<p className="Profile-screen-card-text">Aucun match</p>
-								) : (
-									<table className="match-table">
-										<tbody>
-											{allMatches.map((match) => (
-												<tr key={`match-${match.id}`} className={`Profile-match-table-tr ${(match.winnerId === id) ? "Profile-match-table-win" : "Profile-match-table-losse"}`}>
-													<td>{Opponent(match)}</td>
-													<td>{match.winnerScore} / {match.looserScore} </td>
-												</tr>
-											))}
-										</tbody>
-									</table>
-								)}
+									{allMatches.length === 0 ? (
+										<p className="Profile-screen-card-text">Aucun match</p>
+									) : (
+										<table className="Profile-match-table">
+											<tbody>
+												{allMatches.map((match) => (
+													<tr
+														key={`match-${match.id}`}
+														className={`Profile-match-table-tr ${(match.winnerId === id) ? "Profile-match-table-win" : "Profile-match-table-losse"}`}
+														onClick={() => handleUserClick(Opponent(match))}
+													>
+														<td >
+															<div className="Profile-match-td">
+																<img src={Opponent(match).profilePicture} alt="Photo de profil de l'adversaire" className="Profile-match-picture" />
+																<p>{Opponent(match).name}</p>
+															</div>
+														</td>
+														<td>{match.winnerScore} / {match.looserScore} </td>
+													</tr>
+												))}
+											</tbody>
+										</table>
+									)}
 								</div>
 							</div>
 						</div>
 					</div>
+					{selectedUser && (
+						<Popup isOpen={isOpen}>
+							<Profile user={selectedUser} />
+							{/* onClose={() => setSelectedUser(null)} */}
+						</Popup>
+					)}
 				</div>
+			</div>
+		</div>
+	);
+}
+
+function UserPopup({ user, onClose }) {
+	const handleOutsideClick = (e) => {
+		if (e.target.classList.contains("popup")) {
+			onClose();
+		}
+	};
+
+	return (
+		<div className="popup" onClick={handleOutsideClick}>
+			<div className="popup-content">
+				<button className="close-button" onClick={onClose}>
+					X
+				</button>
+				<Profile user={user} />
 			</div>
 		</div>
 	);

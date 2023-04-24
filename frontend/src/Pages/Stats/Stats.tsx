@@ -99,15 +99,6 @@ function UserPopup({ user, onClose }) {
 					X
 				</button>
 				<Profile user={user} />
-				{/* <h2>{user.name}</h2>
-				<img
-					src={user.profilePicture}
-					alt="Profile"
-					className="profile-picture"
-				/>
-				<p>Wins: {user.matchWon.length}</p>
-				<p>Losses: {user.matchLost.length}</p> */}
-				{/* Add more details as needed */}
 			</div>
 		</div>
 	);

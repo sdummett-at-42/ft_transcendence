@@ -287,6 +287,12 @@
 	gap: 1rem;
 }
 
+.Profile-screen-achivement-user {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /* Progress bar */
 
 .Profile-achivement-progress-bar {
@@ -483,20 +489,36 @@
     margin-bottom: 3vh;
 }
 
-.match-table {
+.Profile-match-table {
     z-index: 3;
     width: 100%;
 }
 
-.match-table th,
-.match-table td {
+.Profile-match-table td {
 	padding: 10px;
 	text-align: center;
 	border: 1px solid rgb(var(--tertiary-rgb) / 50%);
 }
 
+.Profile-match-td {
+    display: flex;
+    align-items: center;
+    height: 35px;
+}
+
+.Profile-match-picture {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-right: 4rem;
+}
+
 .Profile-match-table-tr:hover {
     background-color: rgb(var(--tertiary-rgb) / 50%);
+    cursor: pointer;
 }
 
 .Profile-match-table-win {
