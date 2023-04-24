@@ -72,6 +72,8 @@ export default function LoginSelector() {
 					username: "Nom d'utilisateur incorrect",
 				}));
 				return;
+			} else if (res.status === 202) {
+				naviguate("/login/2fa");
 			}
 		});
 	}
