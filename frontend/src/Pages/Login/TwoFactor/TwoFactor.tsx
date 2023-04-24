@@ -1,10 +1,8 @@
-import { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import "./TwoFactor.css";
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect } from "react";
 import { UserContext } from "../../../context/UserContext";
 import Loading from "../../Loading/Loading";
-import "./TwoFactor.css";
 
 export default function TwoFactor() {
 	const { user, isLoading, setLastUpdate } = useContext(UserContext);

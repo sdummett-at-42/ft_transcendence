@@ -22,7 +22,6 @@ export default function Settings() {
 	
 	useEffect(() => {
 		const blob = document.getElementById("blob");
-		// const maxBlobHeight = window.innerHeight * 0.5;
 		
 		window.onpointermove = (event: PointerEvent) => {
 			const { clientX, clientY } = event;
@@ -31,7 +30,6 @@ export default function Settings() {
 				top: `${clientY}px`,
 			}, { duration: 3000, fill: "forwards" });
 		};
-		console.log(`Settings: ${JSON.stringify(user)}`)
 	}, []);
 			
 	if (!user) {

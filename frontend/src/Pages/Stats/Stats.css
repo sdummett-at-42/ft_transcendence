@@ -1,7 +1,7 @@
 /* Set default styles for the <table>, <thead>, <tbody>, <tr> and <td> elements */
 table {
-	border-collapse: collapse;
-	width: 100%;
+	/* border-collapse: collapse; */
+	/* width: 100%; */
 }
 
 thead {
@@ -11,11 +11,11 @@ thead {
 }
 
 tbody tr:nth-child(odd) {
-	background-color: #333333;
+	/* background-color: #333333; */
 }
 
 tbody tr:nth-child(even) {
-	background-color: #242424;
+	/* background-color: #242424; */
 }
 
 td {
@@ -25,7 +25,7 @@ td {
 
 /* Add hover effect for table rows */
 tbody tr:hover {
-	background-color: #555555;
+	/* background-color: #555555; */
 }
 
 /* Style profile picture */

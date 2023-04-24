@@ -42,14 +42,14 @@ export default function Navbar() {
 						style={{ textDecoration: "none", color: "whitesmoke" }}
 						id="Navbar-achivement"
 					>
-						Succes
+						Succès
 					</Link>
 					<Link
 						to="/stats"
 						style={{ textDecoration: "none", color: "whitesmoke" }}
 						id="Navbar-stats"
 					>
-						Statistique
+						Statistiques
 					</Link>
 					<Link
 						to="/chat"

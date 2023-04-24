@@ -27,7 +27,7 @@ export default function Profile({ user }) {
 // import { useState, useEffect } from "react";
 
 function MatchList({ user, match }) {
-	const { name, profilePicture, elo } = user;
+	const { name, profilePicture, elo, id } = user;
 	const { matchWon, matchLost } = match;
 
 	const [allMatches, setAllMatches] = useState([]);
@@ -36,8 +36,13 @@ function MatchList({ user, match }) {
 	const matchRef = useRef<HTMLHeadingElement>(null);
 	const historyRef = useRef<HTMLHeadingElement>(null);
 	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
     let nameinterval = null;
+	let succesinterval = null;
+	let matchinterval = null;
+	let historyinterval = null;
+	const circle1Ref = useRef<SVGCircleElement>(null);
+  	const circle2Ref = useRef<SVGCircleElement>(null);
+
     const NameCascade = (event: React.MouseEvent<HTMLHeadingElement>) => {  
         let iteration = 0;
 
@@ -63,7 +68,6 @@ function MatchList({ user, match }) {
         }, 30);
     }
 
-	let succesinterval = null;
 	const SuccesCascade = (event: React.MouseEvent<HTMLHeadingElement>) => {  
         let iteration = 0;
 
@@ -89,7 +93,6 @@ function MatchList({ user, match }) {
         }, 30);
     }
 
-	let matchinterval = null;
 	const MatchCascade = (event: React.MouseEvent<HTMLHeadingElement>) => {  
         let iteration = 0;
 
@@ -115,7 +118,7 @@ function MatchList({ user, match }) {
         }, 30);
     }
 
-	let historyinterval = null;
+	
 	const HistoryCascade = (event: React.MouseEvent<HTMLHeadingElement>) => {  
         let iteration = 0;
 
@@ -146,6 +149,22 @@ function MatchList({ user, match }) {
 
 	// circle.setAttribute("data-fill", fillPercentage.toString());
 
+	
+	const Result = () => {
+		let res = 0;
+		if (matchWon.length + matchLost.length > 0) {
+			res = Math.floor((matchWon.length / (matchWon.length + matchLost.length)) * 100);
+		}
+		return res;
+	}
+
+	useEffect(() => {
+		if (circle2Ref.current) {
+		  const percent = Result();
+		  const offset = 320 - (320 * percent) / 100;
+		  circle2Ref.current.style.strokeDashoffset = offset.toString();
+		}
+	}, []);
 
 	useEffect(() => {
 		const blob = document.getElementById("blob");
@@ -204,6 +223,14 @@ function MatchList({ user, match }) {
 		fetchMatches();
 	}, [matchWon, matchLost]);
 
+	const Opponent = (match) => {
+		if (match.winnerId === id) {
+			return match.loserName;
+		} else {
+			return match.winnerName;
+		}
+	};
+
 	return (
 		<div>
 			<div id="blob"></div>
@@ -233,6 +260,7 @@ function MatchList({ user, match }) {
 				</div>
 
 				<div className="Profile-body">
+
 					<div className="Profile-screen-achivement">
 						<div className="Profile-screen-achivement-overlay"></div>
 						<div className="Profile-screen-achivement-content">
@@ -257,45 +285,45 @@ function MatchList({ user, match }) {
 								<div className="Profile-match-progress">
     								<div className="Profile-match-progress-bar">
       									<svg className="Profile-match-svg">
-        									<circle cx="50" cy="50" r="50"></circle>
-        									<circle cx="50" cy="50" r="50"></circle>
+        									<circle cx="50" cy="50" r="50" ref={circle1Ref}></circle>
+        									<circle cx="50" cy="50" r="50" ref={circle2Ref}></circle>
       									</svg>
       									<div className="Profile-match-progress-number">
-       										<h2>0<span>%</span></h2>
+       										<h2>{Result()}<span>%</span></h2>
       									</div>
     								</div>
   								</div>
 						
-						<p className="Profile-screen-card-text">
-							{matchWon.length} V / {matchLost.length} D
-						</p>
+								<p className="Profile-screen-card-text">
+									{matchWon.length} V / {matchLost.length} D
+								</p>
 						
-						<span className="Profile-screen-card-title" data-value="Historique" onMouseOver={HistoryCascade} ref={historyRef}>Historique</span>
-						{allMatches.length === 0 ? (
-							<p>No matches played.</p>
-						) : (
-							<table className="match-table">
-								<thead>
-									<tr>
-										<th>Winner</th>
-										<th>Loser</th>
-										<th>Winner Score</th>
-										<th>Loser Score</th>
-									</tr>
-								</thead>
-								<tbody>
-									{allMatches.map((match) => (
-										<tr key={`match-${match.id}`}>
-											<td>{match.winnerName}</td>
-											<td>{match.loserName}</td>
-											<td>{match.winnerScore}</td>
-											<td>{match.looserScore}</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						)}
-						</div>
+								<span className="Profile-screen-card-title" data-value="Historique" onMouseOver={HistoryCascade} ref={historyRef}>Historique</span>
+
+								<div className="Profile-match-container Profile-screen-card-text">
+
+								{allMatches.length === 0 ? (
+									<p className="Profile-screen-card-text">Aucun match</p>
+								) : (
+									<table className="match-table">
+										{/* <thead>
+											<tr>
+												<th>Adversaire</th>
+												<th>Score</th>
+											</tr>
+										</thead> */}
+										<tbody>
+											{allMatches.map((match) => (
+												<tr key={`match-${match.id}`} className={`Profile-match-table-tr ${(match.winnerId === id) ? "Profile-match-table-win" : "Profile-match-table-losse"}`}>
+													<td>{Opponent(match)}</td>
+													<td>{match.winnerScore} / {match.looserScore} </td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								)}
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
