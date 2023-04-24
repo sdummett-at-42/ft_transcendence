@@ -30,27 +30,150 @@ export class AchievementService {
 			handler: async (userId: number) => await this.checkOneWin(userId),
 		},
 		{
-			name: "Tu as gagné 10 matchs",
+			name: "Gagner 10 matchs",
 			description: "Tu as gagné 10 matchs ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkTenWin(userId),
 		},
 		{
-			name: "Tu as gagné 100 matchs",
+			name: "Gagner 100 matchs",
 			description: "Tu as gagné 100 matchs ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkHundredWin(userId),
 		},
 		{
-			name: "Tu as gagné 1000 matchs",
+			name: "Gagner 1000 matchs",
 			description: "Tu as gagné 1000 matchs ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkThousandWin(userId),
 		},
 		{
-			name: "Tu as gagné 10000 matchs",
+			name: "Gagner 10000 matchs",
 			description: "Tu as gagné 10000 matchs ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkTenThousandWin(userId),
 		},
+		{
+			name: "Ajouter un ami",
+			description: "Tu as ajouté un ami ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkFriendAdded(userId, 1),
+		},
+		{
+			name: "Ajouter 10 amis",
+			description: "Tu as ajouté 10 amis ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkFriendAdded(userId, 10),
+		},
+		{
+			name: "Ajouter 100 amis",
+			description: "Tu as ajouté 100 amis ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkFriendAdded(userId, 100),
+		},
+		{
+			name: "Activer la 2FA",
+			description: "Tu as activé la 2FA ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkIf2faEnabled(userId),
+		},
+		{
+			name: "Etre premier au classement",
+			description: "Tu es premier au classement ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkRank(userId, 1),
+		},
+		{
+			name: "Etre deuxième au classement",
+			description: "Tu es deuxième au classement ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkRank(userId, 2),
+		},
+		{
+			name: "Etre troisième au classement",
+			description: "Tu es troisième au classement ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkRank(userId, 3),
+		},
+		{
+			name: "Atteindre exactement 42 elo",
+			description: "Tu as atteint 42 elo ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkFTElo(userId),
+		},
+		{
+			name: "Atteindre 1100 elo",
+			description: "Tu as atteint 1100 elo ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkElo(userId, 1100),
+		},
+		{
+			name: "Atteindre 1500 elo",
+			description: "Tu as atteint 1500 elo ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkElo(userId, 1500),
+		},
+		{
+			name: "Atteindre 1800 elo",
+			description: "Tu as atteint 1800 elo ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkElo(userId, 1800),
+		},
+		{
+			name: "Atteindre 2000 elo",
+			description: "Tu as atteint 2000 elo ! Bravo ! 🏆",
+			handler: async (userId: number) => await this.checkElo(userId, 2000),
+		},
+
+		// Win streak achievements
+		// Perfect win
+
+		// {
+		// 	name: "Etre admin",
+		// 	description: "Tu es admin ! Bravo ! 🏆",
+		// 	handler: async (userId: number) => await this.checkIfAdmin(userId),
+		// },
+		// {
+		// 	name: "Envoyer son premier message",
+		// 	description: "Tu as envoyé ton premier message ! Bravo ! 🏆",
+		// 	handler: async (userId: number) => await this.checkMessageSent(userId),
+		// },
+		// {
+		// 	name: "Creer son premier channel",
+		// 	description: "Tu as créé ton premier channel ! Bravo ! 🏆",
+		// 	handler: async (userId: number) => await this.checkChannelCreated(userId),
+		// },
+
 
 	];
+
+	// private async checkIfAdmin(userId: number) {
+	// Dans redis...
+	// }
+
+	// private async checkMessageSent(userId: number, nb: number) {
+	// Dans redis...
+	// }
+	// private async checkChannelCreated(userId: number) {
+	// Dans redis...
+	// }
+
+	private async checkFTElo(userId: number) {
+		const user = await this.prisma.user.findUnique({ where: { id: userId } });
+		return user.elo === 42;
+	}
+
+	private async checkElo(userId: number, elo: number) {
+		const user = await this.prisma.user.findUnique({ where: { id: userId } });
+		return user.elo >= elo;
+	}
+	private async checkRank(userId: number, rank: number) {
+		const users = await this.prisma.user.findMany({
+			select: {
+				id: true,
+				elo: true,
+			},
+			orderBy: {
+				elo: "desc"
+			}
+		});
+		return users[rank - 1].id === userId;
+	}
+
+	private async checkIf2faEnabled(userId: number) {
+		const user = await this.prisma.user.findUnique({ where: { id: userId } });
+		return user.twofactorIsEnabled;
+	}
+
+	private async checkFriendAdded(userId: number, nb: number) {
+		const user = await this.prisma.user.findUnique({ where: { id: userId } });
+		return user.friends.length >= nb;
+	}
 
 	private async checkWin(userId: number) {
 		return this.prisma.match.count({
