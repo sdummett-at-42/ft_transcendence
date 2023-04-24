@@ -24,7 +24,7 @@
 	padding-top: 3vh;
 }
 
-.profile-picture {
+.Profile-picture {
 	width: 15vmin;
 	height: 15vmin;
 	border-radius: 50%;
@@ -527,6 +527,27 @@
 
 .Profile-match-table-losse {
     background-color: rgb(var(--red-rgb) / 50%);
+}
+
+/*** -----Popup----- ***/
+
+.Profile-screen-card-popup {
+    height: 90vh;
+    width: 50vw;
+    display: flex;
+    border: 3px solid rgb(var(--primary-rgb) / 80%);
+    border-radius: 1rem;
+    background-color: rgb(var(--primary-rgb) / 15%);
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+}
+
+.Profile-screen-card-popup-content {
+	display: flex;
+    flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
 }
 
 @keyframes pan-overlay {

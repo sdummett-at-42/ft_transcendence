@@ -79,7 +79,6 @@
 }
 
 #Navbar-profile-picture {
-    z-index: 1;
     height: 5vmin;
     width: 5vmin;
     object-fit: cover;

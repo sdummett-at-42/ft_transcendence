@@ -246,6 +246,7 @@ function MatchList({ user, match }) {
 
 	const handleUserClick = (user) => {
 		setSelectedUser(user);
+		setIsOpen(true);
 	};
 
 	const handleOpen = () => {
@@ -254,6 +255,7 @@ function MatchList({ user, match }) {
 
 	const handleClose = () => {
 		setIsOpen(false);
+		setSelectedUser(null);
 	};
 
 	return (
@@ -271,7 +273,7 @@ function MatchList({ user, match }) {
 								<img
 									src={profilePicture}
 									alt={`Photo de profil de ${name}`}
-									className="profile-picture"
+									className="Profile-picture"
 									draggable="false"
 								/>
                         		<div className="Profile-screen-card-user">
@@ -354,8 +356,26 @@ function MatchList({ user, match }) {
 					</div>
 					{selectedUser && (
 						<Popup isOpen={isOpen}>
-							<Profile user={selectedUser} />
-							{/* onClose={() => setSelectedUser(null)} */}
+							<div className="Profile-screen-card-popup">
+								<div className="Profile-screen-card-overlay"></div>
+                    			<div className="Profile-screen-card-content">
+									<div className="Profile-screen-card-popup-content">
+										<img
+											src={selectedUser.profilePicture}
+											alt={`Photo de profil de ${selectedUser.name}`}
+											className="profile-picture"
+											draggable="false"
+										/>
+                        				<div className="Profile-screen-card-user">
+                            				<span className="Profile-screen-card-title" data-value={selectedUser.name} onMouseOver={NameCascade} ref={nameRef}>{selectedUser.name}</span>
+											<p className="Profile-screen-card-text">Elo :{selectedUser.elo}</p>
+                        				</div>
+									</div>
+								</div>
+							</div>
+							<button className="close-button" onClick={handleClose} >
+								X
+							</button>
 						</Popup>
 					)}
 				</div>
