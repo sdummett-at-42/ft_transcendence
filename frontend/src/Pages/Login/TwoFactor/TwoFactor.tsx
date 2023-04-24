@@ -1,13 +1,11 @@
-import { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import "./TwoFactor.css";
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect } from "react";
 import { UserContext } from "../../../context/UserContext";
 import Loading from "../../Loading/Loading";
-import "./TwoFactor.css";
 
 export default function TwoFactor() {
-	const { user, isLoading } = useContext(UserContext);
+	const { user, isLoading, setLastUpdate } = useContext(UserContext);
 	const navigate = useNavigate();
 	const [otp, setOtp] = useState("");
 	const [error, setError] = useState("");
@@ -23,6 +21,7 @@ export default function TwoFactor() {
 		})
 			.then((response) => {
 				if (response.ok) {
+					setLastUpdate(Date.now());
 					navigate("/home");
 				} else if (response.status === 401) {
 					navigate("/");
@@ -61,6 +60,7 @@ export default function TwoFactor() {
 						className={`auth-input ${isShaking ? "shake" : ""}`}
 						value={otp}
 						onChange={(event) => setOtp(event.target.value)}
+						autoFocus
 					/>
 					<button type="submit" className="auth-button">
 						Login
