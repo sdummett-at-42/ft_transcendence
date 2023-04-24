@@ -43,7 +43,7 @@ export class AuthController {
 			if (err) {
 				console.log('Login Failed');
 			}
-			res.status(200).redirect("http://localhost:5173/home")
+			res.status(201).send(req.user);
 		});
 	}
 

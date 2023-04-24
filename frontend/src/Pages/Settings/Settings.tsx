@@ -293,6 +293,20 @@ export default function Settings() {
 		}));
 	};
 
+	const handleNewNameKeyDown = (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault(); // Prevent form submission on Enter key press
+			handleNameChange(); // Click the button
+		}
+	};
+
+	const handle2faKeyDown = (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault(); // Prevent form submission on Enter key press
+			handleVerifyOtp(); // Click the button
+		}
+	};
+
 	return (
 		<div>
 			<div id="blob"></div>
@@ -371,6 +385,7 @@ export default function Settings() {
 								value={nameInput}
 								placeholder={user.name}
 								onChange={handleChange}
+								onKeyDown={handleNewNameKeyDown}
 							/>
 						</label>
 						{errorMessage.username && <div className="Settings-error">{errorMessage.username}</div>}
@@ -407,6 +422,7 @@ export default function Settings() {
 										type="text"
 										value={otpCode}
 										onChange={(event) => setOtpCode(event.target.value)}
+										onKeyDown={handle2faKeyDown}
 										autoFocus
 										/>
 								</label>
