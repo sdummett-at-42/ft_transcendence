@@ -12,7 +12,7 @@ export default function Game() {
     const id = window.location.pathname.split('/')[2];
     // const room = "game" + id;
 
-    const { user, gameSocketRef } = useContext(UserContext);
+    const { user, gameSocketRef, setLastUpdate } = useContext(UserContext);
     const [boolSocket, setBoolSocket] = useState(false);
 
     const [scoreP1, setScoreP1] = useState<number>(0);
@@ -62,6 +62,7 @@ export default function Game() {
         // data= {Bollean, p1, p2}
         // false = score  true = abandon
         setVictory([data.type , data.winner, data.loser]);
+        setLastUpdate(Date.now());
     }
 
     const handleTimer = (data) => {
