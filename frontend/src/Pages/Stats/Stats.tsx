@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Stats.css";
-import InitAchievements from "../../Achievements/Achievements";
+// import InitAchievements from "../../Achievements/Achievements";
 import Profile from "../Profile/Profile";
 
 export default function InitStats() {
@@ -37,50 +37,56 @@ function UserList({ users }) {
 
 	return (
 		<div>
-			<table>
-				<thead>
-					<tr>
-						<th>Rank</th>
-						<th>Elo</th>
-						<th>Name</th>
-						<th>Wins</th>
-						<th>Matches Played</th>
-					</tr>
-				</thead>
-				{filteredUsers.length === 0 ? null : (
-					<tbody>
-						{filteredUsers.map((user, index) => (
-							<tr
-								key={user.iSettingsd}
-								onClick={() => handleUserClick(user)}
-							>
-								<td>{index + 1}</td>
-								<td>{user.elo}</td>
-								<td>
-									<img
-										src={user.profilePicture}
-										alt="Profile"
-										className="profile-picture"
-									/>
-									{user.name}
-								</td>
-								<td>{user.matchWon.length}</td>
-								<td>
-									{user.matchWon.length +
-										user.matchLost.length}
-								</td>
+			<div className="Stats">
+				<h1>Classement</h1>
+				<div className={`${filteredUsers.length === 0 ? "Stats-table-empty" : "Stats-table-container"}`}>
+					<table className="Stats-table">
+						<thead className="Stats-table-head">
+							<tr>
+								<th>Rang</th>
+								<th>Elo</th>
+								<th>Nom</th>
+								<th>Victoires</th>
+								<th>Parties jouées</th>
 							</tr>
-						))}
-					</tbody>
-				)}
-			</table>
-			{filteredUsers.length === 0 ? <p>No users to display</p> : null}
-			{selectedUser && (
-				<UserPopup
-					user={selectedUser}
-					onClose={() => setSelectedUser(null)}
-				/>
-			)}
+						</thead>
+						{filteredUsers.length === 0 ? null : (
+							<tbody className="Stats-table-body">
+								{filteredUsers.map((user, index) => (
+									<tr
+										key={user.iSettingsd}
+										onClick={() => handleUserClick(user)}
+										className={`Stats-table-row ${index === 0 ? "Stats-table-row-first" : index === 1 ? "Stats-table-row-second" : index === 2 ? "Stats-table-row-third" : ""}`}
+									>
+										<td className="Stats-td">{index + 1}</td>
+										<td className="Stats-td">{user.elo}</td>
+										<td className="Stats-td Stats-profile">
+											<img
+												src={user.profilePicture}
+												alt="Profile"
+												className="Stats-picture"
+											/>
+											{user.name}
+										</td>
+										<td className="Stats-td">{user.matchWon.length}</td>
+										<td className="Stats-td">
+											{user.matchWon.length + user.matchLost.length}
+										</td>
+									</tr>
+								))}
+							</tbody>
+						)}
+					</table>
+					{filteredUsers.length === 0 ? <p>Aucun match</p> : (
+						selectedUser && (
+							<UserPopup
+								user={selectedUser}
+								onClose={() => setSelectedUser(null)}
+							/>
+						)
+					)}
+				</div>
+			</div>
 		</div>
 	);
 }
@@ -99,15 +105,6 @@ function UserPopup({ user, onClose }) {
 					X
 				</button>
 				<Profile user={user} />
-				{/* <h2>{user.name}</h2>
-				<img
-					src={user.profilePicture}
-					alt="Profile"
-					className="profile-picture"
-				/>
-				<p>Wins: {user.matchWon.length}</p>
-				<p>Losses: {user.matchLost.length}</p> */}
-				{/* Add more details as needed */}
 			</div>
 		</div>
 	);

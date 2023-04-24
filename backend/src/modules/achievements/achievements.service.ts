@@ -25,28 +25,28 @@ export class AchievementService {
 
 	achievementArray: Achievement[] = [
 		{
-			name: "Gagner son premier match",
+			name: "Bienvenue champion !",
 			description: "Tu as gagné ton premier match ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkOneWin(userId),
 		},
 		{
-			name: "Tu as gagné 10 matchs",
-			description: "Tu as gagné 10 matchs ! Bravo ! 🏆",
+			name: "Un début prometteur !",
+			description: "Tu as gagné 10 matchs ! 🏆",
 			handler: async (userId: number) => await this.checkTenWin(userId),
 		},
 		{
-			name: "Tu as gagné 100 matchs",
-			description: "Tu as gagné 100 matchs ! Bravo ! 🏆",
+			name: "Invincible !",
+			description: "Tu as gagné 100 matchs ! 🏆",
 			handler: async (userId: number) => await this.checkHundredWin(userId),
 		},
 		{
-			name: "Tu as gagné 1000 matchs",
-			description: "Tu as gagné 1000 matchs ! Bravo ! 🏆",
+			name: "Pense à te reposer !",
+			description: "Tu as gagné 1000 matchs ! 🏆",
 			handler: async (userId: number) => await this.checkThousandWin(userId),
 		},
 		{
-			name: "Tu as gagné 10000 matchs",
-			description: "Tu as gagné 10000 matchs ! Bravo ! 🏆",
+			name: "Millionnaire !",
+			description: "Tu as gagné 10000 matchs ! 🏆",
 			handler: async (userId: number) => await this.checkTenThousandWin(userId),
 		},
 

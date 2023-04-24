@@ -11,7 +11,6 @@ export default function Settings() {
 
 	const [qrCode, setQrCode] = useState(null);
 	const [otpCode, setOtpCode] = useState("");
-	const [is2faEnabled, setIs2faEnabled] = useState(false);
 	const [selectedFile, setSelectedFile] = useState(null);
 	const [nameInput, setNameInput] = useState("");
 	const [errorMessage, setErrorMessage] = useState({});
@@ -23,26 +22,13 @@ export default function Settings() {
 	
 	useEffect(() => {
 		const blob = document.getElementById("blob");
-		const maxBlobHeight = window.innerHeight * 0.5;
 		
 		window.onpointermove = (event: PointerEvent) => {
 			const { clientX, clientY } = event;
-			if (clientY < maxBlobHeight) {
-				blob?.animate(
-					{
-						left: `${clientX}px`,
-					},
-					{ duration: 3000, fill: "forwards" }
-				);
-			} else {
-				blob?.animate(
-					{
-						left: `${clientX}px`,
-						top: `${clientY}px`,
-					},
-					{ duration: 3000, fill: "forwards" }
-				);
-			}
+			blob?.animate({
+				left: `${clientX}px`,
+				top: `${clientY}px`,
+			}, { duration: 3000, fill: "forwards" });
 		};
 	}, []);
 			
@@ -100,6 +86,11 @@ export default function Settings() {
 		}
 	};
 
+
+	function isAlphanumeric(str: string): boolean {
+		return (/^[a-zA-Z0-9]+$/.test(str));
+	  }
+
 	function handleNameChange() {
 		setErrorMessage((prevErrors) => ({
 			...prevErrors,
@@ -118,6 +109,12 @@ export default function Settings() {
 			setErrorMessage((prevErrors) => ({
 				...prevErrors,
 				username: "Le nom doit contenir au plus 15 caractères",
+			}));
+			return;
+		} else if (!isAlphanumeric(nameInput)) {
+			setErrorMessage((prevErrors) => ({
+				...prevErrors,
+				username: "Le nom ne doit contenir que des caractères alphanumériques",
 			}));
 			return;
 		}
@@ -148,11 +145,6 @@ export default function Settings() {
 		setErrorMessage("");
 	}
 
-	function handlePasswordChange() {
-		console.log("handlePasswordChange");
-		// TODO: Implement password change
-	}
-
 	function handleLogout() {
 		fetch("http://localhost:3001/auth/logout", {
 			method: "DELETE",
@@ -175,14 +167,6 @@ export default function Settings() {
 			}));
 			return;
 		}
-		// TODO: Fetch user password from database and compare it to the one entered
-		// fetch("http://localhost:3001/users/me/password", {
-		// 	method: "PATCH",
-		// 	headers: { "Content-Type": "application/json" },
-		// 	credentials: "include",
-		// }).then((response) => {
-		// 	console.log(response);
-		// });
 
 		fetch("http://localhost:3001/users/me", {
 			method: "DELETE",
@@ -193,8 +177,11 @@ export default function Settings() {
 			if (response.status === 204) {
 				handleDelClose();
 				window.location.href = "http://localhost:5173/";
-			} else {
-				console.log(`Something went wrong with account deletion`);
+			} else {	
+				setErrorMessage((prevErrors) => ({
+					...prevErrors,
+					password: "Mot de passe incorrect",
+				}));
 			}
 		});
 	}
@@ -233,10 +220,9 @@ export default function Settings() {
 
 			const { secretVerified } = await response.json();
 			if (secretVerified) {
-				setIs2faEnabled(true);
 				handleDfaClose();
 				setOtpCode("");
-				// setIsQrCodeShown(false);
+				setLastUpdate(Date.now());
 			} else {
 				setErrorMessage((prevErrors) => ({
 					...prevErrors,
@@ -249,7 +235,7 @@ export default function Settings() {
 	}
 
 	async function handle2faToggle() {
-		if (!is2faEnabled) {
+		if (!user.twofactorIsEnabled) {
 			const response = await fetch(
 				"http://localhost:3001/auth/2fa/generate",
 				{
@@ -260,7 +246,6 @@ export default function Settings() {
 			const qrCodeData = await response.json();
 			setQrCode(qrCodeData);
 			setOtpCode("");
-			// setIsQrCodeShown(true);
 		} else {
 			const response = await fetch(
 				"http://localhost:3001/auth/2fa/disable",
@@ -269,9 +254,9 @@ export default function Settings() {
 					credentials: "include",
 				}
 			);
-			setIs2faEnabled(false);
-			// setIsQrCodeShown(false);
 			setQrCode(null);
+			handleDfaClose();
+			setLastUpdate(Date.now());
 		}
 	}
 
@@ -308,6 +293,19 @@ export default function Settings() {
 		}));
 	};
 
+	const handleNewNameKeyDown = (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault(); // Prevent form submission on Enter key press
+			handleNameChange(); // Click the button
+		}
+	};
+
+	const handle2faKeyDown = (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault(); // Prevent form submission on Enter key press
+			handleVerifyOtp(); // Click the button
+		}
+	};
 
 	return (
 		<div>
@@ -320,6 +318,7 @@ export default function Settings() {
 						src={user.profilePicture}
 						alt="Photo de profil"
 						className="Settings-profile-picture"
+						draggable="false"
 					/>
 					<p>Connecté en tant que {user.name}</p>
 					<button
@@ -350,31 +349,32 @@ export default function Settings() {
 								<div>
 									{image && (
 										<img
-											src={image}
-											alt="Nouvelle image de profil"
-											className="Settings-profile-image-playload"
-										/>
+										src={image}
+										alt="Nouvelle image de profil"
+										className="Settings-profile-image-playload"
+										draggable="false"
+									/>
 									)}
 								</div>
 							)}
 						</div>
-						<div className="Settings-profile-image-buttons">
-							<input
-								type="file"
-								id="Settings-file-upload"
-								className="Settings-label"
-								accept="image/*"
-								onChange={handleFileChange}
-							/>
-							<button
-								onClick={handleUpload}
-								className="Settings-button Settings-upload-button"
-							>
-								Valider
-							</button>
-						</div>
-						{errorMessage.image && <div className="Settings-error">{errorMessage.image}</div>}
 					</div>
+					<div className="Settings-profile-image-buttons">
+						<input
+							type="file"
+							id="Settings-file-upload"
+							className="Settings-label"
+							accept="image/*"
+							onChange={handleFileChange}
+						/>
+						<button
+							onClick={handleUpload}
+							className="Settings-button Settings-upload-button"
+						>
+							Valider
+						</button>
+					</div>
+					{errorMessage.image && <div className="Settings-error">{errorMessage.image}</div>}
 
 					<div className="Settings-profile-name">
 						<label className="Settings-label">
@@ -385,6 +385,7 @@ export default function Settings() {
 								value={nameInput}
 								placeholder={user.name}
 								onChange={handleChange}
+								onKeyDown={handleNewNameKeyDown}
 							/>
 						</label>
 						{errorMessage.username && <div className="Settings-error">{errorMessage.username}</div>}
@@ -396,23 +397,24 @@ export default function Settings() {
 						</button>
 					</div>
 				</div>
+
 				<div className="Settings-account">
 					<h2>Sécurité</h2>
 					<button
 						onClick={handleDfaOpen}
 						className="Settings-button"
 					>
-						{qrCode && !is2faEnabled
+						{qrCode && !user.twofactorIsEnabled
 							? "Regénérer le QR code"
-							: is2faEnabled
+							: user.twofactorIsEnabled
 							? "Supprimer la double authentification"
 							: "Activer la double authentification"}
 					</button>
-					<Popup isOpen={isDfaOpen} onClose={handleDfaClose}>
-						{qrCode && !is2faEnabled && (
+						<Popup isOpen={isDfaOpen}>
+						{qrCode && !user.twofactorIsEnabled && (
 							<div className="Settings-2fa-popup">
 								<h3>Scannez le QR code avec votre téléphone</h3>
-								<img src={`${qrCode.base64Qrcode}`} />
+								<img src={`${qrCode.base64Qrcode}`} draggable="false" />
 								<label className="Settings-label Settings-2fa-popup-label">
 									Entrez le code à 6 chiffres:
 									<input
@@ -420,14 +422,16 @@ export default function Settings() {
 										type="text"
 										value={otpCode}
 										onChange={(event) => setOtpCode(event.target.value)}
-									/>
+										onKeyDown={handle2faKeyDown}
+										autoFocus
+										/>
 								</label>
 								{errorMessage.otp && <div className="Settings-error">{errorMessage.otp}</div>}
 								<div className="Settings-2fa-popup-buttons">
 									<button
 										onClick={handleDfaClose}
 										className="Settings-button"
-									>
+										>
 										Annuler
 									</button>
 									<button
@@ -441,6 +445,7 @@ export default function Settings() {
 						)}
 					</Popup>
 				</div>
+
 				<div className="Settings-delete-account">
 					<h2>Suppression du compte</h2>
 					<button
@@ -451,17 +456,29 @@ export default function Settings() {
 					</button>
 					<Popup isOpen={isDelOpen}>
 						<div className="Settings-delete-account-popup">
-							<h3>Êtes-vous sûr de vouloir supprimer votre compte ?</h3>
-							<label className="Settings-label Settings-2fa-popup-label">
+							<h3>
+								Êtes-vous sûr de vouloir supprimer votre compte ?
+							</h3>
+
+							{user.loginMethod === "LOCAL" ? (
+								<label className="Settings-label Settings-2fa-popup-label">
 									Entrez votre mot de passe:
 									<input
 										className="Settings-input"
 										type="password"
 										value={password}
-										onChange={(event) => setPassword(event.target.value)}
+										onChange={(event) =>
+											setPassword(event.target.value)
+										}
+										autoFocus
 									/>
-							</label>
-							{errorMessage.password && <div className="Settings-error">{errorMessage.password}</div>}
+								</label>
+							) : null}
+							{errorMessage.password && (
+								<div className="Settings-error">
+									{errorMessage.password}
+								</div>
+							)}
 							<div className="Settings-delete-account-popup-buttons">
 								<button
 									onClick={handleDelClose}
@@ -472,7 +489,13 @@ export default function Settings() {
 								<button
 									onClick={handleAccountDeletion}
 									className="Settings-button Settings-delete-account-button-final"
-									id={password ? "Settings-delete-button" : ""}
+									id={
+										password
+											? "Settings-delete-button"
+											: user.loginMethod != "LOCAL"
+											? "Settings-delete-button"
+											: ""
+									}
 								>
 									Supprimer
 								</button>

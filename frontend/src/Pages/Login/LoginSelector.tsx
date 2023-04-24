@@ -8,7 +8,7 @@ import Loading from "../Loading/Loading";
 import { SHA256 } from "crypto-js";
 
 export default function LoginSelector() {
-	const { user, isLoading } = useContext(UserContext);
+	const { user, isLoading, setLastUpdate } = useContext(UserContext);
 	const naviguate = useNavigate();
 
 	const usernameInputRef = useRef();
@@ -57,6 +57,7 @@ export default function LoginSelector() {
 			}),
 		}).then((res) => {
 			if (res.status == 201) {
+				setLastUpdate(Date.now());
 				naviguate("/home");
 				return;
 			} else if (res.status == 400) {
@@ -72,9 +73,21 @@ export default function LoginSelector() {
 					username: "Nom d'utilisateur incorrect",
 				}));
 				return;
+			} else if (res.status === 202) {
+				naviguate("/login/2fa");
 			}
 		});
 	}
+
+	const handleUsernameKeyDown = (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault(); // Prevent form submission on Enter key press
+			const passwordInput = document.querySelector('.LoginSelector-password');
+			if (passwordInput) {
+			  passwordInput.focus(); // Focus the password input field
+			}
+		}
+	};
 
 	useEffect(() => {
 		if (!isLoading && user)
@@ -111,6 +124,7 @@ export default function LoginSelector() {
 									placeholder="Nom d'utilisateur"
 									ref={usernameInputRef}
 									required
+									onKeyDown={handleUsernameKeyDown}
 								/>
 								{errorMessages.username && (
 									<p className="LoginSelector-error">
@@ -119,13 +133,14 @@ export default function LoginSelector() {
 								)}
 
 								<input
-									className="LoginSelector-button LoginSelector-input"
+									className="LoginSelector-button LoginSelector-input LoginSelector-password"
 									type="password"
 									minLength="8"
 									placeholder="Mot de passe"
 									ref={passwordInputRef}
 									required
 									autoComplete="off"
+									onKeyDown={handleLoginForm}
 								/>
 								{errorMessages.password && (
 									<p className="LoginSelector-error">
