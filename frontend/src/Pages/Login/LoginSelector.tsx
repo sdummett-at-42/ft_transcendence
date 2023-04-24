@@ -75,6 +75,11 @@ export default function LoginSelector() {
 				return;
 			} else if (res.status === 202) {
 				naviguate("/login/2fa");
+			} else if (res.status === 409) {
+				setErrorMessages((prevErrors) => ({
+					...prevErrors,
+					password: "Vous avez utilise un autre moyen de connexion",
+				}));
 			}
 		});
 	}

@@ -49,9 +49,12 @@ export class AuthService {
 	}
 
 	async validateUser(email: string, username: string, loginMethod: LoginMethod = LoginMethod.LOCAL, profilePicUrl: string = null, accessToken: string = null) {
-		const user = await this.users.findOneUserByEmail(email);
+		let user = await this.users.findOneUserByEmail(email);
 		if (user)
 			return user;
+		user = await this.users.findOneUserByMinName(username.toLowerCase());
+		if (user && user.minName === username.toLowerCase())
+			username = await this.users.generateUsername();
 		const image = await this.downloadProfilePic(profilePicUrl, accessToken);
 		return await this.users.create(loginMethod, email, username, image);
 	}

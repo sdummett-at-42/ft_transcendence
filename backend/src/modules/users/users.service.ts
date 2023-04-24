@@ -154,7 +154,10 @@ export class UsersService {
 	updateUser(id: number, updateUserDto: UpdateUserDto) {
 		return this.prisma.user.update({
 			where: { id },
-			data: updateUserDto,
+			data: {
+				name: updateUserDto.name,
+				minName: updateUserDto.name.toLowerCase(),
+			},
 			select: {
 				id: true,
 				name: true,
