@@ -460,21 +460,25 @@ export class GameService {
         if (bullet.pos.x + bullet.r > game.field.width) {
             game.p1.score++;
             game.server.to(game.roomId).emit(EventGame.gameScore, game.p1);
-            if (game.limitScoreBool === true && game.p1.score >= game.limitScore)
-                return (this.victoryByScore(game));
+            if (game.limitScoreBool === true && game.p1.score >= game.limitScore) {
+                this.victoryByScore(game);
+                return -1;
+            }
             return 2;
         } else if (bullet.pos.x - bullet.r < 0) {
             game.p2.score++;
             game.server.to(game.roomId).emit(EventGame.gameScore, game.p2);
-            if (game.limitScoreBool === true && game.p2.score >= game.limitScore)
-                return (this.victoryByScore(game));
+            if (game.limitScoreBool === true && game.p2.score >= game.limitScore) {
+                this.victoryByScore(game);
+                return -1;
+            }
             return 1;
         } else {
             return 0;
         }
     }
 
-    private victoryByScore(game : Game) : number {
+    private async victoryByScore(game : Game) {
         // stop game
         this.stopGame(game.server, game);
 
@@ -489,7 +493,7 @@ export class GameService {
             scoreP1 = 1;
             scoreP2 = 0;
             // calcul new elo
-        this.newElo(game, scoreP1, scoreP2)
+            await this.newElo(game, scoreP1, scoreP2)
             game.winner = game.p1 ;
             game.loser = game.p2;
         }
@@ -497,7 +501,7 @@ export class GameService {
             scoreP1 = 0;
             scoreP2 = 1;
             // calcul new elo
-            this.newElo(game, scoreP1, scoreP2)
+            await this.newElo(game, scoreP1, scoreP2)
             game.winner = game.p2 ;
             game.loser = game.p1;
         }
@@ -517,7 +521,7 @@ export class GameService {
         return -1;
     }
 
-    private victoryByGiveUpLimitMax(game : Game, winner : number) : void {
+    private async victoryByGiveUpLimitMax(game : Game, winner : number) {
         // stop game
         this.stopGame(game.server, game);
 
@@ -529,17 +533,17 @@ export class GameService {
         // console.log("++++++ VICTOIRE ABANDON");
         // get who win + calcul new elo
         if (winner === 1) { // p1 win
-            this.newElo(game, 1, 0);
+            await this.newElo(game, 1, 0);
             game.winner = game.p1 ;
             game.loser = game.p2;
         }
         else if (winner === 2) { // p2 win
-            this.newElo(game, 0, 1);
+            await this.newElo(game, 0, 1);
             game.winner = game.p2;
             game.loser = game.p1 ;
         }
 
-        game.server.to(game.roomId).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser})
+        game.server.to(game.roomId).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser});
     }
 
     private async newElo(game : Game, scoreP1 : number, scoreP2 : number) {

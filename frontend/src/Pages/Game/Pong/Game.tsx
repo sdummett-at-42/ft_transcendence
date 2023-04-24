@@ -61,15 +61,8 @@ export default function Game() {
     const handleVictory = (data : {type : Boolean, winner : Player, loser : Player} ) => {
         // data= {Bollean, p1, p2}
         // false = score  true = abandon
-        // TODO
-        // victoryScore
         setVictory([data.type , data.winner, data.loser]);
     }
-
-    // const handleVictoryAbandon = (data) => {
-    //     // data= {winner : number, p1, p2}
-    //     setVictory([data.winner, data.p1, data.p2]);
-    // }
 
     const handleTimer = (data) => {
         setTimer(data);
@@ -141,7 +134,7 @@ export default function Game() {
             <div id="Scorep1">Player 1 = {scoreP1}</div>
             <div id="Scorep2">Player 2 = {scoreP2}</div>
             <div id="Victory">Victory = {JSON.stringify(victory)}</div>
-            <Canvas elements={elements} idGame={id} socketRef={gameSocketTemp}/>
+            <Canvas elements={elements} idGame={id} socketRef={gameSocketTemp} victory={victory}/>
         </div>
     )
 }

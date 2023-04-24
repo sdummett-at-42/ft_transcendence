@@ -59,11 +59,6 @@ export class LobbyService {
 
     // Delete user []
     lobbyLeaveQueue(client : Socket) {
-        //TODO
-        // what happen when client logout
-        // kick client Q if socket dc
-
-        // check if client in users[] and delete it
         const suppr = this.users.findIndex(users => users.player.id === client.data.userId); // check if in users first element us.id == cl.id
         if (suppr !== -1)
             this.users.splice(suppr, 1);

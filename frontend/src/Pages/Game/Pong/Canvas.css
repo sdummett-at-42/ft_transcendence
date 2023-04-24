@@ -1,3 +1,7 @@
+#canvasContainer {
+    height: 800;
+}
+
 .canvas {
     background-color: wheat;
     border: 2px solid red;

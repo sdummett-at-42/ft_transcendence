@@ -40,6 +40,8 @@ export class GameGateway {
         console.log("Match termine");
         const game = res.game;
         game.server.to(socket.id).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser});
+        game.server.to(socket.id).emit(EventGame.gameImage, game.shapes);
+        // game.server.to(socket.id).emit(EventGame.score, game.shapes);
       }
 
     }
