@@ -26,7 +26,9 @@ export class AuthService {
 	async findUserByEmail(email: string) {
 		return await this.users.findOneUserByEmail(email);
 	}
-
+	async findUserByMinName(minName: string) {
+		return await this.users.findOneUserByMinName(minName);
+	}
 	async createUser(loginMethod: LoginMethod, email: string, username: string, password: string, image: { base64: string, mimeType:string }) {
 		return await this.users.createWithPasswd(loginMethod, email, username, password, image);
 

@@ -43,7 +43,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null || !JSON.parse(session).passport) {
+		if (session === null || !JSON.parse(session).passport || !JSON.parse(session).passport.user) {
 			console.debug("User isn't logged in");
 			socket.emit('notConnected', { // Event to report here
 				timestamp: new Date().toISOString(),

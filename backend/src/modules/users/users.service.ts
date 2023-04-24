@@ -17,6 +17,7 @@ export class UsersService {
 			data: {
 				email,
 				name: username,
+				minName: username.toLowerCase(),
 				loginMethod,
 			},
 		});
@@ -48,6 +49,7 @@ export class UsersService {
 			data: {
 				email,
 				name: username,
+				minName: username.toLowerCase(),
 				password,
 				loginMethod,
 			},
@@ -119,6 +121,7 @@ export class UsersService {
 		if (!user || user.id === 0) throw new HttpException('User not found', 404);
 		return user;
 	}
+
 	async findMe(id: number) {
 		const user = await this.prisma.user.findUnique({
 			where: { id },
@@ -142,6 +145,10 @@ export class UsersService {
 
 	findByName(name: string) {
 		return this.prisma.user.findUnique({ where: { name } });
+	}
+
+	findOneUserByMinName(minName: string) {
+		return this.prisma.user.findUnique({ where: { minName } });
 	}
 
 	updateUser(id: number, updateUserDto: UpdateUserDto) {

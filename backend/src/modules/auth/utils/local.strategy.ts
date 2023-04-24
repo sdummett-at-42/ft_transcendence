@@ -64,7 +64,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 		if (user)
 			throw new ConflictException('Email already registered.');
 
-		user = await this.authService.findUserByName(username);
+		user = await this.authService.findUserByMinName(username.toLowerCase());
 		if (user)
 			throw new ConflictException('Username already registered.');
 
