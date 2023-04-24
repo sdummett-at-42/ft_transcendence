@@ -92,14 +92,15 @@ export default function Game() {
 
     useEffect(() => {
         const handleUnload = () => {
-          gameSocketTemp.current.disconnect();
+            setBoolSocket(false);
+            gameSocketTemp.current.disconnect();
         };
       
         window.addEventListener("beforeunload", handleUnload);
       
         return () => {
-          window.removeEventListener("beforeunload", handleUnload);
-          gameSocketTemp.current.disconnect();
+            window.removeEventListener("beforeunload", handleUnload);
+            gameSocketTemp.current.disconnect();
         };
       }, [gameSocketTemp]);
 
@@ -128,7 +129,7 @@ export default function Game() {
 
     // Cas not end ?
     return (
-        <div>
+        <div className="game-container">
             <h1>Game</h1>
             <div id="timer">Time = {timer}</div>
             <div id="Scorep1">Player 1 = {scoreP1}</div>

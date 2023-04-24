@@ -13,8 +13,7 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth * 0.8);
   const [canvasHeight, setCanvasHeight] = useState(canvasWidth * 0.5);
-  const [canvasResize, setCanvasResize] = useState(false);
-
+  //const [canvasResize, setCanvasResize] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,20 +36,71 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
 
     // Try resize
     const resizeCanvas = () => {
+      // console.log("RESIZE ");
+      // console.log("window.innerWidth:", window.innerWidth);
+
       // Set canvas size
-      setCanvasWidth(window.innerWidth * 0.8); // set canvas width to 80% of window width
-      setCanvasHeight(canvas.width * 0.5); // set canvas height to half of canvas width
+      setCanvasWidth(window.innerWidth * 1);
+      setCanvasHeight(canvasWidth / 2);
 
-      // Set canvas style size
-      canvas.style.width = canvasWidth + 'px';
-      canvas.style.height = canvasHeight + 'px';
+      // console.log(canvas);
 
-      // Scale context
-       //ctx.scale(canvasWidth / 800, canvasHeight / 400);
+      // Get distance bottom canvas et bottom page
+      const canvasBottom = window.innerHeight - canvasRef.current.getBoundingClientRect().bottom;
+      
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
 
-      // Redraw the canvas content
-      //drawCanvas();
-      //setCanvasResize(true);
+      console.log(`canvasBottom = ${canvasBottom}`);
+      console.log(`window.innerWidth = ${window.innerWidth}`);
+      console.log(`      canvasWidth = ${canvasWidth}`);
+      console.log(`window.innerHeight= ${window.innerHeight}`);
+      console.log(`     canvasHeight = ${canvasHeight}`);
+      // console.log(`canvasBottom = ${canvasBottom}`);
+      console.log(" ********************** ");
+
+      // canvasRef.current?.getBoundingClientRect().bottom; dist hautpage - canvasbas
+      // canvasRef.current?.getBoundingClientRect().top;    dist hautpage - canvashaut
+      // bottom > top
+
+      const x = 2;
+      const xprim = window.innerWidth - 2;
+      const y = canvasRef.current?.getBoundingClientRect().top;
+      const yprim = window.innerHeight - 2;
+
+      const disty = yprim - y;
+      const distx = xprim - x;
+      // haut gauche 0,y
+      // bas droite  x,disty
+
+      const largeur = distx;
+      const hauteur = disty;
+
+      if (xprim > disty * 2) { // longueur
+        setCanvasHeight(largeur / 2);
+        setCanvasWidth(largeur);
+      } else { // hauteur
+        setCanvasHeight(hauteur);
+        setCanvasWidth(hauteur * 2);
+      }
+
+      // // resize vertical
+      // if (canvasBottom < 0) {
+      //   const canvasTop = canvasRef.current.getBoundingClientRect().top;
+      //   const windowHeight = window.innerHeight;
+      //   const distanceToBottom = windowHeight - canvasTop;
+      //   setCanvasHeight(distanceToBottom);
+      //   setCanvasWidth(canvasHeight * 2);
+      // }
+
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+
+      // console.log(`${canvas.width} / ${canvas.height} = ${canvas.width / canvas.height}`);
+
+      canvas.style.width = canvas.width + 'px';
+      canvas.style.height = canvas.height + 'px';
+
     };
 
     /* *********************** *\
@@ -59,10 +109,10 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
 
     const drawCanvas = () => {
       // Clear canvas
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // if (canvasResize === true)
-      ctx.scale(canvasWidth / 800, canvasHeight / 400);
+      ctx.scale(canvas.width / 800, canvas.height / 400);
 
       // Draw elements
       for (let i = 0; i < elements.length; i++) {
@@ -116,8 +166,9 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
     window.addEventListener('resize', resizeCanvas);
     
     // Draw canvas content
+    resizeCanvas();
     drawCanvas();
-    setCanvasResize(false);
+    //setCanvasResize(false);
 
     // Clean up event listeners on unmount
     return () => {
@@ -136,9 +187,9 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
   }
 
   return (
-   // <div className="canvasContainer">
+    //<div className="canvas-container">
       <canvas className="canvas" ref={canvasRef} />
-   // </div>
+    //</div>
   );
 };
 
