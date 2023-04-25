@@ -17,6 +17,10 @@
     align-items: center;
 }
 
+.Ranked-popup-text {
+  color: #fff;
+}
+
 :root {
     --blue-rgb: 33 150 243;
     --primary-rgb: var(--blue-rgb);
@@ -27,9 +31,9 @@
   
 .screen {
     width: 500px;
+    height: 75vh;
     display: flex;
     border: 3px solid rgb(var(--primary-rgb) / 80%);
-    aspect-ratio: 10 / 16;
     border-radius: 1rem;
     background-color: rgb(var(--primary-rgb) / 15%);
     overflow: hidden;

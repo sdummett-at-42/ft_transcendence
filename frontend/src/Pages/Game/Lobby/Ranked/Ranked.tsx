@@ -45,7 +45,7 @@ export default function Ranked(props) {
 
     const handleButtonClick = () => {
         setIsOpen(true);
-        gameSocketRef.current.emit('joinQueue');
+        gameSocketRef.current.emit('joinQueue', {type: "ranked"});
     };
 
     const handleClose = () => {
@@ -73,11 +73,14 @@ export default function Ranked(props) {
                             <span aria-hidden className="cybr-btn__glitch">Trouver un match_</span>
                             <span aria-hidden className="cybr-btn__tag">R25</span>
                         </button>
-                        <Popup isOpen={isOpen}>
+                        <Popup isOpen={isOpen} isClose={handleClose}>
                             <div>
-                                <h2>En attente d'un adversaire...</h2>
-                                <button onClick={handleClose}>
-                                    Annuler
+                                <h2 className="Ranked-popup-text">En attente d'un adversaire...</h2>
+                                <button
+                                    onClick={handleClose}
+                                    className="Settings-button"
+                                >
+                                    Quitter la file d'attente
                                 </button>
                             </div>
                         </Popup>
