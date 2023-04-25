@@ -60,11 +60,11 @@ export default function Ranked(props) {
                 <h1 className="Lobby-recap">Partie classée</h1>
             </div>
             <div className="Ranked-mid-column">
-                <div className="screen">  
-                    <div className="screen-overlay"></div>  
-                    <div className="screen-content">
+                <div className="Ranked-screen">  
+                    <div className="Ranked-screen-overlay"></div>  
+                    <div className="Ranked-screen-content">
                         <img src={user.profilePicture} alt="user pp" className="Profile-picture" />
-                        <div className="screen-user">
+                        <div className="Ranked-screen-user">
                             <span className="name" data-value={user.name} onMouseOver={onMouseOver} ref={h1Ref}>{user.name}</span>
                             <p className="link" >{user.elo}</p>
                         </div>
@@ -73,8 +73,8 @@ export default function Ranked(props) {
                             <span aria-hidden className="cybr-btn__glitch">Trouver un match_</span>
                             <span aria-hidden className="cybr-btn__tag">R25</span>
                         </button>
-                        <Popup isOpen={isOpen} isClose={handleClose}>
-                            <div>
+                        <Popup isOpen={isOpen} isClose={handleClose} children={null}>
+                            <div className="Ranked-popup">
                                 <h2 className="Ranked-popup-text">En attente d'un adversaire...</h2>
                                 <button
                                     onClick={handleClose}

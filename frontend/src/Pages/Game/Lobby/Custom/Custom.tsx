@@ -60,11 +60,11 @@ export default function Custom(props) {
                 </div>
 
                 <div className="Ranked-mid-column">
-                <div className="screen">  
-                    <div className="screen-overlay"></div>  
-                    <div className="screen-content">
+                <div className="Custom-screen">  
+                    <div className="Custom-screen-overlay"></div>  
+                    <div className="Custom-screen-content">
                         <img src={user.profilePicture} alt="user pp" className="Profile-picture" />
-                        <div className="screen-user">
+                        <div className="Custom-screen-user">
                             <span className="name" data-value={user.name} onMouseOver={onMyName} ref={myNameRef}>{user.name}</span>
                             <p className="link" >{user.elo}</p>
                         </div>
@@ -74,7 +74,7 @@ export default function Custom(props) {
                             <span aria-hidden className="cybr-btn__tag">R25</span>
                         </button>
                         <Popup isOpen={isOpen} isClose={handleClose}>
-                            <div>
+                            <div className="Ranked-popup">
                                 <h2 className="Ranked-popup-text">En attente d'un adversaire...</h2>
                                 <button
                                     onClick={handleClose}

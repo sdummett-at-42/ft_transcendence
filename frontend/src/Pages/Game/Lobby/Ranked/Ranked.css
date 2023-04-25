@@ -17,19 +17,17 @@
     align-items: center;
 }
 
+.Ranked-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .Ranked-popup-text {
   color: #fff;
 }
 
-:root {
-    --blue-rgb: 33 150 243;
-    --primary-rgb: var(--blue-rgb);
-    
-    --blob-color-1: rgb(var(--blue-rgb));
-    --blob-color-2: dodgerblue;
-}
-  
-.screen {
+.Ranked-screen {
     width: 500px;
     height: 75vh;
     display: flex;
@@ -41,7 +39,7 @@
     z-index: 10;
 }
   
-.screen:after, .screen:before {
+.Ranked-screen:after, .Ranked-screen:before {
     content: "";
     height: 5px;
     position: absolute;
@@ -51,31 +49,21 @@
     background-color: rgb(var(--blue-rgb));
 }
   
-.screen:before {
+.Ranked-screen:before {
     width: 15%;
     top: 0rem;
     border-bottom-left-radius: 1rem;
     border-bottom-right-radius: 1rem;
 }
   
-.screen:after {
+.Ranked-screen:after {
     width: 25%;
     bottom: 0rem;
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
 }
   
-@keyframes pan-overlay {
-    from {
-      background-position: 0% 0%;
-    }
-    
-    to {
-      background-position: 0% -100%;
-    }
-}
-  
-.screen-overlay {    
+.Ranked-screen-overlay {    
     background: linear-gradient(
       rgb(var(--primary-rgb) / 0.15),
       rgb(var(--primary-rgb) / 0.15) 3px,
@@ -92,59 +80,7 @@
     top: 0px;
 }
   
-@keyframes pan-image {  
-    0% {
-      background-position: 36% 42%;
-      background-size: 200%;
-    }
-    
-    20% {
-      background-position: 30% 35%;
-      background-size: 200%;
-    }
-    
-    20.0001% { /* -- View 2 -- */
-      background-position: 60% 85%;
-      background-size: 500%;
-    }
-    
-    40% {
-      background-position: 49% 81%;
-      background-size: 500%;
-    }
-    
-    40.0001% { /* -- View 3 -- */
-      background-position: 80% 42%;
-      background-size: 300%;
-    }
-    
-    60% {
-      background-position: 84% 33%;
-      background-size: 300%;
-    }
-    
-    60.0001% { /* -- View 4 -- */
-      background-position: 0% 0%;
-      background-size: 300%;
-    }
-    
-    80% {
-      background-position: 15% 4%;
-      background-size: 300%;
-    }
-    
-    80.0001% { /* -- View 5 -- */
-      background-position: 80% 10%;
-      background-size: 300%;
-    }
-    
-    100% {
-      background-position: 72% 14%;
-      background-size: 300%;
-    }
-}
-  
-.screen > .screen-content {
+.Ranked-screen > .Ranked-screen-content {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -159,11 +95,11 @@
     border-radius: 0.6rem;
 }
   
-.screen > .screen-content > .screen-icon {
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-icon {
     border-radius: 35%;
 }
   
-.screen > .screen-content > .screen-user{
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user{
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -171,8 +107,8 @@
     position: relative;
 }
   
-.screen > .screen-content > .screen-user:before,
-.screen > .screen-content > .screen-user:after {
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user:before,
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user:after {
     content: "";
     position: absolute;
     top: 0px;
@@ -181,34 +117,34 @@
     box-shadow: 0px 0px 8px 3px rgb(var(--primary-rgb) / 60%);
 }
   
-.screen > .screen-content > .screen-user:before {
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user:before {
     height: 2px;
     width: 50px;
     translate: -20px -1rem;
     opacity: 0.75;
 }
   
-.screen > .screen-content > .screen-user:after {
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user:after {
     height: 3px;
     width: 30px;
     translate: 26px calc(-1rem - 0.5px);
 }
   
-.screen > .screen-content > .screen-user > :is(.name, .link) {
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user > :is(.name, .link) {
     font-family: "Source Code Pro", monospace;
     color: white; 
     text-align: center;
     text-transform: uppercase; 
 }
   
-.screen > .screen-content > .screen-user > .name {
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user > .name {
     position: relative;
     font-size: 4.25rem;
     font-weight: 400;
 }
   
-.screen > .screen-content > .screen-user > .name:before,
-.screen > .screen-content > .screen-user > .name:after {
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user > .name:before,
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user > .name:after {
     content: "";
     height: 4px;
     width: 4px;
@@ -217,17 +153,17 @@
     border-radius: 2px;
 }
   
-.screen > .screen-content > .screen-user > .name:before {
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user > .name:before {
     top: 55%;
     right: -1.5rem;
 }
   
-.screen > .screen-content > .screen-user > .name:after {
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user > .name:after {
     top: 45%;
     left: -1.5rem;  
 }
   
-.screen > .screen-content > .screen-user > .link {  
+.Ranked-screen > .Ranked-screen-content > .Ranked-screen-user > .link {  
     opacity: 0.8;
     font-size: 1.5rem;
     text-shadow: 0px 0px 0.5rem white;
@@ -237,7 +173,7 @@
 }
   
 @media(max-width: 700px) {
-    .screen {
+    .Ranked-screen {
       scale: 0.6;
       margin-bottom: 0rem;
     }
