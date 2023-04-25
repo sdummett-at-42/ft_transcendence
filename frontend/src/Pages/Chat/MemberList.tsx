@@ -32,7 +32,7 @@ export default function MemberList(props: MemberListProps) {
     };
 
     const handleUnblock = (id, name) => {
-        const confirmed = window.confirm("Are you sure you want unblock " + name + "?");
+        const confirmed = window.confirm("Voulez-vous débloquer " + name + "?");
         if (confirmed) {
             const payload = {
                 toUserId: id,
@@ -43,7 +43,7 @@ export default function MemberList(props: MemberListProps) {
     }
 
     const handleblock = (id, name) => {
-        const confirmed = window.confirm("Are you sure you want block " + name + "?");
+        const confirmed = window.confirm("Voulez-vous bloquer " + name + "?");
         if (confirmed) {
             const payload = {
                 toUserId: id,
@@ -53,18 +53,13 @@ export default function MemberList(props: MemberListProps) {
         }
     }
 
-    const handleProfile = (id, name) => {
-        const confirmed = window.confirm("Are you sure you want see " + name + "'profile?");
-    }
-
     const handlePlay = (id, name) => {
-        const confirmed = window.confirm("Are you sure you want to play Ping with " + name + "?");
+        const confirmed = window.confirm("Voulez-vous jouer au Ping avec " + name + "?");
         if (confirmed) {
 
         }
     }
     const handleProfilePopup = (user) =>{
-        console.log("here");
         setShowRoom(true);
         setPopUpId(user)
     };
@@ -115,14 +110,14 @@ export default function MemberList(props: MemberListProps) {
     }, [props.socket, handleMemberList, handleMemberUpdate, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate]);
     return (
         <div className="chat-info-header-2 clearfix">
-            <div className='chat-info-member-list'>Member List </div>
+            <div className='chat-info-member-list'>Liste des membres</div>
             <div className="row">
             {members && members.members.map((each, index) => {
             if (database) {
                 let user = database.find((user) => user.id === each);
-                let role = "member";
+                let role = "Membre";
                 if (members.owner.includes(each) == true)
-                    role = "Owner";
+                    role = "Proprio";
                 else if (members.admins.includes(each) == true)
                     role = "Admin";
                 return (
@@ -141,7 +136,7 @@ export default function MemberList(props: MemberListProps) {
                             <div className="col-lg-6"></div> :
                             (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
                                 { newblockList.includes(user.id) ? 
-                                <><button onClick={() => handleUnblock(user.id, user.name)} id={newblockList[0]} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button> </> : 
+                                <><button onClick={() => handleUnblock(user.id, user.name)} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button> </> : 
                                 <><button  onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button></>}
                                 <button className="PendingFriend-button" onClick={() => handleProfilePopup(user)}><FontAwesomeIcon icon={faUser}  size="lg" /></button>
                                 <button className="PendingFriend-button"onClick={() => handlePlay(user.id, user.name)} ><FontAwesomeIcon icon={faTableTennis}  size="lg" /></button>

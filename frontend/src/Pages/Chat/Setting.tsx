@@ -71,7 +71,7 @@ export default function Setting(props: SettingProps) {
     <div className="modal" onClick={props.onClose}>
       <div className="modal-dialog" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">Setting:{props.roomName}</h3>
+          <h3 className="modal-title">Paramètre{props.roomName}</h3>
           <span className="modal-close" onClick={props.onClose}>
             &times;
           </span>
@@ -80,25 +80,25 @@ export default function Setting(props: SettingProps) {
           <div className="modal-content">
             <div className="col-md-12 d-flex justify-content-end" onClick={handleAccessChange}><button>Change</button></div>
             <div className="form-group col-md-12">
-              <label htmlFor="inputAccess">Accessibility:</label>
+              <label htmlFor="inputAccess">Accessibilité</label>
               <select name="visibility" className="form-control" value={access} onChange={(e) => setAccess(e.target.value)}>
                 <option value="public" >Public</option>
-                <option value="private">Private</option>
+                <option value="private">Privé</option>
               </select>
             </div>
             <div className="form-group col-md-12">
-              <label htmlFor="inputPassword">Password (To remove the password, leave the field empty.)</label>
-              <input type="text" className="form-control" name="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <label htmlFor="inputPassword">Mot de passe(To remove the password, leave the field empty.)</label>
+              <input type="text" className="form-control" name="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
 
-            <div className="col-md-12 d-flex justify-content-end" onClick={handleAddAdmin}> <button>Add</button></div>
+            <div className="col-md-12 d-flex justify-content-end" onClick={handleAddAdmin}> <button>Ajouter</button></div>
             <div className="col-md-12">
-              <label htmlFor="inputAdmin">New Administrator</label>
+              <label htmlFor="inputAdmin">Nouvel administrateur</label>
               <input type="text" className="form-control" name="Name" placeholder="Name" value={admin} onChange={(e) => setAdmin(e.target.value)} />
             </div>
 
             <div className="modal-form">
-              <button onClick={props.onClose}>Close</button>
+              <button onClick={props.onClose}>Fermer</button>
             </div>
           </div>
         </div>
