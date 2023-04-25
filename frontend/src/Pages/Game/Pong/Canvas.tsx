@@ -13,7 +13,6 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth * 0.8);
   const [canvasHeight, setCanvasHeight] = useState(canvasWidth * 0.5);
-  //const [canvasResize, setCanvasResize] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -65,7 +64,7 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
 
       const x = 2;
       const xprim = window.innerWidth - 2;
-      const y = canvasRef.current?.getBoundingClientRect().top;
+      const y = canvasRef.current.getBoundingClientRect().top;
       const yprim = window.innerHeight - 2;
 
       const disty = yprim - y;
@@ -76,10 +75,10 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
       const largeur = distx;
       const hauteur = disty;
 
-      if (xprim < disty * 2) { // longueur
+      if (xprim < disty * 2) { // longueur max
         setCanvasHeight(largeur / 2);
         setCanvasWidth(largeur);
-      } else { // hauteur
+      } else { // hauteur max
         setCanvasHeight(hauteur);
         setCanvasWidth(hauteur * 2);
       }
@@ -101,6 +100,7 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
       canvas.style.width = canvas.width + 'px';
       canvas.style.height = canvas.height + 'px';
 
+      //drawCanvas();
     };
 
     /* *********************** *\
@@ -166,9 +166,9 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
     window.addEventListener('resize', resizeCanvas);
     
     // Draw canvas content
-    resizeCanvas();
-    drawCanvas();
-    //setCanvasResize(false);
+    // resizeCanvas();
+    if (!victory.length)
+      drawCanvas();
 
     // Clean up event listeners on unmount
     return () => {
@@ -184,6 +184,11 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
   if (victory.length) {
     console.log("VICTORY NO NULL");
     console.log(victory);
+    return (
+      <div>
+        <h1>Le Gagnant est bidule !</h1>
+      </div>
+    )
   }
 
   return (

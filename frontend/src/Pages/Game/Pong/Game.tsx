@@ -135,7 +135,7 @@ export default function Game() {
             <div id="timer">Time = {timer}</div>
             <div id="Scorep1">Player 1 = {scoreP1}</div>
             <div id="Scorep2">Player 2 = {scoreP2}</div>
-            <div id="Victory">Victory = {JSON.stringify(victory)}</div>
+            {/* <div id="Victory">Victory = {JSON.stringify(victory)}</div> */}
             <Canvas elements={elements} idGame={id} socketRef={gameSocketTemp} victory={victory}/>
         </div>
     )
