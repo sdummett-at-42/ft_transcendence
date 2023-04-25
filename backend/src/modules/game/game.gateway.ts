@@ -122,10 +122,10 @@ export class GameGateway {
   // button join/lave Q
 
   @SubscribeMessage(EventGame.playerJoinQueue)
-  JoinLobbyMessage(client: any) : void {
+  JoinLobbyMessage(client: any, type : string) : void {
     console.log(`Gateway : player has join queue`);
     // function check every second if 2 player match
-    this.lobbyService.lobbyJoinQueue(client);
+    this.lobbyService.lobbyJoinQueue(client, type);
   }
 
   @SubscribeMessage(EventGame.playerLeaveQueue)

@@ -19,10 +19,12 @@ export class LobbyService {
     // Ajouter liste player en jeu
 
     nbGame : number = 0;
-    users : { player : Player, threshold : number}[] = [];
+    users : { player : Player, threshold : number, type : string}[] = [];
     games : Game[] = [];
     queueInterval: NodeJS.Timeout;
 
+    // TODO
+    // inutile
     // Send html
     async lobbyRoom(res : Response) {
         // console.log("Lobby.service : Controller('game')  lobbyRoom");
@@ -32,7 +34,7 @@ export class LobbyService {
     }
 
     // Add user [] 
-    async lobbyJoinQueue(client : Socket) {
+    async lobbyJoinQueue(client : Socket, type : string) {
         // console.log("lobby join Queue:", client.data);
         //TODO check if in game (boolean)
 
@@ -51,7 +53,7 @@ export class LobbyService {
             const data = {id : client.data.userId, name : prismData.name, elo : prismData.elo , socket : client.data.socket}
 
             const player = new Player(data);
-            this.users.push({ player, threshold : this.BaseThreshold});
+            this.users.push({ player, threshold : this.BaseThreshold, type});
             if (this.queueInterval === undefined)
                 this.queueInterval = setInterval(this.intervalQueueFunction.bind(this), 500);
         }
@@ -119,62 +121,51 @@ export class LobbyService {
         // }
     }
 
-    checkMatch(p1 : {player : Player, threshold : number}, p2 : {player : Player, threshold : number}) : Boolean{
+    checkMatch(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) : Boolean{
         const diff : number = Math.abs(p1.player.elo - p2.player.elo);
         
         // check gap elo
-        if (p1.threshold >= diff && p2.threshold >= diff) {
+        if (p1.type === p2.type && p1.threshold >= diff && p2.threshold >= diff)
             return true;
-        }
         return (false)
     }
     
     // take 2 player, delete user [], generate game
     // lobbyCreateGame(player1 : Player, player2 : Player, server : Server) {
-        lobbyCreateGame(p1 : {player : Player, threshold : number}, p2 : {player : Player, threshold : number}) {
-            // kick player from users[]
-            // create game with p1 && p2, generate map && game
-            // when done
+    lobbyCreateGame(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) {
+        // kick player from users[]
+        // create game with p1 && p2, generate map && game
+        // when done
+         
+        //console.log("lobbyCreateGame:" , p1, p2);
+
+        const p1Socket = p1.player.socket;
+        const p2Socket = p2.player.socket;
             
-            //console.log("lobbyCreateGame:" , p1, p2);
+        p1.player.socket = undefined;
+        p2.player.socket = undefined;
 
-
-            // Create game and push in games[]
-            const game = new Game(this.nbGame++, p1.player, p2.player);
-            this.games.push(game);
+        // Create game and push in games[]
+        const game = new Game(this.nbGame++, p1.player, p2.player, p1.type);
+        this.games.push(game);
             
-            // remove player from Users[]
-            const remP1 = this.users.findIndex(users => users.player.id === p1.player.id);
-            if (remP1 != -1)
-                this.users.splice(remP1, 1);
-            const remP2 = this.users.findIndex(users => users.player.id === p2.player.id);
-            if (remP2 != -1)
-                this.users.splice(remP2, 1);
+        // remove player from Users[]
+        const remP1 = this.users.findIndex(users => users.player.id === p1.player.id);
+        if (remP1 != -1)
+            this.users.splice(remP1, 1);
+        const remP2 = this.users.findIndex(users => users.player.id === p2.player.id);
+        if (remP2 != -1)
+            this.users.splice(remP2, 1);
 
-            // console.log("Users after lobbycreate:", this.users.length);
+        // console.log("Users after lobbycreate:", this.users.length);
 
-            // console.log("Player 1:", p1);
-            // console.log("Player 2:", p2);
+        // console.log("Player 1:", p1);
+        // console.log("Player 2:", p2);
             
-            this.initGame(this.gameGateway.server, game);
-            // send to player join game's url
-            //this.gameGateway.server
+        this.initGame(this.gameGateway.server, game);
 
-            const p1Socket = p1.player.socket;
-            const p2Socket = p2.player.socket;
 
-            // TODO
-            // retirer car new front ne se deco pas
-            
-            p1.player.socket = undefined;
-            p2.player.socket = undefined;
-
-            this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
-
-    // const redirect = `${this.req.protocol}://${this.req.hostname}/game/${game.id}`;
-    //const redirect = "http://localhost:3001/game/" + game.id;
-    //console.log(redirect);
-    //this.response.redirect(redirect);
+        this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
     }
     // rediriger verls /game/:idGame
     // controller check si game existe
@@ -306,13 +297,6 @@ export class LobbyService {
         socket.data.name = prismData.name;
         socket.data.elo = prismData.elo;
 
-
-        // TODO
-        // check si avec https j'ai encore acces a headers.referer
-
-        // console.log("user : ", JSON.parse(session).passport.user);
-        // console.log("socket:", socket.handshake.headers.referer);
-
         console.log(socket.handshake.auth);
         if (!socket.handshake.auth.url) // lobby nothing to do
             return null;
@@ -388,8 +372,7 @@ export class LobbyService {
 
 
         // TODO
-        // check si avec https j'ai encore acces a headers.referer
-
+        // kick by socket ?
         if (!socket.handshake.auth.url) {// lobby and leave Q if player in Q
             const index = this.users.findIndex(users => users.player.id === userId);
             if (index !== -1)

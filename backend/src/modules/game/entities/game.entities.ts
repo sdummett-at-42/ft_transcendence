@@ -146,6 +146,7 @@ export class Game {
     server? : Server;
     p1 : Player;
     p2 : Player;
+    boolRanked : Boolean;
 
     field : Field; // size
     shapes : Shape[] = [];
@@ -211,7 +212,7 @@ export class Game {
 
 
 
-    constructor(id : number, p1 : Player, p2 : Player) {
+    constructor(id : number, p1 : Player, p2 : Player, type : string) {
         this.id = id;
         this.roomId = "game" + id;
         this.p1 = p1;
@@ -221,6 +222,15 @@ export class Game {
         this.p2.side = 2;
 
         this.field = new Field(400, 800);
-        // this.speed = 5;
+        if (type === "ranked") {
+            this.boolRanked = true;
+            console.log("type:",type);
+
+        }
+        else {
+            this.boolRanked = false;
+            console.log("type:",type);
+
+        }
     }
 }

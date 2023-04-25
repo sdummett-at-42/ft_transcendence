@@ -72,13 +72,17 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
       // haut gauche 0,y
       // bas droite  x,disty
 
-      const largeur = distx;
-      const hauteur = disty;
+      let largeur = distx;
+      let hauteur = disty;
 
       if (xprim < disty * 2) { // longueur max
+        if (largeur > 1000)
+          largeur = 1000;
         setCanvasHeight(largeur / 2);
         setCanvasWidth(largeur);
       } else { // hauteur max
+        if (hauteur > 500)
+          hauteur = 500;
         setCanvasHeight(hauteur);
         setCanvasWidth(hauteur * 2);
       }
@@ -187,6 +191,7 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
     return (
       <div>
         <h1>Le Gagnant est bidule !</h1>
+        <h2>{JSON.stringify(victory)}</h2>
       </div>
     )
   }

@@ -559,10 +559,11 @@ export class GameService {
 
         // TODO
         // Check if ranked game
-
-        this.updateElo(game.p1.id, game.p1.elo, game.p1.eloChange = this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
-        this.updateElo(game.p2.id, game.p2.elo, game.p2.eloChange = this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
-    
+        if (game.boolRanked) {
+            this.updateElo(game.p1.id, game.p1.elo, game.p1.eloChange = this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
+            this.updateElo(game.p2.id, game.p2.elo, game.p2.eloChange = this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
+        }
+        
         await this.updatePrisma(game, scoreP1, p1Prisma, p2Prisma);
         console.log("elo change p1", game.p1.eloChange);
         console.log("elo change p2", game.p2.eloChange);
