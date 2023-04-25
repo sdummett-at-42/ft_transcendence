@@ -38,22 +38,7 @@ export default function RoomJoin(props: RoomJoinProps) {
   }, [])
 
   const handleNotJoined = useCallback((payload) => {
-    if (payload.message.includes("exists")) {
-      alert("This room doesn't exists.");
-    } else if (payload.message.includes("invited")) {
-      alert("You are not invited!");
-    } else if (payload.message.includes("banned")) {
-      alert("You are banned :(");
-    } else if (payload.message.includes("already")) {
-      alert("You are already a member in this room.");
-    } else if (payload.message.includes("full")) {
-      alert("Sorry, this room is full.");
-    } else if (payload.message.includes("incorrect")) {
-      alert("Password is incorrect! try again!");
-      setPassword("");
-    } else {
-      console.log("there is anotehr reason for notjoinedroom?");
-    }
+      alert(payload.message);
   }, [])
 
   useEffect(() => {

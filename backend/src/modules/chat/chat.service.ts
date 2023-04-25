@@ -105,6 +105,7 @@ export class ChatService {
 			banned: banned,
 			muted: muted,
 		}
+		console.log("memberList", memberList)
 		return memberList;
 	}
 	//test
@@ -115,7 +116,7 @@ export class ChatService {
 			socket.emit(Event.roomNotCreated, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `Room ${dto.roomName} already exists.`
+				message: `La salle ${dto.roomName} existe déjà.`
 			});
 			return;
 		}
@@ -138,7 +139,7 @@ export class ChatService {
 		socket.emit(Event.roomCreated, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
-			message: `Room ${dto.roomName} has been created.`
+			message: `La salle ${dto.roomName} a été créée.`
 		});
 
 		let vis = await this.redis.getRoomVisibility(dto.roomName);
@@ -221,7 +222,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +userId,
 			timestamp: new Date().toISOString(),
-			message: ` has left the room ${dto.roomName}.`
+			message: ` a quitté la salle ${dto.roomName}.`
 		});
 	}
 
@@ -234,7 +235,7 @@ export class ChatService {
 			socket.emit(Event.roomNotJoined, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `Room ${dto.roomName} doesn't exists.`
+				message: `La salle ${dto.roomName} n'existe pas.`
 			});
 			return;
 		}
@@ -247,7 +248,7 @@ export class ChatService {
 				socket.emit(Event.roomNotJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),
-					message: `You are not invited in room ${dto.roomName}.`
+					message: `Vous n'êtes pas invité dans la salle de ${dto.roomName}.`
 				});
 				return;
 			}
@@ -259,7 +260,7 @@ export class ChatService {
 			socket.emit(Event.roomNotJoined, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You are banned from room ${dto.roomName}.`,
+				message: `Vous êtes banni de la salle ${dto.roomName}.`,
 			});
 			return;
 		}
@@ -270,7 +271,7 @@ export class ChatService {
 			socket.emit(Event.roomNotJoined, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You are already member in room ${dto.roomName}.`,
+				message: `Vous êtes déjà membre de la salle ${dto.roomName}.`,
 			});
 			return;
 		}
@@ -280,7 +281,7 @@ export class ChatService {
 			socket.emit(Event.roomNotJoined, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `Room ${dto.roomName} is full.`,
+				message: `La salle ${dto.roomName} est pleine.`,
 			});
 			return;
 		}
@@ -291,7 +292,7 @@ export class ChatService {
 			socket.emit(Event.roomNotJoined, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `Password is incorrect for room ${dto.roomName}.`
+				message: `Le mot de passe est incorrect.`
 			});
 			return;
 		}
@@ -329,7 +330,7 @@ export class ChatService {
 			userId: -1,
 			targetId: +socket.data.userId,
 			timestamp: new Date().toISOString(),
-			message: ` has joined the room ${dto.roomName}.`
+			message: ` a rejoint la salle ${dto.roomName}.`
 		});
 
 		server.to(dto.roomName).emit(Event.memberListUpdated, {
@@ -347,7 +348,7 @@ export class ChatService {
 			socket.emit(Event.userNotKicked, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `Room ${dto.roomName} doesn't exists.`
+				message: `La salle ${dto.roomName} n'existe pas.`
 			});
 			return;
 		}
@@ -357,7 +358,7 @@ export class ChatService {
 			socket.emit(Event.userNotKicked, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You are not member in room ${dto.roomName}.`,
+				message: `vous n'est pas membre de la salle ${dto.roomName}.`,
 			});
 			return;
 		}
@@ -367,7 +368,7 @@ export class ChatService {
 			socket.emit(Event.userNotKicked, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You cannot kick yourself.`
+				message: `Vous ne pouvez pas vous expulsez.`
 			});
 			return;
 		}
@@ -389,7 +390,7 @@ export class ChatService {
 			socket.emit(Event.userNotKicked, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `User ${dto.userId} is not member in room ${dto.roomName}.`
+				message: `l'utilisateur n'est pas membre de la salle ${dto.roomName}.`
 			});
 			return;
 		}
@@ -399,7 +400,7 @@ export class ChatService {
 			socket.emit(Event.userNotKicked, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You cannot kick another admin in room ${dto.roomName}.`
+				message: `Vous ne pouvez pas exclure un autre administrateur du salon ${dto.roomName}.`
 			});
 			return;
 		}
@@ -409,7 +410,7 @@ export class ChatService {
 			socket.emit(Event.userNotKicked, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `You cannot kick the owner of the room ${dto.roomName}.`
+				message: `Vous ne pouvez pas expulser le proprio de la salle ${dto.roomName}.`
 			});
 			return;
 		}

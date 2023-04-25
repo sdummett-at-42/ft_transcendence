@@ -24,7 +24,6 @@ export default function ProfilePopup(props: ProfilePopupProps) {
   //  props.onClose()
   }, []);
   useEffect(()=>{
-    console.log(props);
   },[props]);
 
   return props.isVisible == false? null: (

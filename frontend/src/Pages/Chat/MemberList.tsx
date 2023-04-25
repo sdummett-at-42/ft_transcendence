@@ -111,8 +111,9 @@ export default function MemberList(props: MemberListProps) {
     return (
         <div className="chat-info-header-2 clearfix">
             <div className='chat-info-member-list'>Liste des membres</div>
-            <div className="row">
+            <div className="row">{console.log("members:", props.roomName, members)}
             {members && members.members.map((each, index) => {
+                console.log("each", each)
             if (database) {
                 let user = database.find((user) => user.id === each);
                 let role = "Membre";
