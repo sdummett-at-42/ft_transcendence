@@ -22,7 +22,7 @@ export class GameGateway {
   async handleConnection(socket: Socket) {
     console.log('New client connected game:', socket.id);
 
-    console.log("client handshake", socket.handshake.auth.url);
+    // console.log("client handshake", socket.handshake.auth.url);
 
     const res = await this.lobbyService.handleConnection(socket);
     if (res !== null && this.gameService.onMatch(res.game)) 
