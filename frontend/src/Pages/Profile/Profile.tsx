@@ -3,7 +3,6 @@ import "./Profile.css";
 import InitAchievements from "../Achievements/Achievements";
 import Popup from "../Popup/Popup";
 
-
 export default function Profile({ user }) {
 	const [matchData, setMatchData] = useState(null);
 	
@@ -21,6 +20,8 @@ export default function Profile({ user }) {
 	if (!user || !matchData) {
 		return <p>Loading...</p>;
 	}
+
+	console.log("matchData", matchData);
 	
 	return <DisplayProfile user={user} match={matchData} />;
 }
@@ -29,6 +30,7 @@ function DisplayProfile({ user, match }) {
 	const { name, profilePicture, elo, id } = user;
 	const { matchWon, matchLost } = match;
 	
+	// Handle machs, achievements and users data
 	const [allMatches, setAllMatches] = useState([]);
 	const [achievements, setAchievements] = useState([]);
 	const [allUsers, setAllUsers] = useState([]);
@@ -336,7 +338,7 @@ function DisplayProfile({ user, match }) {
 								/>
                         		<div className="Profile-screen-card-user">
                             		<span className="Profile-screen-card-title" data-value={name} onMouseOver={NameCascade} ref={nameRef}>{name}</span>
-									<p className="Profile-screen-card-text">Elo :{elo}</p>
+									<p className="Profile-screen-card-text">Niveau :{elo}</p>
                         		</div>
 							</div>
 						</div>
@@ -424,56 +426,53 @@ function DisplayProfile({ user, match }) {
 
 				{ /* Popup */ }
 				{selectedUser && (
-						<Popup isOpen={isOpen}>
-							<div className="Profile-screen-card-popup">
-								<div className="Profile-screen-card-overlay"></div>
-                    			<div className="Profile-screen-card-content">
-									<div className="Profile-screen-card-popup-content">
-										<img
-											src={selectedUser.profilePicture}
-											alt={`Photo de profil de ${selectedUser.name}`}
-											className="Profile-picture"
-											draggable="false"
-										/>
-                        				<div className="Profile-screen-card-user">
-                            				<span className="Profile-screen-card-title">{selectedUser.name}</span>
-											<p className="Profile-screen-card-text">Elo :{selectedUser.elo}</p>
-                        				</div>
-										<span className="Profile-screen-card-title">Historique</span>
-										<div className="Profile-match-container Profile-screen-card-text">
-
-											{allMatches.length === 0 ? (
-												<p className="Profile-screen-card-text">Aucun match</p>
-											) : (
-												<table className="Profile-match-table-popup">
-													<tbody>
-														{allMatches.map((match) => (
-															<tr
-																key={`match-${match.id}`}
-																className={`Profile-match-table-tr ${(match.winnerId === selectedUser.id) ? "Profile-match-table-win" : "Profile-match-table-losse"}`}
-																onClick={() => handleUserClick(Opponent(match, selectedUser))}
-															>
-																<td >
-																	<div className="Profile-match-td">
-																		<img src={Opponent(match, selectedUser).profilePicture} alt="Photo de profil de l'adversaire" className="Profile-match-picture" />
-																		<p>{Opponent(match, selectedUser).name}</p>
-																	</div>
-																</td>
-																<td>{match.winnerScore}/{match.looserScore}</td>
-															</tr>
-														))}
-													</tbody>
-												</table>
-											)}
-										</div>
-										<span className="Profile-screen-card-title">Succès</span>
+					<Popup isOpen={isOpen} isClose={handleClose}>
+						<div className="Profile-screen-card-popup">
+							<div className="Profile-screen-card-overlay"></div>
+                    		<div className="Profile-screen-card-content">
+								<div className="Profile-screen-card-popup-content">
+									<img
+										src={selectedUser.profilePicture}
+										alt={`Photo de profil de ${selectedUser.name}`}
+										className="Profile-picture"
+										draggable="false"
+									/>
+                       				<div className="Profile-screen-card-user">
+                           				<span className="Profile-screen-card-title">{selectedUser.name}</span>
+										<p className="Profile-screen-card-text">Niveau :{selectedUser.elo}</p>
+                       				</div>
+									<span className="Profile-screen-card-title">Historique</span>
+									<div className="Profile-match-container Profile-screen-card-text">
+										{allMatches.length === 0 ? (
+											<p className="Profile-screen-card-text">Aucun match</p>
+										) : (
+											<table className="Profile-match-table-popup">
+												<tbody>
+													{allMatches.map((match) => (
+														<tr
+															key={`match-${match.id}`}
+															className={`Profile-match-table-tr ${(match.winnerId === selectedUser.id) ? "Profile-match-table-win" : "Profile-match-table-losse"}`}
+															onClick={() => handleUserClick(Opponent(match, selectedUser))}
+														>
+															<td >
+																<div className="Profile-match-td">
+																	<img src={Opponent(match, selectedUser).profilePicture} alt="Photo de profil de l'adversaire" className="Profile-match-picture" />
+																	<p>{Opponent(match, selectedUser).name}</p>
+																</div>
+															</td>
+															<td>{match.winnerScore}/{match.looserScore}</td>
+														</tr>
+													))}
+												</tbody>
+											</table>
+										)}
 									</div>
+									<span className="Profile-screen-card-title">Succès</span>
+									<InitAchievements userId={selectedUser.id} showLocked={false} />
 								</div>
 							</div>
-							<button className="close-button" onClick={handleClose} >
-								X
-							</button>
-						</Popup>
+						</div>
+					</Popup>
 				)}
 			</div>
 		</div>

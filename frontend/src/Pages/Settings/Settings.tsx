@@ -9,17 +9,27 @@ import { SHA256 } from "crypto-js";
 export default function Settings() {
 	const { user, setLastUpdate } = useContext(UserContext);
 
+	// Handle name change
+	const [nameInput, setNameInput] = useState("");
+	
+	// Handle image change
+	const [loading, setLoading] = useState(true);
+	const [image, setImage] = useState("");
+	const [selectedFile, setSelectedFile] = useState(null);
+
+	// Handle 2FA
 	const [qrCode, setQrCode] = useState(null);
 	const [otpCode, setOtpCode] = useState("");
-	const [selectedFile, setSelectedFile] = useState(null);
-	const [nameInput, setNameInput] = useState("");
-	const [errorMessage, setErrorMessage] = useState({});
-	const [image, setImage] = useState("");
-	const [loading, setLoading] = useState(true);
 	const [isDfaOpen, setDfaIsOpen] = useState(false);
+	
+	// Handle delete account
 	const [isDelOpen, setDelIsOpen] = useState(false);
 	const [password, setPassword] = useState("");
 	
+	// Handle errors
+	const [errorMessage, setErrorMessage] = useState({});
+	
+	// Handle blob movement
 	useEffect(() => {
 		const blob = document.getElementById("blob");
 		
@@ -31,11 +41,22 @@ export default function Settings() {
 			}, { duration: 3000, fill: "forwards" });
 		};
 	}, []);
-			
-	if (!user) {
-		return <p>Loading...</p>;
-	}
 
+	// Handle user logout
+	function handleLogout() {
+		fetch("http://localhost:3001/auth/logout", {
+			method: "DELETE",
+			credentials: "include",
+		})
+			.then(() => {
+				window.location.href = "http://localhost:5173/";
+			})
+			.catch((error) => {
+				console.error("Logout failed: ", error);
+			});
+	};
+
+	// Handle image preview
 	const handleFileChange = (event) => {
 		setLoading(true);
 		const file = event.target.files[0];
@@ -48,6 +69,7 @@ export default function Settings() {
 		};
 	};
 
+	// Handle image upload
 	const handleUpload = async () => {
 		setErrorMessage((prevErrors) => ({
 			...prevErrors,
@@ -86,11 +108,26 @@ export default function Settings() {
 		}
 	};
 
-
+	// Return true if str is alphanumeric
 	function isAlphanumeric(str: string): boolean {
 		return (/^[a-zA-Z0-9]+$/.test(str));
-	  }
+	};
 
+	// Handle name change
+	function handleChange(event) {
+		setNameInput(event.target.value);
+		setErrorMessage("");
+	};
+
+	// Handle name update on Enter key press
+	const handleNewNameKeyDown = (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault();
+			handleNameChange();
+		}
+	};
+
+	// Handle name update
 	function handleNameChange() {
 		setErrorMessage((prevErrors) => ({
 			...prevErrors,
@@ -138,54 +175,44 @@ export default function Settings() {
 			.catch((error) => {
 				console.error(error);
 			});
-	}
+	};
 
-	function handleChange(event) {
-		setNameInput(event.target.value);
-		setErrorMessage("");
-	}
-
-	function handleLogout() {
-		fetch("http://localhost:3001/auth/logout", {
-			method: "DELETE",
-			credentials: "include",
-		})
-			.then(() => {
-				window.location.href = "http://localhost:5173/";
-			})
-			.catch((error) => {
-				console.error("Logout failed: ", error);
-			});
-	}
-
-	function handleAccountDeletion() {
-		console.log(`user login method is ${user.loginMethod}`);
-		if (password.length === 0 && user.loginMethod === "LOCAL") {
-			setErrorMessage((prevErrors) => ({
-				...prevErrors,
-				password: "Veuillez entrer votre mot de passe",
-			}));
-			return;
+	// Handle 2fa popup compared to user's 2fa status
+	async function handle2faToggle() {
+		if (!user.twofactorIsEnabled) {
+			const response = await fetch(
+				"http://localhost:3001/auth/2fa/generate",
+				{
+					method: "GET",
+					credentials: "include",
+				}
+			);
+			const qrCodeData = await response.json();
+			setQrCode(qrCodeData);
+			setOtpCode("");
+			setDfaIsOpen(true);
+		} else {
+			const response = await fetch(
+				"http://localhost:3001/auth/2fa/disable",
+				{
+					method: "PATCH",
+					credentials: "include",
+				}
+			);
+			setQrCode(null);
+			setLastUpdate(Date.now());
 		}
+	};
 
-		fetch("http://localhost:3001/users/me", {
-			method: "DELETE",
-			credentials: "include",
-			body: JSON.stringify({ password: SHA256(password).toString() }),
-			headers: { "Content-Type": "application/json" },
-		}).then((response) => {
-			if (response.status === 204) {
-				handleDelClose();
-				window.location.href = "http://localhost:5173/";
-			} else {	
-				setErrorMessage((prevErrors) => ({
-					...prevErrors,
-					password: "Mot de passe incorrect",
-				}));
-			}
-		});
-	}
+	// Handle 2fa code when user presses Enter key
+	const handle2faKeyDown = (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault(); // Prevent form submission on Enter key press
+			handleVerifyOtp(); // Click the button
+		}
+	};
 
+	// Handle 2fa code verification
 	async function handleVerifyOtp() {
 		setErrorMessage((prevErrors) => ({
 			...prevErrors,
@@ -232,39 +259,9 @@ export default function Settings() {
 		} catch (error) {
 			console.error(error);
 		}
-	}
-
-	async function handle2faToggle() {
-		if (!user.twofactorIsEnabled) {
-			const response = await fetch(
-				"http://localhost:3001/auth/2fa/generate",
-				{
-					method: "GET",
-					credentials: "include",
-				}
-			);
-			const qrCodeData = await response.json();
-			setQrCode(qrCodeData);
-			setOtpCode("");
-		} else {
-			const response = await fetch(
-				"http://localhost:3001/auth/2fa/disable",
-				{
-					method: "PATCH",
-					credentials: "include",
-				}
-			);
-			setQrCode(null);
-			handleDfaClose();
-			setLastUpdate(Date.now());
-		}
-	}
-
-	const handleDfaOpen = () => {
-		setDfaIsOpen(true);
-		handle2faToggle();
 	};
 
+	// Handle 2fa popup close
 	const handleDfaClose = () => {
 		setOtpCode("");
 		setDfaIsOpen(false);
@@ -277,10 +274,41 @@ export default function Settings() {
 		}));
 	};
 
+	// Handle delete account
+	function handleAccountDeletion() {
+		console.log(`user login method is ${user.loginMethod}`);
+		if (password.length === 0 && user.loginMethod === "LOCAL") {
+			setErrorMessage((prevErrors) => ({
+				...prevErrors,
+				password: "Veuillez entrer votre mot de passe",
+			}));
+			return;
+		}
+
+		fetch("http://localhost:3001/users/me", {
+			method: "DELETE",
+			credentials: "include",
+			body: JSON.stringify({ password: SHA256(password).toString() }),
+			headers: { "Content-Type": "application/json" },
+		}).then((response) => {
+			if (response.status === 204) {
+				handleDelClose();
+				window.location.href = "http://localhost:5173/";
+			} else {	
+				setErrorMessage((prevErrors) => ({
+					...prevErrors,
+					password: "Mot de passe incorrect",
+				}));
+			}
+		});
+	};
+
+	// Handle delete account popup open
 	const handleDelOpen = () => {
 		setDelIsOpen(true);
 	};
 
+	// Handle delete account popup close
 	const handleDelClose = () => {
 		setPassword("");
 		setDelIsOpen(false);
@@ -293,18 +321,8 @@ export default function Settings() {
 		}));
 	};
 
-	const handleNewNameKeyDown = (event) => {
-		if (event.key === "Enter") {
-			event.preventDefault(); // Prevent form submission on Enter key press
-			handleNameChange(); // Click the button
-		}
-	};
-
-	const handle2faKeyDown = (event) => {
-		if (event.key === "Enter") {
-			event.preventDefault(); // Prevent form submission on Enter key press
-			handleVerifyOtp(); // Click the button
-		}
+	if (!user) {
+		return <p>Loading...</p>;
 	};
 
 	return (
@@ -401,7 +419,7 @@ export default function Settings() {
 				<div className="Settings-account">
 					<h2>Sécurité</h2>
 					<button
-						onClick={handleDfaOpen}
+						onClick={handle2faToggle}
 						className="Settings-button"
 					>
 						{qrCode && !user.twofactorIsEnabled
@@ -410,7 +428,7 @@ export default function Settings() {
 							? "Supprimer la double authentification"
 							: "Activer la double authentification"}
 					</button>
-						<Popup isOpen={isDfaOpen}>
+						<Popup isOpen={isDfaOpen} isClose={handleDfaClose}>
 						{qrCode && !user.twofactorIsEnabled && (
 							<div className="Settings-2fa-popup">
 								<h3>Scannez le QR code avec votre téléphone</h3>
@@ -454,7 +472,7 @@ export default function Settings() {
 					>
 						Supprimer mon compte
 					</button>
-					<Popup isOpen={isDelOpen}>
+					<Popup isOpen={isDelOpen} isClose={handleDelClose}>
 						<div className="Settings-delete-account-popup">
 							<h3>
 								Êtes-vous sûr de vouloir supprimer votre compte ?

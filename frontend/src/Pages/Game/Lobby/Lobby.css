@@ -11,6 +11,8 @@
 }
 
 .Lobby-title {
+    display: flex;
+    justify-content: center;
     padding-top: 2rem;
     font-weight: bold;
     color: whitesmoke;
@@ -69,7 +71,7 @@
     padding: 6px;
     box-sizing: border-box;
     position: absolute;
-    bottom: 157px;
+    bottom: 167px;
     background-color: rgba(27,27,27, 0.5);
     color: whitesmoke;
 }
