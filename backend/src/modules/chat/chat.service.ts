@@ -1457,8 +1457,8 @@ export class ChatService {
 	}
 	
 	async getBlockList(socket,dto, server){
-		console.log("here??")
-		const userId: string = socket.data.userId.toString();
+		console.log("here??", socket.data.userId)
+		const userId: number = socket.data.userId;
 		const usersblocked = await this.redis.getUsersBlocked(+userId);
 		socket.emit(Event.userBlockList, {
 			list: usersblocked,

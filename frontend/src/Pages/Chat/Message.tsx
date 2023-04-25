@@ -227,9 +227,9 @@ export default function Message(props: MessageProps) {
         <div className="chat-header clearfix">
           <div className="chat-about">
             <div className="row">
-              <div className="chat-with col-6">Chatroom : {props.roomName}</div>
+              <div className="chat-with col-6">Salon : {props.roomName}</div>
             </div>
-            {props.ifDM ? null : <button className="col-2" onClick={handleQuit}>Leave</button>}
+            {props.ifDM ? null : <button className="col-2" onClick={handleQuit}>Quitter</button>}
           </div>
         </div>
 
@@ -240,9 +240,9 @@ export default function Message(props: MessageProps) {
 
         </div>
         <div className="chat-message clearfix">
-          <textarea name="message-to-send" id="message-to-send" placeholder="Type your message" rows="2" value={message} onChange={handleMessageChange}></textarea>
-          <button onClick={handleSendMessage} >Send</button>
+          <textarea name="message-to-send" id="message-to-send" placeholder="Tapez votre message" rows="2" value={message} onChange={handleMessageChange}></textarea>
+          <button onClick={handleSendMessage} >Envoyer</button>
         </div>
-      </div>) : <div className="chat col-lg-6"> <h4>Choose a room to view messages</h4></div>
+      </div>) : <div className="chat col-lg-6"> <h4>Choisissez un salon pour afficher les messages</h4></div>
   );
 }

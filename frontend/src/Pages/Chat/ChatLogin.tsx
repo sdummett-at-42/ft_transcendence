@@ -166,7 +166,6 @@ export default function ChatLogin() {
       <div className="Chat-body">
         <div className="containerhere containerhere clearfix">
           <div className="row">
-            |||{typeof(blockList)}
             <DatabaseContext.Provider value={database}>
               <ChatroomList socket={socket} onListClick={handleListClick} onUpdate={handleChildComponentUpdate} ifDM={ifDM} toDMID={toDMID} ifDataReady={ifDataReady} />
               <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={userId} onUpdate={handleChildComponentUpdate} />

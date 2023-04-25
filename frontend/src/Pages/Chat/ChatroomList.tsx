@@ -173,13 +173,13 @@ export default function ChatroomList(props: ChatroomListProps) {
     <div className="people-list col-lg-3">
       <div className="row">
         <div className="search col-lg-6">
-          <button onClick={() => { setShowAddRoom(true); }} >New Room</button>
+          <button onClick={() => { setShowAddRoom(true);}} >Nouveau Salon</button>
           <RoomCreate isVisible={showAddRoom}
             onClose={() => setShowAddRoom(false)}
             socket={props.socket} />
         </div>
         <div className="search col-lg-6">
-          <button onClick={() => { setShowJoinRoom(true); }}>Join Room</button>
+          <button onClick={() => { setShowJoinRoom(true); }}>Rejoindre le salon</button>
           <RoomJoin isVisible={showJoinRoom}
             footer={<button>Cancel</button>}
             onClose={() => setShowJoinRoom(false)}
@@ -191,7 +191,7 @@ export default function ChatroomList(props: ChatroomListProps) {
               <img src={group} />
               <div className="about"> <div className="name" >{room.roomName} </div>
                 <div className="status">
-                  <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Private"} {room.protected ? <FontAwesomeIcon icon={faLock} /> : null}
+                  <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Privé"} {room.protected ? <FontAwesomeIcon icon={faLock} /> : null}
                 </div>
               </div>
             </li>

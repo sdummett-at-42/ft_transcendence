@@ -238,7 +238,7 @@ export default function RoomDetail(props: RoomDetailProps) {
           ) : null}
           {/* (props.ifDM) ? <Profile socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />  */}
         </div>
-        <h1>||{props.blockList}||</h1>
+        {/* <h1>||{props.blockList}||</h1> */}
         <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList}/>
       </div>) : ((props.ifDM) ? <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} /> : <div className="chatinfo" ></div>)
   );

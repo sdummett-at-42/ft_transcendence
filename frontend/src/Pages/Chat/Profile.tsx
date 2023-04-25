@@ -19,7 +19,7 @@ export default function Profile(props: ProfileProps) {
     const [user, setUser] = useState({});
 
     const handleUnblock = (id, name) => {
-        const confirmed = window.confirm("Are you sure you want unblock " + name + "?");
+        const confirmed = window.confirm("Êtes-vous sûr de vouloir débloquer " + name + "?");
         if (confirmed) {
             const payload = {
                 toUserId: id,
@@ -30,7 +30,7 @@ export default function Profile(props: ProfileProps) {
     }
 
     const handleblock = (id, name) => {
-        const confirmed = window.confirm("Are you sure you want block " + name + "?");
+        const confirmed = window.confirm("Êtes-vous sûr de vouloir bloquer " + name + "?");
         if (confirmed) {
             const payload = {
                 toUserId: id,
@@ -80,7 +80,7 @@ export default function Profile(props: ProfileProps) {
         user? 
         <div className="chatinfo">
             <div className="chat-info-header clearfix">
-            <div className='chat-info-title'>Profile:{user.name} </div>
+            <div className='chat-info-title'>Profil:{user.name} </div>
             <button className="PendingFriend-button"><FontAwesomeIcon icon={faLock} onClick={() => handleblock(user.id, user.name)} size="lg" /></button>
             <button className="PendingFriend-button"><FontAwesomeIcon icon={faUnlock} onClick={() => handleUnblock(user.id, user.name)} size="lg" /></button>
             <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => handleProfile(user.id, user.name)} size="lg" /></button>

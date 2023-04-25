@@ -21,8 +21,9 @@ export default function MemberList(props: MemberListProps) {
     const database = useContext(DatabaseContext);
     const [item, setItem] = useState([]);
     const [members, setMembers] = useState({ owner: '', admins: [], members: [] });
-    const [showProfile, setShowProfile] = useState(false)
+    const [showRoom, setShowRoom] = useState(false);
     const [newblockList, setNewBlockList] = useState([]);
+    const [popUpId, setPopUpId] = useState({});
 
     const hanldeDM = (id, name) => {
         console.log("handleDM", id, name)
@@ -62,48 +63,15 @@ export default function MemberList(props: MemberListProps) {
 
         }
     }
+    const handleProfilePopup = (user) =>{
+        console.log("here");
+        setShowRoom(true);
+        setPopUpId(user)
+    };
     useEffect(()=>{
         console.log(props.blockList);
         setNewBlockList(props.blockList);
     },[])
-    useEffect(() => {
-        //  console.log("members2222", members);
-        setItem(members.members.map((each, index) => {
-            if (database) {
-                let user = database.find((user) => user.id === each);
-                let role = "member";
-                if (members.owner.includes(each) == true)
-                    role = "Owner";
-                else if (members.admins.includes(each) == true)
-                    role = "Admin";
-                return (
-                    <React.Fragment key={index}>
-                        <li className="clearfix col-lg-6 " key={each}>
-                            <img src={user.profilePicture} alt="avatar" />
-                            <div className="about">
-                                <div className="name ">{user.name}</div>
-                                <div className="status">
-                                    <i className="fa fa-circle online"></i> {role}</div>
-                            </div>
-                        </li>
-
-                        {/* play, message, block */}
-                        {user.id === props.UserId ?
-                            <div className="col-lg-6"></div> :
-                            (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
-                                { newblockList.includes(user.id) ? 
-                                <><button id={newblockList[0]} ><FontAwesomeIcon icon={faUnlock} onClick={() => handleUnblock(user.id, user.name)} size="lg" /></button> </> : 
-                                <><button ><FontAwesomeIcon icon={faLock} onClick={() => handleblock(user.id, user.name)} size="lg" /></button></>}
-                                <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => { setShowProfile(true) }} size="lg" /></button>
-                                <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} onClick={() => handlePlay(user.id, user.name)} size="lg" /></button>
-                                <ProfilePopup isVisible={showProfile} onClose={() => setShowProfile(false)} UserId={props.UserId} />
-                            </div>)}
-                    </React.Fragment>
-                );
-            }
-        })
-        );
-    }, [database, members]);
     const handleMemberList = useCallback((payload) => {
         setMembers(payload.memberList);
     }, [members])
@@ -149,9 +117,42 @@ export default function MemberList(props: MemberListProps) {
         <div className="chat-info-header-2 clearfix">
             <div className='chat-info-member-list'>Member List </div>
             <div className="row">
-                {item} 
+            {members && members.members.map((each, index) => {
+            if (database) {
+                let user = database.find((user) => user.id === each);
+                let role = "member";
+                if (members.owner.includes(each) == true)
+                    role = "Owner";
+                else if (members.admins.includes(each) == true)
+                    role = "Admin";
+                return (
+                    <>
+                        <li className="clearfix col-lg-6 " key={each}>
+                            <img className="img-member" src={user.profilePicture} alt="avatar" />
+                            <div className="about">
+                                <div className="name ">{user.name}</div>
+                                <div className="status">
+                                    <i className="fa fa-circle online"></i> {role}</div>
+                            </div>
+                        </li>
+
+                        {/* play, message, block */}
+                        {user.id === props.UserId ?
+                            <div className="col-lg-6"></div> :
+                            (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
+                                { newblockList.includes(user.id) ? 
+                                <><button onClick={() => handleUnblock(user.id, user.name)} id={newblockList[0]} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button> </> : 
+                                <><button  onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button></>}
+                                <button className="PendingFriend-button" onClick={() => handleProfilePopup(user)}><FontAwesomeIcon icon={faUser}  size="lg" /></button>
+                                <button className="PendingFriend-button"onClick={() => handlePlay(user.id, user.name)} ><FontAwesomeIcon icon={faTableTennis}  size="lg" /></button>
+                                
+                            </div>)}
+                    </>
+                );
+            }
+        })}
+                <ProfilePopup isVisible={showRoom}  onClose={() => setShowRoom(false)} user={popUpId}/>
             </div>
-            <h1>||||{newblockList}|||||</h1>
         </div>
     );
 };
