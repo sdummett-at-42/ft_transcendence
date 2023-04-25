@@ -267,29 +267,15 @@
 	gap: 1rem;
 }
 
+.Profile-succes-button:hover {
+    cursor: pointer;
+}
+
 .Profile-screen-achivement-user {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
-/* Progress bar */
-
-.Profile-achivement-progress-bar {
-	width: 75%;
-	height: 20px;
-	background-color: #ddd;
-	border-radius: 10px;
-	overflow: hidden;
-}
-  
-.Profile-achivement-progress {
-	height: 100%;
-	background-color: green;
-	transition: width 0.5s ease-in-out;
-	transform-origin: 0 0;
-}
-
 
 /*** -----Profile-screen-match----- ***/
 

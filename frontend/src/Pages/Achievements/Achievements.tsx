@@ -47,11 +47,23 @@ export default function InitAchievements({ userId, showLocked }) {
 		}
 		fetchAchievements(userId);
 	}, [userId]);
-
+	
 	return <Achievements achievements={achievements} showLocked={showLocked} />;
 }
 
 function Achievements({ achievements, showLocked }) {
+	
+	console.log(achievements);
+	const Result = () => {
+		let res = 0;
+		const achievementsDone = achievements.filter(achievement => achievement.unlocked === true);
+		if (achievementsDone.length > 0) {
+			res = Math.floor((achievementsDone.length / (achievements.length)) * 100);
+		}
+		console.log(res);
+		return res;
+	}
+
 	return (
 		<div className="achievements">
 			{achievements.map(
@@ -68,7 +80,7 @@ function Achievements({ achievements, showLocked }) {
 							<div
 								className="achievement-badge"
 								style={{
-									// backgroundImage: `url(${achievement.icon})`,
+									backgroundImage: `url(${achievement.icon})`,
 								}}
 							></div>
 							<div className="achievement-details">
