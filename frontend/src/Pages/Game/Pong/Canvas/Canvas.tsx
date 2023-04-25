@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Canvas.css';
-import { Shape } from '../../../../../backend/src/modules/game/entities/game.entities';
+import { Shape } from '../../../../../../backend/src/modules/game/entities/game.entities';
 
 interface CanvasProps {
   elements: Shape[];
   idGame: string;
   socketRef: React.MutableRefObject<SocketIOClient.Socket>;
-  victory: any[];
+  // victory: any[];
 }
 
-const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory }) => {
+const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth * 0.8);
   const [canvasHeight, setCanvasHeight] = useState(canvasWidth * 0.5);
@@ -167,34 +167,33 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
     
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('click', handleMouseClick);
-    window.addEventListener('resize', resizeCanvas);
+    // window.addEventListener('resize', resizeCanvas);
     
-    // Draw canvas content
-    // resizeCanvas();
-    if (!victory.length)
-      drawCanvas();
+    // Resize Canvas and draw content
+    resizeCanvas();
+    drawCanvas();
 
     // Clean up event listeners on unmount
     return () => {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('click', handleMouseClick);
-      window.removeEventListener('resize', resizeCanvas);
+      // window.removeEventListener('resize', resizeCanvas);
     };
   }, [elements, idGame, socketRef]);
 
 
   
   // si la partie a ete fini (gagner par un joueur)
-  if (victory.length) {
-    console.log("VICTORY NO NULL");
-    console.log(victory);
-    return (
-      <div>
-        <h1>Le Gagnant est bidule !</h1>
-        <h2>{JSON.stringify(victory)}</h2>
-      </div>
-    )
-  }
+  // if (victory.length) {
+  //   console.log("VICTORY NO NULL");
+  //   console.log(victory);
+  //   return (
+  //     <div>
+  //       <h1>Le Gagnant est bidule !</h1>
+  //       <h2>{JSON.stringify(victory)}</h2>
+  //     </div>
+  //   )
+  // }
 
   return (
     //<div className="canvas-container">
