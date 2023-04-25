@@ -52,17 +52,6 @@ export default function InitAchievements({ userId, showLocked }) {
 }
 
 function Achievements({ achievements, showLocked }) {
-	
-	console.log(achievements);
-	const Result = () => {
-		let res = 0;
-		const achievementsDone = achievements.filter(achievement => achievement.unlocked === true);
-		if (achievementsDone.length > 0) {
-			res = Math.floor((achievementsDone.length / (achievements.length)) * 100);
-		}
-		console.log(res);
-		return res;
-	}
 
 	return (
 		<div className="achievements">

@@ -6,48 +6,56 @@ import Popup from "../Popup/Popup";
 
 export default function Profile({ user }) {
 	const [matchData, setMatchData] = useState(null);
-
+	
 	useEffect(() => {
 		// Fetch match data
 		fetch(`http://localhost:3001/users/${user.id}/matchs`, {
 			method: "GET",
 			credentials: "include",
 		})
-			.then((response) => response.json())
-			.then((data) => setMatchData(data))
-			.catch((error) => console.error(error));
+		.then((response) => response.json())
+		.then((data) => setMatchData(data))
+		.catch((error) => console.error(error));
 	}, [user]);
-
+	
 	if (!user || !matchData) {
 		return <p>Loading...</p>;
 	}
-
-	return <MatchList user={user} match={matchData} />;
+	
+	return <DisplayProfile user={user} match={matchData} />;
 }
 
-function MatchList({ user, match }) {
+function DisplayProfile({ user, match }) {
 	const { name, profilePicture, elo, id } = user;
 	const { matchWon, matchLost } = match;
 	
 	const [allMatches, setAllMatches] = useState([]);
-	const [allUsers, setAllUsers] = useState([]);
 	const [achievements, setAchievements] = useState([]);
+	const [allUsers, setAllUsers] = useState([]);
+	
+	// Handle locked achievements
 	const [showLocked, setShowLocked] = useState(false);
+	
+	// Handle popup
 	const [selectedUser, setSelectedUser] = useState(null);
 	const [isOpen, setIsOpen] = useState(false);
+
+	// Handle text animation
+	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let nameinterval = null;
     const nameRef = useRef<HTMLHeadingElement>(null);
+	let succesinterval = null;
 	const succesRef = useRef<HTMLHeadingElement>(null);
+	let matchinterval = null;
 	const matchRef = useRef<HTMLHeadingElement>(null);
+	let historyinterval = null;
 	const historyRef = useRef<HTMLHeadingElement>(null);
+	
+	// Handle progress animation
 	const succes1Ref = useRef<SVGCircleElement>(null);
 	const succes2Ref = useRef<SVGCircleElement>(null);
 	const match1Ref = useRef<SVGCircleElement>(null);
 	const match2Ref = useRef<SVGCircleElement>(null);
-	const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let nameinterval = null;
-	let succesinterval = null;
-	let matchinterval = null;
-	let historyinterval = null;
 
 	// Fetch all achievements
 	useEffect(() => {
@@ -77,9 +85,8 @@ function MatchList({ user, match }) {
 				console.log(`Fetching achievements failed.`);
 			}
 		};
-
-		fetchAchievements(id);
-	}, [id]);
+		fetchAchievements(user.id);
+	}, [user.id]);
 
 	// Merge matchWon and matchLost into a single array
 	useEffect(() => {
@@ -138,7 +145,7 @@ function MatchList({ user, match }) {
 			const offset = 320 - (320 * percent) / 100;
 			succes2Ref.current.style.strokeDashoffset = offset.toString();
 		};
-	}, []);
+	}, [achievements]);
 	
 	// Handle match progress
 	useEffect(() => {
@@ -147,7 +154,7 @@ function MatchList({ user, match }) {
 			const offset = 320 - (320 * percent) / 100;
 			match2Ref.current.style.strokeDashoffset = offset.toString();
 		};
-	}, []);
+	}, [matchLost, matchWon]);
 	
 	// Handle blob movement
 	useEffect(() => {
@@ -308,7 +315,7 @@ function MatchList({ user, match }) {
 		setIsOpen(false);
 		setSelectedUser(null);
 	};
-			
+
 	return (
 		<div>
 			<div id="blob"></div>
@@ -343,14 +350,14 @@ function MatchList({ user, match }) {
 						<div className="Profile-screen-achivement-overlay"></div>
 						<div className="Profile-screen-achivement-content">
 							<div className="Profile-screen-achivement-content-body">
-								<span className="Profile-screen-card-title Profile-succes-button" data-value="Succès" onMouseOver={SuccesCascade} ref={succesRef} onClick={toggleUnlock}>Succès</span>
-								<div className="Profile-match-progress">
-    								<div className="Profile-match-progress-bar">
-      									<svg className="Profile-match-svg">
+								<span className="Profile-screen-card-title Profile-achivement-button" data-value="Succès" onMouseOver={SuccesCascade} ref={succesRef} onClick={toggleUnlock}>Succès</span>
+								<div className="Profile-achivement-progress">
+    								<div className="Profile-achivement-progress-bar">
+      									<svg className="Profile-achivement-svg">
         									<circle cx="50" cy="50" r="50" ref={succes1Ref}></circle>
         									<circle cx="50" cy="50" r="50" ref={succes2Ref}></circle>
       									</svg>
-      									<div className="Profile-match-progress-number">
+      									<div className="Profile-achivement-progress-number">
        										<h2>{SuccesResult()}<span>%</span></h2>
       									</div>
     								</div>
