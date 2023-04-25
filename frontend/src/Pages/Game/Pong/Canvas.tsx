@@ -76,7 +76,7 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef, victory })
       const largeur = distx;
       const hauteur = disty;
 
-      if (xprim > disty * 2) { // longueur
+      if (xprim < disty * 2) { // longueur
         setCanvasHeight(largeur / 2);
         setCanvasWidth(largeur);
       } else { // hauteur
