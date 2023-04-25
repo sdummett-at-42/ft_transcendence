@@ -7,8 +7,8 @@ export default function InitStats({ user }) {
 	const [users, setUsers] = useState([]);
 	const [matchData, setMatchData] = useState(null);
  
+	// Fetch match data
 	useEffect(() => {
-		// Fetch match data
 		fetch(`http://localhost:3001/users/${user.id}/matchs`, {
 			method: "GET",
 			credentials: "include",
@@ -41,13 +41,15 @@ export default function InitStats({ user }) {
 }
 
 function UserList({ users, match }) {
-	const [selectedUser, setSelectedUser] = useState(null);
-	const [isOpen, setIsOpen] = useState(false);
-
+	const { matchWon, matchLost } = match;
+	
+	// Store all matches and all users
 	const [allMatches, setAllMatches] = useState([]);
 	const [allUsers, setAllUsers] = useState([]);
-
-	const { matchWon, matchLost } = match;
+	
+	// Handle popup
+	const [selectedUser, setSelectedUser] = useState(null);
+	const [isOpen, setIsOpen] = useState(false);
 
 	// Merge matchWon and matchLost into a single array
 	useEffect(() => {
@@ -79,11 +81,11 @@ function UserList({ users, match }) {
 				};
 			}));
 	
-		setAllMatches(matchData);
-	};
+			setAllMatches(matchData);
+		};
 	
-	fetchMatches();
-}, [matchWon, matchLost]);
+		fetchMatches();
+	}, [matchWon, matchLost]);
 
 	// Fetch all users
 	useEffect(() => {
