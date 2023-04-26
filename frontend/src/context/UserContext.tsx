@@ -31,6 +31,7 @@ const UserContextProvider = ({ children }: any) => {
 		gameSocketRef.current = io("http://localhost:3001/game", {
 			auth: {
 				token: Cookies.get("connect.sid"),
+				//url: window.location.href,
 			},
 		});
 		setRendered(true);

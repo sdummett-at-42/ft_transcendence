@@ -32,14 +32,25 @@ export class LobbyService {
     }
 
     // Add user [] 
-    lobbyJoinQueue(client : Socket) {
+    async lobbyJoinQueue(client : Socket) {
         // console.log("lobby join Queue:", client.data);
         //TODO check if in game (boolean)
 
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
 
         if (index === -1) { // Check if player already in Q
-            const player = new Player(client.data);
+            const prismData = await this.prisma.user.findUnique({
+                where: { id : client.data.userId },
+                select: {
+                    name: true,
+                    elo: true,
+                },
+            });
+
+            //id, name, elo, socket
+            const data = {id : client.data.userId, name : prismData.name, elo : prismData.elo , socket : client.data.socket}
+
+            const player = new Player(data);
             this.users.push({ player, threshold : this.BaseThreshold});
             if (this.queueInterval === undefined)
                 this.queueInterval = setInterval(this.intervalQueueFunction.bind(this), 500);
@@ -48,11 +59,6 @@ export class LobbyService {
 
     // Delete user []
     lobbyLeaveQueue(client : Socket) {
-        //TODO
-        // what happen when client logout
-        // kick client Q if socket dc
-
-        // check if client in users[] and delete it
         const suppr = this.users.findIndex(users => users.player.id === client.data.userId); // check if in users first element us.id == cl.id
         if (suppr !== -1)
             this.users.splice(suppr, 1);
@@ -154,16 +160,16 @@ export class LobbyService {
             // send to player join game's url
             //this.gameGateway.server
 
-            // const p1Socket = p1.player.socket;
-            // const p2Socket = p2.player.socket;
+            const p1Socket = p1.player.socket;
+            const p2Socket = p2.player.socket;
 
             // TODO
             // retirer car new front ne se deco pas
             
-            // p1.player.socket = undefined;
-            // p2.player.socket = undefined;
+            p1.player.socket = undefined;
+            p2.player.socket = undefined;
 
-            this.gameGateway.server.to(p1.player.socket).to(p2.player.socket).emit(EventGame.lobbyGoGame , game.id);
+            this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
 
     // const redirect = `${this.req.protocol}://${this.req.hostname}/game/${game.id}`;
     //const redirect = "http://localhost:3001/game/" + game.id;
@@ -306,30 +312,41 @@ export class LobbyService {
 
         // console.log("user : ", JSON.parse(session).passport.user);
         // console.log("socket:", socket.handshake.headers.referer);
-        const gameId = socket.handshake.headers.referer.split('/').pop();
 
-        console.log(socket.handshake.headers.referer);
-        console.log(gameId);
-        if (gameId === "") {
+        console.log(socket.handshake.auth);
+        if (!socket.handshake.auth.url) // lobby nothing to do
+            return null;
+
+        const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
+
+        console.log("getUrl = ", getUrl);
+
+        console.log("getUrl size = ", getUrl.length);
+
+        if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
             console.log("lobby service connect: not /game or /game/:id");
             return null;
-        } else if (gameId === "game") { // not in game
-            // console.log("socket in: /game");
-            socket.join(`game`);
-        } else {
+        } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
             //TODO
             // check if game exist| ingame| finish
-            // faire que le front envoie l'id de la game ?
+
             console.log("socket in: /game/:id");
-            socket.data.ingame = gameId;
+
+            const gameId = getUrl.pop();
             
             const index = this.games.findIndex(games => games.id === Number(gameId));
             const game : Game = this.games[index];
 
+            //console.log("game:", game);
+            if (game) {
+                console.log("p1 id:", game.p1.id);
+                console.log("p2 id:", game.p2.id);
+            }
+
             if (game === undefined || game.p1.id === undefined || game.p2.id === undefined)
                 return null;
 
-            // if in game at player pause his game
+            // if in game at player resume his game
             if (game.p1.id === userId) // p1 connec
                 return {game : game, id : game.p1.id};
             if (game.p2.id === userId) // p2 connect
@@ -373,19 +390,24 @@ export class LobbyService {
         // TODO
         // check si avec https j'ai encore acces a headers.referer
 
-        const gameId = socket.handshake.headers.referer.split('/').pop();
-
-        if (gameId === "game") { // not in game
-            // console.log("disconnect socket in: /game");
-            // check is player is in Q
+        if (!socket.handshake.auth.url) {// lobby and leave Q if player in Q
             const index = this.users.findIndex(users => users.player.id === userId);
             if (index !== -1)
                 this.users.splice(index, 1);
-        } else {
+            return null;
+        }
+
+        const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
+
+        if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
+            console.log("lobby service disconnect: not /game or /game/:id");
+            return null;
+        } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
             //TODO
             // check if game exist| ingame| finish
             // console.log("disconnect in game/:id");
 
+            const gameId = getUrl.pop();
             const index = this.games.findIndex(games => games.id === Number(gameId));
             const game : Game = this.games[index];
 
@@ -400,7 +422,6 @@ export class LobbyService {
                 return {game : game, id :game.p2.id};
             }
             // else spec
-
         }
         return null;
     }

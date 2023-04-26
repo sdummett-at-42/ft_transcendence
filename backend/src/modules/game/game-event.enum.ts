@@ -15,7 +15,7 @@ export enum EventGame {
     // game emit (srv)
     gameImage = "image",                // Send All object on map to print
     gameScore = "score",                // Send Actual score of players
-    gameVictoryScore = "VictoryScore",  // game is end by scoring
+    gameVictory = "victory",            // game is end
     gameTimer = "gameTimer",            // Time in game
     
     /* ***** *\

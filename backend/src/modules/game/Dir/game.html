@@ -3,12 +3,7 @@
 <head>
 	<title>Canvas de jeu</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<!-- <style>
-		canvas {
-			background-color: gray;
-			border: 5px solid black;
-		}
-	</style> -->
+
 </head>
 <body>
     <div id="divTimer"> Timer </div>
@@ -55,7 +50,7 @@
             socket.emit("Mouvement", {roomId : room, data : data});
         }
 
-        // Mouvement souris player in canvas
+        // clic souris player in canvas
         function clickGame(event) {
             console.log("click canvas");
             socket.emit("clickCanvas", room);

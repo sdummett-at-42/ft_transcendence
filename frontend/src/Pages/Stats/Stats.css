@@ -1,79 +1,103 @@
 /* Set default styles for the <table>, <thead>, <tbody>, <tr> and <td> elements */
-table {
-	/* border-collapse: collapse; */
-	/* width: 100%; */
-}
-
-thead {
-	background-color: #242424;
+.Stats {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	color: #fff;
-	font-weight: bold;
 }
 
-tbody tr:nth-child(odd) {
-	/* background-color: #333333; */
+.Stats-table-empty {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 }
 
-tbody tr:nth-child(even) {
-	/* background-color: #242424; */
+.Stats-table-container {
+	height: 90vh;
+	width: 100%;
+	overflow-y: scroll;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
-td {
-	padding: 10px;
-	text-align: center;
+.Stats-table-container::-webkit-scrollbar {
+	display: none;
 }
 
-/* Add hover effect for table rows */
-tbody tr:hover {
-	/* background-color: #555555; */
+.Stats-table {
+	width: 99%;
+	border: 1px solid #fff;
+	border-collapse: collapse;
+	margin-bottom: 7vh;
 }
 
-/* Style profile picture */
-/* .profile-picture {
+
+.Stats-table-head {
+	background-color: #242424;
+	height: 5vh;
+	border: 1px solid #fff;
+}
+
+.Stats-table-row {
+	height: 5vh;
+	border-bottom: 1px solid #fff;
+}
+
+.Stats-table-row:hover {
+	background-color: #555555;
+}
+
+.Stats-table-row-first {
+	background-color: goldenrod;
+}
+
+.Stats-table-row-first:hover {
+	background-color: gold;
+}
+
+.Stats-table-row-second {
+	background-color: silver;
+}
+
+.Stats-table-row-second:hover {
+	background-color: #dad8d8;
+}
+
+.Stats-table-row-third {
+	background-color: #cd7f32;
+}
+
+.Stats-table-row-third:hover {
+	background-color: #fc9610;
+}
+
+.Stats-profile {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.Stats-picture {
 	width: 50px;
 	height: 50px;
 	margin-right: 10px;
 	object-fit: cover;
 	border-radius: 50%;
-} */
+}
 
-.popup {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
+.Stats-td {
+	padding: 10px;
+	text-align: center;
+}
+
+.Stats-no-match {
+	color:#fff;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background-color: rgba(128, 128, 128, 0.5);
-	z-index: 9999;
-  }
-
-  .popup-content {
-	position: relative;
-	width: 50%;
-	padding: 20px;
-	background-color: #f2f2f2;
-	border-radius: 10px;
-  }
-
-  .close-button {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	padding: 5px 10px;
-	background-color: #ff0000;
-	color: #fff;
-	border: none;
-	border-radius: 5px;
-	cursor: pointer;
-  }
-
-  .close-button:hover {
-	background-color: #cc0000;
-  }
-
-  .popup-content {
-	background: #242424;
-  }
+}

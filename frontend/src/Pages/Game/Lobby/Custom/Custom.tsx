@@ -1,43 +1,54 @@
-import React, { useContext, useRef } from "react";
+import React, { useContext, useRef, useState } from "react";
 import "./Custom.css"
 import { UserContext } from "../../../../context/UserContext";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons"
+import Popup from "../../../Popup/Popup";
 
 export default function Custom(props) {
 
     const { user, gameSocketRef } = useContext(UserContext);
     const { setDispSelector, setCustom } = props;
+
+    const [isOpen, setIsOpen] = useState(false);
+    
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    const h1Ref = useRef<HTMLHeadingElement>(null);
-
+    const myNameRef = useRef<HTMLHeadingElement>(null);
     let interval = null;
 
-    const onMouseOver = (event: React.MouseEvent<HTMLHeadingElement>) => {  
+    const onMyName = (event: React.MouseEvent<HTMLHeadingElement>) => {  
         let iteration = 0;
 
         clearInterval(interval);
 
         interval = setInterval(() => {
-            if (!h1Ref.current) return;
-            h1Ref.current.innerText = h1Ref.current.dataset.value
+            if (!myNameRef.current) return;
+            myNameRef.current.innerText = myNameRef.current.dataset.value
                 .split("")
                 .map((letter, index) => {
                     if(index < iteration) {
-                        return h1Ref.current?.dataset.value[index];
+                        return myNameRef.current?.dataset.value[index];
                     }
                     return letters[Math.floor(Math.random() * 26)]
                 })
                 .join("");
 
-            if(iteration >= h1Ref.current.dataset.value.length){ 
+            if(iteration >= myNameRef.current.dataset.value.length){ 
                 clearInterval(interval);
             }
 
             iteration += 1 / 3;
         }, 30);
     }
+
+    const handleButtonClick = () => {
+        setIsOpen(true);
+        gameSocketRef.current.emit('joinQueue', {type: "custom"});
+    };
+
+    const handleClose = () => {
+        setIsOpen(false);
+    };
 
     return (
     <div>
@@ -48,46 +59,36 @@ export default function Custom(props) {
                     <h1 className="Lobby-recap">Partie décontractée</h1>
                 </div>
 
-                <div className="Lobby-customize-game-button">
-
-                </div>
-            </div>
-            <div className="Custom-lobby">
-
                 <div className="Ranked-mid-column">
-                    <div className="screen">  
-                        <div className="screen-image"></div>  
-                        <div className="screen-overlay"></div>  
-                        <div className="screen-content">
-                            <img src={user.profilePicture} alt="user pp" className="screen-icon" />
-                            <div className="screen-user">
-                                <span className="name" data-value={user.name} onMouseOver={onMouseOver} ref={h1Ref}>{user.name}</span>
-                                <p className="link" >{user.elo}</p>
-                            </div>
+                <div className="Custom-screen">  
+                    <div className="Custom-screen-overlay"></div>  
+                    <div className="Custom-screen-content">
+                        <img src={user.profilePicture} alt="user pp" className="Profile-picture" />
+                        <div className="Custom-screen-user">
+                            <span className="name" data-value={user.name} onMouseOver={onMyName} ref={myNameRef}>{user.name}</span>
+                            <p className="link" >{user.elo}</p>
                         </div>
-                    </div>
-                </div>
-
-                <div className="Ranked-mid-column">
-                    <div className="screen">  
-                        <div className="screen-image"></div>  
-                        <div className="screen-overlay"></div>  
-                        <div className="screen-content">
-                            <img src={user.profilePicture} alt="user pp" className="screen-icon" />
-                            <div className="screen-user">
-                                <span className="name" data-value={user.name} onMouseOver={onMouseOver} ref={h1Ref}>{user.name}</span>
-                                <p className="link" >{user.elo}</p>
+                        <button className="cybr-btn" onClick={handleButtonClick}>
+                            Trouver un match<span aria-hidden>_</span>
+                            <span aria-hidden className="cybr-btn__glitch">Trouver un match_</span>
+                            <span aria-hidden className="cybr-btn__tag">R25</span>
+                        </button>
+                        <Popup isOpen={isOpen} isClose={handleClose}>
+                            <div className="Ranked-popup">
+                                <h2 className="Ranked-popup-text">En attente d'un adversaire...</h2>
+                                <button
+                                    onClick={handleClose}
+                                    className="Settings-button"
+                                >
+                                    Quitter la file d'attente
+                                </button>
                             </div>
-                        </div>
+                        </Popup>
                     </div>
                 </div>
             </div>
-            <button className="cybr-btn" onClick={() => gameSocketRef.current.emit('joinQueue')}>
-                Lancer la partie<span aria-hidden>_</span>
-                <span aria-hidden className="cybr-btn__glitch">Lancer la partie_</span>
-                <span aria-hidden className="cybr-btn__tag">R25</span>
-            </button>
         </div>
+    </div>
     </div>
     );
 }
