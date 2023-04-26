@@ -44,7 +44,7 @@ export default function Message(props: MessageProps) {
       }
       props.socket.emit("sendRoomMsg", payload);
     } else {
-      console.log("props.ifDM == true")
+      console.log("props.ifDM == true", props.toDMID.id)
       const payload = {
         userId: props.toDMID.id,
         message: message,

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./Friend.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMessage, faTableTennis, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 
 interface Props {
     props: {

@@ -130,10 +130,10 @@ export default function ChatLogin() {
   }, [socket, handleUpdateDatabase]);
 
   useEffect(() =>{
-    console.log("outside", userId, userName);
+    console.log("outside", typeof(userId), userName);
     setRoomName(userName);
     setIfDM(true);
-    setToDMID(userId, userName);
+    setToDMID({id :Number(userId), name: userName});
 
   },[])
 
