@@ -14,25 +14,30 @@ const Result = ({data} : ResultProps) => {
     const loser : Player = data[2];
 
 
+
     return (
     <div>
         <div className="screenGlobal">
             <div class="heading">
-                {}
-                <h2>Fin de la partie par {victory} ! Le gagant est {winner.name} !</h2>
+                <h2>Fin de la partie par {victory} ! Le gagnant est {winner.name} !</h2>
+                <h2>{winner.score} - {loser.score}</h2>
+
             </div>
             
             <div class="winner-loser-info">
                 <div class="winner-info">
                    <h3>Gagnant</h3>
-                   <p>{JSON.stringify(winner)}</p>
+                   {/* <p>{JSON.stringify(winner)}</p> */}
                    <p>{winner.name}</p>
                    <p>{winner.elo}</p>
                    <p>{winner.eloChange}</p>
                 </div>
                 <div class="loser-info">
                    <h3>Perdant</h3>
-                    <p>{JSON.stringify(loser)}</p>
+                    {/* <p>{JSON.stringify(loser)}</p> */}
+                    <p>{loser.name}</p>
+                    <p>{loser.elo}</p>
+                    <p>{loser.eloChange}</p>
                     
                 </div>
             </div>
@@ -42,10 +47,3 @@ const Result = ({data} : ResultProps) => {
 };
 
 export default Result;
-
-                // <div className="screen">  
-                //     <div className="screen-overlay"></div>  
-                //     <div className="screen-content">
-                //         <h2>Je met le contenu</h2>
-                //     </div>
-                // </div>

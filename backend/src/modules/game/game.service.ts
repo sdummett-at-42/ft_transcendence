@@ -638,10 +638,14 @@ export class GameService {
       
     private checkCollision(game : Game, bullet : Bullet) {
         // Vérifier si la balle touche les murs horizontaux
-        if (bullet.pos.y + bullet.r > game.field.height) // bottom
+        if (bullet.pos.y + bullet.r > game.field.height) { // bottom
             bullet.a = -bullet.a;
-        if (bullet.pos.y - bullet.r < 0) // top
+            bullet.pos.y -= 3;
+        }
+        if (bullet.pos.y - bullet.r < 0) { // top
             bullet.a = -bullet.a;
+            bullet.pos.y += 3;
+        }
             
         // Check if bullet hit an other shape
         // collision activate with Square and Circle

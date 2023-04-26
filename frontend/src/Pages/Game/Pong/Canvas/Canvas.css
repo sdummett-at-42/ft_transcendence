@@ -6,6 +6,7 @@
   }
   
   .canvas {
-    background-color: wheat;
+    background-image: url('../../../../assets/Background.png');
+    background-size: cover;
     border: 2px solid red;
-  }
+}

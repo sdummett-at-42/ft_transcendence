@@ -29,7 +29,7 @@ export enum EventGame {
     lobbySendInvitGame = "sendInvitationGame",
     lobbyGetInvitGame = "getInvitationGame",
     lobbyResponseInvitGame = "reponseInvitationGame",
-    lobbyInvitGame = "refuseInvitationGame",
+    lobbyRefuseInvitGame = "refuseInvitationGame",
     
     
     // Lobby recv (srv)

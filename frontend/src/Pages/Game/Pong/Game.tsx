@@ -140,7 +140,7 @@ export default function Game() {
     return (
         <div className="game-container">
             <div className="Game-info Profile-screen-card-text">
-                <p>Time = {timer}</p>
+                <p>Time = {(timer/1000).toFixed(3)}</p>
                 <div className="Game-player-info">
                     <div className="Game-Player1">Player 1 = {scoreP1}</div>
                     <div className="Game-Player2">Player 2 = {scoreP2}</div>

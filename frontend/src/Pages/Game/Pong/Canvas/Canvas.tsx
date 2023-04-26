@@ -13,6 +13,9 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvasWidth, setCanvasWidth] = useState(window.innerWidth * 0.8);
   const [canvasHeight, setCanvasHeight] = useState(canvasWidth * 0.5);
+  const [angle, setAngle] = useState(0);
+
+
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -20,6 +23,8 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+
 
     /* *********************** *\
     |* Setting size and resize *|
@@ -35,14 +40,10 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
 
     // Try resize
     const resizeCanvas = () => {
-      // console.log("RESIZE ");
-      // console.log("window.innerWidth:", window.innerWidth);
 
       // Set canvas size
       setCanvasWidth(window.innerWidth * 1);
       setCanvasHeight(canvasWidth / 2);
-
-      // console.log(canvas);
 
       // Get distance bottom canvas et bottom page
       const canvasBottom = window.innerHeight - canvasRef.current.getBoundingClientRect().bottom;
@@ -87,24 +88,10 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
         setCanvasWidth(hauteur * 2);
       }
 
-      // // resize vertical
-      // if (canvasBottom < 0) {
-      //   const canvasTop = canvasRef.current.getBoundingClientRect().top;
-      //   const windowHeight = window.innerHeight;
-      //   const distanceToBottom = windowHeight - canvasTop;
-      //   setCanvasHeight(distanceToBottom);
-      //   setCanvasWidth(canvasHeight * 2);
-      // }
-
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
-
-      // console.log(`${canvas.width} / ${canvas.height} = ${canvas.width / canvas.height}`);
-
       canvas.style.width = canvas.width + 'px';
       canvas.style.height = canvas.height + 'px';
-
-      //drawCanvas();
     };
 
     /* *********************** *\
@@ -112,6 +99,7 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
     \* *********************** */
 
     const drawCanvas = () => {
+
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -122,22 +110,37 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
       for (let i = 0; i < elements.length; i++) {
         const element = elements[i];
         if (element.type === 'Bullet') {
-          ctx.fillStyle = 'red';
+          var gradient = ctx.createRadialGradient(element.pos.x, element.pos.y, 0, element.pos.x, element.pos.y, element.r);
+          gradient.addColorStop(1, 'white');
+          gradient.addColorStop(0, 'red');
+          ctx.fillStyle = gradient;
           ctx.beginPath();
           ctx.arc(element.pos.x, element.pos.y, element.r, 0, 2 * Math.PI);
           ctx.fill();
         } else if (element.type === 'Circle') {
-          ctx.strokeStyle = 'blue';
           ctx.beginPath();
           ctx.arc(element.pos.x, element.pos.y, element.r, 0, 2 * Math.PI);
+          let gradient = ctx.createRadialGradient(element.pos.x, element.pos.y, 0, element.pos.x, element.pos.y, element.r);
+          gradient.addColorStop(1, 'blue');
+          gradient.addColorStop(0, 'green');
+          ctx.fillStyle = gradient;
+          ctx.fill();
+          ctx.strokeStyle = 'green';
+          ctx.beginPath();
           ctx.stroke();
         } else if (element.type === 'BlackHole') {
-          ctx.strokeStyle = 'black';
+          let gradient = ctx.createRadialGradient(element.pos.x, element.pos.y, 0, element.pos.x, element.pos.y, element.r);
+          gradient.addColorStop(1, 'black');
+          gradient.addColorStop(0, 'grey');
+          ctx.strokeStyle = 'white';
           ctx.beginPath();
           ctx.arc(element.pos.x, element.pos.y, element.r, 0, 2 * Math.PI);
+          ctx.lineWidth = 2;
           ctx.stroke();
+          ctx.fillStyle = gradient;
+          ctx.fill();
         } else if (element.type === 'Square') {
-          ctx.fillStyle = 'green';
+          ctx.fillStyle = 'white';
           ctx.fillRect(element.pos.x, element.pos.y, element.width, element.length);
         }
       }
@@ -172,6 +175,9 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
     // Resize Canvas and draw content
     resizeCanvas();
     drawCanvas();
+    setAngle(angle + Math.PI / 60);
+    if (angle >= Math.PI * 2)
+      setAngle(angle - Math.PI * 2);
 
     // Clean up event listeners on unmount
     return () => {
@@ -196,9 +202,7 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
   // }
 
   return (
-    //<div className="canvas-container">
-      <canvas className="canvas" ref={canvasRef} />
-    //</div>
+      <canvas className="canvas" ref={canvasRef}></canvas>
   );
 };
 
