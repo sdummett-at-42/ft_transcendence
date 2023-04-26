@@ -66,16 +66,16 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
   return (
     <div >
       {!props.isVisible ? null : (
-        <div className="modal" onClick={props.onClose}>
-          <div className="modal-dialog" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h5 className="modal-title">{props.message}</h5>
-              <span className="modal-close" onClick={props.onClose}>
+        <div className="" onClick={props.onClose}>
+          <div className="" onClick={e => e.stopPropagation()}>
+            <div className="">
+              <h5 className="">{props.message}</h5>
+              <span className="" onClick={props.onClose}>
                 &times;
               </span>
             </div>
-            <div className="modal-body">
-              <div className="modal-content">
+            <div className="">
+              <div className="">
                 <h3>Voulez-vous rejoindre la salle de {props.RoomName} ? </h3>
                 <label htmlFor="password">Mot de pass</label>
                 <input
@@ -85,7 +85,7 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <div className="modal-form">
+                <div className="">
                   <button onClick={handleJoinRoom}>Rejoindre</button>
                   <button onClick={props.onClose}>Annuler</button>
                 </div>

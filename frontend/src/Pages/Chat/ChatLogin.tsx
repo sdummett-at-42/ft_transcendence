@@ -175,15 +175,13 @@ export default function ChatLogin() {
   } else {
     return (
       <div className="Chat-body">
-        <div className="containerhere containerhere clearfix">
-          <div className="row">
+          <div className="Chat-container">
             <DatabaseContext.Provider value={database}>
               <ChatroomList socket={socket} onListClick={handleListClick} onUpdate={handleChildComponentUpdate} ifDM={ifDM} toDMID={toDMID} ifDataReady={ifDataReady} />
               <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={myUserId} onUpdate={handleChildComponentUpdate} />
               <RoomDetail socket={socket} onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId={myUserId} ifDM={ifDM} blockList={blockList}/>
             </DatabaseContext.Provider>
           </div>
-        </div>
       </div>
     );
   }

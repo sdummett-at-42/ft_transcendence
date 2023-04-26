@@ -109,9 +109,9 @@ export default function MemberList(props: MemberListProps) {
         };
     }, [props.socket, handleMemberList, handleMemberUpdate, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate]);
     return (
-        <div className="chat-info-header-2 clearfix">
-            <div className='chat-info-member-list'>Liste des membres</div>
-            <div className="row">{console.log("members:", props.roomName, members)}
+        <div className="">
+            <div className=''>Liste des membres</div>
+            <div className="">{console.log("members:", props.roomName, members)}
             {members && members.members.map((each, index) => {
                 console.log("each", each)
             if (database) {
@@ -123,24 +123,24 @@ export default function MemberList(props: MemberListProps) {
                     role = "Admin";
                 return (
                     <>
-                        <li className="clearfix col-lg-6 " key={each}>
-                            <img className="img-member" src={user.profilePicture} alt="avatar" />
-                            <div className="about">
-                                <div className="name ">{user.name}</div>
-                                <div className="status">
-                                    <i className="fa fa-circle online"></i> {role}</div>
+                        <li className="" key={each}>
+                            <img className="" src={user.profilePicture} alt="avatar" />
+                            <div className="">
+                                <div className=" ">{user.name}</div>
+                                <div className="">
+                                    <i className=""></i> {role}</div>
                             </div>
                         </li>
 
                         {/* play, message, block */}
                         {user.id === props.UserId ?
-                            <div className="col-lg-6"></div> :
-                            (<div className="col-lg-6"><button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
+                            <div className=""></div> :
+                            (<div className=""><button className="" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
                                 { newblockList.includes(user.id) ? 
                                 <><button onClick={() => handleUnblock(user.id, user.name)} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button> </> : 
                                 <><button  onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button></>}
-                                <button className="PendingFriend-button" onClick={() => handleProfilePopup(user)}><FontAwesomeIcon icon={faUser}  size="lg" /></button>
-                                <button className="PendingFriend-button"onClick={() => handlePlay(user.id, user.name)} ><FontAwesomeIcon icon={faTableTennis}  size="lg" /></button>
+                                <button className="" onClick={() => handleProfilePopup(user)}><FontAwesomeIcon icon={faUser}  size="lg" /></button>
+                                <button className=""onClick={() => handlePlay(user.id, user.name)} ><FontAwesomeIcon icon={faTableTennis}  size="lg" /></button>
                                 
                             </div>)}
                     </>

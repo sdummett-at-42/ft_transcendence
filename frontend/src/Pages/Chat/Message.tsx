@@ -223,26 +223,26 @@ export default function Message(props: MessageProps) {
 
   return (
     props.roomName ? (
-      <div className="chat col-lg-6 ">
-        <div className="chat-header clearfix">
-          <div className="chat-about">
-            <div className="row">
-              <div className="chat-with col-6">Salon : {props.roomName}</div>
+      <div className="">
+        <div className="">
+          <div className="">
+            <div className="">
+              <div className="">Salon : {props.roomName}</div>
             </div>
-            {props.ifDM ? null : <button className="col-2" onClick={handleQuit}>Quitter</button>}
+            {props.ifDM ? null : <button className="" onClick={handleQuit}>Quitter</button>}
           </div>
         </div>
 
-        <div className="chat-history">
+        <div className="">
           <ul>
             {props.ifDM ? itemDM : item}
           </ul>
 
         </div>
-        <div className="chat-message clearfix">
+        <div className="">
           <textarea name="message-to-send" id="message-to-send" placeholder="Tapez votre message" rows="2" value={message} onChange={handleMessageChange}></textarea>
           <button onClick={handleSendMessage} >Envoyer</button>
         </div>
-      </div>) : <div className="chat col-lg-6"> <h4>Choisissez un salon pour afficher les messages</h4></div>
+      </div>) : <div className=""> <h4>Choisissez un salon pour afficher les messages</h4></div>
   );
 }

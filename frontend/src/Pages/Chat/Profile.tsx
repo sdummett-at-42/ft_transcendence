@@ -101,9 +101,9 @@ export default function Profile(props: ProfileProps) {
     }, [props.socket, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate]);
     return (
         user? 
-        <div className="chatinfo">
-            <div className="chat-info-header clearfix">
-            <div className='chat-info-title'>Profil : {user.name} </div>
+        <div className="">
+            <div className="">
+            <div className=''>Profil : {user.name} </div>
             <img src={user.profilePicture} />
             <p>Niveau : {user.elo}</p>
             <p>Gagné:  {user.matchWon ? user.matchWon.length : 0}</p>
@@ -111,7 +111,7 @@ export default function Profile(props: ProfileProps) {
             { newblockList.includes(user.id) ? 
                                 <><button onClick={() => handleUnblock(user.id, user.name)} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button> </> : 
                                 <><button  onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button></>}
-            <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => handleProfile(user.id, user.name)} size="lg" /></button>
-            <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} onClick={() => handlePlay(user.id, user.name)} size="lg" /></button>
+            <button className=""><FontAwesomeIcon icon={faUser} onClick={() => handleProfile(user.id, user.name)} size="lg" /></button>
+            <button className=""><FontAwesomeIcon icon={faTableTennis} onClick={() => handlePlay(user.id, user.name)} size="lg" /></button>
             </div></div> : null)
 };

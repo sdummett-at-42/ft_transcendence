@@ -61,7 +61,7 @@ function App() {
 					/>
 				): null}
 				<Route
-					path="/chat/:userId/:userName"
+					path="/chat/:userId?/:userName?"
 					element={<Layout children={<ChatLogin user={user} />} />}
 				/>
 				<Route path="/" element={<LoginSelector />} />
