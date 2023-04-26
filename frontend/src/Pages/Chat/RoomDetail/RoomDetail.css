@@ -1,0 +1,116 @@
+.RoomDetail {
+    margin-top: 5px;
+    margin-left: 1vmin;
+    width: 19%;
+    height: 100%;
+    color: white;
+}
+
+.RoomDetail-screen-card {
+    margin-left: 5px;
+    margin-top: 5px;
+    height: 92vh;
+    width: 100%;
+    display: flex;
+    border: 3px solid rgb(var(--primary-rgb) / 80%);
+    border-radius: 1rem;
+    background-color: rgb(var(--primary-rgb) / 15%);
+    position: relative;
+    z-index: 10;
+    overflow: hidden;
+}
+  
+.RoomDetail-screen-card:after, .RoomDetail-screen-card:before {
+    content: "";
+    height: 5px;
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    translate: -50% 0%;
+    background-color: rgb(var(--blue-rgb));
+}
+  
+.RoomDetail-screen-card:before {
+    width: 15%;
+    top: 0rem;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+}
+  
+.RoomDetail-screen-card:after {
+    width: 15%;
+    bottom: 0rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+  
+.RoomDetail-screen-card-overlay {    
+    background: linear-gradient(
+      rgb(var(--primary-rgb) / 0.15),
+      rgb(var(--primary-rgb) / 0.15) 3px,
+      transparent 3px,
+      transparent 9px
+    );
+    background-size: 100% 9px;
+    height: 100%;
+    width: 100%;
+    animation: pan-overlay 22s infinite linear;
+    position: absolute;
+    z-index: 2;
+    left: 0px;
+    top: 0px;
+}
+
+.RoomDetail-screen-card-content {
+    flex-grow: 1;
+    gap: 4rem;
+    position: relative;
+    z-index: 3;
+    margin: 1rem;
+    padding-bottom: 6rem;
+    border: 1px solid rgb(var(--primary-rgb) / 50%);
+    border-radius: 0.6rem;
+    overflow-y: scroll;
+}
+
+.RoomDetail-screen-card-content::-webkit-scrollbar {
+    display: none;
+}
+
+.RoomDetail-screen-card-user {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+}
+  
+.RoomDetail-screen-card-user:before, .RoomDetail-screen-card-user:after {
+    content: "";
+    background-color: rgb(var(--primary-rgb));
+    border-radius: 1rem;
+    box-shadow: 0px 0px 8px 3px rgb(var(--primary-rgb) / 60%);
+}
+  
+.RoomDetail-screen-card-user:before {
+    height: 2px;
+    width: 50px;
+    translate: -20px 8.8rem;
+    opacity: 0.75;
+}
+
+.RoomDetail-screen-card-user:after {
+    height: 3px;
+    width: 30px;
+    translate: 26px;
+}
+
+.RoomDetail-screen-card-content-body {
+    margin-top: 1vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	gap: 1rem;
+}

@@ -8,7 +8,7 @@ import RoomJoin from '../RoomJoin/RoomJoin';
 import "./ChatRoomList.css";
 import InvitedConfirm from '../InvitedConfirm';
 import { DatabaseContext } from '../ChatLogin';
-import group from "../../assets/group.png"
+import group from "../../../assets/group.png"
 import Popup from '../../Popup/Popup';
 
 interface ChatroomListProps {
@@ -81,8 +81,10 @@ export default function ChatroomList(props: ChatroomListProps) {
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
-    if (selectedRoom == payload.roomName)
+    if (selectedRoom == payload.roomName){
       setSelectedRoom("");
+      props.onListClick("", 0, false);
+    }
   }, [chatrooms]);
 
   const handleBanEvent = useCallback((payload) => {
@@ -90,17 +92,20 @@ export default function ChatroomList(props: ChatroomListProps) {
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
-    if (selectedRoom == payload.roomName)
+    // if (selectedRoom == payload.roomName){
       setSelectedRoom("");
+      props.onListClick("", 0, false);
   }, [chatrooms]);
 
   const handleKickEvent = useCallback((payload) => {
+    console.log("yoyo", selectedRoom)
     alert(payload.message);
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
-    if (selectedRoom == payload.roomName)
+  
       setSelectedRoom("");
+      props.onListClick("", 0, false);
   }, [chatrooms]);
 
   const handleRoomsUpdate = useCallback((payload) => {
@@ -171,12 +176,12 @@ export default function ChatroomList(props: ChatroomListProps) {
 
   // Render
   return (
-      <div className="Chat-room-list">
-          <div className="Chat-screen-card">
-						  <div className="Chat-screen-card-overlay"></div>
-                  <div className="Chat-screen-card-content">
-							        <div className="Chat-screen-card-content-body">
-                          <div className="Chat-screen-card-user">
+      <div className="ChatRoomList">
+          <div className="ChatRoom-screen-card">
+						  <div className="ChatRoom-screen-card-overlay"></div>
+                  <div className="ChatRoom-screen-card-content">
+							        <div className="ChatRoom-screen-card-content-body">
+                          <div className="ChatRoom-screen-card-user">
                               <button
                                   className='Settings-button'
                                   onClick={() => setShowAddRoom(true)}
@@ -190,19 +195,19 @@ export default function ChatroomList(props: ChatroomListProps) {
                                   Rejoindre un salon
                               </button>
                           </div>
-                          <ul>
+                          <ul className='ChatRoom-list-ul'>
                               {chatrooms.map(room => (
                                   <li
-                                      className={`${selectedRoom === room.roomName && !props.ifDM ? "active" : ""}`}
+                                      className={`ChatRoom-list-li ${selectedRoom === room.roomName && !props.ifDM ? "ChatRoom-active" : ""}`}
                                       key={room.roomName}
                                       onClick={() => handleChatroomClick(room.roomName, 0, false)}
                                   >
-                                      {/* <img src={group} /> */}
-                                      <div className="">
-                                          <div className="" >
+                                      <img src={group} className='ChatRoom-image'/>
+                                      <div>
+                                          <div className="ChatRoom-screen-card-text">
                                               {room.roomName}
                                           </div>
-                                          <div className="">
+                                          <div className="ChatRoom-screen-card-type">
                                               <i className="" />
                                               {room.public === "public" ? "Public " : "Privé"}
                                               {room.protected ? <FontAwesomeIcon icon={faLock} /> : null}
@@ -211,17 +216,12 @@ export default function ChatroomList(props: ChatroomListProps) {
                                   </li>
                               ))}
                           </ul>
-                      <ul className="">
+                      <ul className="ChatRoom-list-ul">
                           {dms.map(room => (
-                              <li className={`clearfix ${(selectedRoom === room.name) || (props.toDMID.name === room.name && props.ifDM) ? "active" : ""}`} key={room.id} onClick={() => handleChatroomClick(room.name, room.id, true)}>
-                                  <img src={room.prof} />
-                                  <div className="">
-                                      <div className="" >
-                                          {room.name}
-                                      </div>
-                                      <div className="">
-                                          <i className="" />
-                                      </div>
+                              <li className={`ChatRoom-list-li ${(selectedRoom === room.name) || (props.toDMID.name === room.name && props.ifDM) ? "ChatRoom-active" : ""}`} key={room.id} onClick={() => handleChatroomClick(room.name, room.id, true)}>
+                                  <img src={room.prof} className='ChatRoom-image' />
+                                  <div className="ChatRoom-screen-card-text" >
+                                      {room.name}
                                   </div>
                               </li>
                           ))}

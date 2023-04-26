@@ -6,7 +6,7 @@ import { DatabaseContext } from './ChatLogin'
 import { createContext, useContext } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faUnlock, faMessage, faTableTennis, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-import "./chat.scss"
+import "./ChatRoomList/ChatRoomList.css";
 import ProfilePopup from './ProfilePopup';
 
 interface MemberListProps {
@@ -109,9 +109,9 @@ export default function MemberList(props: MemberListProps) {
         };
     }, [props.socket, handleMemberList, handleMemberUpdate, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate]);
     return (
-        <div className="">
-            <div className=''>Liste des membres</div>
-            <div className="">{console.log("members:", props.roomName, members)}
+        <div className="chat-info-header-2 clearfix">
+            <div className='chat-info-member-list'>Liste des membres</div>
+            <div className="row">
             {members && members.members.map((each, index) => {
                 console.log("each", each)
             if (database) {
@@ -123,12 +123,12 @@ export default function MemberList(props: MemberListProps) {
                     role = "Admin";
                 return (
                     <>
-                        <li className="" key={each}>
-                            <img className="" src={user.profilePicture} alt="avatar" />
-                            <div className="">
-                                <div className=" ">{user.name}</div>
-                                <div className="">
-                                    <i className=""></i> {role}</div>
+                        <li className="clearfix col-lg-6 " key={each}>
+                            <img className="ChatRoom-image" src={user?.profilePicture} alt="avatar" />
+                            <div className="about">
+                                <div className="name ">{user.name}</div>
+                                <div className="status">
+                                    <i className="fa fa-circle online"></i> {role}</div>
                             </div>
                         </li>
 

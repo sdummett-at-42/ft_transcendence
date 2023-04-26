@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import "./Friend.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMessage, faTableTennis, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
+
 
 interface Props {
     props: {
@@ -21,13 +22,13 @@ export default function Friend(props: Props) {
     const [isDuelOpen, setIsDuelOpen] = useState<boolean>(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState<boolean>(false);
 
-    const navigate = useNavigate();
 
     useEffect(() => {
         setFriend(props.props);
         setActive(props.isConnected);
     }, [props]);
 
+    const navigate = useNavigate();
     const handleDuel = () => {
         setIsDuelOpen(!isDuelOpen);
         if (isOptionsOpen) {
@@ -74,8 +75,8 @@ export default function Friend(props: Props) {
                         className="PendingFriend-button"
                         onClick={()=>navigateToChat(friend)}
                     >
-                    <FontAwesomeIcon icon={faMessage} size="lg" />
-                </button>
+                        <FontAwesomeIcon icon={faMessage} size="lg" />
+                    </button>
                 <div className="Friend-dropdown">
                     <button
                         className="PendingFriend-button"

@@ -1,9 +1,9 @@
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import React from "react";
 import { useState, useEffect,useCallback } from 'react';
-import ChatroomList from "./ChatroomList";
-import Message from './Message';
-import RoomDetail from "./RoomDetail";
+import ChatroomList from "./ChatRoomList/ChatroomList";
+import Message from './Message/Message';
+import RoomDetail from "./RoomDetail/RoomDetail";
 import "./chat.scss"
 // import { socket } from "./Socket";
 import { createContext } from "react";
@@ -39,8 +39,7 @@ export default function ChatLogin() {
   };
 
   const handleListClick = (name, id, ifDM) => {
-    // console.log("here? ifdm", ifDM)
-    // console.log("List:",name, id);
+    console.log("List:",name, id, ifDM);
     setToDMID({ id: id, name: name });
     setRoomName(name);
     if (ifDM == true)
@@ -130,10 +129,10 @@ export default function ChatLogin() {
   }, [socket, handleUpdateDatabase]);
 
   useEffect(() =>{
-    console.log("outside", userId, userName);
+    console.log("outside", typeof(userId), userName);
     setRoomName(userName);
     setIfDM(true);
-    setToDMID(userId, userName);
+    setToDMID({id :Number(userId), name: userName});
 
   },[])
 

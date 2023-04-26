@@ -74,8 +74,9 @@ export default function Profile(props: ProfileProps) {
     },[])
     
     useEffect(() => {
+        console.log("databse exists!")
         if (database) {
-            // console.log("databse exists!")
+            console.log("profile databse exists!")
             setUser(database.find((user) => user.name === props.roomName));
             console.log("find", database.find((user) => user.name === props.roomName))
         }
@@ -98,13 +99,13 @@ export default function Profile(props: ProfileProps) {
                 // props.socket.off("userBlockList", handleBlockList);
             }
         };
-    }, [props.socket, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate]);
+    }, [props.socket, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate, user]);
     return (
         user? 
         <div className="">
             <div className="">
             <div className=''>Profil : {user.name} </div>
-            <img src={user.profilePicture} />
+            <img src={user.profilePicture} className='ChatRoom-image' />
             <p>Niveau : {user.elo}</p>
             <p>Gagné:  {user.matchWon ? user.matchWon.length : 0}</p>
             <p>Perdu:  {user.matchWon ? user.matchWon.length : 0}</p>

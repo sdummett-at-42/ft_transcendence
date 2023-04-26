@@ -32,22 +32,7 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
   }, [])
 
   const handleNotJoined = useCallback((payload) => {
-    if (payload.message.includes("exists")) {
-      alert("Cette salle n'existe pas.");
-    } else if (payload.message.includes("invited")) {
-      alert("Vous n'êtes pas invité");
-    } else if (payload.message.includes("banned")) {
-      alert("Tu es banni :(");
-    } else if (payload.message.includes("already")) {
-      alert("Vous êtes déjà membre de cette salle.");
-    } else if (payload.message.includes("full")) {
-      alert("Désolé, cette salle est pleine.");
-    } else if (payload.message.includes("incorrect")) {
-      alert("Le mot de passe est incorrect! essayer à nouveau!");
-      setPassword("");
-    } else {
-      console.log("there is anotehr reason for notjoinedroom?");
-    }
+      alert(payload.message);
   }, [])
 
   useEffect(() => {
