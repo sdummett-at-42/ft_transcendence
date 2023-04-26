@@ -6,9 +6,9 @@ $bluebuttom:#215ea9;
 $orange: #E38968;
 $gray: #92959E;
 .Chat-body {
+    height: 95vh;
     background: #0b0b0b;
     font: 14px/20px "Lato", Arial, sans-serif;
-    padding: 40px 0;
     color: white;
 
 
@@ -83,7 +83,7 @@ button {
     display: flex;
     justify-content: space-evenly;
     margin: 0 auto;
-    height: 90vh;
+    height: 100%;
     //  width: 120vh;
     background: #444753;
     border-radius: 5px;

@@ -41,6 +41,7 @@ export default function Friend(props) {
 
                 <button
                     className="PendingFriend-button"
+                    
                 >
                     <FontAwesomeIcon icon={faMessage} size="lg" />
                 </button>
