@@ -37,8 +37,8 @@ export default function ChatroomList(props: ChatroomListProps) {
 
   const handleRoomJoined = useCallback((payload) => {
     // console.log("handleRoomJoined", payload);
-    if (chatrooms.find(obj=>obj.roomName === payload.roomName))
-        return ;
+    if (chatrooms.find(obj => obj.roomName === payload.roomName))
+      return;
     setChatrooms((prevChatrooms) => [...prevChatrooms, {
       roomName: payload.roomName,
       public: payload.public,
@@ -61,8 +61,8 @@ export default function ChatroomList(props: ChatroomListProps) {
     }
   }, [setdms, database]);
   const handlDMlistupdated = useCallback((payload) => {
-    if (dms.find(obj=>obj.id === payload.userId))
-        return ;
+    if (dms.find(obj => obj.id === payload.userId))
+      return;
     if (database) {
       console.log("pass update dmlist, database good")
       const filteredObjects = database.find(obj => obj.id === payload.userId);
@@ -70,7 +70,7 @@ export default function ChatroomList(props: ChatroomListProps) {
         alert(filteredObjects.name + " had seent you a message!");
       setdms((prevdms) => [...prevdms, {
         id: filteredObjects.id,
-        name: filteredObjects.name, 
+        name: filteredObjects.name,
         prof: filteredObjects.profilePicture
       }]);
     }
@@ -81,25 +81,25 @@ export default function ChatroomList(props: ChatroomListProps) {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
     if (selectedRoom == payload.roomName)
-        setSelectedRoom("");
+      setSelectedRoom("");
   }, [chatrooms]);
 
-  const handleBanEvent= useCallback((payload) => {
+  const handleBanEvent = useCallback((payload) => {
     alert(payload.message);
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
     if (selectedRoom == payload.roomName)
-        setSelectedRoom("");
+      setSelectedRoom("");
   }, [chatrooms]);
 
-  const handleKickEvent= useCallback((payload) => {
+  const handleKickEvent = useCallback((payload) => {
     alert(payload.message);
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
     if (selectedRoom == payload.roomName)
-        setSelectedRoom("");
+      setSelectedRoom("");
   }, [chatrooms]);
 
   const handleRoomsUpdate = useCallback((payload) => {
@@ -132,54 +132,54 @@ export default function ChatroomList(props: ChatroomListProps) {
       setSelectedRoom(roomName);
     }
   }
-  useEffect(()=>{
-    if(!database){
+  useEffect(() => {
+    if (!database) {
       console.log("databse is empty!")
       props.onUpdate();
     }
-  },[])
+  }, [])
   useEffect(() => {
-    if(props.socket){
-    props.socket.on("userRooms", handleRoomsListReceived);
-    props.socket.on("dmsList", handleDMRoomsListReceived);
-    props.socket.on("roomCreated", handleRoomCreated);
-    props.socket.on("roomJoined", handleRoomJoined);
-    props.socket.on("roomUpdated", handleRoomsUpdate);
-    props.socket.on("roomLeft", handleRoomDeleted);
-    props.socket.on("dmUpdated", handlDMlistupdated);
-    props.socket.on("banned", handleBanEvent);
-    props.socket.on("kicked", handleKickEvent);
-    // console.log("received");
-    // console.log(props.socket.listeners("roomsListReceived"));
+    if (props.socket) {
+      props.socket.on("userRooms", handleRoomsListReceived);
+      props.socket.on("dmsList", handleDMRoomsListReceived);
+      props.socket.on("roomCreated", handleRoomCreated);
+      props.socket.on("roomJoined", handleRoomJoined);
+      props.socket.on("roomUpdated", handleRoomsUpdate);
+      props.socket.on("roomLeft", handleRoomDeleted);
+      props.socket.on("dmUpdated", handlDMlistupdated);
+      props.socket.on("banned", handleBanEvent);
+      props.socket.on("kicked", handleKickEvent);
+      // console.log("received");
+      // console.log(props.socket.listeners("roomsListReceived"));
     }
     return () => {
-      if(props.socket){
-      // Log the event listeners to the console
-      props.socket.off("userRooms", handleRoomsListReceived);
-      props.socket.off("dmsList", handleDMRoomsListReceived);
-      props.socket.off("roomCreated", handleRoomCreated);
-      props.socket.off("roomJoined", handleRoomJoined);
-      props.socket.off("roomLeft", handleRoomDeleted);
-      props.socket.off("roomUpdated", handleRoomsUpdate);
-      props.socket.off("dmUpdated", handlDMlistupdated);
-      props.socket.off("banned", handleBanEvent);
-      props.socket.off("kicked", handleKickEvent);
+      if (props.socket) {
+        // Log the event listeners to the console
+        props.socket.off("userRooms", handleRoomsListReceived);
+        props.socket.off("dmsList", handleDMRoomsListReceived);
+        props.socket.off("roomCreated", handleRoomCreated);
+        props.socket.off("roomJoined", handleRoomJoined);
+        props.socket.off("roomLeft", handleRoomDeleted);
+        props.socket.off("roomUpdated", handleRoomsUpdate);
+        props.socket.off("dmUpdated", handlDMlistupdated);
+        props.socket.off("banned", handleBanEvent);
+        props.socket.off("kicked", handleKickEvent);
       }
     }
-  }, [props.socket, handleRoomsListReceived, handleDMRoomsListReceived, handleRoomCreated, handleRoomJoined, handleRoomDeleted, handleRoomsUpdate ,handlDMlistupdated, handleBanEvent, handleKickEvent]);
+  }, [props.socket, handleRoomsListReceived, handleDMRoomsListReceived, handleRoomCreated, handleRoomJoined, handleRoomDeleted, handleRoomsUpdate, handlDMlistupdated, handleBanEvent, handleKickEvent]);
 
   // Render
   return (
     <div className="people-list col-lg-3">
       <div className="row">
         <div className="search col-lg-6">
-          <button onClick={() => { setShowAddRoom(true); }} >New Room</button>
+          <button onClick={() => { setShowAddRoom(true);}} >Nouveau Salon</button>
           <RoomCreate isVisible={showAddRoom}
             onClose={() => setShowAddRoom(false)}
             socket={props.socket} />
         </div>
         <div className="search col-lg-6">
-          <button onClick={() => { setShowJoinRoom(true); }}>Join Room</button>
+          <button onClick={() => { setShowJoinRoom(true); }}>Rejoindre le salon</button>
           <RoomJoin isVisible={showJoinRoom}
             footer={<button>Cancel</button>}
             onClose={() => setShowJoinRoom(false)}
@@ -191,7 +191,7 @@ export default function ChatroomList(props: ChatroomListProps) {
               <img src={group} />
               <div className="about"> <div className="name" >{room.roomName} </div>
                 <div className="status">
-                  <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Private"} {room.protected ? <FontAwesomeIcon icon={faLock} /> : null}
+                  <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Privé"} {room.protected ? <FontAwesomeIcon icon={faLock} /> : null}
                 </div>
               </div>
             </li>

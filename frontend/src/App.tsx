@@ -54,13 +54,15 @@ function App() {
 						}
 					/>
 				) : null}
+				{user ? (
+					<Route
+						path="/stats"
+						element={<Layout children={<InitStats user={user}/>} />}
+					/>
+				): null}
 				<Route
-					path="/stats"
-					element={<Layout children={<InitStats />} />}
-				/>
-				<Route
-					path="/chat"
-					element={<Layout children={<ChatLogin />} />}
+					path="/chat/:userId/:userName"
+					element={<Layout children={<ChatLogin user={user} />} />}
 				/>
 				<Route path="/" element={<LoginSelector />} />
 				<Route path="/register" element={<CreateAccount />} />

@@ -47,11 +47,12 @@ export default function InitAchievements({ userId, showLocked }) {
 		}
 		fetchAchievements(userId);
 	}, [userId]);
-
+	
 	return <Achievements achievements={achievements} showLocked={showLocked} />;
 }
 
 function Achievements({ achievements, showLocked }) {
+
 	return (
 		<div className="achievements">
 			{achievements.map(
@@ -68,7 +69,7 @@ function Achievements({ achievements, showLocked }) {
 							<div
 								className="achievement-badge"
 								style={{
-									// backgroundImage: `url(${achievement.icon})`,
+									backgroundImage: `url(${achievement.icon})`,
 								}}
 							></div>
 							<div className="achievement-details">

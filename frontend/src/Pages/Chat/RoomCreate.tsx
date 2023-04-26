@@ -34,27 +34,28 @@ export default function RoomCreate(props: RoomCreatProps) {
   const handleCloseAfterRoomCreated = useCallback((payload) => {
     props.onClose()
   }, []);
+  const handleAlertmessage = useCallback((payload) => {
+    alert(payload.message);
+}, [])
 
   useEffect(() => {
     if (props.socket) {
       props.socket.on("roomCreated", handleCloseAfterRoomCreated);
-      props.socket.on("roomNotCreated", (payload) => {
-        alert(payload.message);
-      });
+      props.socket.on("roomNotCreated", handleAlertmessage);
     }
     return () => {
       if (props.socket) {
         props.socket.off('roomCreated', handleCloseAfterRoomCreated);
-        props.socket.off('roomNotCreated');
+        props.socket.off('roomNotCreated',handleAlertmessage);
       }
     };
-  }, [props.socket, handleCloseAfterRoomCreated]);
+  }, [props.socket, handleCloseAfterRoomCreated,handleAlertmessage]);
 
   return !props.isVisible ? null : (
     <div className="modal" onClick={props.onClose}>
       <div className="modal-dialog" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">New Room</h3>
+          <h3 className="modal-title">Nouveau Salon</h3>
           <span className="modal-close" onClick={props.onClose}>
             &times;
           </span>
@@ -63,23 +64,23 @@ export default function RoomCreate(props: RoomCreatProps) {
           <div className="modal-content">
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="inputChatRoomName">Chat Room Name</label>
-                <input type="text" className="form-control" name="roomName" placeholder="Name" required value={formData.name} onChange={handleInputChange} />
+                <label htmlFor="inputChatRoomName">Nom de le salon</label>
+                <input type="text" className="form-control" name="roomName" placeholder="Nom" required value={formData.name} onChange={handleInputChange} />
               </div>
               <div className="form-group col-md-4">
-                <label htmlFor="inputAccess">Accessibility:</label>
+                <label htmlFor="inputAccess">Accessibilité</label>
                 <select name="visibility" className="form-control" required value={formData.visibility} onChange={handleInputChange}>
                   <option value="public" >Public</option>
-                  <option value="private">Private</option>
+                  <option value="private">Privé</option>
                 </select>
               </div>
               <div className="form-group">
-                <label htmlFor="inputPassword">Password</label>
-                <input type="text" className="form-control" name="password" placeholder="Optional" value={formData.password} onChange={handleInputChange} />
+                <label htmlFor="inputPassword">Mot de passe</label>
+                <input type="text" className="form-control" name="password" placeholder="facultatif" value={formData.password} onChange={handleInputChange} />
               </div>
               <div className="modal-form">
-                <button type="submit">Submit</button>
-                <button onClick={props.onClose}>Cancel</button>
+                <button type="submit">Envoyer</button>
+                <button onClick={props.onClose}>Annuler</button>
               </div>
 
             </form>

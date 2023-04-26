@@ -372,9 +372,9 @@ export default function FriendsList() {
                         })}
                 </div>
             </div>
-            <Link to="/message" className="FriendsList-messages" style={{textDecoration: 'none', color: 'whitesmoke'}}>
+            {/* <Link to="/chat" className="FriendsList-messages" style={{textDecoration: 'none', color: 'whitesmoke'}}>
                 <FontAwesomeIcon icon={faComments} size="2x" />
-            </Link>
+            </Link> */}
         </div>
     );
 }

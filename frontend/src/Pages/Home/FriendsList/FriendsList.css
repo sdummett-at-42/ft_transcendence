@@ -32,6 +32,10 @@
     height: 85vmin;
 }
 
+.FriendsList-list::-webkit-scrollbar {
+    display: none;
+}
+
 .FriendsList-messages {
     position: fixed;
     border: 1px solid #d1a23a;

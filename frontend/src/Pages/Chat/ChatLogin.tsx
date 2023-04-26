@@ -1,6 +1,6 @@
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import React from "react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useCallback } from 'react';
 import ChatroomList from "./ChatroomList";
 import Message from './Message';
 import RoomDetail from "./RoomDetail";
@@ -10,18 +10,22 @@ import { createContext } from "react";
 export const DatabaseContext = createContext();
 import { io } from "socket.io-client";
 import Cookies from 'js-cookie';
+import { useParams } from "react-router-dom";
+
 
 let socket;
 
 export default function ChatLogin() {
   const [roomName, setRoomName] = useState(null);
-  const [userId, setUserId] = useState(0);
+  const [myUserId, setMyUserId] = useState(0);
   const [database, setDatabase] = useState([]);
   const [shouldUpdateDatabase, setShouldUpdateDatabase] = useState(false);
   const [ifsocket, setIfSocket] = useState(false);
   const [ifDM, setIfDM] = useState(false);
   const [toDMID, setToDMID] = useState({ id: 0, name: "" });
   const [ifDataReady, setifDataReady] = useState(false);
+  const [blockList, setBlockList] = useState([]);
+  const { userId, userName } = useParams();
 
   const handleUpdateDatabase = async () => {
     await fetch("http://localhost:3001/users/", {
@@ -71,6 +75,11 @@ export default function ChatLogin() {
     setShouldUpdateDatabase(true);
   };
 
+  const handleBlockList = useCallback((payload) =>{
+    console.log("handleBlockList", payload);
+    setBlockList(payload.list);
+},[blockList])
+
   useEffect(() => {
     if (shouldUpdateDatabase) {
       handleUpdateDatabase();
@@ -103,22 +112,30 @@ export default function ChatLogin() {
       })
         .then((response) => response.json())
         .then(json => {
-          setUserId(json.id);
+          setMyUserId(json.id);
         });
     };
     fetchData();
   }, []);
 
   useEffect(() => {
-    if(socket){
-    socket.on("memberListUpdated", handleUpdateDatabase);
+    if (socket) {
+      socket.on("memberListUpdated", handleUpdateDatabase);
     }
     return () => {
-      if(socket){
-      socket.off("memberListUpdated", handleUpdateDatabase);
+      if (socket) {
+        socket.off("memberListUpdated", handleUpdateDatabase);
       }
     };
   }, [socket, handleUpdateDatabase]);
+
+  useEffect(() =>{
+    console.log("outside", userId, userName);
+    setRoomName(userName);
+    setIfDM(true);
+    setToDMID(userId, userName);
+
+  },[])
 
   useEffect(() => {
     socket = io("http://localhost:3001", {
@@ -130,6 +147,7 @@ export default function ChatLogin() {
       setIfSocket(true)
       socket.emit("getUserRooms");
       socket.emit("getDmsList");
+      socket.emit("getBlockList");
       console.log('Socket connected');
     });
     socket.on('disconnect', () => {
@@ -141,6 +159,16 @@ export default function ChatLogin() {
       socket.disconnect();
     };
   }, []);
+  useEffect(() => {
+    if (socket){
+      socket.on('userBlockList',handleBlockList);
+    }
+    return()=>{
+      if (socket){
+        socket.off('userBlockList',handleBlockList);
+      }
+    }
+  },[handleBlockList]);
 
   if (ifsocket == false) {
     return <div>Connecting to server...</div>;
@@ -151,8 +179,8 @@ export default function ChatLogin() {
           <div className="row">
             <DatabaseContext.Provider value={database}>
               <ChatroomList socket={socket} onListClick={handleListClick} onUpdate={handleChildComponentUpdate} ifDM={ifDM} toDMID={toDMID} ifDataReady={ifDataReady} />
-              <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={userId} onUpdate={handleChildComponentUpdate} />
-              <RoomDetail socket={socket} onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId={userId} ifDM={ifDM} />
+              <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={myUserId} onUpdate={handleChildComponentUpdate} />
+              <RoomDetail socket={socket} onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId={myUserId} ifDM={ifDM} blockList={blockList}/>
             </DatabaseContext.Provider>
           </div>
         </div>

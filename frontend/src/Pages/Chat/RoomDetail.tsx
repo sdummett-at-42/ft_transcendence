@@ -19,6 +19,7 @@ interface RoomDetailProps {
   onUpdate: () => void,
   UserId: Number,
   ifDM: boolean,
+  blockList : Number[],
 }
 export default function RoomDetail(props: RoomDetailProps) {
   const [show, setShow] = useState(false);
@@ -41,7 +42,7 @@ export default function RoomDetail(props: RoomDetailProps) {
         if (user !== undefined) {
           clearInterval(interval);
           setUserId(user.id);
-          alert("Can not find the user, please try again.");
+          alert("Utilisateur non trouvé. Veuillez réessayer.");
         }
       }, 1000);
     } else {
@@ -53,7 +54,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const handleInvite = () => {
     let userId = findInDatabase(inputInvite);
     if (userId == 0) {
-      alert("User not found. Please try again.");
+      alert("Utilisateur non trouvé. Veuillez réessayer.");
       return;
     }
     const payload = {
@@ -67,7 +68,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const handleBan = () => {
     let userId = findInDatabase(input);
     if (userId == 0) {
-      alert("User not found. Please try again.");
+      alert("Utilisateur non trouvé. Veuillez réessayer.");
       return;
     }
     const payload = {
@@ -80,7 +81,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const handleUnBan = () => {
     let userId = findInDatabase(input);
     if (userId == 0) {
-      alert("User not found. Please try again.");
+      alert("Utilisateur non trouvé. Veuillez réessayer.");
       return;
     }
     const payload = {
@@ -93,7 +94,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const handleMute = () => {
     let userId = findInDatabase(input);
     if (userId == 0) {
-      alert("User not found. Please try again.");
+      alert("Utilisateur non trouvé. Veuillez réessayer.");
       return;
     }
     const payload = {
@@ -108,7 +109,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const handleKick = () => {
     let userId = findInDatabase(input);
     if (userId == 0) {
-      alert("User not found. Please try again.");
+      alert("Utilisateur non trouvé. Veuillez réessayer.");
       return;
     }
     const payload = {
@@ -194,11 +195,11 @@ export default function RoomDetail(props: RoomDetailProps) {
     (!props.ifDM) && props.roomName ? (
       <div className="chatinfo col-lg-3">
         <div className="chat-info-header clearfix">
-          <div className='chat-info-title'>Room Info
+          <div className='chat-info-title'>Informations sur la salle
             {ifAdmin ? (
               <button onClick={() => {
                 setShow(true);
-              }} >Setting</button>
+              }} >Paramètre</button>
             ) : null}
             <Setting isVisible={show}
               socket={props.socket}
@@ -210,16 +211,16 @@ export default function RoomDetail(props: RoomDetailProps) {
               onClose={() => setShowConfirm(false)}
               socket={props.socket}
               message={message} /></div>
-          <div className='chat-info-subtitle'>Invite a friend</div>
+          <div className='chat-info-subtitle'>Inviter un ami</div>
           <div className="chat-info-form">
-            <input placeholder="Name" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)} />
+            <input placeholder="Nom" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)} />
             <button onClick={handleInvite}><FontAwesomeIcon icon={faPlus} /></button>
           </div>
           {ifAdmin ? (
             <>
-                <div className='chat-info-subtitle'>Moderate user</div>
+                <div className='chat-info-subtitle'>Modérer l'utilisateur</div>
                 <div className="chat-info-form">
-                <input placeholder="Name" value={input} onChange={(e) => setInput(e.target.value)} ></input>
+                <input placeholder="Nom" value={input} onChange={(e) => setInput(e.target.value)} ></input>
                 <div className="dropdown" id="drop-down">
                   <span>Action</span>
                   <label>
@@ -237,8 +238,9 @@ export default function RoomDetail(props: RoomDetailProps) {
           ) : null}
           {/* (props.ifDM) ? <Profile socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />  */}
         </div>
-        <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />
-      </div>) : ((props.ifDM) ? <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} /> : <div className="chatinfo" ></div>)
+        {/* <h1>||{props.blockList}||</h1> */}
+        <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList}/>
+      </div>) : ((props.ifDM) ? <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList} /> : <div className="chatinfo" ></div>)
   );
 }
 

@@ -70,3 +70,29 @@
 .Friend-message.Friend-offline {
   color: gray;
 }
+
+.Friend-dropdown-content {
+  /* display: none; */
+  position: absolute;
+  right: 3vw;
+  z-index: 1;
+}
+
+/* .Friend-dropdown:hover .Friend-dropdown-content {
+  display: block;
+} */
+
+.Friend-dropdown-content div {
+  background-color: #1d2c41;
+  color: white;
+  padding: 5px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.Friend-dropdown-content div:hover {
+  cursor: pointer;
+  background-color: #445454;
+}

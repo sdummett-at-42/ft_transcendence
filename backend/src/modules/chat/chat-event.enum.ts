@@ -82,4 +82,6 @@ export enum Event {
 	getDmHist = "getDmHist",
 	dmHist = "dmHist",
 	dmUpdated = "dmUpdated",
+	userBlockList="userBlockList",
+	getBlockList ="getBlockList",
 }
