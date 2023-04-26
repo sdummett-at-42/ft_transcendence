@@ -204,9 +204,6 @@ export class Game {
     limitTimer: number = 4 * 60 * 1000;// 4 min
     //limitTimer: number = 5000;// 5 sec
 
-    // Game finish or not
-    gameDone : Boolean = false; // true = finish
-
     // Game end
     typewin?: Boolean; // 0 score 1 abandon
     winner?: Player;

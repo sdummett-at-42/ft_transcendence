@@ -61,11 +61,11 @@ export class GameService {
         if (game.p1.socket != undefined || game.p2.socket != undefined) {
             clearTimeout(game.timeoutJoin);
             game.timeoutJoin = setTimeout(() => {
-                if (game.p1.socket != undefined) {
+                if (game.p1.socket === undefined) {
                     // player 2 win abandon
                     this.victoryByGiveUpLimitMax(game, 2);
                 }
-                if (game.p2.socket != undefined) {
+                if (game.p2.socket === undefined) {
                     // player 1 win abandon
                     this.victoryByGiveUpLimitMax(game, 1);
                 }
@@ -415,6 +415,12 @@ export class GameService {
         const bullet_01 = new Bullet(newX, newY, r, 3, 30, newA);
         game.shapes.push(bullet_01);
 
+        if (side === 1)
+            this.setBulletRelaunch(game, game.p1.racket);
+        else
+            this.setBulletRelaunch(game, game.p2.racket);
+
+
         //game.server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
             
         // TODO
@@ -632,7 +638,9 @@ export class GameService {
       
     private checkCollision(game : Game, bullet : Bullet) {
         // Vérifier si la balle touche les murs horizontaux
-        if (bullet.pos.y + bullet.r > game.field.height || bullet.pos.y - bullet.r < 0)
+        if (bullet.pos.y + bullet.r > game.field.height) // bottom
+            bullet.a = -bullet.a;
+        if (bullet.pos.y - bullet.r < 0) // top
             bullet.a = -bullet.a;
             
         // Check if bullet hit an other shape

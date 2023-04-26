@@ -25,6 +25,11 @@ export enum EventGame {
     // Lobby Emit (Client)
     playerJoinQueue = "joinQueue",      // Player join Q
     playerLeaveQueue = "leaveQueue",    // Player leave Q
+
+    lobbySendInvitGame = "sendInvitationGame",
+    lobbyGetInvitGame = "getInvitationGame",
+    lobbyResponseInvitGame = "reponseInvitationGame",
+    lobbyInvitGame = "refuseInvitationGame",
     
     
     // Lobby recv (srv)

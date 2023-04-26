@@ -15,13 +15,13 @@ export class LobbyService {
 
     BaseThreshold = 1000 / 100;
 
-    // TODO
-    // Ajouter liste player en jeu
-
     nbGame : number = 0;
     users : { player : Player, threshold : number, type : string}[] = [];
     games : Game[] = [];
     queueInterval: NodeJS.Timeout;
+    // Todo liste des user et de leurs socket activer
+    usersSocket : {id : number, socketId : string[]};
+
 
     // TODO
     // inutile
@@ -40,6 +40,23 @@ export class LobbyService {
 
         console.log(`type: ${type}`);
 
+        const userId = 1;
+        const sockets = await this.gameGateway.server.fetchSockets();
+        console.log("--------");
+        Object.entries(sockets)
+            .filter(([key, value]) => { userId === value.data.userId })
+
+        console.log("--------");
+
+        const socketIds = Object.entries(sockets)
+            .filter(([key, value]) => { userId === value.data.userId })
+            .map(([key, value]) => { return value.id });
+        
+            if (socketIds.length)
+                console.log("***",socketIds);
+            else
+                console.log(`User ${client.id} no socket`);
+
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
 
         if (index === -1 && !this.inMatch(client.data.userId)) { // Check if player already in Q and not in game
@@ -50,7 +67,6 @@ export class LobbyService {
                     elo: true,
                 },
             });
-
             //id, name, elo, socket
             const data = {id : client.data.userId, name : prismData.name, elo : prismData.elo , socket : client.data.socket}
 
@@ -66,7 +82,42 @@ export class LobbyService {
         const suppr = this.users.findIndex(users => users.player.id === client.data.userId); // check if in users first element us.id == cl.id
         if (suppr !== -1)
             this.users.splice(suppr, 1);
-    }    
+    }
+
+    /* ****************** *\
+    |* Invitation functon *|
+    \* ****************** */
+
+    // envoyer ad target emit getInvite
+    async lobbySendInvitGame(client: Socket, idTarget : number) {
+
+        // Retirer Q + check inMatch
+        this.lobbyLeaveQueue(client);
+        if (this.inMatch(client.data.userId)) {// true -> match
+            // reponse negative
+        }
+        // check si idtarget dispo
+        const sockets = await this.gameGateway.server.fetchSockets();
+        const socketIds = Object.entries(sockets)
+            .filter(([key, value]) => { idTarget === value.data.idTarget })
+            .map(([key, value]) => { return value.id });
+        
+            if (socketIds)
+                console.log(socketIds);
+            else
+                console.log(`User ${idTarget} no socket`);
+
+
+        // send to iftarget getinvita
+    }
+
+    // target send to sender response -> gogame | refus
+    lobbyResponseInvitGame(client : Socket, data : {p1 : number, p2 : number, res : Boolean}) {
+        // check si p1 et p2 dispo
+    }
+
+
+
     
     /* *************** *\
     |* Interne functon *|
@@ -74,8 +125,16 @@ export class LobbyService {
 
     inMatch(id : number) : Boolean {
         const foundGame = this.games.find(
-            game => !game.gameDone && ( game.p1.id === id || game.p2.id === id ));
-        return !!foundGame; // retourne true si foundGame n'est pas null
+            game => !game.endBool && ( game.p1.id === id || game.p2.id === id ));
+
+        if (foundGame === undefined) {
+            return false;
+        }
+        else {
+            return true;
+        }
+
+        // return !!foundGame; // retourne true si foundGame n'est pas null
     }
     
     intervalQueueFunction() {
@@ -167,11 +226,6 @@ export class LobbyService {
         const remP2 = this.users.findIndex(users => users.player.id === p2.player.id);
         if (remP2 != -1)
             this.users.splice(remP2, 1);
-
-        // console.log("Users after lobbycreate:", this.users.length);
-
-        // console.log("Player 1:", p1);
-        // console.log("Player 2:", p2);
             
         this.initGame(this.gameGateway.server, game);
 
@@ -227,25 +281,22 @@ export class LobbyService {
         const height = game.field.height
 
         if (!game.boolMap) // pas de map choisit -> aleatoire
-            idMap = game.id % 2;
+            idMap = game.id % 3;
         else
             idMap = game.map;
 
         if (idMap === 0) { // blackhole
-            const BlackHole_01 = new BlackHole(field.width / 2, field.height / 2, 45);
+            const BlackHole_01 = new BlackHole(width / 2, height / 2, 45);
             game.shapes.push(BlackHole_01);
         } else if (idMap === 1) {
             // Creation Circle : x, y, r
-            const circle_01 = new Circle(200, 100, 30);
-            game.shapes.push(circle_01);// Creation Circle : x, y, r
-            const circle_02 = new Circle(200, 100, 30);
-            game.shapes.push(circle_01);// Creation Circle : x, y, r
-            const circle_03 = new Circle(200, 100, 30);
-            game.shapes.push(circle_01);// Creation Circle : x, y, r
-            const circle_04 = new Circle(200, 100, 30);
-            game.shapes.push(circle_01);// Creation Circle : x, y, r
-            const circle_05 = new Circle(200, 100, 30);
-            game.shapes.push(circle_01);
+            const c_01 = new Circle(width / 4, height / 4, 30);
+            const c_02 = new Circle(width / 4, height * 0.75, 30);
+            const c_03 = new Circle(width / 2, height / 2, 30);
+            const c_04 = new Circle(width * 0.75 , height / 4, 30);
+            const c_05 = new Circle(width * 0.75, height * 0.75, 30);
+
+            game.shapes.push(c_01, c_02, c_03, c_04, c_05);
         }
     }
 
@@ -314,35 +365,24 @@ export class LobbyService {
         socket.data.name = prismData.name;
         socket.data.elo = prismData.elo;
 
-        console.log(socket.handshake.auth);
         if (!socket.handshake.auth.url) // lobby nothing to do
             return null;
 
         const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
 
-        console.log("getUrl = ", getUrl);
 
-        console.log("getUrl size = ", getUrl.length);
 
         if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
-            console.log("lobby service connect: not /game or /game/:id");
             return null;
         } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
             //TODO
             // check if game exist| ingame| finish
 
-            console.log("socket in: /game/:id");
 
             const gameId = getUrl.pop();
             
             const index = this.games.findIndex(games => games.id === Number(gameId));
             const game : Game = this.games[index];
-
-            //console.log("game:", game);
-            if (game) {
-                console.log("p1 id:", game.p1.id);
-                console.log("p2 id:", game.p2.id);
-            }
 
             if (game === undefined || game.p1.id === undefined || game.p2.id === undefined)
                 return null;
@@ -400,7 +440,6 @@ export class LobbyService {
         const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
 
         if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
-            console.log("lobby service disconnect: not /game or /game/:id");
             return null;
         } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
             //TODO
@@ -425,5 +464,7 @@ export class LobbyService {
         }
         return null;
     }
+
+    
 
 }
