@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Stats.css";
 import Popup from "../Popup/Popup";
-import InitAchievements from "../Achievements/Achievements";
+import SpecProfile from "../Profile/SpecProfile/SpecProfile";
 
 export default function InitStats({ user }) {
 	const [users, setUsers] = useState([]);
@@ -172,51 +172,7 @@ function UserList({ users, match }) {
 			{filteredUsers.length === 0 ? <p className="Stats-no-match">Aucun match</p> : (
 				selectedUser && (
 					<Popup isOpen={isOpen} isClose={handleClose}>
-						<div className="Profile-screen-card-popup">
-							<div className="Profile-screen-card-overlay"></div>
-                    		<div className="Profile-screen-card-content">
-								<div className="Profile-screen-card-popup-content">
-									<img
-										src={selectedUser.profilePicture}
-										alt={`Photo de profil de ${selectedUser.name}`}
-										className="Profile-picture"
-										draggable="false"
-									/>
-                       				<div className="Profile-screen-card-user">
-                           				<span className="Profile-screen-card-title">{selectedUser.name}</span>
-										<p className="Profile-screen-card-text">Niveau :{selectedUser.elo}</p>
-                       				</div>
-									<span className="Profile-screen-card-title">Historique</span>
-									<div className="Profile-match-container Profile-screen-card-text">
-										{allMatches.length === 0 ? (
-											<p className="Profile-screen-card-text">Aucun match</p>
-										) : (
-											<table className="Profile-match-table-popup">
-												<tbody>
-													{allMatches.map((match) => (
-														<tr
-															key={`match-${match.id}`}
-															className={`Profile-match-table-tr ${(match.winnerId === selectedUser.id) ? "Profile-match-table-win" : "Profile-match-table-losse"}`}
-															onClick={() => handleUserClick(Opponent(match, selectedUser))}
-														>
-															<td >
-																<div className="Profile-match-td">
-																	<img src={Opponent(match, selectedUser).profilePicture} alt="Photo de profil de l'adversaire" className="Profile-match-picture" />
-																	<p>{Opponent(match, selectedUser).name}</p>
-																</div>
-															</td>
-															<td>{match.winnerScore}/{match.looserScore}</td>
-														</tr>
-													))}
-												</tbody>
-											</table>
-										)}
-									</div>
-									<span className="Profile-screen-card-title">Succès</span>
-									<InitAchievements userId={selectedUser.id} showLocked={false} />
-								</div>
-							</div>
-						</div>
+						<SpecProfile user={selectedUser} handleUserClick={handleUserClick}/>
 					</Popup>
 				)
 			)}

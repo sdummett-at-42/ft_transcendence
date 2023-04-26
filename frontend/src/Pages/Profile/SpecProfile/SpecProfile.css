@@ -1,0 +1,61 @@
+/*** -----Popup----- ***/
+
+.Profile-screen-card-popup {
+    height: 90vh;
+    width: 100%;
+    display: flex;
+    border: 3px solid rgb(var(--primary-rgb) / 80%);
+    border-radius: 1rem;
+    background-color: rgb(var(--primary-rgb) / 15%);
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+}
+
+.Profile-screen-card-popup:after, .Profile-screen-card-popup:before {
+    content: "";
+    height: 5px;
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    translate: -50% 0%;
+    background-color: rgb(var(--primary-rgb));
+}
+  
+.Profile-screen-card-popup:before {
+    width: 15%;
+    top: 0rem;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+}
+
+.Profile-screen-card-popup:after {
+    width: 15%;
+    bottom: 0rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+.Profile-screen-card-popup-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: scroll;
+}
+
+.Profile-screen-card-popup-content::-webkit-scrollbar {
+    display: none;
+}
+
+.Profile-match-table-popup {
+    z-index: 3;
+    width: 100%;
+}
+
+.Profile-match-table-popup td {
+    padding: 10px;
+	text-align: center;
+	border: 1px solid rgb(var(--primary-rgb) / 50%);
+    margin-bottom: 6vh;
+}

@@ -66,7 +66,6 @@ export default function Custom(props) {
                         <img src={user.profilePicture} alt="user pp" className="Profile-picture" />
                         <div className="Custom-screen-user">
                             <span className="name" data-value={user.name} onMouseOver={onMyName} ref={myNameRef}>{user.name}</span>
-                            <p className="link" >{user.elo}</p>
                         </div>
                         <button className="cybr-btn" onClick={handleButtonClick}>
                             Trouver un match<span aria-hidden>_</span>
