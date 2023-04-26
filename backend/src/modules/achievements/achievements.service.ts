@@ -7,7 +7,7 @@ interface Achievement {
 	icon: string,
 	name: string
 	description: string,
-	handler: any; // BooleanFunction,
+	handler: BooleanFunction;
 }
 
 @Injectable()
@@ -28,31 +28,31 @@ export class AchievementService {
 			icon: "",
 			name: "Bienvenue champion !",
 			description: "Tu as gagné ton premier match ! Bravo ! 🏆",
-			handler: async (userId: number) => await this.checkOneWin(userId),
+			handler: async (userId: number) => await this.checkWin(userId, 1),
 		},
 		{
 			icon: "",
 			name: "Un début prometteur !",
 			description: "Tu as gagné 10 matchs ! 🏆",
-			handler: async (userId: number) => await this.checkTenWin(userId),
+			handler: async (userId: number) => await this.checkWin(userId, 10),
 		},
 		{
 			icon: "",
 			name: "Invincible !",
 			description: "Tu as gagné 100 matchs ! 🏆",
-			handler: async (userId: number) => await this.checkHundredWin(userId),
+			handler: async (userId: number) => await this.checkWin(userId, 100),
 		},
 		{
 			icon: "",
 			name: "Pense à te reposer !",
 			description: "Tu as gagné 1000 matchs ! 🏆",
-			handler: async (userId: number) => await this.checkThousandWin(userId),
+			handler: async (userId: number) => await this.checkWin(userId, 1000),
 		},
 		{
 			icon: "",
 			name: "Millionnaire !",
 			description: "Tu as gagné 10000 matchs ! 🏆",
-			handler: async (userId: number) => await this.checkTenThousandWin(userId),
+			handler: async (userId: number) => await this.checkWin(userId, 10000),
 		},
 		{
 			icon: "",
@@ -125,43 +125,8 @@ export class AchievementService {
 			name: "Atteindre 2000 elo",
 			description: "Tu as atteint 2000 elo ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkElo(userId, 2000),
-		},
-
-		// Win streak achievements
-		// Perfect win
-
-		// {
-			// icon: "",
-		// 	name: "Etre admin",
-		// 	description: "Tu es admin ! Bravo ! 🏆",
-		// 	handler: async (userId: number) => await this.checkIfAdmin(userId),
-		// },
-		// {
-			// icon: "",
-		// 	name: "Envoyer son premier message",
-		// 	description: "Tu as envoyé ton premier message ! Bravo ! 🏆",
-		// 	handler: async (userId: number) => await this.checkMessageSent(userId),
-		// },
-		// {
-			// icon: "",
-		// 	name: "Creer son premier channel",
-		// 	description: "Tu as créé ton premier channel ! Bravo ! 🏆",
-		// 	handler: async (userId: number) => await this.checkChannelCreated(userId),
-		// },
-
-
+		}
 	];
-
-	// private async checkIfAdmin(userId: number) {
-	// Dans redis...
-	// }
-
-	// private async checkMessageSent(userId: number, nb: number) {
-	// Dans redis...
-	// }
-	// private async checkChannelCreated(userId: number) {
-	// Dans redis...
-	// }
 
 	private async checkFTElo(userId: number) {
 		const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -195,32 +160,13 @@ export class AchievementService {
 		return user.friends.length >= nb;
 	}
 
-	private async checkWin(userId: number) {
-		return this.prisma.match.count({
+	private async checkWin(userId: number, nbMatch: number) {
+		const matchesNb = await this.prisma.match.count({
 			where: {
 				winnerId: userId
 			}
 		});
-	}
-
-	private async checkOneWin(userId: number): Promise<boolean> {
-		return await this.checkWin(userId) >= 1;
-	}
-
-	private async checkTenWin(userId: number): Promise<boolean> {
-		return await this.checkWin(userId) >= 10;
-	}
-
-	private async checkHundredWin(userId: number): Promise<boolean> {
-		return await this.checkWin(userId) >= 100;
-	}
-
-	private async checkThousandWin(userId: number): Promise<boolean> {
-		return await this.checkWin(userId) >= 1000;
-	}
-
-	private async checkTenThousandWin(userId: number): Promise<boolean> {
-		return await this.checkWin(userId) >= 10000;
+		return matchesNb >= nbMatch;
 	}
 
 	/**
