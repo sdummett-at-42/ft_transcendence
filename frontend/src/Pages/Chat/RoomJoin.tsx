@@ -38,22 +38,7 @@ export default function RoomJoin(props: RoomJoinProps) {
   }, [])
 
   const handleNotJoined = useCallback((payload) => {
-    if (payload.message.includes("exists")) {
-      alert("This room doesn't exists.");
-    } else if (payload.message.includes("invited")) {
-      alert("You are not invited!");
-    } else if (payload.message.includes("banned")) {
-      alert("You are banned :(");
-    } else if (payload.message.includes("already")) {
-      alert("You are already a member in this room.");
-    } else if (payload.message.includes("full")) {
-      alert("Sorry, this room is full.");
-    } else if (payload.message.includes("incorrect")) {
-      alert("Password is incorrect! try again!");
-      setPassword("");
-    } else {
-      console.log("there is anotehr reason for notjoinedroom?");
-    }
+      alert(payload.message);
   }, [])
 
   useEffect(() => {
@@ -75,14 +60,14 @@ export default function RoomJoin(props: RoomJoinProps) {
         <div className="modal" onClick={props.onClose}>
           <div className="modal-dialog" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Join Room</h3>
+              <h3 className="modal-title">Rejoindre le salon</h3>
               <span className="modal-close" onClick={props.onClose}>
                 &times;
               </span>
             </div>
             <div className="modal-body">
               <div className="modal-content">
-                <label htmlFor="roomName">Room Name</label>
+                <label htmlFor="roomName">Nom de le salon</label>
                 <input
                   type="text"
                   id="roomName"
@@ -90,17 +75,17 @@ export default function RoomJoin(props: RoomJoinProps) {
                   onChange={(e) => setRoomName(e.target.value)}
                   required
                 />
-                <label htmlFor="password">Password</label>
+                <label htmlFor="password">Mot de passe</label>
                 <input
                   type="password"
                   id="password"
-                  placeholder="Optional"
+                  placeholder="facultatif"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <div className="modal-form">
-                  <button onClick={handleJoinRoom}>Join</button>
-                  <button onClick={props.onClose}>Cancel</button>
+                  <button onClick={handleJoinRoom}>Rejoindre</button>
+                  <button onClick={props.onClose}>Annuler</button>
                 </div>
               </div>
             </div>

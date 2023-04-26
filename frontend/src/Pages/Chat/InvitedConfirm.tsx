@@ -33,17 +33,17 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
 
   const handleNotJoined = useCallback((payload) => {
     if (payload.message.includes("exists")) {
-      alert("This room doesn't exists.");
+      alert("Cette salle n'existe pas.");
     } else if (payload.message.includes("invited")) {
-      alert("You are not invited!");
+      alert("Vous n'êtes pas invité");
     } else if (payload.message.includes("banned")) {
-      alert("You are banned :(");
+      alert("Tu es banni :(");
     } else if (payload.message.includes("already")) {
-      alert("You are already a member in this room.");
+      alert("Vous êtes déjà membre de cette salle.");
     } else if (payload.message.includes("full")) {
-      alert("Sorry, this room is full.");
+      alert("Désolé, cette salle est pleine.");
     } else if (payload.message.includes("incorrect")) {
-      alert("Password is incorrect! try again!");
+      alert("Le mot de passe est incorrect! essayer à nouveau!");
       setPassword("");
     } else {
       console.log("there is anotehr reason for notjoinedroom?");
@@ -51,7 +51,7 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
   }, [])
 
   useEffect(() => {
-    if(props.socket){
+    if (props.socket) {
       props.socket.on("roomJoined", handleCloseAfterRoomCreated);
       props.socket.on("roomNotJoined", handleNotJoined);
     }
@@ -61,7 +61,7 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
         props.socket.off("roomNotJoined", handleNotJoined);
       }
     };
-  }, [props.socket,handleCloseAfterRoomCreated, handleNotJoined]);
+  }, [props.socket, handleCloseAfterRoomCreated, handleNotJoined]);
 
   return (
     <div >
@@ -76,18 +76,18 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
             </div>
             <div className="modal-body">
               <div className="modal-content">
-                <h3>Would you like to join room {props.RoomName} ? </h3>
-                <label htmlFor="password">Password</label>
+                <h3>Voulez-vous rejoindre la salle de {props.RoomName} ? </h3>
+                <label htmlFor="password">Mot de pass</label>
                 <input
                   type="password"
                   id="password"
-                  placeholder="Optional"
+                  placeholder="facultatif"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <div className="modal-form">
-                  <button onClick={handleJoinRoom}>Join</button>
-                  <button onClick={props.onClose}>Cancel</button>
+                  <button onClick={handleJoinRoom}>Rejoindre</button>
+                  <button onClick={props.onClose}>Annuler</button>
                 </div>
               </div>
             </div>
