@@ -43,8 +43,8 @@ export class LobbyService {
         const userId = 1;
         const sockets = await this.gameGateway.server.fetchSockets();
         console.log("--------");
-        Object.entries(sockets)
-            .filter(([key, value]) => { userId === value.data.userId })
+        console.log(Object.entries(sockets)
+            .filter(([key, value]) => { userId === value.data.userId }));
 
         console.log("--------");
 

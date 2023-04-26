@@ -20,6 +20,7 @@ export class GameGateway {
 
   // Connection
   async handleConnection(socket: Socket) {
+    console.log("You are connected to socket game");
     // console.log('New client connected game:', socket.id);
 
     // console.log("client handshake", socket.handshake.auth.url);
@@ -133,5 +134,16 @@ export class GameGateway {
   @SubscribeMessage(EventGame.lobbyResponseInvitGame)
   lobbyResponseInvitGame(client: any, data : {p1 : number, p2 : number, res : Boolean}) : void {
     this.lobbyService.lobbyResponseInvitGame(client, data);
+  }
+
+  @SubscribeMessage("testGame")
+  testGame(client: any) : void {
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
   }
 }
