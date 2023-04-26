@@ -22,7 +22,6 @@ export class Circle implements Shape {
     type : string = "Circle";
     pos : Coordonnee;
     r : number;
-    // color or img
 
     constructor(x:number, y:number, r:number) {
         this.pos = new Coordonnee(x, y);
@@ -148,6 +147,9 @@ export class Game {
     p2 : Player;
     boolRanked : Boolean;
 
+    boolMap : Boolean = false;
+    map?: number;
+
     field : Field; // size
     shapes : Shape[] = [];
 
@@ -222,15 +224,11 @@ export class Game {
         this.p2.side = 2;
 
         this.field = new Field(400, 800);
-        if (type === "ranked") {
+
+        console.log(type);
+        if (type === "ranked")
             this.boolRanked = true;
-            console.log("type:",type);
-
-        }
-        else {
+        else
             this.boolRanked = false;
-            console.log("type:",type);
-
-        }
     }
 }

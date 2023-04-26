@@ -3,34 +3,37 @@ import { Player } from "../../../../../../backend/src/modules/game/entities/game
 import "./Result.css" 
 
 interface ResultProps {
-    data: [Player, Player];
+    data: [Boolean, Player, Player];
   };
   
 const Result = ({data} : ResultProps) => {
     console.log("RESULT= ", data);
 
-    const winner : Player = data[0];
-    const loser : Player = data[1];
+    const victory : string = data[0] === true ? "abandon" : "score";
+    const winner : Player = data[1];
+    const loser : Player = data[2];
 
 
     return (
     <div>
         <div className="screenGlobal">
             <div class="heading">
-                <h2>Fin de la partie ! Le gagant est {winner.name}</h2>
+                {}
+                <h2>Fin de la partie par {victory} ! Le gagant est {winner.name} !</h2>
             </div>
             
             <div class="winner-loser-info">
                 <div class="winner-info">
                    <h3>Gagnant</h3>
-                   <p>{JSON.stringify(data[0])}</p>
+                   <p>{JSON.stringify(winner)}</p>
                    <p>{winner.name}</p>
                    <p>{winner.elo}</p>
                    <p>{winner.eloChange}</p>
                 </div>
                 <div class="loser-info">
                    <h3>Perdant</h3>
-                    <p>{JSON.stringify(data[1])}</p>
+                    <p>{JSON.stringify(loser)}</p>
+                    
                 </div>
             </div>
         </div>

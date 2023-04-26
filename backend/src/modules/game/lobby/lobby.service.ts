@@ -38,9 +38,11 @@ export class LobbyService {
         // console.log("lobby join Queue:", client.data);
         //TODO check if in game (boolean)
 
+        console.log(`type: ${type}`);
+
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
 
-        if (index === -1) { // Check if player already in Q
+        if (index === -1 && !this.inMatch(client.data.userId)) { // Check if player already in Q and not in game
             const prismData = await this.prisma.user.findUnique({
                 where: { id : client.data.userId },
                 select: {
@@ -69,6 +71,12 @@ export class LobbyService {
     /* *************** *\
     |* Interne functon *|
     \* *************** */
+
+    inMatch(id : number) : Boolean {
+        const foundGame = this.games.find(
+            game => !game.gameDone && ( game.p1.id === id || game.p2.id === id ));
+        return !!foundGame; // retourne true si foundGame n'est pas null
+    }
     
     intervalQueueFunction() {
         // console.log("queueInterval: check");
@@ -123,6 +131,9 @@ export class LobbyService {
 
     checkMatch(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) : Boolean{
         const diff : number = Math.abs(p1.player.elo - p2.player.elo);
+
+        console.log(`p2.type: ${p2.type}`);
+        console.log(`p1.type: ${p1.type}`);
         
         // check gap elo
         if (p1.type === p2.type && p1.threshold >= diff && p2.threshold >= diff)
@@ -204,32 +215,38 @@ export class LobbyService {
 
         // TODO
         // definir la map dans init map de service et pas in game
-
-        // Creation Circle : x, y, r
-        const circle_01 = new Circle(200, 100, 30);
-        game.shapes.push(circle_01);
-
-        // // Creation square : x, y, l, w
-        // const square_01 = new Square(400, 240, 50, 100);
-        // game.shapes.push(square_01);
-
-        // // Creation square : x, y, l, w
-        // const square_02 = new Square(250, 50, 250, 200);
-        // game.shapes.push(square_02);
-
-        // // Creation square : x, y, l, w
-        // const square_03 = new Square(600, 25, 20, 10);
-        // game.shapes.push(square_03);
-
-        // // Creation square : x, y, l, w
-        // const square_04 = new Square(50, 120, 50, 100);
-        // game.shapes.push(square_04);
-
-        // Creation BlackHole : x, y, l, w
-        const BlackHole_01 = new BlackHole(200, 300, 45);
-        game.shapes.push(BlackHole_01);
-
+        if (!game.boolRanked) { // map fun map perso
+            this.initMap(game);    
+        }
         game.numberElement = game.shapes.length;
+    }
+
+    initMap(game : Game) : void {
+        let idMap : number;
+        const width = game.field.width;
+        const height = game.field.height
+
+        if (!game.boolMap) // pas de map choisit -> aleatoire
+            idMap = game.id % 2;
+        else
+            idMap = game.map;
+
+        if (idMap === 0) { // blackhole
+            const BlackHole_01 = new BlackHole(field.width / 2, field.height / 2, 45);
+            game.shapes.push(BlackHole_01);
+        } else if (idMap === 1) {
+            // Creation Circle : x, y, r
+            const circle_01 = new Circle(200, 100, 30);
+            game.shapes.push(circle_01);// Creation Circle : x, y, r
+            const circle_02 = new Circle(200, 100, 30);
+            game.shapes.push(circle_01);// Creation Circle : x, y, r
+            const circle_03 = new Circle(200, 100, 30);
+            game.shapes.push(circle_01);// Creation Circle : x, y, r
+            const circle_04 = new Circle(200, 100, 30);
+            game.shapes.push(circle_01);// Creation Circle : x, y, r
+            const circle_05 = new Circle(200, 100, 30);
+            game.shapes.push(circle_01);
+        }
     }
 
 

@@ -131,7 +131,7 @@ export default function Game() {
     if (boolVictory) {
         return (
             <div>
-                <Result data={[victory[1], victory[2]]}/>
+                <Result data={[victory[0], victory[1], victory[2]]}/>
             </div>
         )
     }

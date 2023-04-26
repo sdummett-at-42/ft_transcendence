@@ -31,13 +31,14 @@
     width: 50%;
     padding: 20px;
     box-sizing: border-box;
+    align-self: flex-start;
 }
 
 .winner-info h3, .loser-info h3 {
     text-align: center;
 }
 
-@media screen and (max-width: 600px) {
+/* @media screen and (max-width: 600px) {
     .winner-loser-info {
       flex-direction: column;
       align-items: flex-start;
@@ -47,4 +48,4 @@
     .loser-info {
       width: 100%;
     }
-  }
+  } */
