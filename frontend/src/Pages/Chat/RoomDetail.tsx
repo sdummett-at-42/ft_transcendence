@@ -116,6 +116,7 @@ export default function RoomDetail(props: RoomDetailProps) {
       roomName: props.roomName,
       userId: userId,
     }
+    console.log(payload);
     props.socket.emit("kickUser", payload);
     setInput("");
   }
@@ -144,6 +145,7 @@ export default function RoomDetail(props: RoomDetailProps) {
 
   const handleMessagAction = useCallback((payload)=>{
     alert(payload.message);
+    setInput("")
   },[])
 
   useEffect(()=>{
@@ -189,7 +191,7 @@ export default function RoomDetail(props: RoomDetailProps) {
         props.socket.off("userKicked", handleMessagAction);
       }
     };
-  }, [props.socket, handleInvited, handleNotInvite, handleCheckIfAdmin,handleAdminList, handleMessagAction]);
+  }, [props.socket,database, handleInvited, handleNotInvite, handleCheckIfAdmin,handleAdminList, handleMessagAction]);
 
   return (
     (!props.ifDM) && props.roomName ? (
@@ -240,7 +242,7 @@ export default function RoomDetail(props: RoomDetailProps) {
         </div>
         {/* <h1>||{props.blockList}||</h1> */}
         <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList}/>
-      </div>) : ((props.ifDM) ? <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList} /> : <div className="chatinfo" ></div>)
+      </div>) : ((props.ifDM) ? <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList} /> : <div className="chatinfo" >here????</div>)
   );
 }
 

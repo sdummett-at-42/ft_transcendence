@@ -111,7 +111,7 @@ export default function MemberList(props: MemberListProps) {
     return (
         <div className="chat-info-header-2 clearfix">
             <div className='chat-info-member-list'>Liste des membres</div>
-            <div className="row">{console.log("members:", props.roomName, members)}
+            <div className="row">
             {members && members.members.map((each, index) => {
                 console.log("each", each)
             if (database) {
@@ -124,7 +124,7 @@ export default function MemberList(props: MemberListProps) {
                 return (
                     <>
                         <li className="clearfix col-lg-6 " key={each}>
-                            <img className="img-member" src={user.profilePicture} alt="avatar" />
+                            <img className="img-member" src={user?.profilePicture} alt="avatar" />
                             <div className="about">
                                 <div className="name ">{user.name}</div>
                                 <div className="status">

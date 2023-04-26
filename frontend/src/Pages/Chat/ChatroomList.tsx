@@ -80,8 +80,10 @@ export default function ChatroomList(props: ChatroomListProps) {
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
-    if (selectedRoom == payload.roomName)
+    if (selectedRoom == payload.roomName){
       setSelectedRoom("");
+      props.onListClick("", 0, false);
+    }
   }, [chatrooms]);
 
   const handleBanEvent = useCallback((payload) => {
@@ -89,17 +91,20 @@ export default function ChatroomList(props: ChatroomListProps) {
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
-    if (selectedRoom == payload.roomName)
+    // if (selectedRoom == payload.roomName){
       setSelectedRoom("");
+      props.onListClick("", 0, false);
   }, [chatrooms]);
 
   const handleKickEvent = useCallback((payload) => {
+    console.log("yoyo", selectedRoom)
     alert(payload.message);
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
     });
-    if (selectedRoom == payload.roomName)
+  
       setSelectedRoom("");
+      props.onListClick("", 0, false);
   }, [chatrooms]);
 
   const handleRoomsUpdate = useCallback((payload) => {

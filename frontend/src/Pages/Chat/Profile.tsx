@@ -74,8 +74,9 @@ export default function Profile(props: ProfileProps) {
     },[])
     
     useEffect(() => {
+        console.log("databse exists!")
         if (database) {
-            // console.log("databse exists!")
+            console.log("profile databse exists!")
             setUser(database.find((user) => user.name === props.roomName));
             console.log("find", database.find((user) => user.name === props.roomName))
         }
@@ -98,7 +99,7 @@ export default function Profile(props: ProfileProps) {
                 // props.socket.off("userBlockList", handleBlockList);
             }
         };
-    }, [props.socket, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate]);
+    }, [props.socket, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate, user]);
     return (
         user? 
         <div className="chatinfo">

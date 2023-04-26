@@ -198,6 +198,11 @@ export default function Message(props: MessageProps) {
   const handleAlertmessage = useCallback((payload) => {
     alert(payload.message);
 }, [])
+  const handleRemoveRoom = useCallback((payload)=>{
+    console.log("handleRemoveRoom")
+    if(payload.roomName ===  props.roomName)
+      setMessageList("");
+},[])
   useEffect(() => {
     if(props.socket){
       props.socket.on("roomMsgHistReceived", handleMessagesReceived);
@@ -207,6 +212,8 @@ export default function Message(props: MessageProps) {
       props.socket.on("DMNotSended", handleAlertmessage);
       props.socket.on("userInvited", handleAlertmessage);
       props.socket.on("roomMsgNotSended", handleAlertmessage);
+      props.socket.on("banned", handleRemoveRoom);
+      props.socket.on("kicked", handleRemoveRoom);
     }
     return () => {
       if(props.socket){
@@ -217,9 +224,11 @@ export default function Message(props: MessageProps) {
         props.socket.off("userInvited",handleAlertmessage);
         props.socket.off("DMNotSended", handleAlertmessage);
         props.socket.off("roomMsgNotSended", handleAlertmessage);
+        props.socket.off("banned", handleRemoveRoom);
+        props.socket.off("kicked", handleRemoveRoom);
       }
     };
-  }, [props.socket, handleMessagesReceived, handleMessages, handleDMReceived, handleDMupdate, handleAlertmessage]);
+  }, [props.socket, props.roomName, handleMessagesReceived, handleMessages, handleDMReceived, handleDMupdate, handleAlertmessage]);
 
   return (
     props.roomName ? (

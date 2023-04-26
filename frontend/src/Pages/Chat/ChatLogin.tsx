@@ -39,8 +39,7 @@ export default function ChatLogin() {
   };
 
   const handleListClick = (name, id, ifDM) => {
-    // console.log("here? ifdm", ifDM)
-    // console.log("List:",name, id);
+    console.log("List:",name, id, ifDM);
     setToDMID({ id: id, name: name });
     setRoomName(name);
     if (ifDM == true)
