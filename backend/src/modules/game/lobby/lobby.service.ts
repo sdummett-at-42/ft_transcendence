@@ -91,6 +91,7 @@ export class LobbyService {
     // envoyer ad target emit getInvite
     async lobbySendInvitGame(client: Socket, idTarget : number) {
 
+        console.log("send a invitation")
         // Retirer Q + check inMatch
         this.lobbyLeaveQueue(client);
         if (this.inMatch(client.data.userId)) {// true -> match
