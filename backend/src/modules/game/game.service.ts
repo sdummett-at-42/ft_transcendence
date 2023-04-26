@@ -61,11 +61,11 @@ export class GameService {
         if (game.p1.socket != undefined || game.p2.socket != undefined) {
             clearTimeout(game.timeoutJoin);
             game.timeoutJoin = setTimeout(() => {
-                if (game.p1.socket != undefined) {
+                if (game.p1.socket === undefined) {
                     // player 2 win abandon
                     this.victoryByGiveUpLimitMax(game, 2);
                 }
-                if (game.p2.socket != undefined) {
+                if (game.p2.socket === undefined) {
                     // player 1 win abandon
                     this.victoryByGiveUpLimitMax(game, 1);
                 }
@@ -415,6 +415,12 @@ export class GameService {
         const bullet_01 = new Bullet(newX, newY, r, 3, 30, newA);
         game.shapes.push(bullet_01);
 
+        if (side === 1)
+            this.setBulletRelaunch(game, game.p1.racket);
+        else
+            this.setBulletRelaunch(game, game.p2.racket);
+
+
         //game.server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
             
         // TODO
@@ -559,11 +565,12 @@ export class GameService {
 
         // TODO
         // Check if ranked game
-
-        this.updateElo(game.p1.id, game.p1.elo, game.p1.eloChange = this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
-        this.updateElo(game.p2.id, game.p2.elo, game.p2.eloChange = this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
-    
-        await this.updatePrisma(game, scoreP1, scoreP2, p1Prisma, p2Prisma);
+        if (game.boolRanked) {
+            this.updateElo(game.p1.id, game.p1.elo, game.p1.eloChange = this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
+            this.updateElo(game.p2.id, game.p2.elo, game.p2.eloChange = this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
+        }
+        
+        await this.updatePrisma(game, scoreP1, p1Prisma, p2Prisma);
         console.log("elo change p1", game.p1.eloChange);
         console.log("elo change p2", game.p2.eloChange);
 
@@ -601,30 +608,23 @@ export class GameService {
           });
     }
 
-    private async updatePrisma(game : Game, scoreP1 : number, scoreP2 : number,  p1Prisma, p2Prisma) {
-        let winner;
+    private async updatePrisma(game : Game, scoreP1 : number,  p1Prisma, p2Prisma) {
         let winnerId;
-        let looser;
         let looserId;
         let winnerScore;
         let looserScore;
 
         if (scoreP1 === 1) {
-            //winner = p1Prisma;
             winnerId = p1Prisma.id;
-            //looser = p2Prisma;
             looserId = p2Prisma.id;
             winnerScore = game.p1.score;
             looserScore = game.p2.score;
         } else {
-            //winner = p2Prisma;
             winnerId = p2Prisma.id;
-            //looser = p1Prisma;
             looserId = p1Prisma.id;
             winnerScore = game.p2.score;
             looserScore = game.p1.score;
         }
-
 
         const match = await this.prisma.match.create({
 			data: {
@@ -634,26 +634,13 @@ export class GameService {
                 looserScore: looserScore
 			},
 		});
-
-        // id					Int					@id @default(autoincrement())
-        // winner				User				@relation("winner", fields: [winnerId], references: [id], onDelete: Cascade)
-        // winnerId			Int
-        // looser				User				@relation("looser", fields: [looserId], references: [id], onDelete: Cascade)
-        // looserId			Int
-        // winnerScore			Int
-        // looserScore			Int
     }
       
-      
-      
-      
-      
-
-
-
     private checkCollision(game : Game, bullet : Bullet) {
         // Vérifier si la balle touche les murs horizontaux
-        if (bullet.pos.y + bullet.r > game.field.height || bullet.pos.y - bullet.r < 0)
+        if (bullet.pos.y + bullet.r > game.field.height) // bottom
+            bullet.a = -bullet.a;
+        if (bullet.pos.y - bullet.r < 0) // top
             bullet.a = -bullet.a;
             
         // Check if bullet hit an other shape

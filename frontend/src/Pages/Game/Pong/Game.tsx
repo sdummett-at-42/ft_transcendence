@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import Cookies from "js-cookie";
 import "./Game.css"
-import Canvas from "./Canvas";
+import Canvas from "./Canvas/Canvas";
+import Result from "./Result/Result";
 import { UserContext } from "../../../context/UserContext"
 import { Shape, Player } from "../../../../../backend/src/modules/game/entities/game.entities"
 import { useNavigate } from "react-router-dom";
@@ -19,9 +20,8 @@ export default function Game() {
     const [scoreP2, setScoreP2] = useState<number>(0);
     const [timer, setTimer] = useState<number>(0);
     const [elements, setElements] = useState<Shape[]>([]);
-    const [victory, setVictory] = useState<Array<any>>([]);
-
-
+    const [boolVictory, setBoolVictory] = useState(false);
+    const [victory, setVictory] = useState<[boolean, Player, Player]>([false, null, null]);
 
     const gameSocketTemp = useRef({});
     if (!boolSocket) {
@@ -62,6 +62,7 @@ export default function Game() {
         // data= {Bollean, p1, p2}
         // false = score  true = abandon
         setVictory([data.type , data.winner, data.loser]);
+        setBoolVictory(true);
         setLastUpdate(Date.now());
     }
 
@@ -93,14 +94,15 @@ export default function Game() {
 
     useEffect(() => {
         const handleUnload = () => {
-          gameSocketTemp.current.disconnect();
+            setBoolSocket(false);
+            gameSocketTemp.current.disconnect();
         };
       
         window.addEventListener("beforeunload", handleUnload);
       
         return () => {
-          window.removeEventListener("beforeunload", handleUnload);
-          gameSocketTemp.current.disconnect();
+            window.removeEventListener("beforeunload", handleUnload);
+            gameSocketTemp.current.disconnect();
         };
       }, [gameSocketTemp]);
 
@@ -126,16 +128,26 @@ export default function Game() {
 
     // TODO
     // Cas win ?
+    if (boolVictory) {
+        return (
+            <div>
+                <Result data={[victory[0], victory[1], victory[2]]}/>
+            </div>
+        )
+    }
 
     // Cas not end ?
     return (
-        <div>
-            <h1>Game</h1>
-            <div id="timer">Time = {timer}</div>
-            <div id="Scorep1">Player 1 = {scoreP1}</div>
-            <div id="Scorep2">Player 2 = {scoreP2}</div>
-            <div id="Victory">Victory = {JSON.stringify(victory)}</div>
-            <Canvas elements={elements} idGame={id} socketRef={gameSocketTemp} victory={victory}/>
+        <div className="game-container">
+            <div className="Game-info Profile-screen-card-text">
+                <p>Time = {timer}</p>
+                <div className="Game-player-info">
+                    <div className="Game-Player1">Player 1 = {scoreP1}</div>
+                    <div className="Game-Player2">Player 2 = {scoreP2}</div>
+                </div>
+                <Canvas elements={elements} idGame={id} socketRef={gameSocketTemp} victory={victory}/>
+            </div>
+            {/* <div id="Victory">Victory = {JSON.stringify(victory)}</div> */}
         </div>
     )
 }

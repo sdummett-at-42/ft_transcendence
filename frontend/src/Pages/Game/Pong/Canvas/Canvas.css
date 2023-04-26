@@ -1,0 +1,11 @@
+.canvas-container {
+    position: relative; /* nécessaire pour que la div parent soit la référence pour positionner le canvas */
+    width: 100%;
+    padding-bottom: 50%; /* ratio d'aspect 2:1 */
+    /* overflow: hidden; */
+  }
+  
+  .canvas {
+    background-color: wheat;
+    border: 2px solid red;
+  }

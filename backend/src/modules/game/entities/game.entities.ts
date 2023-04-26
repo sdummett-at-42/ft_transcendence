@@ -22,7 +22,6 @@ export class Circle implements Shape {
     type : string = "Circle";
     pos : Coordonnee;
     r : number;
-    // color or img
 
     constructor(x:number, y:number, r:number) {
         this.pos = new Coordonnee(x, y);
@@ -146,6 +145,10 @@ export class Game {
     server? : Server;
     p1 : Player;
     p2 : Player;
+    boolRanked : Boolean;
+
+    boolMap : Boolean = false;
+    map?: number;
 
     field : Field; // size
     shapes : Shape[] = [];
@@ -201,9 +204,6 @@ export class Game {
     limitTimer: number = 4 * 60 * 1000;// 4 min
     //limitTimer: number = 5000;// 5 sec
 
-    // Game finish or not
-    gameDone : Boolean = false; // true = finish
-
     // Game end
     typewin?: Boolean; // 0 score 1 abandon
     winner?: Player;
@@ -211,7 +211,7 @@ export class Game {
 
 
 
-    constructor(id : number, p1 : Player, p2 : Player) {
+    constructor(id : number, p1 : Player, p2 : Player, type : string) {
         this.id = id;
         this.roomId = "game" + id;
         this.p1 = p1;
@@ -221,6 +221,11 @@ export class Game {
         this.p2.side = 2;
 
         this.field = new Field(400, 800);
-        // this.speed = 5;
+
+        console.log(type);
+        if (type === "ranked")
+            this.boolRanked = true;
+        else
+            this.boolRanked = false;
     }
 }

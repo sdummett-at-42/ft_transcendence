@@ -20,28 +20,22 @@ export class GameGateway {
 
   // Connection
   async handleConnection(socket: Socket) {
-    console.log('New client connected game:', socket.id);
+    console.log("You are connected to socket game");
+    // console.log('New client connected game:', socket.id);
 
-    console.log("client handshake", socket.handshake.auth.url);
+    // console.log("client handshake", socket.handshake.auth.url);
 
     const res = await this.lobbyService.handleConnection(socket);
     if (res !== null && this.gameService.onMatch(res.game)) 
     {
-      console.log("resume game");
+      // console.log("resume game");
       // this.gameService.joinGame(this.server, res.game, socket, res.game.roomId);
       this.gameService.resumeGame(res.game, res.id);
     }
     else{
-      console.log("not resume game");
-      if (res === null)
-        console.log("handle connection return null");
-      else {
-        // TODO send typevictory
-        console.log("Match termine");
+      if (res !== null) {
         const game = res.game;
         game.server.to(socket.id).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser});
-        game.server.to(socket.id).emit(EventGame.gameImage, game.shapes);
-        // game.server.to(socket.id).emit(EventGame.score, game.shapes);
       }
 
     }
@@ -49,7 +43,7 @@ export class GameGateway {
 
   // Disconnection
   async handleDisconnect(socket: Socket) {
-    console.log(`Client disconnected game: ${socket.id}`);
+    // console.log(`Client disconnected game: ${socket.id}`);
     // return any or {game : Game, id : number}
     const res = await this.lobbyService.handleDisconnection(socket);
     if (res !== null && this.gameService.onMatch(res.game))
@@ -79,7 +73,7 @@ export class GameGateway {
 
   @SubscribeMessage(EventGame.playerClickCanvas)
   ClickCanvasMessage(client: any, roomId : string) : void {
-    console.log("click");
+    // console.log("click");
     // get game by gameid from client
     const gameId = Number(roomId);
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
@@ -94,13 +88,13 @@ export class GameGateway {
   // When Client connect to socket server
   @SubscribeMessage(EventGame.playerJoinGame)
   JoinGameMessage(client: any, roomId : string) : void {
-    console.log(`Gateway : player has join game`);
-    console.log("roomId", roomId);
+    // console.log(`Gateway : player has join game`);
+    // console.log("roomId", roomId);
   
     // get game by gameid from client
     const gameId = Number(roomId); // string to number
 
-    console.log("gameId fromt client data:", gameId);
+    // console.log("gameId fromt client data:", gameId);
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
     
@@ -120,21 +114,36 @@ export class GameGateway {
   \* ***** */
 
   // button join/lave Q
-
   @SubscribeMessage(EventGame.playerJoinQueue)
-  JoinLobbyMessage(client: any) : void {
-    console.log(`Gateway : player has join queue`);
-    // function check every second if 2 player match
-    this.lobbyService.lobbyJoinQueue(client);
+  JoinLobbyMessage(client: any, data : any) : void {
+    this.lobbyService.lobbyJoinQueue(client, data.type);
   }
 
   @SubscribeMessage(EventGame.playerLeaveQueue)
   LeaveLobbyMessage(client: any) : void {
-    console.log(`Gateway : player has leave queue`);
-    // function cancel Queue (delete from [] user search)
     this.lobbyService.lobbyLeaveQueue(client);
   }
 
-  // this.gameService.initGame(this.server, socket);
+  // invitation Game
 
+  @SubscribeMessage(EventGame.lobbySendInvitGame)
+  lobbySendInvitGame(client: any, idTarget : number) : void {
+    this.lobbyService.lobbySendInvitGame(client, idTarget);
+  }
+
+  @SubscribeMessage(EventGame.lobbyResponseInvitGame)
+  lobbyResponseInvitGame(client: any, data : {p1 : number, p2 : number, res : Boolean}) : void {
+    this.lobbyService.lobbyResponseInvitGame(client, data);
+  }
+
+  @SubscribeMessage("testGame")
+  testGame(client: any) : void {
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
+    console.log("*********************")
+  }
 }
