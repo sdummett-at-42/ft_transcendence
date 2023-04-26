@@ -15,11 +15,33 @@ export default function Friend(props) {
 
     const [friend, setFriend] = useState<UserData>();
     const [active, setActive] = useState<boolean>(false);
+    const [isDuelOpen, setIsDuelOpen] = useState<boolean>(false);
+    const [isOptionsOpen, setIsOptionsOpen] = useState<boolean>(false);
+
 
     useEffect(() => {
         setFriend(props.props);
         setActive(props.isConnected);
     }, [props]);
+
+    const handleDuel = () => {
+        setIsDuelOpen(!isDuelOpen);
+        if (isOptionsOpen) {
+            setIsOptionsOpen(false);
+        }
+    }
+
+    const handleOptions = () => {
+        setIsOptionsOpen(!isOptionsOpen);
+        if (isDuelOpen) {
+            setIsDuelOpen(false);
+        }
+    }
+
+    const handleRemoveFriend = () => {
+        console.log("Remove friend");
+
+    }
 
   return (
     <div>
@@ -41,20 +63,38 @@ export default function Friend(props) {
 
                 <button
                     className="PendingFriend-button"
-                    
+                    onClick={() => {console.log("Message")}}
                 >
                     <FontAwesomeIcon icon={faMessage} size="lg" />
                 </button>
-                <button
-                    className="PendingFriend-button"
-                >
-                    <FontAwesomeIcon icon={faTableTennis} size="lg" />
-                </button>
-                <button
-                    className="PendingFriend-button"
-                >
-                    <FontAwesomeIcon icon={faEllipsisVertical} size="lg" />
-                </button>
+                <div className="Friend-dropdown">
+                    <button
+                        className="PendingFriend-button"
+                        onClick={() => handleDuel()}
+                    >
+                        <FontAwesomeIcon icon={faTableTennis} size="lg" />
+                    </button>
+                    {isDuelOpen && (
+                        <div className="Friend-dropdown-content">
+                            <div>Partie classée</div>
+                            <div>Partie décontractée</div>
+                        </div>
+                    )}
+                </div>
+                <div className="Friend-dropdown">
+                    <button
+                        className="PendingFriend-button"
+                        onClick={() => handleOptions()}
+                    >
+                        <FontAwesomeIcon icon={faEllipsisVertical} size="lg" />
+                    </button>
+                    {isOptionsOpen && (
+                        <div className="Friend-dropdown-content">
+                            <div>Regarder la partie</div>
+                            <div onClick={() => handleRemoveFriend()}>Retirer des amis</div>
+                        </div>
+                    )}
+                </div>
             </div>
         )}
     </div>
