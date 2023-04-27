@@ -192,6 +192,8 @@ export default function FriendsList() {
         notificationSocketRef.current.on('friendConnected', handleFriendConnected);
         notificationSocketRef.current.on('friendDisconnected', handleFriendDisconnected);
         notificationSocketRef.current.on('connectedFriends', handleAllConnected);
+        notificationSocketRef.current.on("friendInGame", handleFriendInGame);
+        notificationSocketRef.current.on("friendOffGame", handleFriendLeaveGame);
 
         return () => {
             notificationSocketRef.current.off('friendRequestReceived', handleFriendRequest);
@@ -200,6 +202,8 @@ export default function FriendsList() {
             notificationSocketRef.current.off('friendConnected', handleFriendConnected);
             notificationSocketRef.current.off('friendDisconnected', handleFriendDisconnected);
             notificationSocketRef.current.off('connectedFriends', handleAllConnected);
+            notificationSocketRef.current.off("friendInGame", handleFriendInGame);
+            notificationSocketRef.current.off("friendOffGame", handleFriendLeaveGame);
         };
     }, [
         handleFriendRequest,
@@ -208,20 +212,10 @@ export default function FriendsList() {
         handleFriendConnected,
         handleFriendDisconnected,
         handleAllConnected,
-        notificationSocketRef]);
-
-    useEffect(() => {
-        gameSocketRef.current.on("friendInGame", handleFriendInGame);
-        gameSocketRef.current.on("friendOffGame", handleFriendLeaveGame);
-
-        return () => {
-            gameSocketRef.current.off("friendInGame", handleFriendInGame);
-            gameSocketRef.current.off("friendOffGame", handleFriendLeaveGame);
-        };
-    }, [
         handleFriendInGame,
         handleFriendLeaveGame,
-        gameSocketRef]);
+        notificationSocketRef]);
+
 
     const [isShaking, setIsShaking] = useState(false);
 

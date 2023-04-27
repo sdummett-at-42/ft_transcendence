@@ -208,13 +208,17 @@ export class GameService {
         game.endBool = true;
         
         server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+        
+        this.notif.offGameNotify(game.p1.id);
+        this.notif.offGameNotify(game.p2.id);
+
 
         game.frequencyInterval = undefined;
         // Delete game in 60 sec
-        // game.frequencyInterval = setTimeout(() => {
+        game.frequencyInterval = setTimeout(() => {
             game.deleteBool = true;
-        // console.log("delete this game");
-        // }, 60000);
+        console.log("delete this game");
+        }, 60000);
     }
 
     mouvementGame(server : Server, game : Game, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2

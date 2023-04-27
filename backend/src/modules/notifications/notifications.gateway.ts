@@ -130,7 +130,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 			.map(([key, value]) => value.id);
 
 		if (friendSocketIds.length > 0)
-			this.server.to(friendSocketIds).emit('inGame', { id: +userId }); // Event to report here
+			this.server.to(friendSocketIds).emit('friendInGame', { id: +userId }); // Event to report here
 	}
 
 	async offGameNotify(userId: number) {
@@ -143,7 +143,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 			.map(([key, value]) => value.id);
 
 		if (friendSocketIds.length > 0)
-			this.server.to(friendSocketIds).emit('offGame', { id: +userId }); // Event to report here
+			this.server.to(friendSocketIds).emit('friendOffGame', { id: +userId }); // Event to report here
 	}
 
 	async emitNewAchievement(userId: number, achievementName: string) {

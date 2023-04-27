@@ -33,7 +33,7 @@ export class LobbyService {
                 this.games.splice(i, 1);
                 i--;
                 }   
-        }}, 2000);
+        }}, 60000);
 
     // Add user [] 
     async lobbyJoinQueue(client : Socket, type : string) {
@@ -251,6 +251,8 @@ export class LobbyService {
             this.users.splice(remP2, 1);
             
         this.initGame(this.gameGateway.server, game);
+        this.notif.inGameNotify(p1.player.id);
+        this.notif.inGameNotify(p2.player.id);
         this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
     }
 
