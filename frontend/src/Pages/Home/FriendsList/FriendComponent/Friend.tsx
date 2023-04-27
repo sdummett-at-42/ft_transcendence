@@ -43,6 +43,7 @@ export default function Friend(props: Props) {
     }
 
     const handleRemoveFriend = () => {
+        // TODO add confirmation
         props.isRemoved(friend);
     }
 

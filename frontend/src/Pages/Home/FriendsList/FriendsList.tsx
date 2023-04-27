@@ -346,8 +346,8 @@ export default function FriendsList() {
             });
     }
 
-    const RemoveFriend = (friend) => {
-        fetch("http://localhost:3001/friends", {
+    const RemoveFriend = async (friend:UserData) => {
+        await fetch("http://localhost:3001/friends", {
             credentials: 'include',
             method: 'DELETE',
             headers: {
@@ -361,8 +361,8 @@ export default function FriendsList() {
                 if (res.status == 401) {
                     navigate("/unauthorized");
                 }
-                else if (res.status == 200) {
-                    setFriends(friends.filter((friend) => friend.id != id));
+                else if (res.status == 204) {
+                    setFriends(friends.filter((user) => user.id != friend.id));
                 }
             });
 
