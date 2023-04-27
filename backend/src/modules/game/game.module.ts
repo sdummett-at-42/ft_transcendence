@@ -7,12 +7,14 @@ import { RedisModule } from "../redis/redis.module";
 import { LobbyService } from './lobby/lobby.service';
 import { FriendsService } from "../friends/friends.service";
 import { NotificationsGateway } from "./../notifications/notifications.gateway"
+import { AchievementService } from '../achievements/achievements.service';
+
 
 
 
 @Module({
   imports: [RedisModule, PrismaModule],
   controllers: [GameController],
-  providers: [FriendsService, GameService, GameGateway, LobbyService, NotificationsGateway]
+  providers: [FriendsService, GameService, GameGateway, LobbyService, NotificationsGateway, AchievementService]
 })
 export class GameModule {}

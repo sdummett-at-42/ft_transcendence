@@ -102,7 +102,7 @@ const Result = ({data} : ResultProps) => {
                             <p>{loser.name}</p>
 							{ranked ? (
 								<div>
-									<p data-value={loser.elo - loser.eloChange} ref={loserRef}>{loser.elo}</p>
+									<p data-value={loser.elo + loser.eloChange} ref={loserRef}>{loser.elo}</p>
 									<p id="loser-elo">{loser.eloChange}</p>
 								</div>
 							) : (

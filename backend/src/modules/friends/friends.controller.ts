@@ -7,6 +7,7 @@ import { ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkRes
 import { UserEntity } from "src/modules/users/entities/user.entity";
 import { CreateFriendRequestDto } from "./dto/friends.dto";
 import { NotificationsGateway } from "../notifications/notifications.gateway";
+import { AchievementService } from "../achievements/achievements.service"
 
 @ApiTags('friends')
 @Controller('friends')
@@ -14,6 +15,7 @@ import { NotificationsGateway } from "../notifications/notifications.gateway";
 export class FriendsController {
 	constructor(
 		private readonly friends: FriendsService,
+		private readonly achievement: AchievementService,
 		private readonly friendRequest: FriendRequestService,
 		private readonly notifications: NotificationsGateway) { }
 
@@ -59,6 +61,8 @@ export class FriendsController {
 	) {
 		const friendRequest = await this.friendRequest.acceptFriendRequest(request.user.id, friendId);
 		this.notifications.acceptFriendRequest(friendId, request.user.id);
+		this.achievement.checker(request.user.id);
+		this.achievement.checker(friendId);
 		return friendRequest;
 	}
 

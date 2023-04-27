@@ -9,6 +9,8 @@ import { OtpDto } from "./dto/otp.dto";
 import { AuthService } from "./auth.service";
 import { SecretQrCodeEntity } from "./utils/2fa.entity";
 import { LocalDto } from "./dto/local.dto";
+import { AchievementService } from '../achievements/achievements.service';
+
 
 
 
@@ -16,7 +18,9 @@ import { LocalDto } from "./dto/local.dto";
 @ApiTags('auth')
 export class AuthController {
 
-	constructor(private readonly auth: AuthService) { }
+	constructor(
+		private readonly achievement : AchievementService,
+		private readonly auth: AuthService) { }
 
 	@Post('/local')
 	@HttpCode(201)
@@ -164,6 +168,7 @@ export class AuthController {
 			};
 
 		await this.auth.update2faIsEnabled(userId, true);
+		this.achievement.checker(userId);
 		return ({
 			message: "otp match. 2FA enabled.",
 			secretGenerated: true,

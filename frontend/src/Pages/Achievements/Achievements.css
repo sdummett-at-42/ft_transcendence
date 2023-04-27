@@ -59,7 +59,7 @@
 /* Achievement locked state */
 .achievement-locked {
 	opacity: 0.5;
-	filter: grayscale(100%);
+	filter: grayscale(75%);
 }
 
 /* Achievement unlocked state */

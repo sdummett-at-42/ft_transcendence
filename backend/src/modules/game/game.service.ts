@@ -5,10 +5,12 @@ import { EventGame } from './game-event.enum';
 import { PrismaService } from 'nestjs-prisma';
 import { FriendsService } from "../friends/friends.service";
 import { NotificationsGateway } from "./../notifications/notifications.gateway"
+import { AchievementService } from '../achievements/achievements.service';
 
 @Injectable()
 export class GameService {
     constructor(
+        private readonly achievement : AchievementService,
         private readonly notif : NotificationsGateway,
         private readonly prisma: PrismaService,
         private readonly friends: FriendsService,
@@ -501,6 +503,8 @@ export class GameService {
         }
         
         await this.updatePrisma(game, scoreP1, p1Prisma, p2Prisma);
+        this.achievement.checker(game.p1.id);
+        this.achievement.checker(game.p2.id);
     }
 
     private calculateElo(oldElo: number, opponentElo: number, score: number, gamesPlayed: number): number {

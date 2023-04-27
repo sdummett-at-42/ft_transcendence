@@ -12,6 +12,8 @@ import { TwoFactorStrategy } from './utils/2fa.strategy';
 import { FortyTwoStrategy } from './utils/fortytwo.strategy';
 import { LocalStrategy } from './utils/local.strategy';
 import { SessionSerializer } from './utils/Serializer';
+import { AchievementService } from '../achievements/achievements.service';
+
 
 @Module({
 	imports: [
@@ -29,7 +31,8 @@ import { SessionSerializer } from './utils/Serializer';
 		TwoFactorStrategy,
 		SessionSerializer,
 		AuthService,
-		ChatGateway
+		ChatGateway,
+		AchievementService,
 	],
 })
 export class AuthModule {}

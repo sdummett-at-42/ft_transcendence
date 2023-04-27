@@ -78,24 +78,24 @@ export class AchievementService {
 			description: "Tu as activé la 2FA ! Bravo ! 🏆",
 			handler: async (userId: number) => await this.checkIf2faEnabled(userId),
 		},
-		{
-			icon: "",
-			name: "Etre premier au classement",
-			description: "Tu es premier au classement ! Bravo ! 🏆",
-			handler: async (userId: number) => await this.checkRank(userId, 1),
-		},
-		{
-			icon: "",
-			name: "Etre deuxième au classement",
-			description: "Tu es deuxième au classement ! Bravo ! 🏆",
-			handler: async (userId: number) => await this.checkRank(userId, 2),
-		},
-		{
-			icon: "",
-			name: "Etre troisième au classement",
-			description: "Tu es troisième au classement ! Bravo ! 🏆",
-			handler: async (userId: number) => await this.checkRank(userId, 3),
-		},
+		// {
+		// 	icon: "",
+		// 	name: "Etre premier au classement",
+		// 	description: "Tu es premier au classement ! Bravo ! 🏆",
+		// 	handler: async (userId: number) => await this.checkRank(userId, 1),
+		// },
+		// {
+		// 	icon: "",
+		// 	name: "Etre deuxième au classement",
+		// 	description: "Tu es deuxième au classement ! Bravo ! 🏆",
+		// 	handler: async (userId: number) => await this.checkRank(userId, 2),
+		// },
+		// {
+		// 	icon: "",
+		// 	name: "Etre troisième au classement",
+		// 	description: "Tu es troisième au classement ! Bravo ! 🏆",
+		// 	handler: async (userId: number) => await this.checkRank(userId, 3),
+		// },
 		{
 			icon: "",
 			name: "Atteindre exactement 42 elo",
@@ -147,6 +147,8 @@ export class AchievementService {
 				elo: "desc"
 			}
 		});
+		console.log("user:", users);
+		console.log(`rank: ${rank}, id: ${userId}`);
 		return users[rank - 1].id === userId;
 	}
 
