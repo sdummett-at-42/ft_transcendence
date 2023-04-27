@@ -95,7 +95,7 @@
 .RoomDetail-screen-card-user:before {
     height: 2px;
     width: 50px;
-    translate: -20px 8.8rem;
+    translate: -20px 5rem;
     opacity: 0.75;
 }
 
@@ -105,12 +105,93 @@
     translate: 26px;
 }
 
+.RoomDetail-screen-card-user-invite {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+}
+  
+.RoomDetail-screen-card-user-invite:before, .RoomDetail-screen-card-user-invite:after {
+    content: "";
+    background-color: rgb(var(--primary-rgb));
+    border-radius: 1rem;
+    box-shadow: 0px 0px 8px 3px rgb(var(--primary-rgb) / 60%);
+}
+  
+.RoomDetail-screen-card-user-invite:before {
+    height: 2px;
+    width: 50px;
+    translate: -20px 8rem;
+    opacity: 0.75;
+}
+
+.RoomDetail-screen-card-user-invite:after {
+    height: 3px;
+    width: 30px;
+    translate: 26px;
+}
+
 .RoomDetail-screen-card-content-body {
+    margin-top: 1vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+	gap: 1rem;
+}
+
+.RoomDetailProfile-screen-card-content-body {
     margin-top: 1vh;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 	width: 100%;
+    height: 100%;
 	gap: 1rem;
+}
+
+.RoomDetailProfile-button-container {
+    display: flex;
+    width: 75%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.RoomDetail-screen-card-input-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.RoomDetail-screen-card-input {
+    width: 75%;
+    height: 2rem;
+    border: 1px solid rgb(var(--primary-rgb) / 50%);
+    border-radius: 0.6rem;
+    background-color: rgb(var(--primary-rgb) / 15%);
+    color: white;
+    font-size: 1.5rem;
+    font-family: "Source Code Pro", monospace;
+    padding: 0.5rem;
+    text-align: center;
+    outline: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.RoomDetail-button-invite {
+    border: 1px solid rgb(var(--primary-rgb) / 50%);
+    border-radius: 5px;
+    background-color: rgb(var(--primary-rgb) / 15%);
+    color: white;
+    font-size: 1.4rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+}
+
+.RoomDetail-button-invite:hover {
+    background-color: rgb(var(--primary-rgb) / 25%);
+    cursor: pointer;
 }

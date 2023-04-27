@@ -1,16 +1,14 @@
-import React, { FC } from 'react';
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faBan, faPlus, faVolumeXmark, faPersonRunning } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Setting from '../Setting';
-import { useState, useEffect, useCallback } from 'react';
-import { io, Socket } from "socket.io-client";
-import { createContext, useContext } from "react";
-import { DatabaseContext } from '../ChatLogin';
-import InvitedConfirm from '../InvitedConfirm';
-import MemberList from '../MemberList';
-import Profile from '../Profile';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import "./RoomDetail.css"
+import Setting from './Room/Setting';
+import InvitedConfirm from '../InvitedConfirm';
+import MemberList from './Room/MemberList';
+import Profile from './Room/Profile';
+import { Socket } from "socket.io-client";
+import { DatabaseContext } from '../ChatLogin';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import Popup from '../../Popup/Popup';
 
 interface RoomDetailProps {
   socket: Socket,
@@ -23,6 +21,7 @@ interface RoomDetailProps {
 }
 export default function RoomDetail(props: RoomDetailProps) {
   const [show, setShow] = useState(false);
+  const [showSetting, setShowSetting] = useState(false);
   const [inputInvite, setInputInvite] = useState("");
   const [input, setInput] = useState("");
   const database = useContext(DatabaseContext);
@@ -32,6 +31,9 @@ export default function RoomDetail(props: RoomDetailProps) {
   const [userId, setUserId] = useState(0);
   const [ifAdmin, setIfAdmin] = useState(false);
   const [adminList, setAdminList] = useState([]);
+  const [moderation, setModeration] = useState({
+    data: "Muet",
+  });
 
   const findInDatabase = (name) => {
     let user = database.find((user) => user.name === name);
@@ -65,6 +67,30 @@ export default function RoomDetail(props: RoomDetailProps) {
     setInputInvite("");
   }
 
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setModeration({
+      ...moderation,
+      [name]: value
+    });
+  };
+
+  const handleModeration = () => {
+    if (!input) {
+      alert("Veuillez entrer un nom d'utilisateur.");
+      return;
+    }
+    if (moderation.data === "Muet") {
+      handleMute();
+    } else if (moderation.data === "Bannir") {
+      handleBan();
+    } else if (moderation.data === "Débannir") {
+      handleUnBan();
+    } else if (moderation.data === "Sortir") {
+      handleKick();
+    }
+  }
+
   const handleBan = () => {
     let userId = findInDatabase(input);
     if (userId == 0) {
@@ -77,6 +103,7 @@ export default function RoomDetail(props: RoomDetailProps) {
     }
     props.socket.emit("banUser", payload);
     setInput("");
+    setShowSetting(false);
   }
   const handleUnBan = () => {
     let userId = findInDatabase(input);
@@ -90,6 +117,7 @@ export default function RoomDetail(props: RoomDetailProps) {
     }
     props.socket.emit("unbanUser", payload);
     setInput("");
+    setShowSetting(false);
   }
   const handleMute = () => {
     let userId = findInDatabase(input);
@@ -104,6 +132,7 @@ export default function RoomDetail(props: RoomDetailProps) {
     }
     props.socket.emit("muteUser", payload);
     setInput("");
+    setShowSetting(false);
   }
 
   const handleKick = () => {
@@ -119,7 +148,9 @@ export default function RoomDetail(props: RoomDetailProps) {
     console.log(payload);
     props.socket.emit("kickUser", payload);
     setInput("");
+    setShowSetting(false);
   }
+
   const handleInvited = useCallback((payload) => {
     setMessage(payload.message);
     setRoomNameInvite(payload.roomName);
@@ -195,59 +226,97 @@ export default function RoomDetail(props: RoomDetailProps) {
 
   return (
     (!props.ifDM) && props.roomName ? (
-      <div className="RoomDetail">
-          <div className="RoomDetail-screen-card">
-						  <div className="RoomDetail-screen-card-overlay"></div>
-                  <div className="RoomDetail-screen-card-content">
-							        <div className="RoomDetail-screen-card-content-body">
-          <div className='chat-info-title'>Informations sur la salle
-            {ifAdmin ? (
-              <button onClick={() => {
-                setShow(true);
-              }} >Paramètre</button>
-            ) : null}
-            <Setting isVisible={show}
-              socket={props.socket}
-              onClose={() => setShow(false)}
-              roomName={props.roomName}
-              onUpdate={props.onUpdate} />
-            <InvitedConfirm isVisible={showConfirm}
-              RoomName={roomNameInvite}
-              onClose={() => setShowConfirm(false)}
-              socket={props.socket}
-              message={message} /></div>
-          <div className='chat-info-subtitle'>Inviter un ami</div>
-          <div className="chat-info-form">
-            <input placeholder="Nom" value={inputInvite} onChange={(e) => setInputInvite(e.target.value)} />
-            <button onClick={handleInvite}><FontAwesomeIcon icon={faPlus} /></button>
-          </div>
-          {ifAdmin ? (
-            <>
-                <div className='chat-info-subtitle'>Modérer l'utilisateur</div>
-                <div className="chat-info-form">
-                <input placeholder="Nom" value={input} onChange={(e) => setInput(e.target.value)} ></input>
-                <div className="dropdown" id="drop-down">
-                  <span>Action</span>
-                  <label>
-                    <input type="checkbox" />
-                    <ul>
-                      <li onClick= {handleMute}val="Mute">Mute</li>
-                      <li onClick= {handleKick} val="Kick">Kick</li>
-                      <li onClick= {handleBan} val="Ban">Ban</li>
-                      <li onClick= {handleUnBan}val="Unban">Unban</li>
-                    </ul>
-                  </label>
+        <div className="RoomDetail">
+            <div className="RoomDetail-screen-card">
+						    <div className="RoomDetail-screen-card-overlay"></div>
+                    <div className="RoomDetail-screen-card-content">
+							          <div className="RoomDetail-screen-card-content-body">
+                            {ifAdmin ? (
+                                <div>
+                                    <div className="RoomDetail-screen-card-user">
+                                        <button onClick={() => setShow(true)} className='Settings-button'>Paramètre</button>
+                                    </div>
+                                    <div className="RoomDetail-screen-card-user">
+                                        <button onClick={() => setShowSetting(true)} className='Settings-button'>Modération</button>
+                                    </div>
+                              </div>
+                            ) : null}
+                            <div className="RoomDetail-screen-card-user-invite">
+                                <div className='Profile-screen-card-text'>Inviter</div>
+                                <div className="RoomDetail-screen-card-input-wrapper">
+                                    <input placeholder="Nom" className='RoomDetail-screen-card-input' value={inputInvite} onChange={(e) => setInputInvite(e.target.value)} />
+                                    <button onClick={handleInvite} className='RoomDetail-button-invite'><FontAwesomeIcon icon={faPlus} size='xl'/></button>
+                                </div>
+                            </div>
+                            <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList}/>
+                        </div>
+                    </div>
                 </div>
-             </div>
-             </>
-          ) : null}
-          {/* (props.ifDM) ? <Profile socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} />  */}
-        </div>
-        {/* <h1>||{props.blockList}||</h1> */}
-        <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList}/>
-      </div>
-      </div>
-      </div>) : ((props.ifDM) ? <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList} /> : <div className="chatinfo" >here????</div>)
+                <Popup isOpen={show} isClose={() => setShow(false)}>
+                    <Setting 
+                        isVisible={show}
+                        socket={props.socket}
+                        onClose={() => setShow(false)}
+                        roomName={props.roomName}
+                        onUpdate={props.onUpdate}
+                    />
+                </Popup>
+
+                <Popup isOpen={showSetting} isClose={() => setShowSetting(false)}>
+                    <div className="RoomCreate-screen-card">
+                        <div className="RoomCreate-screen-card-overlay"></div>
+                        <div className="RoomCreate-screen-card-content">
+						                <div className="RoomCreate-screen-card-content-body">
+                                <div className='Profile-screen-card-title'>Modération</div>
+                                    <div className="RoomDetail-screen-card-input-wrapper">
+                                        <input placeholder="Nom" className='RoomDetail-screen-card-input' required value={input} onChange={(e) => setInput(e.target.value)} ></input>
+                                        <div className="dropdown" id="drop-down">
+                                            <label>
+                                                <select
+                                                    name="data"
+                                                    className="RoomCreate-screen-card-select"
+                                                    value={moderation.data}
+                                                    onChange={handleInputChange}
+                                                >
+                                                    <option value="Muet" className='RoomCreate-screen-card-option'>Muet</option>
+                                                    <option value="Sortir" className='RoomCreate-screen-card-option'>Sortir</option>
+                                                    <option value="Bannir" className='RoomCreate-screen-card-option'>Bannir</option>
+                                                    <option value="Débannir" className='RoomCreate-screen-card-option'>Débannir</option>
+                                                </select>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div className="RoomCreate-button-wrapper">
+                                        <button onClick={() => setShowSetting(false)} className="Settings-button">
+                                            Annuler
+                                        </button>
+                                        <button className='Settings-button' onClick={handleModeration}>
+                                            {moderation.data}
+                                        </button>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                </Popup>
+
+                <Popup isOpen={showConfirm} isClose={() => setShowConfirm(false)}>
+                    <InvitedConfirm
+                        isVisible={showConfirm}
+                        RoomName={roomNameInvite}
+                        onClose={() => setShowConfirm(false)}
+                        socket={props.socket}
+                        message={message}
+                    />
+                </Popup>
+            </div>
+      ) : (
+          (props.ifDM) ? (
+              <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList} />
+          ) : (
+              <div className="chatinfo" ></div>
+          )
+      )
+
   );
 }
 

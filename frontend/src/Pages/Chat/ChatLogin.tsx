@@ -1,15 +1,11 @@
-// import 'bootstrap/dist/css/bootstrap.min.css';
-import React from "react";
-import { useState, useEffect,useCallback } from 'react';
+import React, { useState, useEffect, useCallback, createContext } from "react";
+import "./chat.scss"
 import ChatroomList from "./ChatRoomList/ChatroomList";
 import Message from './Message/Message';
 import RoomDetail from "./RoomDetail/RoomDetail";
-import "./chat.scss"
-// import { socket } from "./Socket";
-import { createContext } from "react";
+import Cookies from 'js-cookie';
 export const DatabaseContext = createContext();
 import { io } from "socket.io-client";
-import Cookies from 'js-cookie';
 import { useParams } from "react-router-dom";
 
 

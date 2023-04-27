@@ -1,8 +1,10 @@
 import React, { FC } from 'react';
+import "./Message.css"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { Socket } from "socket.io-client";
 import { useState, useEffect, useCallback } from 'react';
 import { useContext } from "react";
-import "./Message.scss"
 import { DatabaseContext } from '../ChatLogin';
 
 interface MessageProps {
@@ -36,6 +38,10 @@ export default function Message(props: MessageProps) {
   };
 
   const handleSendMessage = (event) => {
+    if (message.length === 0 || message.trim().length === 0) {
+      setMessage("");
+      return;
+    }
     if (props.ifDM == false) {
       console.log("props.ifDM == false")
       const payload = {
@@ -62,6 +68,13 @@ export default function Message(props: MessageProps) {
     console.log("handleDMupdate", payload);
     setDmList((prevme) => [...prevme, payload]);
   }, [dmList]);
+
+  const handleEnter = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSendMessage(event);
+    }
+  };
 
   useEffect(() => {
     // refersh context
@@ -107,6 +120,7 @@ export default function Message(props: MessageProps) {
               className1 += " align-right";
               className2 += " other-message float-right";
             } else {
+              className1 += " align-left";
               className2 += " my-message";
             }
           }
@@ -126,6 +140,7 @@ export default function Message(props: MessageProps) {
   }, [dmList, database])
   useEffect(() => {
     // console.log("messageList", messageList);
+
     setItem(messageList.sort((a, b) => a.timestamp - b.timestamp)
       .map((each, index) => {
         const date = new Date(each.timestamp);
@@ -168,6 +183,7 @@ export default function Message(props: MessageProps) {
               className1 += " align-right";
               className2 += " other-message float-right";
             } else {
+              className1 += " align-left";
               className2 += " my-message";
             }
           }
@@ -175,7 +191,7 @@ export default function Message(props: MessageProps) {
 
             <li className="clearfix" key={index}>
               <div className={className1}>
-                <span className="Message-data-name">  {username}</span>
+                <span className="Message-data-name">{username}</span>
                 <span className="Message-data-time">{hour}:{minute}:{second}</span>
               </div>
               <div className={className2}>{each.userId === -1? message : each.message}</div>
@@ -252,8 +268,8 @@ export default function Message(props: MessageProps) {
                           </ul>
                       </div>
                       <div className="chat-message">
-                          <textarea name="message-to-send" className='Message-textarea' autoFocus={true} placeholder="Aa" value={message} onChange={handleMessageChange}></textarea>
-                          <button onClick={handleSendMessage}>Envoyer</button>
+                          <textarea name="message-to-send" className='Message-textarea' autoFocus={true} placeholder="Aa" value={message} onChange={handleMessageChange} onKeyDown={handleEnter}></textarea>
+                          <FontAwesomeIcon icon={faPaperPlane} size='2xl' className='Message-send-icon' onClick={handleSendMessage} />
                       </div>
                   </div>
                 )}

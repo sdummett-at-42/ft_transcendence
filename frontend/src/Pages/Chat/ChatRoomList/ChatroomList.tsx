@@ -1,15 +1,13 @@
-import React, { FC } from 'react';
-import { useState, useEffect, useCallback, useContext } from 'react';
-import RoomCreate from "../RoomCreate/RoomCreate";
-import { io, Socket } from "socket.io-client";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
-import RoomJoin from '../RoomJoin/RoomJoin';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import "./ChatRoomList.css";
-import InvitedConfirm from '../InvitedConfirm';
-import { DatabaseContext } from '../ChatLogin';
+import RoomCreate from "../RoomCreate/RoomCreate";
+import RoomJoin from '../RoomJoin/RoomJoin';
 import group from "../../../assets/group.png"
 import Popup from '../../Popup/Popup';
+import { Socket } from "socket.io-client";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { DatabaseContext } from '../ChatLogin';
 
 interface ChatroomListProps {
   socket: Socket,

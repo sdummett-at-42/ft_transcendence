@@ -1,7 +1,5 @@
 
-import React from 'react';
-import { useRef, useEffect, useCallback } from "react";
-import { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import "./chat.scss"
 import { Socket } from "socket.io-client";
 
