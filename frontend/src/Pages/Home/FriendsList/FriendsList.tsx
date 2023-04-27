@@ -145,6 +145,8 @@ export default function FriendsList() {
             const friendsList = ListOfUsers.filter(user => ListOfFriends.includes(user.id));
             setFriends(friendsList);
             setSendRequests(sendRequests.filter(friend => friend.receiver.id != data.id));
+			notificationSocketRef.current.emit("getOnlineFriends");
+
         }
         getFriends();
     };

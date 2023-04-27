@@ -364,7 +364,7 @@ export class LobbyService {
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null || !JSON.parse(session).passport) {
+		if (session === null || !JSON.parse(session).passport || !JSON.parse(session).passport.user) {
 			// console.debug("User isn't logged in");
 			socket.emit(EventGame.NotConnected, { // Event to report here
 				timestamp: new Date().toISOString(),
@@ -447,7 +447,7 @@ export class LobbyService {
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null || !JSON.parse(session).passport) {
+		if (session === null || !JSON.parse(session).passport || !JSON.parse(session).passport.user) {
 			// console.debug("User isn't logged in");
 			socket.emit(EventGame.NotConnected, { // Event to report here
 				timestamp: new Date().toISOString(),

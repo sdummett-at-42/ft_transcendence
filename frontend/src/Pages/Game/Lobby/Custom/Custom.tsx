@@ -47,6 +47,7 @@ export default function Custom(props) {
     };
 
     const handleClose = () => {
+        gameSocketRef.current.emit('leaveQueue');
         setIsOpen(false);
     };
 

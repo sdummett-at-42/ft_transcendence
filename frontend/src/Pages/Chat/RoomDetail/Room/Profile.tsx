@@ -93,16 +93,13 @@ export default function Profile(props: ProfileProps) {
     }, [newblockList])
 
     useEffect(()=>{
-        console.log(props.blockList);
         setNewBlockList(props.blockList);
     },[])
     
     useEffect(() => {
-        console.log("databse exists!")
+
         if (database) {
-            console.log("profile databse exists!")
             setUser(database.find((user) => user.name === props.roomName));
-            console.log("find", database.find((user) => user.name === props.roomName))
         }
     }, [props.roomName, user, database])
 

@@ -49,6 +49,7 @@ export default function Ranked(props) {
     };
 
     const handleClose = () => {
+        gameSocketRef.current.emit('leaveQueue');
         setIsOpen(false);
     };
 

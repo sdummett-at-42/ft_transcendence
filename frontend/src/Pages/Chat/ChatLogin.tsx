@@ -35,7 +35,6 @@ export default function ChatLogin() {
   };
 
   const handleListClick = (name, id, ifDM) => {
-    console.log("List:",name, id, ifDM);
     setToDMID({ id: id, name: name });
     setRoomName(name);
     if (ifDM == true)
@@ -71,7 +70,6 @@ export default function ChatLogin() {
   };
 
   const handleBlockList = useCallback((payload) =>{
-    console.log("handleBlockList", payload);
     setBlockList(payload.list);
 },[blockList])
 
@@ -124,7 +122,6 @@ export default function ChatLogin() {
   }, [socket, handleUpdateDatabase]);
 
   useEffect(() =>{
-    console.log("outside", typeof(userId), userName);
     setRoomName(userName);
     setIfDM(true);
     setToDMID({id :Number(userId), name: userName});
@@ -142,11 +139,9 @@ export default function ChatLogin() {
       socket.emit("getUserRooms");
       socket.emit("getDmsList");
       socket.emit("getBlockList");
-      console.log('Socket connected');
     });
     socket.on('disconnect', () => {
       setIfSocket(false)
-      console.log('Socket disconnected');
     });
     // Clean up the socket connection when the component unmounts
     return () => {

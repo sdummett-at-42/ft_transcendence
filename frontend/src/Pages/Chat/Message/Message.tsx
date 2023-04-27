@@ -43,14 +43,12 @@ export default function Message(props: MessageProps) {
       return;
     }
     if (props.ifDM == false) {
-      console.log("props.ifDM == false")
       const payload = {
         roomName: props.roomName,
         message: message,
       }
       props.socket.emit("sendRoomMsg", payload);
     } else {
-      console.log("props.ifDM == true", props.toDMID.id)
       const payload = {
         userId: props.toDMID.id,
         message: message,
@@ -65,7 +63,6 @@ export default function Message(props: MessageProps) {
   }, [messageList]);
 
   const handleDMupdate = useCallback((payload) => {
-    console.log("handleDMupdate", payload);
     setDmList((prevme) => [...prevme, payload]);
   }, [dmList]);
 
@@ -82,9 +79,7 @@ export default function Message(props: MessageProps) {
   }, [messageList, dmList]);
 
   useEffect(() => {
-    console.log("dmList", dmList);
     const sortitemDM = dmList.sort((a, b) => (new Date(a.timestamp)) - (new Date(b.timestamp)));
-    // console.log("sortitemDM", sortitemDM);
     setItemDM(dmList.sort((a, b) => a.timestamp - b.timestamp)
       .map((each, index) => {
         const date = new Date(each.timestamp);
@@ -94,7 +89,6 @@ export default function Message(props: MessageProps) {
         let className1 = "Message-data";
         let className2 = "Message";
         if (props.roomName == null) {
-          console.log("props.roomName == nul")
           return null;
         }
         else {
@@ -110,7 +104,6 @@ export default function Message(props: MessageProps) {
                 user = database.find((user) => user.id === each.userId);
                 if (user !== undefined) {
                   clearInterval(interval);
-                  console.log("user underfine");
                 }
               }, 1000);
             } else {
@@ -139,7 +132,7 @@ export default function Message(props: MessageProps) {
     );
   }, [dmList, database])
   useEffect(() => {
-    // console.log("messageList", messageList);
+
 
     setItem(messageList.sort((a, b) => a.timestamp - b.timestamp)
       .map((each, index) => {
@@ -150,7 +143,6 @@ export default function Message(props: MessageProps) {
         let className1 = "Message-data";
         let className2 = "Message";
         if (props.roomName == null) {
-          console.log("props.roomName == nul")
           return null;
         }
         else {
@@ -172,8 +164,6 @@ export default function Message(props: MessageProps) {
                 user = database.find((user) => user.id === each.userId);
                 if (user !== undefined) {
                   clearInterval(interval);
-                  // username = each.userId;
-                  console.log("user underfine");
                 }
               }, 1000);
             } else {
@@ -203,19 +193,17 @@ export default function Message(props: MessageProps) {
   }, [messageList, database])
 
   const handleDMReceived = useCallback((payload) => {
-    // console.log(`dm : ${JSON.stringify(payload)}`);
     setDmList(payload.msgHist);
   }, [dmList])
 
   const handleMessagesReceived = useCallback((payload) => {
-    // console.log(`roomMsgHistReceived, : ${JSON.stringify(payload)}`);
+
     setMessageList(payload.msgHist);
   }, [messageList])
   const handleAlertmessage = useCallback((payload) => {
     alert(payload.message);
 }, [])
   const handleRemoveRoom = useCallback((payload)=>{
-    console.log("handleRemoveRoom")
     if(payload.roomName ===  props.roomName)
       setMessageList("");
 },[])

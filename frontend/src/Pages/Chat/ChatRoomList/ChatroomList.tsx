@@ -31,11 +31,9 @@ export default function ChatroomList(props: ChatroomListProps) {
 
   // Event handlers
   const handleRoomCreated = useCallback((payload) => {
-    // console.log("created", payload);
   }, [chatrooms]);
 
   const handleRoomJoined = useCallback((payload) => {
-    // console.log("handleRoomJoined", payload);
     if (chatrooms.find(obj => obj.roomName === payload.roomName))
       return;
     setChatrooms((prevChatrooms) => [...prevChatrooms, {
@@ -50,11 +48,9 @@ export default function ChatroomList(props: ChatroomListProps) {
     setChatrooms(payload.roomsList);
   }, [chatrooms]);
   const handleDMRoomsListReceived = useCallback((payload) => {
-    console.log(payload);
     setdms(payload.dms);
     if (database) {
       const filteredObjects = database.filter(obj => payload.dms.includes(obj.id));
-      console.log("filteredObjects", filteredObjects);
       const newDms = filteredObjects.map(obj => ({ id: obj.id, name: obj.name, prof: obj.profilePicture }));
       setdms(newDms);
     }
@@ -63,7 +59,6 @@ export default function ChatroomList(props: ChatroomListProps) {
     if (dms.find(obj => obj.id === payload.userId))
       return;
     if (database) {
-      console.log("pass update dmlist, database good")
       const filteredObjects = database.find(obj => obj.id === payload.userId);
       if (!payload.fromId)
         alert(filteredObjects.name + " had seent you a message!");
@@ -96,7 +91,6 @@ export default function ChatroomList(props: ChatroomListProps) {
   }, [chatrooms]);
 
   const handleKickEvent = useCallback((payload) => {
-    console.log("yoyo", selectedRoom)
     alert(payload.message);
     setChatrooms((prevChatrooms) => {
       return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
@@ -107,10 +101,8 @@ export default function ChatroomList(props: ChatroomListProps) {
   }, [chatrooms]);
 
   const handleRoomsUpdate = useCallback((payload) => {
-    console.log("handleRoomsUpdate", payload, chatrooms);
     const chatroomIndex = chatrooms.findIndex(room => room.roomName === payload.roomName);
     if (chatroomIndex === -1) {
-      console.log("cant not find the roomname updated");
       return;
     }
     const updatedChatroom = {
@@ -125,7 +117,6 @@ export default function ChatroomList(props: ChatroomListProps) {
 
   // Render handlers
   const handleChatroomClick = (roomName, userID, ifDM) => {
-    console.log("handleChatroomClick", roomName, userID, ifDM);
     if (ifDM == false) {
       props.onListClick(roomName, 0, false);
       props.socket.emit("getRoomMembers", { roomName: roomName });
@@ -138,7 +129,6 @@ export default function ChatroomList(props: ChatroomListProps) {
   }
   useEffect(() => {
     if (!database) {
-      console.log("databse is empty!")
       props.onUpdate();
     }
   }, [])
@@ -153,8 +143,6 @@ export default function ChatroomList(props: ChatroomListProps) {
       props.socket.on("dmUpdated", handlDMlistupdated);
       props.socket.on("banned", handleBanEvent);
       props.socket.on("kicked", handleKickEvent);
-      // console.log("received");
-      // console.log(props.socket.listeners("roomsListReceived"));
     }
     return () => {
       if (props.socket) {
