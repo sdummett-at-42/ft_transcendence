@@ -92,11 +92,6 @@ export class RedisService {
 		this.client.hdel(`room:${roomName}:infos:banned`, userId, 1);
 	}
 
-	async unsetAllRoomBanned(roomName: string) {
-		const keys = await this.client.hkeys(`room:${roomName}:infos:banned`);
-		await Promise.all(keys.map((key) => this.client.hdel(`room:${roomName}:infos:banned`, key)));
-	}
-
 	async getRoomBanned(roomName: string): Promise<string[]> {
 		return new Promise((resolve, reject) => {
 			this.client.hkeys(`room:${roomName}:infos:banned`, (err, banned) => {
@@ -114,12 +109,6 @@ export class RedisService {
 
 	async unsetRoomMuted(roomName: string, userId: number) {
 		this.client.del(`room:${roomName}:infos:muted:${userId}`);
-	}
-
-
-	async unsetAllRoomMuted(roomName: string) {
-		const keys = await this.client.hkeys(`room:${roomName}:infos:muted:`);
-		await Promise.all(keys.map((key) => this.client.hdel(`room:${roomName}:infos:muted:`, key)));
 	}
 
 	async getRoomMuted(roomName: string, userId: number): Promise<string[]> {
@@ -152,11 +141,6 @@ export class RedisService {
 				resolve(invited);
 			})
 		})
-	}
-
-	async unsetAllRoomInvited(roomName: string) {
-		const keys = await this.client.hkeys(`room:${roomName}:infos:invited`);
-		await Promise.all(keys.map((key) => this.client.hdel(`room:${roomName}:infos:invited`, key)));
 	}
 
 
