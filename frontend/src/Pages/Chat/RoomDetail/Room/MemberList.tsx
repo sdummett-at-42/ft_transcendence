@@ -23,7 +23,6 @@ export default function MemberList(props: MemberListProps) {
     const [popUpId, setPopUpId] = useState({});
 
     const hanldeDM = (id, name) => {
-        console.log("handleDM", id, name)
         props.onListClick(name, id, true);
     };
 
@@ -62,7 +61,6 @@ export default function MemberList(props: MemberListProps) {
     };
 
     useEffect(()=>{
-        console.log(props.blockList);
         setNewBlockList(props.blockList);
     },[]);
 
@@ -71,7 +69,6 @@ export default function MemberList(props: MemberListProps) {
     }, [members]);
 
     const handleMemberUpdate = useCallback((payload) => {
-        console.log("handleMemberUpdate", payload)
         setMembers(payload.memberList);
     }, [members]);
 

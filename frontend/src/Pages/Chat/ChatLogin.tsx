@@ -29,7 +29,6 @@ export default function ChatLogin() {
 
   
   const handleGetInvitationGame = (data : {player : number, you : number, type : string}) => {
-    console.log('handleGetInvitationGame');
 
     const senderId : number = data.player;
     const typeGame : string = data.type; // "ranked" | "custom"
@@ -49,13 +48,11 @@ export default function ChatLogin() {
 
   // after agree client go in game
   const handlegoInGame = (data : string) => {
-    console.log('handlegoInGame');
     navigate(`/game/${data}`);
   }
 
   // send to initial sender if target doesn't accept
   const handleRefuseInvitationGame = (data : number) => {
-    console.log('handleRefuseInvitationGame');
     const userId = data;
 
     // userId a refuser ou n'est pas disponible pour une game
@@ -96,7 +93,6 @@ export default function ChatLogin() {
   };
 
   const handleListClick = (name, id, ifDM) => {
-    console.log("List:",name, id, ifDM);
     setToDMID({ id: id, name: name });
     setRoomName(name);
     if (ifDM == true)
@@ -132,7 +128,6 @@ export default function ChatLogin() {
   };
 
   const handleBlockList = useCallback((payload) =>{
-    console.log("handleBlockList", payload);
     setBlockList(payload.list);
 },[blockList])
 
@@ -185,7 +180,6 @@ export default function ChatLogin() {
   }, [socket, handleUpdateDatabase]);
 
   useEffect(() =>{
-    console.log("outside", typeof(userId), userName);
     setRoomName(userName);
     setIfDM(true);
     setToDMID({id :Number(userId), name: userName});
@@ -203,11 +197,9 @@ export default function ChatLogin() {
       socket.emit("getUserRooms");
       socket.emit("getDmsList");
       socket.emit("getBlockList");
-      console.log('Socket connected');
     });
     socket.on('disconnect', () => {
       setIfSocket(false)
-      console.log('Socket disconnected');
     });
     // Clean up the socket connection when the component unmounts
     return () => {
