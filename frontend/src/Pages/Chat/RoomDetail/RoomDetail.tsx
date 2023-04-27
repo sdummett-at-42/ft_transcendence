@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import "./RoomDetail.css"
-import Setting from './Room/Setting';
-import InvitedConfirm from '../InvitedConfirm';
+import Setting from '../Popup/Setting';
+import InvitedConfirm from '../Popup/InvitedConfirm';
 import MemberList from './Room/MemberList';
 import Profile from './Room/Profile';
 import { Socket } from "socket.io-client";
@@ -313,7 +313,7 @@ export default function RoomDetail(props: RoomDetailProps) {
           (props.ifDM) ? (
               <Profile socket={props.socket} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList} />
           ) : (
-              <div className="chatinfo" ></div>
+              <div className=""></div>
           )
       )
 

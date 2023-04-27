@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import "./chat.scss"
+import "./Popup.css"
 import { Socket } from "socket.io-client";
 
 interface InvitedConfirmProps {

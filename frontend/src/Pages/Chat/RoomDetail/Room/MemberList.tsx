@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState, useContext } from 'react';
 import "./Room.css";
-import ProfilePopup from '../../ProfilePopup'
+import ProfilePopup from '../../Popup/ProfilePopup'
 import { Socket } from "socket.io-client";
 import { DatabaseContext } from '../../ChatLogin'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -126,7 +126,7 @@ export default function MemberList(props: MemberListProps) {
                                 <li className="ChatRoom-list-li" key={each} onClick={() => handleProfilePopup(user)}>
                                     <img className="ChatRoom-image" src={user?.profilePicture} alt="avatar" />
                                     <div className="about">
-                                        <div className="MemberList-screen-card-text">{user.name}</div>
+                                        <div className="MemberList-screen-card-text">{user?.name}</div>
                                         <div className="ChatRoom-screen-card-type">
                                             {role}
                                         </div>
@@ -147,7 +147,6 @@ export default function MemberList(props: MemberListProps) {
                                                         <button className="PendingFriend-button" onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button>
                                                     </div>
                                                 )}
-                                                {/* <button className="" onClick={() => handleProfilePopup(user)}><FontAwesomeIcon icon={faUser}  size="lg" /></button> */}
                                             </div>
                                         )
                                     }

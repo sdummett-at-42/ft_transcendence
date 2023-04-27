@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import "./Room.css"
+import "./Popup.css"
 import { Socket } from "socket.io-client";
-import { DatabaseContext } from '../../ChatLogin';
+import { DatabaseContext } from '../ChatLogin';
 
 interface SettingProps {
   socket: Socket,
