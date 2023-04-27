@@ -201,7 +201,6 @@ export class ChatService {
 				if (members.length > 0)
 					await this.redis.setRoomOwner(dto.roomName, +members[0])
 				else {
-					this.redis.unsetAllRoomBanned(dto.roomName);
 					this.redis.unsetRoom(dto.roomName);
 					this.redis.unsetRoomName(dto.roomName);
 				}
