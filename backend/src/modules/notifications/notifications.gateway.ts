@@ -43,7 +43,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null || !JSON.parse(session).passport) {
+		if (session === null || !JSON.parse(session).passport || !JSON.parse(session).passport.user) {
 			console.debug("User isn't logged in");
 			socket.emit('notConnected', { // Event to report here
 				timestamp: new Date().toISOString(),
@@ -168,13 +168,8 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 			this.server.to(receiverSocketsIds).emit('friendRequestCanceled', { id: requesterId });
 	}
 
-	@SubscribeMessage('getConnectedFriends')
+	@SubscribeMessage('getOnlineFriends')
 	async onGetConnectedFriend(@ConnectedSocket() socket) {
-		const sockets = await this.server.fetchSockets();
-		const connectedIds = Object.entries(sockets)
-			.map(([key, value]) => value.data.userId)
-		if (connectedIds.length > 0) {
-			socket.emit('connectedFriends', { friendIds: connectedIds });
-		}
+		this.onlineNotify(socket, socket.data.userId);
 	}
 }

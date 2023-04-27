@@ -167,9 +167,11 @@ export default function Settings() {
 				if (response.ok) {
 					setLastUpdate(Date.now());
 					setNameInput("");
-				} else {
-					console.log(await response.json());
-					throw new Error("Failed to update name");
+				} else if (response.status === 409) {
+					setErrorMessage((prevErrors) => ({
+						...prevErrors,
+						username: "Le nom d'utilisateur est déjà pris",
+					}));
 				}
 			})
 			.catch((error) => {

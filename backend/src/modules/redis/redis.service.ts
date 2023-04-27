@@ -73,7 +73,7 @@ export class RedisService {
 	}
 
 	async unsetRoomMember(roomName: string, userId: number) {
-		this.client.hdel(`room:${roomName}:infos:member`, userId, 1);
+		this.client.hdel(`room:${roomName}:infos:member`, userId);
 	}
 
 	async getRoomMembers(roomName: string): Promise<string[]> {
