@@ -1,8 +1,5 @@
 import { Server } from 'socket.io';
 
-// TODO
-// check si front peut aussi instance of SHAPE
-
 export interface Shape {
     type: string;
     pos: Coordonnee;
@@ -33,7 +30,6 @@ export class BlackHole implements Shape {
     type : string = "BlackHole";
     pos : Coordonnee;
     r : number;
-    // color or img
 
     constructor(x:number, y:number, r:number) {
         this.pos = new Coordonnee(x, y);
@@ -48,9 +44,7 @@ export class Bullet implements Shape {
     v : number;         // speed
     f : number;         // frequence
     a : number;         // direction
-    // color or img
 
-    // bulletInterval?: NodeJS.Timeout | undefined; // stocker ID de l'intervalle de la bullet-> a chaque passqge bullet se deplace
     speed : number;
 
     constructor(x:number, y:number, r:number, v:number, f:number, a:number) {
@@ -61,10 +55,6 @@ export class Bullet implements Shape {
         this.a = a;
 
         this.speed = 5;
-
-        // IDEA
-        // speed init aleatoire 30-60 ?
-        // idem pour f mais entre 5 et 10 ?
     }
 }
 
@@ -73,7 +63,6 @@ export class Square implements Shape {
     pos : Coordonnee;
     width : number;
     length : number;
-    // color or img
 
     constructor(x:number, y:number, length:number, width:number) {
         this.pos = new Coordonnee(x, y);
@@ -89,8 +78,6 @@ export class Player {
     socket : string;
 
     side?: number;
-//    eloTab : number[];
-    //socket : string;
 
     score : number = 0;
     racket? : Square;
@@ -108,32 +95,16 @@ export class Player {
         this.name = data.name;
         this.elo = data.elo;
         this.socket = data.socket;
-
-        console.log("id:", this.id);
-        console.log("name:", this.name);
-        console.log("elo:", this.elo);
-        console.log("socket:", this.socket);
-
-        //this.socket = data.socket;
-        //this.eloTab = data.elo[];
     }
-
-    // constructor(x:number, y:number, height:number, width:number) {
-    //     this.racket = new Square(x, y, height, width);
-
-    // }
 }
 
 export class Field {
     height : number;
     width : number;
-    //shapes : Shape[]; // pour les map perso
-    // definir ici couleur / skin map j1 j2 ?
 
     constructor(height:number, width:number){
         this.height = height;
         this.width = width;
-        //this.shapes = shapes;
     }
 }
 
@@ -146,6 +117,9 @@ export class Game {
     p1 : Player;
     p2 : Player;
     boolRanked : Boolean;
+
+    p1socket?: any;
+    p2socket?: any;
 
     boolMap : Boolean = false;
     map?: number;
@@ -186,7 +160,6 @@ export class Game {
     // les mettre propres aux bullets ?
     bulletInterval?: NodeJS.Timeout; // stocker ID de l'intervalle de la partie -> a chaque passqge bullet se deplace
     frequencyInterval?: NodeJS.Timeout; // stocker ID de l'intervalle f bullet -> a chaque passage bullet.f ++
-    // speed : number;
 
     // number of obstacle + racket
     numberElement? : number;

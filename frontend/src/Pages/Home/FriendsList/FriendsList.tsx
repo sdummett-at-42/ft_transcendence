@@ -30,6 +30,9 @@ export default function FriendsList() {
     // Store the online status
     const [onlineStatus, setOnlineStatus] = useState([] as any);
 
+    // Store the ingane status
+    const [gameStatus, setGameStatus] = useState([] as any);
+
     // Fetch all friends of the user
     useEffect(() => {
         async function getFriends() {

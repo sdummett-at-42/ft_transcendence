@@ -8,7 +8,6 @@ import { LobbyService } from './lobby/lobby.service';
 
 @WebSocketGateway({namespace: 'game'})
 export class GameGateway {
-  //constructor(private readonly gameService: GameService, private readonly lobbyService: LobbyService) {}
   constructor(
     @Inject(forwardRef(() => LobbyService))
     private readonly lobbyService: LobbyService,
@@ -44,7 +43,6 @@ export class GameGateway {
   |* game *|
   \* **** */
 
-  // socket.emit("Mouvement", {roomId : room, data : data});
   @SubscribeMessage(EventGame.playerMouvement)
   MouvementMessage(client: any, payload: {roomId : number, data : Coordonnee}) : void {
     const gameId = Number(payload.roomId);
@@ -58,12 +56,9 @@ export class GameGateway {
 
   @SubscribeMessage(EventGame.playerClickCanvas)
   ClickCanvasMessage(client: any, roomId : string) : void {
-    // console.log("click");
-    // get game by gameid from client
     const gameId = Number(roomId);
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);
     const game = this.lobbyService.games[indexGame];
-
     if (game === undefined || !this.gameService.onMatch(game))
       return ;
     this.gameService.clickGame(game, client);
@@ -97,7 +92,6 @@ export class GameGateway {
   }
 
   // invitation Game
-
   @SubscribeMessage(EventGame.lobbySendInvitGame)
   lobbySendInvitGame(client: any, data : {idTarget : number, type : string}) : void {
     this.lobbyService.lobbySendInvitGame(client, data.idTarget, data.type);

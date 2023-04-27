@@ -11,12 +11,6 @@ import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
 export class GameController {
     constructor(private readonly gameService: GameService,
                 private readonly lobbyService: LobbyService) {}
-
-    // plutot faire /game amene sur lobby.html
-    // recherche game
-    // match = envoit html game
-
-
     // suppri plus tard et transferer dans lobby-service quand match found poru charger la map
     // une fois charger (les deux client auront dis que c'est bon ou l'un des joueurs manque)
     // start game ou gagnant en fonction cas
@@ -25,27 +19,11 @@ export class GameController {
     @ApiResponse({ status: 200, description: `La partie a été trouvé avec succès.` })
     @ApiResponse({ status: 404, description: `La partie n'existe pas ou n'a pas été trouvé.` })
     async gameRoom(@Param('id')id :string, @Res() res:Response) {
-        // client auto connect on socket's game
         console.log(`*** Controller game/:id`);
-
-
-        // console.log(`Controller('game')  @Get(':id') gamerRoom: ${id}`);
         const numId = Number(id);
-
-        if (isNaN(numId) || numId >= this.lobbyService.nbGame || numId < 0) { // unvalid id or unexistant game
-            //erreur 404 game existe pas
-            // peut etre rediriger vers /game ?
+        if (isNaN(numId) || numId >= this.lobbyService.nbGame || numId < 0) // unvalid id or unexistant game
             res.sendStatus(404);
-        } else {
-            // game exist but maybe end or in course
-            //const data = await fs.promises.readFile('src/modules/game/Dir/game.html', 'utf8');
+        else
             res.status(200);
-        }
-
-        // check if game 
-        //      no game = 404
-        //      game en cours = OK 200
-        //      game done = ???
-
     }
 }

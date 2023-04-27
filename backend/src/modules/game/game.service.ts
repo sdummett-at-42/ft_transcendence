@@ -1,74 +1,49 @@
 import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { Shape, Square , Bullet, Circle, BlackHole, Game } from './entities/game.entities';
-import { GameGateway } from './game.gateway';
 import { RedisService } from 'src/modules/redis/redis.service';
 import { EventGame } from './game-event.enum';
 import { PrismaService } from 'nestjs-prisma';
+import { FriendsService } from "../friends/friends.service";
 
 @Injectable()
 export class GameService {
-    constructor(private readonly redis: RedisService,
-        private readonly prisma: PrismaService
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly friends: FriendsService
     ) { }
-
-    //field = new Field(400, 800);
-    //shapes : Shape[] = [];
-    //bulletInterval: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
-    //frequencyInterval: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
-
 
     /* ******************* *\
     |* input/entry functon *|
     \* ******************* */
-
-    // TODO
-    // check si client not in game ?
-    // check si client est joueur
-    //      yes = modifier player en question
-    //      non = spectateur
-    // si oui ajouter ou ecraser le socket ?
-
-    // un seul socket joueur
-    // attendre les 2 joueurs present
-
     onMatch(game : Game) : Boolean {
         if (game.endBool === true) // match is finished
             return false;
         return true;
     }
 
+    // join room game + set up player
     joinGame(server: Server, game : Game, client : Socket, roomId : string) {
         client.join(roomId);
 
         console.log(roomId);
         console.log(game.roomId);
-        
-        // console.log("client  ", client.data.userId);
-        // console.log("player 1", game.p1.id);
-        // console.log("player 2", game.p2.id);
 
-        if (client.data.userId === game.p1.id) { // c'est le joueur 1
+        if (client.data.userId === game.p1.id) // c'est le joueur 1
             game.p1.socket = client.data.socket;
-        }
-
-        if (client.data.userId === game.p2.id) { // c'est le joueur 2
+        if (client.data.userId === game.p2.id) // c'est le joueur 2
             game.p2.socket = client.data.socket;
-        }
+
         server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
         // When 1 player are in game, laucnh timer if Player 2 doesn't join
         // 15 sec to join
         if (game.p1.socket != undefined || game.p2.socket != undefined) {
             clearTimeout(game.timeoutJoin);
             game.timeoutJoin = setTimeout(() => {
-                if (game.p1.socket === undefined) {
-                    // player 2 win abandon
+                if (game.p1.socket === undefined) // player 2 win abandon
                     this.victoryByGiveUpLimitMax(game, 2);
-                }
-                if (game.p2.socket === undefined) {
-                    // player 1 win abandon
+                if (game.p2.socket === undefined) // player 1 win abandon
                     this.victoryByGiveUpLimitMax(game, 1);
-                }
             }, 15000)
         }
 
@@ -82,46 +57,42 @@ export class GameService {
     }
 
     startingGame(server : Server, game : Game) : void {
-            // console.log("starting game !");
-            game.startBool = true;
+        // Set game Start
+        game.startBool = true;
 
-            // Bullet start side player 1
-            this.startNewBullet(game, 1);
+        // Bullet start side player 1
+        this.startNewBullet(game, 1);
 
-            // TODO
-            // temp max atteint = fin game
-            game.dateStart =  new Date();
-            let elapsedTime : number;
-            const delay = 1000 / 60 // 60 emit sec
+        // Set date start game
+        game.dateStart =  new Date();
+        let elapsedTime : number;
+        const delay = 1000 / 60 // ~60 emit sec
 
-            // console.log("StartingGame : pre setInterval");
-            game.gameInterval = setInterval(() => {
-                if (game.pause === true) { // game in pause
-                    // if player 1 pause
-                    const dateActual = new Date().getTime();
-
-//
-                    // je veux check si un joueur a consommer sa duree total de pause
-                    // stocker duree total pause joueur dans resume
-
-                    // si p1Pause && limit pause depasser = victoire forfait
-                    if (game.pauseP1 === true) {
-                        const check : number = game.pauseP1Time + dateActual - game.pauseP1Start.getTime();
-                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
-                            game.pauseP1Max >= game.pauseTotalMax) {
-                            this.victoryByGiveUpLimitMax(game, 2);
-                            return ;
-                        }
+        // Start game interval
+        game.gameInterval = setInterval(() => {
+            if (game.pause === true) { // game in pause
+                const dateActual = new Date().getTime();
+                // je veux check si un joueur a consommer sa duree total de pause
+                // stocker duree total pause joueur dans resume
+                
+                // si p1Pause && limit pause depasser = victoire forfait
+                if (game.pauseP1 === true) {
+                    const check : number = game.pauseP1Time + dateActual - game.pauseP1Start.getTime();
+                    if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
+                        game.pauseP1Max >= game.pauseTotalMax) {
+                        this.victoryByGiveUpLimitMax(game, 2);
+                         return ;
                     }
-                    // if player 2 pause
-                    if (game.pauseP2 === true) {
-                        const check : number = game.pauseP2Time + dateActual - game.pauseP2Start.getTime();;
-                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
-                            game.pauseP2Max >= game.pauseTotalMax) {
-                            this.victoryByGiveUpLimitMax(game, 1);
-                            return ;
-                        }
+                }
+                // if player 2 pause
+                if (game.pauseP2 === true) {
+                    const check : number = game.pauseP2Time + dateActual - game.pauseP2Start.getTime();;
+                    if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
+                        game.pauseP2Max >= game.pauseTotalMax) {
+                        this.victoryByGiveUpLimitMax(game, 1);
+                        return ;
                     }
+                }
 
                 } else { // game not in pause
                     // check game timer end
@@ -233,15 +204,6 @@ export class GameService {
 
     // stop all interval et clear all bullet
     stopGame(server : Server, game : Game) : void {
-        // console.log("Fin de la partie !");
-
-        // Stop all interval bullet
-        // game.shapes.forEach((shape, index) => {
-        //     if (game.shapes[index] instanceof Bullet){
-        //         clearInterval(game.bulletInterval);
-        //         game.bulletInterval = undefined;
-        //     }
-        // })
 
         clearInterval(game.bulletInterval);
         game.bulletInterval = undefined;
@@ -259,6 +221,9 @@ export class GameService {
             
         // Bool endgame true
         game.endBool = true;
+        this.offGameNotify(server, game.p1.id);
+        this.offGameNotify(server, game.p2.id);
+        
 
         server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
     }
@@ -443,6 +408,27 @@ export class GameService {
     //this.startMoving(game.server, game, bullet_01);
 
     }
+
+
+    private async offGameNotify(server : Server, userId: number) {
+        console.log("******************");
+        console.log("STATUS GAME: OFF");
+        console.log("******************");
+
+		const sockets = await server.fetchSockets();
+		const userSockets = sockets.filter(s => { return s.data.userId === userId });
+		if (userSockets.length === 0) {
+			const friendIds = await this.friends.findAll(userId);
+			if (!friendIds)
+				return;
+			const friendSocketIds = Object.entries(sockets)
+				.filter(([key, value]) => friendIds.includes(value.data.userId))
+				.map(([key, value]) => value.id);
+
+			if (friendSocketIds.length > 0)
+			 server.to(friendSocketIds).emit(EventGame.statusOffGame, { id: +userId }); // Event to report here
+		}
+	}
 
     private deleteBullet(game : Game, bullet : Bullet) : void {
         // console.log("delete bullet");
