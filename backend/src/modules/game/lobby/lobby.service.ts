@@ -77,10 +77,11 @@ export class LobbyService {
     // envoyer ad target emit getInvite
     async lobbySendInvitGame(client: Socket, idTarget : number, type : string) {
 
-        console.log("send a invitation")
+        console.log("send a invitation 1:", idTarget, type)
         // Retirer Q + check inMatch
         this.lobbyLeaveQueue(client);
         if (this.inMatch(client.data.userId)) {// true -> match
+            console.log("case 1")
             this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, idTarget);
             return ;
         }
@@ -89,72 +90,78 @@ export class LobbyService {
         const socketIds = sockets.filter(socket => socket.data.userId === idTarget).map(socket => socket.id);
 
         // check is player socket connect Or not ig
-        if (!socketIds.length || this.inMatch(idTarget)) // no socket || ig
+        if (!socketIds.length || this.inMatch(idTarget)){ // no socket || ig
+            console.log("case 2")
             this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, idTarget);
+        }
         else { // socket && noig
+            console.log("case 3")
             this.gameGateway.server.to(socketIds).emit(EventGame.lobbyGetInvitGame, {player : client.data.userId, you : idTarget, type : type}); 
         }
     }
 
     // target send to sender response -> gogame | refus
-    async lobbyResponseInvitGame(client : Socket, data : {client : Socket, res : Boolean, type : string}) {
+    async lobbyResponseInvitGame(client : Socket, data : {client : Number, res : Boolean, type : string}) {
+        console.log("HERE I AM!", client)
         // check si p1 et p2 dispo
         const   player2 = client;
-        const   player1 = data.client;
+        const sockets2 = await this.gameGateway.server.fetchSockets();
+        const socketIds2 = sockets2.filter(socket => socket.data.userId === data.client).map(socket => socket.id);
+        const   player1 = socketIds2;
 
-        if (!data.res) { // refus
-            this.gameGateway.server.to(player1.id).emit(EventGame.lobbyRefuseInvitGame, player2.data.userId);
-            return ;
-        }
+        // if (!data.res) { // refus
+        //     this.gameGateway.server.to(player1.id).emit(EventGame.lobbyRefuseInvitGame, player2.data.userId);
+        //     return ;
+        // }
 
         // retirer Q
-        let suppr = this.users.findIndex(users => users.player.id === player2.data.userId); // check if in users first element us.id == cl.id
-        if (suppr !== -1)
-            this.users.splice(suppr, 1);
-        suppr = this.users.findIndex(users => users.player.id === player1.data.userId); // check if in users first element us.id == cl.id
-        if (suppr !== -1)
-            this.users.splice(suppr, 1);
+        // let suppr = this.users.findIndex(users => users.player.id === player2.data.userId); // check if in users first element us.id == cl.id
+        // if (suppr !== -1)
+        //     this.users.splice(suppr, 1);
+        // suppr = this.users.findIndex(users => users.player.id === player1.data.userId); // check if in users first element us.id == cl.id
+        // if (suppr !== -1)
+        //     this.users.splice(suppr, 1);
 
-        // check no ingame
-        if (this.inMatch(player1.data.userId) || this.inMatch(player2.data.userId)) {// true -> P1 match
-            this.gameGateway.server.to(player1.id).emit(EventGame.lobbyRefuseInvitGame, player2.data.userId);
-            return ;
-        }
+        // // check no ingame
+        // if (this.inMatch(player1.data.userId) || this.inMatch(player2.data.userId)) {// true -> P1 match
+        //     this.gameGateway.server.to(player1.id).emit(EventGame.lobbyRefuseInvitGame, player2.data.userId);
+        //     return ;
+        // }
 
 
-        // socket valide ? client -> ok sender original ? tant pis ?
-        const sockets = await this.gameGateway.server.fetchSockets();
-        const socketIds = sockets.filter(socket => socket.data.userId === player1.data.userId).map(socket => socket.id);
-        if (!socketIds.includes(player1.id))
-            return ;
+        // // socket valide ? client -> ok sender original ? tant pis ?
+        // const sockets = await this.gameGateway.server.fetchSockets();
+        // const socketIds = sockets.filter(socket => socket.data.userId === player1.data.userId).map(socket => socket.id);
+        // if (!socketIds.includes(player1.id))
+        //     return ;
         
-        // set Player
-        const prismDataPlayer1 = await this.prisma.user.findUnique({
-            where: { id : player1.data.userId },
-            select: {
-                name: true,
-                elo: true,
-            },
-        });
-        const prismDataPlayer2 = await this.prisma.user.findUnique({
-            where: { id : player2.data.userId },
-            select: {
-                name: true,
-                elo: true,
-            },
-        });
+        // // set Player
+        // const prismDataPlayer1 = await this.prisma.user.findUnique({
+        //     where: { id : player1.data.userId },
+        //     select: {
+        //         name: true,
+        //         elo: true,
+        //     },
+        // });
+        // const prismDataPlayer2 = await this.prisma.user.findUnique({
+        //     where: { id : player2.data.userId },
+        //     select: {
+        //         name: true,
+        //         elo: true,
+        //     },
+        // });
 
-        const dataP1 = {id : client.data.userId, name : prismDataPlayer1.name, elo : prismDataPlayer1.elo , socket : client.data.socket}
-        const p1 = new Player(data);
+        // const dataP1 = {id : client.data.userId, name : prismDataPlayer1.name, elo : prismDataPlayer1.elo , socket : client.data.socket}
+        // const p1 = new Player(data);
 
-        const dataP2 = {id : client.data.userId, name : prismDataPlayer2.name, elo : prismDataPlayer2.elo , socket : client.data.socket}
+        // const dataP2 = {id : client.data.userId, name : prismDataPlayer2.name, elo : prismDataPlayer2.elo , socket : client.data.socket}
 
-        const p2 = new Player(data);
-
-
+        // const p2 = new Player(data);
 
 
-        this.lobbyCreateGame({player : p1, threshold : 0, type : data.type}, {player : p2, threshold : 0, type : data.type} )
+
+
+        // this.lobbyCreateGame({player : p1, threshold : 0, type : data.type}, {player : p2, threshold : 0, type : data.type} )
 
 
 

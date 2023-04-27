@@ -20,63 +20,7 @@ import { useNavigate } from "react-router-dom";
 
 function App() {
 	const { user } = useContext(UserContext);
-	const { gameSocketRef } = useContext(UserContext);
-	const navigate = useNavigate();
-
-	const handleGetInvitationGame = (data : {player : number, you : number, type : string}) => {
-		console.log('handleGetInvitationGame');
-		const senderId : number = data.player;
-		const typeGame : string = data.type; // "ranked" | "custom"
-		const yourId : number = data.you;
-		const res : Boolean = false;
-		// refuse :
-		// if ()
-		  gameSocketRef.current.emit('reponseInvitationGame', {p1 : senderId, p2 : yourId, res : false});
 	
-		// accepte
-		// if () 
-		  gameSocketRef.current.emit('reponseInvitationGame', {p1 : senderId, p2 : yourId, res : false});
-		
-	  }
-	
-	  // after agree client go in game
-	  const handlegoInGame = (data : string) => {
-		console.log('handlegoInGame');
-		navigate(`/game/${data}`);
-	  }
-	
-	  // send to initial sender if target doesn't accept
-	  const handleRefuseInvitationGame = (data : number) => {
-		console.log('handleRefuseInvitationGame');
-		const userId = data;
-	
-		// userId a refuser ou n'est pas disponible pour une game
-	  }
-	
-	  // when client click en button to send invitation use:
-	  // gameSocketRef.current.emit('sendInvitationGame', idTarget : number);
-	
-	
-	  // Handle the socket events
-	  useEffect(() => {
-	
-		gameSocketRef.current.on('getInvitationGame', handleGetInvitationGame);
-		gameSocketRef.current.on('goInGame', handlegoInGame);
-		gameSocketRef.current.on('refuseInvitationGame', handleRefuseInvitationGame);
-		return () => {
-		  gameSocketRef.current.off('getInvitationGame', handleGetInvitationGame);
-		  gameSocketRef.current.off('goInGame', handlegoInGame);
-		  gameSocketRef.current.off('refuseInvitationGame', handleRefuseInvitationGame);
-	
-		};
-	   }, [
-		handleGetInvitationGame,
-		handlegoInGame,
-		handleRefuseInvitationGame,
-		gameSocketRef
-	  ]);
-	
-
 	return (
 		<div className="App">
 			<Routes>

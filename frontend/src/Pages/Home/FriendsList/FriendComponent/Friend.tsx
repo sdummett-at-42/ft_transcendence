@@ -55,13 +55,19 @@ export default function Friend(props: Props) {
     };
 
     const sendGameInvitationA = (friend) =>{
-        console.log("test1")
-        gameSocketRef.current.emit('sendInvitationGame', friend.id)
-
+        console.log("test1") // "ranked" | "custom"
+        gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked" })
+        alert("you have sent an invitation!A");
+        // isDuelOpen(false);
+        handleDuel()
+       
     }
 
     const sendGameInvitationB = (friend) =>{
-        gameSocketRef.current.emit('sendInvitationGame', friend.id)   
+        gameSocketRef.current.emit('sendInvitationGame', { idTarget: friend.id, type: "custom"})   
+        alert("you have sent an invitation!B");
+        // isDuelOpen(false);
+        handleDuel()
     }
 
     return (

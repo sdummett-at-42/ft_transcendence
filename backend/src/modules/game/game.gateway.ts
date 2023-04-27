@@ -132,7 +132,7 @@ export class GameGateway {
   }
 
   @SubscribeMessage(EventGame.lobbyResponseInvitGame)
-  lobbyResponseInvitGame(client: any, data : {client : Socket, res : Boolean, type : string}) : void {
+  lobbyResponseInvitGame(client: any, data : {client : number, res : Boolean, type : string}) : void {
     this.lobbyService.lobbyResponseInvitGame(client, data);
   }
 
