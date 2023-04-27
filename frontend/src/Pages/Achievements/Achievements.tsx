@@ -48,38 +48,34 @@ export default function InitAchievements({ userId, showLocked }) {
 		fetchAchievements(userId);
 	}, [userId]);
 	
+	
 	return <Achievements achievements={achievements} showLocked={showLocked} />;
 }
 
-function Achievements({ achievements, showLocked }) {
+function Achievements({ achievements, showLocked }) {	
+	const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#800080', '#FFA500', '#008080', '#FFC0CB', '#000080', '#008000', '#800000', '#808000', '#808080', '#C0C0C0', '#FF6347'];
 
-	return (
-		<div className="achievements">
-			{achievements.map(
-				(achievement) =>
-					(achievement.unlocked || showLocked) && (
-						<div
-							key={achievement.id}
-							className={`achievement-card ${
-								achievement.unlocked
-								? "achievement-unlocked"
-								: "achievement-locked"
-							}`}
-						>
-							<div>
-								<img className="achievement-badge" src={achievement.icon} alt="achievement icon" />
-								<div className="achievement-details">
-									<div className="achievement-title">
-										{achievement.name}
-									</div>
-									<div className="achievement-description">
-										{achievement.description}
-									</div>
-								</div>
-							</div>
-						</div>
-					)
-			)}
-		</div>
-	);
+	const itemsWithGradient = achievements.map((achievement, index) => {
+		const gradient = `linear-gradient(to right, ${colors[index % colors.length]}, ${colors[(index + 1) % colors.length]})`;
+		return (
+			(achievement.unlocked || showLocked) && (
+			<div
+				key={achievement.id}
+				className={`achievement-card ${
+					achievement.unlocked ? "achievement-unlocked" : "achievement-locked"
+				}`}
+				style={{ background: gradient }}
+			>
+				<div>
+					<div className="achievement-details">
+						<div className="achievement-title">{achievement.name}</div>
+						<div className="achievement-description">{achievement.description}</div>
+					</div>
+				</div>
+			</div>
+			)
+		);
+	});
+
+	return <div className="achievements">{itemsWithGradient}</div>;
 }

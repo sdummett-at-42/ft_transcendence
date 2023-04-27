@@ -18,13 +18,11 @@ export default function RoomCreate(props: RoomCreatProps) {
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
-        if (name === "visibility") {
-            setErrorMessage((prevErrors) => ({
-                ...prevErrors,
-                roomName: "",
-                password: "",
-            }));
-        }
+        setErrorMessage((prevErrors) => ({
+            ...prevErrors,
+            roomName: "",
+            password: "",
+        }));
         setFormData({
             ...formData,
             [name]: value
@@ -133,7 +131,6 @@ export default function RoomCreate(props: RoomCreatProps) {
                               <option value="private" className='RoomCreate-screen-card-option'>Privé</option>
                           </select>
                       </div>
-                      {formData.visibility === "private" && (
                           <div className="RoomCreate-screen-card-input-wrapper">
                               <label htmlFor="inputPassword" className="Profile-screen-card-text">
                                   Mot de passe
@@ -149,7 +146,6 @@ export default function RoomCreate(props: RoomCreatProps) {
                               />
                               {errorMessage.password && (<div className='Settings-error'>{errorMessage.password}</div>)}
                           </div>
-                      )}
                       <div className="RoomCreate-button-wrapper">
                           <button onClick={props.onClose} className="Settings-button">
                               Annuler

@@ -50,16 +50,6 @@ const handleEscape = (event) => {
 };
 
   const handleAccessChange = () => {
-    if (access === "private" && password.length === 0) {
-      setErrorMessage((prev) => ({
-        ...prev,
-        password: "Un salon privé doit avoir un mot de passe.",
-    }));
-      return;
-    }
-    if (access === "public" && password.length > 0) {
-      setAccess("private");
-    }
     const payload = {
       roomName: props.roomName,
       visibility: access,
@@ -67,12 +57,6 @@ const handleEscape = (event) => {
     }
     props.socket.emit("updateRoom", payload);
   }
-
-  useEffect(() => {
-    if (password.length > 0) {
-      setAccess("private");
-    }
-  }, [password, access]);
 
   const handleAddAdmin = () => {
     let user = database.find((user) => user.name === admin);

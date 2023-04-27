@@ -118,10 +118,10 @@ export default function MemberList(props: MemberListProps) {
                         let user = database.find((user) => user.id === each);
                         let role = "Membre";
                         if (members.owner.includes(each) == true) {
-                            role = "Proprio";
+                            role = "Propriétaire";
                         }
                         else if (members.admins.includes(each) == true) {
-                            role = "Admin";
+                            role = "Administateur";
                         }
                         return (
                             <div>
@@ -134,7 +134,7 @@ export default function MemberList(props: MemberListProps) {
                                         </div>
                                     </div>
 
-                                    {user.id === props.UserId ?
+                                    {user?.id === props?.UserId ?
                                         <div></div> :
                                         (
                                             <div className="MemberList-button">

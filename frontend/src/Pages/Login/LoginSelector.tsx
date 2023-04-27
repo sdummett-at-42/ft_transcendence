@@ -145,7 +145,6 @@ export default function LoginSelector() {
 									ref={passwordInputRef}
 									required
 									autoComplete="off"
-									onKeyDown={handleLoginForm}
 								/>
 								{errorMessages.password && (
 									<p className="LoginSelector-error">
@@ -161,7 +160,6 @@ export default function LoginSelector() {
 										handleLoginForm();
 									}}
 								/>
-								{/* {errorMessages.login && <Link to="/forgotMail" className="LoginSelector-error">{errorMessages.login}</Link>} */}
 							</form>
 							<div className="LoginSelector-card-subtitle">
 
