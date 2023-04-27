@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Achievements.css";
 import Invitaion from "../Invitaion/Invitaion";
-import FriendsList from "../Home/FriendsList/FriendsList";
 
 export default function InitAchievements({ userId, showLocked }) {
 	const [achievements, setAchievements] = useState([]);
@@ -57,8 +56,6 @@ function Achievements({ achievements, showLocked }) {
 	const itemsWithGradient = achievements.map((achievement, index) => {
 		const gradient = `linear-gradient(to right, ${colors[index % colors.length]}, ${colors[(index + 1) % colors.length]})`;
 		return (
-			<div>
-
 			(achievement.unlocked || showLocked) && (
 			<div
 				key={achievement.id}
@@ -75,10 +72,11 @@ function Achievements({ achievements, showLocked }) {
 				</div>
 			</div>
 			)
-			<FriendsList />
-			</div>
 		);
 	});
 
-	return <div className="achievements">{itemsWithGradient}</div>;
+	return (
+		<div className="achievements">
+			{itemsWithGradient}
+		</div>);
 }
