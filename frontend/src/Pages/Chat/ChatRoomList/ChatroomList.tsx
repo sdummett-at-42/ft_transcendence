@@ -1,14 +1,13 @@
-import React, { FC } from 'react';
-import { useState, useEffect, useCallback, useContext } from 'react';
-import RoomCreate from "./RoomCreate";
-import { io, Socket } from "socket.io-client";
+import React, { useState, useEffect, useCallback, useContext } from 'react';
+import "./ChatRoomList.css";
+import RoomCreate from "../RoomCreate/RoomCreate";
+import RoomJoin from '../RoomJoin/RoomJoin';
+import group from "../../../assets/group.png"
+import Popup from '../../Popup/Popup';
+import { Socket } from "socket.io-client";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
-import RoomJoin from './RoomJoin';
-import "./chat.scss"
-import InvitedConfirm from './InvitedConfirm';
-import { DatabaseContext } from './ChatLogin';
-import group from "../../assets/group.png"
+import { DatabaseContext } from '../ChatLogin';
 
 interface ChatroomListProps {
   socket: Socket,
@@ -175,47 +174,80 @@ export default function ChatroomList(props: ChatroomListProps) {
 
   // Render
   return (
-    <div className="people-list col-lg-3">
-      <div className="row">
-        <div className="search col-lg-6">
-          <button onClick={() => { setShowAddRoom(true);}} >Nouveau Salon</button>
-          <RoomCreate isVisible={showAddRoom}
-            onClose={() => setShowAddRoom(false)}
-            socket={props.socket} />
-        </div>
-        <div className="search col-lg-6">
-          <button onClick={() => { setShowJoinRoom(true); }}>Rejoindre le salon</button>
-          <RoomJoin isVisible={showJoinRoom}
-            footer={<button>Cancel</button>}
-            onClose={() => setShowJoinRoom(false)}
-            socket={props.socket} />
-        </div>
-        <ul className="list-1 col-lg-12">
-          {chatrooms.map(room => (
-            <li className={`clearfix ${selectedRoom === room.roomName && !props.ifDM ? "active" : ""}`} key={room.roomName} onClick={() => handleChatroomClick(room.roomName, 0, false)}>
-              <img src={group} />
-              <div className="about"> <div className="name" >{room.roomName} </div>
-                <div className="status">
-                  <i className="fa fa-circle online"></i> {room.public === "public" ? "Public " : "Privé"} {room.protected ? <FontAwesomeIcon icon={faLock} /> : null}
-                </div>
+      <div className="ChatRoomList">
+          <div className="ChatRoom-screen-card">
+						  <div className="ChatRoom-screen-card-overlay"></div>
+                  <div className="ChatRoom-screen-card-content">
+							        <div className="ChatRoom-screen-card-content-body">
+                          <div className="ChatRoom-screen-card-user">
+                              <button
+                                  className='Settings-button'
+                                  onClick={() => setShowAddRoom(true)}
+                              >
+                                  Nouveau Salon
+                              </button>
+                              <button
+                                  className='Settings-button'
+                                  onClick={() => setShowJoinRoom(true)}
+                             >
+                                  Rejoindre un salon
+                              </button>
+                          </div>
+                          <ul className='ChatRoom-list-ul'>
+                              {chatrooms.map(room => (
+                                  <li
+                                      className={`ChatRoom-list-li ${selectedRoom === room.roomName && !props.ifDM ? "ChatRoom-active" : ""}`}
+                                      key={room.roomName}
+                                      onClick={() => handleChatroomClick(room.roomName, 0, false)}
+                                  >
+                                      <img src={group} className='ChatRoom-image' draggable={false} />
+                                      <div>
+                                          <div className="ChatRoom-screen-card-text">
+                                              {room.roomName}
+                                          </div>
+                                          <div className="ChatRoom-screen-card-type">
+                                              <i className="" />
+                                              {room.public === "public" ? "Public " : "Privé"}
+                                              {room.protected ? <FontAwesomeIcon icon={faLock} /> : null}
+                                          </div>
+                                      </div>
+                                  </li>
+                              ))}
+                          </ul>
+                      <ul className="ChatRoom-list-ul">
+                          {dms.map(room => (
+                              <li className={`ChatRoom-list-li ${(selectedRoom === room.name) || (props.toDMID.name === room.name && props.ifDM) ? "ChatRoom-active" : ""}`} key={room.id} onClick={() => handleChatroomClick(room.name, room.id, true)}>
+                                  <img src={room.prof} className='ChatRoom-image' draggable={false} />
+                                  <div className="ChatRoom-screen-card-text" >
+                                      {room.name}
+                                  </div>
+                              </li>
+                          ))}
+                      </ul>
+                          </div>
+                  </div>
               </div>
-            </li>
-          ))}
-        </ul>
-        <ul className="list-2 col-lg-12">
-          {dms.map(room => (
-            <li className={`clearfix ${(selectedRoom === room.name) || (props.toDMID.name === room.name && props.ifDM) ? "active" : ""}`} key={room.id} onClick={() => handleChatroomClick(room.name, room.id, true)}>
-              <img src={room.prof} />
-              <div className="about"> <div className="name" >{room.name} </div>
-                <div className="status">
-                  <i className="fa fa-circle online"></i>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
+              {/* Popup */}
+              {setShowAddRoom && (
+                  <Popup isOpen={showAddRoom} isClose={() => setShowAddRoom(false)}>
+                      <RoomCreate
+                          isVisible={showAddRoom}
+                          onClose={() => setShowAddRoom(false)}
+                          socket={props.socket}
+                      />
+                  </Popup>
+              )}
+
+              {setShowJoinRoom && (
+                  <Popup isOpen={showJoinRoom} isClose={() => setShowJoinRoom(false)}>
+                      <RoomJoin isVisible={showJoinRoom}
+                          footer={<button>Cancel</button>}
+                          onClose={() => setShowJoinRoom(false)}
+                          socket={props.socket}
+                      />
+                  </Popup>
+              )}
+        </div>
+    );
 }
 

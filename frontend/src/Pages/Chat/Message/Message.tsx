@@ -1,9 +1,11 @@
 import React, { FC } from 'react';
+import "./Message.css"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { Socket } from "socket.io-client";
 import { useState, useEffect, useCallback } from 'react';
 import { useContext } from "react";
-import "./chat.scss"
-import { DatabaseContext } from './ChatLogin';
+import { DatabaseContext } from '../ChatLogin';
 
 interface MessageProps {
   socket: Socket,
@@ -36,6 +38,10 @@ export default function Message(props: MessageProps) {
   };
 
   const handleSendMessage = (event) => {
+    if (message.length === 0 || message.trim().length === 0) {
+      setMessage("");
+      return;
+    }
     if (props.ifDM == false) {
       console.log("props.ifDM == false")
       const payload = {
@@ -63,6 +69,13 @@ export default function Message(props: MessageProps) {
     setDmList((prevme) => [...prevme, payload]);
   }, [dmList]);
 
+  const handleEnter = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSendMessage(event);
+    }
+  };
+
   useEffect(() => {
     // refersh context
     props.onUpdate();
@@ -78,8 +91,8 @@ export default function Message(props: MessageProps) {
         const hour = date.getHours().toString().padStart(2, '0');
         const minute = date.getMinutes().toString().padStart(2, '0');
         const second = date.getSeconds().toString().padStart(2, '0');
-        let className1 = "message-data";
-        let className2 = "message";
+        let className1 = "Message-data";
+        let className2 = "Message";
         if (props.roomName == null) {
           console.log("props.roomName == nul")
           return null;
@@ -107,6 +120,7 @@ export default function Message(props: MessageProps) {
               className1 += " align-right";
               className2 += " other-message float-right";
             } else {
+              className1 += " align-left";
               className2 += " my-message";
             }
           }
@@ -114,8 +128,8 @@ export default function Message(props: MessageProps) {
 
             <li className="clearfix" key={index}>
               <div className={className1}>
-                <span className="message-data-name">  {username}</span>
-                <span className="message-data-time">{hour}:{minute}:{second}</span>
+                <span className="Message-data-name">  {username}</span>
+                <span className="Message-data-time">{hour}:{minute}:{second}</span>
               </div>
               <div className={className2}>{each.message}</div>
             </li>
@@ -126,14 +140,15 @@ export default function Message(props: MessageProps) {
   }, [dmList, database])
   useEffect(() => {
     // console.log("messageList", messageList);
+
     setItem(messageList.sort((a, b) => a.timestamp - b.timestamp)
       .map((each, index) => {
         const date = new Date(each.timestamp);
         const hour = date.getHours().toString().padStart(2, '0');
         const minute = date.getMinutes().toString().padStart(2, '0');
         const second = date.getSeconds().toString().padStart(2, '0');
-        let className1 = "message-data";
-        let className2 = "message";
+        let className1 = "Message-data";
+        let className2 = "Message";
         if (props.roomName == null) {
           console.log("props.roomName == nul")
           return null;
@@ -168,6 +183,7 @@ export default function Message(props: MessageProps) {
               className1 += " align-right";
               className2 += " other-message float-right";
             } else {
+              className1 += " align-left";
               className2 += " my-message";
             }
           }
@@ -175,8 +191,8 @@ export default function Message(props: MessageProps) {
 
             <li className="clearfix" key={index}>
               <div className={className1}>
-                <span className="message-data-name">  {username}</span>
-                <span className="message-data-time">{hour}:{minute}:{second}</span>
+                <span className="Message-data-name">{username}</span>
+                <span className="Message-data-time">{hour}:{minute}:{second}</span>
               </div>
               <div className={className2}>{each.userId === -1? message : each.message}</div>
             </li>
@@ -231,27 +247,35 @@ export default function Message(props: MessageProps) {
   }, [props.socket, props.roomName, handleMessagesReceived, handleMessages, handleDMReceived, handleDMupdate, handleAlertmessage]);
 
   return (
-    props.roomName ? (
-      <div className="chat col-lg-6 ">
-        <div className="chat-header clearfix">
-          <div className="chat-about">
-            <div className="row">
-              <div className="chat-with col-6">Salon : {props.roomName}</div>
+    <div className="Message-screen">
+        <div className="ChatRoom-screen-card">
+        <div className="ChatRoom-screen-card-overlay"></div>
+            <div className="Message-screen-card-content">
+                <div className="ChatRoom-screen-card-content-body">
+                {!props.roomName ? (
+                    <div className="Profile-screen-card-text">
+                        <h4>Choisissez un salon pour afficher les messages</h4>
+                    </div>
+                ) : (
+                  <div>
+                      <div className="Message-screen-card-user">
+                          <div className="Profile-screen-card-title">{props.roomName}</div>
+                          {props.ifDM ? null : <button className="Settings-button Settings-delete-account-button" onClick={handleQuit}>Quitter</button>}
+                      </div>
+                      <div className="Message-chat-history">
+                          <ul className='Message-ul'>
+                              {props.ifDM ? itemDM : item}
+                          </ul>
+                      </div>
+                      <div className="chat-message">
+                          <textarea name="message-to-send" className='Message-textarea' autoFocus={true} placeholder="Aa" value={message} onChange={handleMessageChange} onKeyDown={handleEnter}></textarea>
+                          <FontAwesomeIcon icon={faPaperPlane} size='2xl' className='Message-send-icon' onClick={handleSendMessage} />
+                      </div>
+                  </div>
+                )}
             </div>
-            {props.ifDM ? null : <button className="col-2" onClick={handleQuit}>Quitter</button>}
-          </div>
         </div>
-
-        <div className="chat-history">
-          <ul>
-            {props.ifDM ? itemDM : item}
-          </ul>
-
-        </div>
-        <div className="chat-message clearfix">
-          <textarea name="message-to-send" id="message-to-send" placeholder="Tapez votre message" rows="2" value={message} onChange={handleMessageChange}></textarea>
-          <button onClick={handleSendMessage} >Envoyer</button>
-        </div>
-      </div>) : <div className="chat col-lg-6"> <h4>Choisissez un salon pour afficher les messages</h4></div>
+    </div>
+    </div>
   );
 }

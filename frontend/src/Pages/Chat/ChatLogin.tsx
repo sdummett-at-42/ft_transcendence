@@ -1,17 +1,13 @@
-// import 'bootstrap/dist/css/bootstrap.min.css';
-import React from "react";
-import { useState, useEffect,useCallback, useContext } from 'react';
-import ChatroomList from "./ChatroomList";
-import Message from './Message';
-import RoomDetail from "./RoomDetail";
+import React, { useState, useEffect, useCallback, createContext, useContext } from "react";
 import "./chat.scss"
-import { createContext } from "react";
-import { io } from "socket.io-client";
+import ChatroomList from "./ChatRoomList/ChatroomList";
+import Message from './Message/Message';
+import RoomDetail from "./RoomDetail/RoomDetail";
 import Cookies from 'js-cookie';
+import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
-export const DatabaseContext = createContext();
 import Invitaion from "../Invitaion/Invitaion";
-
+export const DatabaseContext = createContext();
 let socket;
 
 export default function ChatLogin() {
@@ -85,20 +81,19 @@ export default function ChatLogin() {
   }, [shouldUpdateDatabase]);
 
   useEffect(() => {
-    const fetchData = async () => {
+      const fetchData = async () => {
+          await fetch("http://localhost:3001/users/", {
+              method: "GET",
+              credentials: "include"
+          })
+          .then((response) => response.json())
+          .then(json => {
+              setDatabase(json);
+              setifDataReady(true);
+          });
+      };
 
-      await fetch("http://localhost:3001/users/", {
-        method: "GET",
-        credentials: "include"
-      })
-        .then((response) => response.json())
-        .then(json => {
-          setDatabase(json);
-          setifDataReady(true);
-        });
-    };
     fetchData();
-    // console.log("fetch database 1", database);
   }, []);
 
   useEffect(() => {
@@ -173,8 +168,7 @@ export default function ChatLogin() {
   } else {
     return (
       <div className="Chat-body">
-        <div className="containerhere containerhere clearfix">
-          <div className="row">
+          <div className="Chat-container">
             <DatabaseContext.Provider value={database}>
               <ChatroomList socket={socket} onListClick={handleListClick} onUpdate={handleChildComponentUpdate} ifDM={ifDM} toDMID={toDMID} ifDataReady={ifDataReady} />
               <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={myUserId} onUpdate={handleChildComponentUpdate} />
@@ -182,7 +176,6 @@ export default function ChatLogin() {
             </DatabaseContext.Provider>
             <Invitaion />
           </div>
-        </div>
       </div>
     );
   }

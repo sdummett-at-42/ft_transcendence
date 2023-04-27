@@ -96,14 +96,14 @@ export class ChatService {
 		const owner = await this.redis.getRoomOwner(roomName);
 		let admins = (await this.redis.getRoomAdmins(roomName)).map(Number);
 		let members = (await this.redis.getRoomMembers(roomName)).map(Number);
-		let banned = (await this.redis.getRoomBanned(roomName)).map(Number);
-		let muted = (await this.redis.getRoomAllMuted(roomName)).map(Number);
+		// let banned = (await this.redis.getRoomBanned(roomName)).map(Number);
+		// let muted = (await this.redis.getRoomAllMuted(roomName)).map(Number);
 		const memberList = {
 			owner: owner,
 			admins: admins,
 			members: members,
-			banned: banned,
-			muted: muted,
+			// banned: banned,
+			// muted: muted,
 		}
 		console.log("memberList", memberList)
 		return memberList;
@@ -160,6 +160,8 @@ export class ChatService {
 
 	async leaveRoom(socket, dto: LeaveRoomDto, server) {
 		const userId: string = socket.data.userId.toString();
+		const keys = await this.redis.getRoom(dto.roomName);
+		console.log("unsetRoom", keys);
 
 		const room = await this.redis.getRoom(dto.roomName);
 		if (room.length === 0) {
@@ -199,6 +201,7 @@ export class ChatService {
 				if (members.length > 0)
 					await this.redis.setRoomOwner(dto.roomName, +members[0])
 				else {
+					this.redis.unsetAllRoomBanned(dto.roomName);
 					this.redis.unsetRoom(dto.roomName);
 					this.redis.unsetRoomName(dto.roomName);
 				}
