@@ -22,7 +22,7 @@ export class LobbyService {
     games : Game[] = [];
     queueInterval: NodeJS.Timeout;
     // tab invite [sender, target, interval, queueInterval: NodeJS.Timeout;
-    invits : {sender : number, target : number, time : NodeJS.Timeout}[] = [];
+    invits : {sender : number, socketSender : string, target : number, time : NodeJS.Timeout}[] = [];
 
 
     // Add user [] 
@@ -85,55 +85,59 @@ export class LobbyService {
         }
         else { // socket && noig
             console.log("case 3")
-            this.invits.push({sender : client.data.userId, target : idTarget, time: setTimeout(() => {
+            this.invits.push({sender : client.data.userId, socketSender : client.id, target : idTarget, time: setTimeout(() => {
                 this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, {idTarget, state : "indisponible"});
                 this.lobbyLeaveInvit(client.data.userId, idTarget);
             }, 30000)});
-            this.gameGateway.server.to(socketIds).emit(EventGame.lobbyGetInvitGame, {player : client, you : idTarget, type : type}); 
+            this.gameGateway.server.to(socketIds).emit(EventGame.lobbyGetInvitGame, {player : client.data.userId, you : idTarget, type : type}); 
         }
     }
 
     // target send to sender response -> gogame | refus
-    async lobbyResponseInvitGame(client : Socket, data : {client : Socket, res : Boolean, type : string}) {
+    async lobbyResponseInvitGame(client : Socket, data : {client : number, res : Boolean, type : string}) {
         console.log("HERE I AM!", client)
         // check si p1 et p2 dispo
         const   target = client;
         const   sender = data.client;
+        const   socketSender = this.invits.find(invits => invits.sender === sender && invits.target === target.data.userId).socketSender;
+
+        // TODO
+        // securite ?
         
         
-        // Reponse -> invitation traiter retirer invite Q
-        this.lobbyLeaveInvit(sender.data.userId, target.data.userId);
+        // // Reponse -> invitation traiter retirer invite Q
+        this.lobbyLeaveInvit(sender, target.data.userId);
 
         if (!data.res) { // refus
-            this.gameGateway.server.to(sender.id).emit(EventGame.lobbyRefuseInvitGame, {idTarget : target.data.userId, state : "refus"});
+            this.gameGateway.server.to(socketSender).emit(EventGame.lobbyRefuseInvitGame, {idTarget : target.data.userId, state : "refus"});
             return ;
         }
 
 
-        // leave Q
+        // // leave Q
         let suppr = this.users.findIndex(users => users.player.id === target.data.userId); // check if in users first element us.id == cl.id
         if (suppr !== -1)
             this.users.splice(suppr, 1);
-        suppr = this.users.findIndex(users => users.player.id === sender.data.userId); // check if in users first element us.id == cl.id
+        suppr = this.users.findIndex(users => users.player.id === sender); // check if in users first element us.id == cl.id
         if (suppr !== -1)
             this.users.splice(suppr, 1);
 
-        // check inGame
-        if (this.inMatch(sender.data.userId) || this.inMatch(target.data.userId)) {// true -> P1 match
-            this.gameGateway.server.to(sender.id).emit(EventGame.lobbyRefuseInvitGame, {idTarget : target.data.userId, state : "quelqu'un est en partie"});
+        // // check inGame
+        if (this.inMatch(sender) || this.inMatch(target.data.userId)) {// true -> P1 match
+            this.gameGateway.server.to(socketSender).emit(EventGame.lobbyRefuseInvitGame, {idTarget : target.data.userId, state : "quelqu'un est en partie"});
             return ;
         }
 
 
-        // check if socket sender valid
+        // // check if socket sender valid
         const sockets = await this.gameGateway.server.fetchSockets();
-        const socketIds = sockets.filter(socket => socket.data.userId === sender.data.userId).map(socket => socket.id);
-        if (!socketIds.includes(sender.id))
+        const socketIds = sockets.filter(socket => socket.data.userId === sender).map(socket => socket.id);
+        if (!socketIds.includes(socketSender))
             return ;
         
-        // set Player
+        // // set Player
         const prismDataPlayer1 = await this.prisma.user.findUnique({
-            where: { id : sender.data.userId },
+            where: { id : sender },
             select: {
                 name: true,
                 elo: true,
@@ -146,11 +150,10 @@ export class LobbyService {
                 elo: true,
             },
         });
-
-        const dataP1 = {id : client.data.userId, name : prismDataPlayer1.name, elo : prismDataPlayer1.elo , socket : client.data.socket}
-        const p1 = new Player(data);
-        const dataP2 = {id : client.data.userId, name : prismDataPlayer2.name, elo : prismDataPlayer2.elo , socket : client.data.socket}
-        const p2 = new Player(data);
+        const dataP1 = {id : sender, name : prismDataPlayer1.name, elo : prismDataPlayer1.elo , socket : socketSender}
+        const p1 = new Player(dataP1);
+        const dataP2 = {id : target.data.userId, name : prismDataPlayer2.name, elo : prismDataPlayer2.elo , socket : target.id}
+        const p2 = new Player(dataP2);
         this.lobbyCreateGame({player : p1, threshold : 0, type : data.type}, {player : p2, threshold : 0, type : data.type} )
     }
 
@@ -176,7 +179,7 @@ export class LobbyService {
 
     inMatch(id : number) : Boolean {
         const foundGame = this.games.find(
-            game => !game.endBool && ( game.p1.id === id || game.p2.id === id ));
+            game => !game.endBool && ( (game.p1.id === id || game.p2.id === id) && game.endBool === false));
         if (foundGame === undefined)
             return false;
         return true;
