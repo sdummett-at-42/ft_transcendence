@@ -9,8 +9,7 @@ import { AuthenticatedGuard } from 'src/modules/auth/utils/authenticated.guard';
 @Controller('game')
 @UseGuards(AuthenticatedGuard)
 export class GameController {
-    constructor(private readonly gameService: GameService,
-                private readonly lobbyService: LobbyService) {}
+    constructor(private readonly lobbyService: LobbyService) {}
     // suppri plus tard et transferer dans lobby-service quand match found poru charger la map
     // une fois charger (les deux client auront dis que c'est bon ou l'un des joueurs manque)
     // start game ou gagnant en fonction cas

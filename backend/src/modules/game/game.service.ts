@@ -4,10 +4,12 @@ import { Shape, Square , Bullet, Circle, BlackHole, Game } from './entities/game
 import { EventGame } from './game-event.enum';
 import { PrismaService } from 'nestjs-prisma';
 import { FriendsService } from "../friends/friends.service";
+import { NotificationsGateway } from "./../notifications/notifications.gateway"
 
 @Injectable()
 export class GameService {
     constructor(
+        private readonly notif : NotificationsGateway,
         private readonly prisma: PrismaService,
         private readonly friends: FriendsService,
     ) { }
@@ -212,12 +214,10 @@ export class GameService {
 
         game.frequencyInterval = undefined;
         // Delete game in 60 sec
-        game.frequencyInterval = setTimeout(() => {
+        // game.frequencyInterval = setTimeout(() => {
             game.deleteBool = true;
-        console.log("delete this game");
-    }, 60000);
-
-
+        // console.log("delete this game");
+        // }, 60000);
     }
 
     mouvementGame(server : Server, game : Game, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
@@ -843,4 +843,5 @@ export class GameService {
         // console.log("Debug setBulletRelaunch");
         this.collisionRacket(game, temp, racket);
     }
+
 }
