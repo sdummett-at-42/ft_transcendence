@@ -22,7 +22,12 @@ export default function Friend(props: Props) {
     const [active, setActive] = useState<boolean>(props.isConnected);
     const [isDuelOpen, setIsDuelOpen] = useState<boolean>(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState<boolean>(false);
+    const [date, setDate] = useState(Date.now());
     const { user, gameSocketRef } = useContext(UserContext);
+
+    useEffect(() => {
+        
+    }, [date]);
 
     useEffect(() => {
         setFriend(props.props);
@@ -53,7 +58,8 @@ export default function Friend(props: Props) {
                     navigate("/unauthorized");
                 }
                 else if (res.status == 200) {
-                    setFriends(friends.filter((friend) => friend.id != id));
+                    setFriend(friends.filter((friend) => friend.id != id));
+                    setDate(Date.now());
                 }
             })
 
