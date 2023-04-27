@@ -361,8 +361,8 @@ export default function FriendsList() {
                 if (res.status == 401) {
                     navigate("/unauthorized");
                 }
-                else if (res.status == 200) {
-                    setFriends(friends.filter((friend) => friend.id != id));
+                else if (res.status == 204) {
+                    setFriends(friends.filter((fr) => friend.id != fr.id));
                 }
             });
 
