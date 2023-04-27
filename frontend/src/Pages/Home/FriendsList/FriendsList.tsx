@@ -156,7 +156,6 @@ export default function FriendsList() {
     };
 
     const handleFriendConnected = (data) => {
-        console.log("connected");
 		if (onlineStatus.includes(data.id))
 			return;
 
@@ -164,13 +163,8 @@ export default function FriendsList() {
     };
 
     const handleFriendDisconnected = (data) => {
-        console.log("disconnected");
         setOnlineStatus(onlineStatus.filter(friend => friend !== data.id));
     };
-
-    function removeDuplicate(arr) {
-        return Array.from(new Set(arr));
-    }
 
     const handleAllConnected = (data) => {
         setOnlineStatus((prevState) => [...prevState, data]);
@@ -337,7 +331,6 @@ export default function FriendsList() {
             <div className="FriendsList-list">
                 <div>
                     {friends.map((friend, index) => {
-                        {console.log(onlineStatus)}
                         return (
                             <div key={index}>
                                 <Friend

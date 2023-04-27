@@ -58,7 +58,6 @@ export class GameGateway {
 
   @SubscribeMessage(EventGame.playerClickCanvas)
   ClickCanvasMessage(client: any, roomId : string) : void {
-    // console.log("click");
     // get game by gameid from client
     const gameId = Number(roomId);
     const indexGame = this.lobbyService.games.findIndex(games => games.id === gameId);

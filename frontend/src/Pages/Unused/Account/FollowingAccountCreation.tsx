@@ -46,7 +46,6 @@ export default function FollowingAccountCreation() {
 				}
 			);
 			const data = await response.json();
-			// console.log(data);
 			setImage(data.urls.regular);
 			setLoading(false);
 		}
@@ -70,12 +69,10 @@ export default function FollowingAccountCreation() {
 		const username = usernameInputRef.current.value;
 
 		if (!username) {
-			console.log("No username provided");
 			return;
 		}
 
 		if (username.length < 3) {
-			console.log("Username is too short");
 			return;
 		}
 

@@ -51,14 +51,6 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
 
-      console.log(`canvasBottom = ${canvasBottom}`);
-      console.log(`window.innerWidth = ${window.innerWidth}`);
-      console.log(`      canvasWidth = ${canvasWidth}`);
-      console.log(`window.innerHeight= ${window.innerHeight}`);
-      console.log(`     canvasHeight = ${canvasHeight}`);
-      // console.log(`canvasBottom = ${canvasBottom}`);
-      console.log(" ********************** ");
-
       // canvasRef.current?.getBoundingClientRect().bottom; dist hautpage - canvasbas
       // canvasRef.current?.getBoundingClientRect().top;    dist hautpage - canvashaut
       // bottom > top
@@ -186,20 +178,6 @@ const Canvas: React.FC<CanvasProps> = ({ elements, idGame, socketRef}) => {
       // window.removeEventListener('resize', resizeCanvas);
     };
   }, [elements, idGame, socketRef]);
-
-
-  
-  // si la partie a ete fini (gagner par un joueur)
-  // if (victory.length) {
-  //   console.log("VICTORY NO NULL");
-  //   console.log(victory);
-  //   return (
-  //     <div>
-  //       <h1>Le Gagnant est bidule !</h1>
-  //       <h2>{JSON.stringify(victory)}</h2>
-  //     </div>
-  //   )
-  // }
 
   return (
       <canvas className="canvas" ref={canvasRef}></canvas>

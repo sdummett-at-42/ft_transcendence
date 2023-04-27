@@ -30,12 +30,8 @@ export default function RoomDetail(props: RoomDetailProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [message, setMessage] = useState("");
   const [roomNameInvite, setRoomNameInvite] = useState("");
-  const [userId, setUserId] = useState(0);
   const [ifAdmin, setIfAdmin] = useState(false);
   const [adminList, setAdminList] = useState([]);
-  const [moderation, setModeration] = useState({
-    data: "Muet",
-  });
 
   const findInDatabase = (name) => {
     let user = database.find((us) => us.name === name);
@@ -108,8 +104,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   }, [props.UserId, props.roomName, ifAdmin, adminList])
 
   const handleMessagAction = useCallback((payload)=>{
-    // Popup d'alerte
-    // alert(payload.message);
+    alert(payload.message);
     setInput("")
   },[])
 

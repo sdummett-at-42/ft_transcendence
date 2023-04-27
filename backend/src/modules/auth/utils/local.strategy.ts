@@ -84,7 +84,6 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 
 	async validate(req): Promise<any> {
 		const { username, email, password, auth } = req.body;
-		console.log(`username: ${username}\nemail: ${email}\npassword: ${password}\nauth: ${auth}`);
 
 		const { error } = AuthSchema.validate({ auth });
 		if (error)

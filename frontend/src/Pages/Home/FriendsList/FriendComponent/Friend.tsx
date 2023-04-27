@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import "./Friend.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMessage, faTableTennis, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
+import { faMessage, faTableTennis, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from "./../../../../context/UserContext"
 
@@ -37,37 +37,41 @@ export default function Friend(props: Props) {
         }
     }
 
-    const handleOptions = () => {
-        setIsOptionsOpen(!isOptionsOpen);
-        if (isDuelOpen) {
-            setIsDuelOpen(false);
-        }
-    }
-
     const handleRemoveFriend = () => {
-        console.log("Remove friend");
+        fetch("http://localhost:3001/friends", {
+            credentials: 'include',
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "friendId": friend.id
+            }),
+        })
+            .then(res => {
+                if (res.status == 401) {
+                    navigate("/unauthorized");
+                }
+                else if (res.status == 200) {
+                    setFriends(friends.filter((friend) => friend.id != id));
+                }
+            })
 
     }
 
     const navigateToChat = (friend) => {
-        console.log("naviger", friend);
         navigate(`/chat/${friend.id}/${friend.name}`);
     };
 
     const sendGameInvitationA = (friend) =>{
-        console.log("test1") // "ranked" | "custom"
-        gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked" })
-        // alert("you have sent an invitation!A");
-        // isDuelOpen(false);
-        handleDuel()
+        gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked" });
+        handleDuel();
        
     }
 
     const sendGameInvitationB = (friend) =>{
-        gameSocketRef.current.emit('sendInvitationGame', { idTarget: friend.id, type: "custom"})   
-        // alert("you have sent an invitation!B");
-        // isDuelOpen(false);
-        handleDuel()
+        gameSocketRef.current.emit('sendInvitationGame', { idTarget: friend.id, type: "custom"});
+        handleDuel();
     }
 
     return (
@@ -111,16 +115,10 @@ export default function Friend(props: Props) {
                     <div className="Friend-dropdown">
                         <button
                             className="PendingFriend-button"
-                            onClick={() => handleOptions()}
+                            onClick={() => handleRemoveFriend()}
                         >
-                            <FontAwesomeIcon icon={faEllipsisVertical} size="lg" />
+                            <FontAwesomeIcon icon={faXmark} size="lg" />
                         </button>
-                        {isOptionsOpen && (
-                            <div className="Friend-dropdown-content">
-                                <div>Regarder la partie</div>
-                                <div onClick={() => handleRemoveFriend()}>Retirer des amis</div>
-                            </div>
-                        )}
                     </div>
                 </div>
             )}

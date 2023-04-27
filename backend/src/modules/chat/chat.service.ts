@@ -66,7 +66,7 @@ export class ChatService {
 			message: `Socket successfully connected.`
 		});
 		socket.emit(Event.unreadNotif, {
-			rooms: [], // TO DO.
+			rooms: [],
 			users: await this.redis.getUserUnreadDM(userId),
 		})
 	}
@@ -77,9 +77,6 @@ export class ChatService {
 
 	async disconnectUserSockets(userId: number, server) {
 		console.debug(`User ${userId} logged out`);
-
-		// TODO: add session id in socket.data in order to disconnect
-		// only the socket related to the session that logout
 
 		const sockets = server.sockets.sockets;
 		sockets.forEach((value, key) => {
@@ -96,16 +93,11 @@ export class ChatService {
 		const owner = await this.redis.getRoomOwner(roomName);
 		let admins = (await this.redis.getRoomAdmins(roomName)).map(Number);
 		let members = (await this.redis.getRoomMembers(roomName)).map(Number);
-		// let banned = (await this.redis.getRoomBanned(roomName)).map(Number);
-		// let muted = (await this.redis.getRoomAllMuted(roomName)).map(Number);
 		const memberList = {
 			owner: owner,
 			admins: admins,
 			members: members,
-			// banned: banned,
-			// muted: muted,
 		}
-		console.log("memberList", memberList)
 		return memberList;
 	}
 	//test
@@ -135,7 +127,6 @@ export class ChatService {
 		await this.redis.setUserRoom(socket.data.userId, dto.roomName);
 
 
-		// console.log("Je passe la dedans");
 		socket.emit(Event.roomCreated, {
 			roomName: dto.roomName,
 			timestamp: new Date().toISOString(),
@@ -161,7 +152,6 @@ export class ChatService {
 	async leaveRoom(socket, dto: LeaveRoomDto, server) {
 		const userId: string = socket.data.userId.toString();
 		const keys = await this.redis.getRoom(dto.roomName);
-		console.log("unsetRoom", keys);
 
 		const room = await this.redis.getRoom(dto.roomName);
 		if (room.length === 0) {
@@ -318,9 +308,7 @@ export class ChatService {
 		const sockets = server.sockets.sockets;
 		sockets.forEach((value, key) => {
 			if (value.data.userId === socket.data.userId) {
-				console.log(value.data.userId);
 				value.join(dto.roomName)
-				// console.log("Je passe ici2", vis);
 				socket.emit(Event.roomJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),
@@ -1110,7 +1098,6 @@ export class ChatService {
 		this.redis.setRoomMessage(dto.roomName, new Date(currentTimestamp).toISOString(), +userId, dto.message, EXPIRATION_TIME);
 
 		const blockedBy = await this.redis.getRoomUsersBlockedBy(dto.roomName, +userId);
-		console.log(`user ${userId} is blocked by ${JSON.stringify(blockedBy)}`);
 		const sockets = await server.in(dto.roomName).fetchSockets();
 		let excludedSocketIds = sockets.map((socket) => {
 			if (blockedBy.includes(socket.data.userId))
@@ -1474,7 +1461,6 @@ export class ChatService {
 	}
 	
 	async getBlockList(socket,dto, server){
-		console.log("here??", socket.data.userId)
 		const userId: number = socket.data.userId;
 		const usersblocked = await this.redis.getUsersBlocked(+userId);
 		socket.emit(Event.userBlockList, {
@@ -1614,7 +1600,6 @@ export class ChatService {
 		}
 
 		const userBlocked = await this.redis.getUsersBlocked(dto.userId);
-		console.log("userBlock", userBlocked, +userId);
 		if (userBlocked.includes(+userId)) {
 			socket.emit(Event.DMNotSended, {
 				userId: dto.userId,
@@ -1625,7 +1610,7 @@ export class ChatService {
 		}
 		
 		const sockets = await server.fetchSockets();
-		// console.log("userId", userId);
+
 		const currentTimestamp = Date.now();
 		socket.emit(Event.DMReceived, {
 			userId: +userId,
@@ -1641,7 +1626,6 @@ export class ChatService {
 		const receiverSockets = sockets.filter(s => {
 			return s.data.userId === dto.userId ;
 		});
-		console.log("receiverSockets", receiverSockets.length);
 		this.redis.setDm(+userId, dto.userId, new Date(currentTimestamp).toISOString(), dto.message, EXPIRATION_TIME);
 		if (receiverSockets.length === 0) {
 			console.debug(`User ${userId} is sending a DM to user ${dto.userId} (disconnected)`);
@@ -1713,8 +1697,6 @@ export class ChatService {
 	}
 
 	async getRoomMembers(socket, dto, server) {
-		console.log("dto.roomName",dto.roomName);
-		console.log(await this.getMemberList(dto.roomName))
 		socket.emit(Event.roomMembers, {
 			roomName: dto.roomName,
 			memberList: await this.getMemberList(dto.roomName),

@@ -17,9 +17,6 @@ export default function Lobby() {
     const [custom, setCustom] = useState(false);
 
     const handleJoinGame = (data) => {
-        console.log('Joining game');
-        console.log(data);
-        // gameSocketRef.current.emit("joinGame", data)
         navigate(`/game/${data}`);
     }
 

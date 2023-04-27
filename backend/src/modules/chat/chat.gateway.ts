@@ -41,14 +41,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage(Event.createRoom)
 	async onCreateRoom(@ConnectedSocket() socket, @MessageBody() dto) {
-		// console.log("times");
 		if (dto === undefined) {
 			socket.emit(Event.dataError, { message: "You must pass an object as a payload." });
 			return;
 		}
 		const { error } = CreateRoomSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -63,7 +61,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = JoinRoomSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -78,7 +75,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = LeaveRoomSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -93,7 +89,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = KickUserSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -108,7 +103,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = BanUserSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -123,7 +117,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = UnbanUserSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -138,7 +131,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = MuteUserSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -153,7 +145,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = UnmuteUserSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -168,7 +159,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = InviteUserSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -183,7 +173,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = UninviteUserSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -199,7 +188,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = SendMessageSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -214,7 +202,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = UpdateRoomSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -229,7 +216,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = AddRoomAdminSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -244,7 +230,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = RemoveRoomAdminSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -259,7 +244,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = GiveOwnershipSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -283,7 +267,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = BlockUserSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -298,7 +281,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = UnblockUserSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -313,7 +295,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = GetRoomMsgHistSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -328,7 +309,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = sendDMSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}
@@ -362,7 +342,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	@SubscribeMessage(Event.getRoomMembers)
 	onGetRoomMembers(@ConnectedSocket() socket, @MessageBody() dto) {
 		if (!dto || !dto.roomName) {
-			console.log("dto or dto.roomName undefined");
 			return;
 		}
 		this.chat.getRoomMembers(socket, dto, this.server);
@@ -376,7 +355,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		}
 		const { error } = GetDmHistSchema.validate(dto);
 		if (error) {
-			console.log(error.message);
 			socket.emit(Event.dataError, { message: error.message });
 			return;
 		}

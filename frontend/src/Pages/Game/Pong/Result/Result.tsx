@@ -7,7 +7,6 @@ interface ResultProps {
   };
   
 const Result = ({data} : ResultProps) => {
-    console.log("RESULT= ", data);
 
     const victory : string = data[0] === true ? "abandon" : "score";
     const winner : Player = data[1];

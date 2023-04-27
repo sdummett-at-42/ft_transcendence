@@ -58,14 +58,12 @@ export class TwoFactorStrategy extends PassportStrategy(Strategy, '2fa') {
 			throw new BadRequestException({ message: 'You need to pass an object with `otp` field' })
 		const { error } = OtpSchema.validate(dto);
 		if (error) {
-			console.log(error.message)
 			throw new BadRequestException({ message: error.message })
 		}
 
 		const check = otplib.authenticator.check(dto.otp, secret);
 		// Invalid OTP
 		if (!check) {
-			console.log('OTP check failed, Invalid OTP')
 			throw new BadRequestException({
 				message: "OTP check failed, Invalid OTP",
 				twofactorEnabled: true,
@@ -75,7 +73,6 @@ export class TwoFactorStrategy extends PassportStrategy(Strategy, '2fa') {
 
 		const user = await this.auth.validateUser(email, username);
 
-		console.log(`${JSON.stringify(user)}`);
 		req.session.passport = { user };
 		return user;
 	}

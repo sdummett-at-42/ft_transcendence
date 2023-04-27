@@ -22,13 +22,6 @@ export class GameService {
     |* input/entry functon *|
     \* ******************* */
 
-    // TODO
-    // check si client not in game ?
-    // check si client est joueur
-    //      yes = modifier player en question
-    //      non = spectateur
-    // si oui ajouter ou ecraser le socket ?
-
     // un seul socket joueur
     // attendre les 2 joueurs present
 
@@ -40,13 +33,6 @@ export class GameService {
 
     joinGame(server: Server, game : Game, client : Socket, roomId : string) {
         client.join(roomId);
-
-        console.log(roomId);
-        console.log(game.roomId);
-        
-        // console.log("client  ", client.data.userId);
-        // console.log("player 1", game.p1.id);
-        // console.log("player 2", game.p2.id);
 
         if (client.data.userId === game.p1.id) { // c'est le joueur 1
             game.p1.socket = client.data.socket;
@@ -82,19 +68,16 @@ export class GameService {
     }
 
     startingGame(server : Server, game : Game) : void {
-            // console.log("starting game !");
             game.startBool = true;
 
             // Bullet start side player 1
             this.startNewBullet(game, 1);
 
-            // TODO
             // temp max atteint = fin game
             game.dateStart =  new Date();
             let elapsedTime : number;
             const delay = 1000 / 60 // 60 emit sec
 
-            // console.log("StartingGame : pre setInterval");
             game.gameInterval = setInterval(() => {
                 if (game.pause === true) { // game in pause
                     // if player 1 pause
@@ -135,14 +118,12 @@ export class GameService {
                 server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
                 server.to(game.roomId).emit(EventGame.gameTimer, elapsedTime);
             }, delay);
-            // console.log("StartingGame : sub setInterval");
     }
 
     pauseGame(game : Game, idPause : number) : void {
         // cas deco : socket undefine
         // cas pause manuel : socket define but action emit
 
-        // console.log("PauseGame");
         // manual and deco
         // 2 if if player game alone ?
         if (idPause === game.p1.id) {
@@ -181,10 +162,6 @@ export class GameService {
         if (!game.pause)
             return ;
 
-        // TODO
-        // cas fin pause manuel
-        // console.log("resume game");
-
         const actualDate : number = new Date().getTime();
         // if 2 player are ready
         if (idResume === game.p1.id && game.pauseP1Start) {
@@ -199,10 +176,6 @@ export class GameService {
         if (!game.pauseP1 && !game.pauseP2) {
             game.pause = false;
             game.pauseTotalTime += actualDate - game.pauseStart.getTime();
-
-            // TODO
-            // decompte 3 2 1 reprise ?
-            // si oui changer actualDate
 
             // check if relaunch
             if (!game.p1.relaunchBulletBool && !game.p2.relaunchBulletBool)
@@ -233,15 +206,6 @@ export class GameService {
 
     // stop all interval et clear all bullet
     stopGame(server : Server, game : Game) : void {
-        // console.log("Fin de la partie !");
-
-        // Stop all interval bullet
-        // game.shapes.forEach((shape, index) => {
-        //     if (game.shapes[index] instanceof Bullet){
-        //         clearInterval(game.bulletInterval);
-        //         game.bulletInterval = undefined;
-        //     }
-        // })
 
         clearInterval(game.bulletInterval);
         game.bulletInterval = undefined;
@@ -268,7 +232,6 @@ export class GameService {
         let tmpYmin : number = y - game.p1.racket.length / 2; // tmpY = haut de la racket
         let tmpYmax : number = y + game.p1.racket.length / 2; // tmpY = bas de la racket      
         
-        //console.log("client   :", client.data.userId);
         // Player 1
         if (client.data.socket === game.p1.socket) {
             if (tmpYmin < 0) // si haut racket trop haut
@@ -322,22 +285,15 @@ export class GameService {
     \* *************** */
 
     private startMoving(server: Server, game : Game, bullet: Bullet) {
-        // console.log("Start moving : begin");
         let delay = 1000 / bullet.f;
-        //console.log("delay = ", delay, " bullet.r * Math.cos(bullet.a) = " ,bullet.r * Math.cos(bullet.a));
       
-        // TODO
-        // add in bullet Boolean isMoving, set false
-        // when call in start moving pass true ?
 
         // Start the interval to increment to all bullet.f every second
         if (game.frequencyInterval === undefined) {
                 game.frequencyInterval = setInterval(() => {
-                    // console.log("Start moving : bullet freq");
                     game.shapes.forEach((shape) => {
                         if (shape instanceof Bullet) {
                             shape.f += shape.speed;
-                            // console.log("bullet frequency: ", bullet.f);
                         }})
                 }, 1000);
         }
@@ -345,10 +301,7 @@ export class GameService {
 
 
         const intervalFunction = () => {
-            // console.log("Start moving : intervalFunction");
 
-            // TODO
-            // retirer forEachif mono bullet
             game.shapes.forEach((shape, index) => {
                 if (shape instanceof Bullet) {
                     // Check if bullet got collisionwith element if collision bullet.a will change
@@ -387,9 +340,6 @@ export class GameService {
         // user click to send bullet (time to send or bullet go himself)
         // don't stop timing game or maybe yes
 
-        // TODO Multi_ball
-        // delete la bullet precise
-        // creer balle relance jsute debut game et quand plsu de bullet sur terrain
 
         const r = 5;
 
@@ -422,15 +372,9 @@ export class GameService {
 
 
         //game.server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
-            
-        // TODO
-        // get timer in game setting
-        // timer to clic
-        // sinon fin timer lance
 
         game.launchBulletTimer = setTimeout(() => {
                 // Player got X ms to launch bullet
-                // console.log("Start moving auto");
                 if (side === 1)
                     game.p1.relaunchBulletBool = false;
                 else if (side === 2)
@@ -445,7 +389,6 @@ export class GameService {
     }
 
     private deleteBullet(game : Game, bullet : Bullet) : void {
-        // console.log("delete bullet");
         const index = game.shapes.findIndex(shape => shape instanceof Bullet && 
                                             bullet.pos === bullet.pos)
         if (index === -1)
@@ -488,7 +431,6 @@ export class GameService {
         // stop game
         this.stopGame(game.server, game);
 
-        // console.log("++++++ VICTOIRE SCORE");
 
         game.typewin = false; // win by score
 
@@ -512,9 +454,6 @@ export class GameService {
             game.loser = game.p1;
         }
         else {
-            // TODO
-            // check si elo > elo
-            console.log("ALERTE EGALITE");
             scoreP1 = 0.5;
             scoreP2 = 0.5;
         }
@@ -536,7 +475,6 @@ export class GameService {
         // winner == 1 -> player 1 win
         // winner == 2 -> player 2 win
 
-        // console.log("++++++ VICTOIRE ABANDON");
         // get who win + calcul new elo
         if (winner === 1) { // p1 win
             await this.newElo(game, 1, 0);
@@ -554,7 +492,6 @@ export class GameService {
 
     private async newElo(game : Game, scoreP1 : number, scoreP2 : number) {
         // const users = await this.prisma.user.findMany();
-        // console.log("Pre modif **********", users);
 
         const p1Prisma = await this.prisma.user.findUnique({
             where : {id : game.p1.id},
@@ -563,7 +500,6 @@ export class GameService {
             where : {id : game.p2.id},
         });
 
-        // TODO
         // Check if ranked game
         if (game.boolRanked) {
             this.updateElo(game.p1.id, game.p1.elo, game.p1.eloChange = this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
@@ -571,11 +507,6 @@ export class GameService {
         }
         
         await this.updatePrisma(game, scoreP1, p1Prisma, p2Prisma);
-        console.log("elo change p1", game.p1.eloChange);
-        console.log("elo change p2", game.p2.eloChange);
-
-        // const userqwe = await this.prisma.user.findMany();
-        // console.log("sub modif**********", userqwe);
     }
 
     private calculateElo(oldElo: number, opponentElo: number, score: number, gamesPlayed: number): number {
@@ -650,7 +581,6 @@ export class GameService {
         // Check if bullet hit an other shape
         // collision activate with Square and Circle
         // no collision between bullet (or himself)
-        //console.log(game.shapes.length, game.shapes);
         for (let i = 0; i < game.shapes.length; i++) {
             const shape = game.shapes[i];
             // Mettre optimisation check si radius bullet et radius shape no hit
@@ -658,7 +588,6 @@ export class GameService {
             if (shape instanceof Circle || shape instanceof BlackHole) {
                 // check if collision with circle
                 if (this.checkInRangeCircle(bullet, shape)) {
-                    // console.log("Collision with Cercle !");
                     // Get new angle bullet
                     if (shape instanceof BlackHole)
                         this.collisionBlackHole(bullet, shape);
@@ -669,7 +598,6 @@ export class GameService {
             //onsole.log("Square in range !");
                 // check if collision with Square
                 if (this.checkInRangeSquare(bullet, shape)) {
-                    // console.log("--Collision with Square !:", i);
                     // Cas racket
                     if (i < 2) // i = 0 J1 | i = 1 j2
                         this.collisionRacket(game, bullet, shape);
@@ -704,7 +632,6 @@ export class GameService {
         const minY : number = bullet.pos.y - bullet.r;
         const bs = new Square(minX, minY, bullet.r * 2, bullet.r *2);
 
-        //console.log("minX, MinY:", minX, minY);
         // check if collission bullet's square and sqare 
         if (this.checkInSquare(bs, square) || this.checkInSquare(square, bs))
             return true;
@@ -767,13 +694,6 @@ export class GameService {
         else if (bullet.a < -Math.PI)
             bullet.a += Math.PI * 2;
 
-        // console.log(`(${pourcentbullet} / 100) * ${pi3o} - ${pi3} = ${angleFinal}`);
-
-        // console.log("angle :", bullet.a);
-        // console.log("angle%:", bullet.a % Math.PI);
-        // console.log("pi2 :", pi2);
-        // console.log("-pi2:", -pi2);
-
         // check if bullet is part left or right map
         if (bullet.pos.x > game.field.width / 2) { // bullet go right
             bullet.a = angleFinal;
@@ -784,8 +704,6 @@ export class GameService {
         }
         else // bullet go left
             bullet.a = angleFinal;
-        // console.log("angleF:", bullet.a);
-        // console.log();
     }
 
     private collisionSquare(bullet : Bullet, square : Square) : void {
@@ -800,35 +718,12 @@ export class GameService {
         dx = Math.min(Math.abs(bullet.pos.x - x1), Math.abs(bullet.pos.x - x2));
         const dy = Math.min(Math.abs(bullet.pos.y - y1), Math.abs(bullet.pos.y - y2));
         
-        // TODO
-        // Upgrade collision with Square
-
-        // console.log(bullet.pos.x, bullet.pos.y);
-        // console.log(x1, x2);
-        // console.log(y1, y2);
-
-        // console.log("dx", dx);
-        // console.log("dy", dy);
-
-        //console.log(dx, "<", dy, ":",dx < dy);
-
-        //dx = distance wall vertical
-        //dy = distance wall horizontaux
-
-        // TODO
-        // check if dx && dy < bullet.r ou petit poru detecter coin
-        // appliquer collision cercle
-
-
-        // console.log("a1:", bullet.a);
         // Change bullet.a according to...
         if (dx < dy) {
             // Collision with vertical edge
-            // console.log("vertical");
             bullet.a = Math.PI - bullet.a;
         } else {
             // Collision with horozontal edge
-            // console.log("horizontal");
             
             const dytemp = Math.abs(bullet.pos.y - y1); // top
             // cas bullet.a = 0 ou 3.14
@@ -848,8 +743,6 @@ export class GameService {
                 bullet.a = -bullet.a;
             }
         }
-        // console.log("a2:", bullet.a);
-        // console.log();
 
     }
 
@@ -883,7 +776,6 @@ export class GameService {
         const pourcentRacket = 1 - ((racket.pos.y + racket.length / 2) / game.field.height );
         // Place Bullet on racket from pourcent
         temp.pos.y = (pourcentRacket * racket.length) + racket.pos.y;
-        // console.log("Debug setBulletRelaunch");
         this.collisionRacket(game, temp, racket);
     }
 }

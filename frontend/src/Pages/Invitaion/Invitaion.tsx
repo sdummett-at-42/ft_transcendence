@@ -18,7 +18,6 @@ export default function  Invitaion(props:  InvitaionProps) {
 
 
 	  const handleGetInvitationGame = (data : {player : number, you : number, type : string}) => {
-        console.log('handleGetInvitationGame', data);
         setDelIsOpen(true);
         setFromId(data.player);
         setTypeGame(data.type);
@@ -28,13 +27,11 @@ export default function  Invitaion(props:  InvitaionProps) {
 	  
 	  // after agree client go in game
 	  const handlegoInGame = (data) => {
-		console.log('handlegoInGame',data);
 		navigate(`/game/${data}`);
 	  }
 	
 	  // send to initial sender if target doesn't accept
 	  const handleRefuseInvitationGame = (data) => {
-		console.log('handleRefuseInvitationGame');
 		alert(data.state);
 		// userId a refuser ou n'est pas disponible pour une game
 	  }

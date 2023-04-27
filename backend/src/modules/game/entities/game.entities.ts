@@ -1,8 +1,5 @@
 import { Server } from 'socket.io';
 
-// TODO
-// check si front peut aussi instance of SHAPE
-
 export interface Shape {
     type: string;
     pos: Coordonnee;
@@ -103,16 +100,10 @@ export class Player {
 
     // constructor(id : number, name : string, elo : number, eloTab : number[]) {
     constructor(data : any) {
-        console.log("construcotr PLayer, data :", data);
         this.id = data.id;
         this.name = data.name;
         this.elo = data.elo;
         this.socket = data.socket;
-
-        console.log("id:", this.id);
-        console.log("name:", this.name);
-        console.log("elo:", this.elo);
-        console.log("socket:", this.socket);
 
         //this.socket = data.socket;
         //this.eloTab = data.elo[];
@@ -136,9 +127,6 @@ export class Field {
         //this.shapes = shapes;
     }
 }
-
-//TODO
-// check si tout utiliser
 export class Game {
     id : number;
     roomId : string;
@@ -222,7 +210,6 @@ export class Game {
 
         this.field = new Field(400, 800);
 
-        console.log(type);
         if (type === "ranked")
             this.boolRanked = true;
         else

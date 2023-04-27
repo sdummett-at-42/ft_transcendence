@@ -74,7 +74,6 @@ export default function MemberList(props: MemberListProps) {
         }
     }
     const sendGameInvitationA = (friend) =>{
-        console.log("test1") // "ranked" | "custom"
         gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked" })
         // alert("you have sent an invitation!A");
         // isDuelOpen(false);

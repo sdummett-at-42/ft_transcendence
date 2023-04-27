@@ -27,7 +27,6 @@ export class RedisService {
 	}
 
 	async setCreatedAt(roomName: string) {
-		console.log('Hello ?')
 		this.client.hset(`room:${roomName}:infos:created_at`, new Date().toISOString(), 1);
 	}
 
@@ -446,7 +445,6 @@ export class RedisService {
 
 	async unsetRoom(roomName: string) {
 		const keys = await this.getRoom(roomName);
-		console.log("unsetRoom", keys);
 		keys.forEach(key => {
 			this.client.del(key);
 		})

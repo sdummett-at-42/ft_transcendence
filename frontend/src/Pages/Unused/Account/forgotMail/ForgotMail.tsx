@@ -10,7 +10,6 @@ export default function ForgotMail() {
 
     function handleLoginForm() {
         const email = emailInputRef.current.value;
-        console.log(email);
     }
 
     return (
