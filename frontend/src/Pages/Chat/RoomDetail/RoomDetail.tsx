@@ -4,11 +4,12 @@ import Setting from '../Popup/Setting';
 import InvitedConfirm from '../Popup/InvitedConfirm';
 import MemberList from './Room/MemberList';
 import Profile from './Room/Profile';
+import Moderation from '../Popup/Moderation';
+import Popup from '../../Popup/Popup';
 import { Socket } from "socket.io-client";
 import { DatabaseContext } from '../ChatLogin';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import Popup from '../../Popup/Popup';
 
 interface RoomDetailProps {
   socket: Socket,
@@ -41,10 +42,14 @@ export default function RoomDetail(props: RoomDetailProps) {
       props.onUpdate();
       const interval = setInterval(() => {
         user = database.find((user) => user.name === name);
+        console.log(`find user ${user}`);
         if (user !== undefined) {
           clearInterval(interval);
           setUserId(user.id);
-          alert("Utilisateur non trouvé. Veuillez réessayer.");
+          // alert("Utilisateur non trouvé. Veuillez réessayer.");
+        }
+        else {
+          setUserId(user.id)
         }
       }, 1000);
     } else {
@@ -65,90 +70,6 @@ export default function RoomDetail(props: RoomDetailProps) {
     }
     props.socket.emit("inviteUser", payload);
     setInputInvite("");
-  }
-
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setModeration({
-      ...moderation,
-      [name]: value
-    });
-  };
-
-  const handleModeration = () => {
-    if (!input) {
-      alert("Veuillez entrer un nom d'utilisateur.");
-      return;
-    }
-    if (moderation.data === "Muet") {
-      handleMute();
-    } else if (moderation.data === "Bannir") {
-      handleBan();
-    } else if (moderation.data === "Débannir") {
-      handleUnBan();
-    } else if (moderation.data === "Sortir") {
-      handleKick();
-    }
-  }
-
-  const handleBan = () => {
-    let userId = findInDatabase(input);
-    if (userId == 0) {
-      alert("Utilisateur non trouvé. Veuillez réessayer.");
-      return;
-    }
-    const payload = {
-      roomName: props.roomName,
-      userId: userId,
-    }
-    props.socket.emit("banUser", payload);
-    setInput("");
-    setShowSetting(false);
-  }
-  const handleUnBan = () => {
-    let userId = findInDatabase(input);
-    if (userId == 0) {
-      alert("Utilisateur non trouvé. Veuillez réessayer.");
-      return;
-    }
-    const payload = {
-      roomName: props.roomName,
-      userId: userId,
-    }
-    props.socket.emit("unbanUser", payload);
-    setInput("");
-    setShowSetting(false);
-  }
-  const handleMute = () => {
-    let userId = findInDatabase(input);
-    if (userId == 0) {
-      alert("Utilisateur non trouvé. Veuillez réessayer.");
-      return;
-    }
-    const payload = {
-      roomName: props.roomName,
-      userId: userId,
-      timeout: 60,
-    }
-    props.socket.emit("muteUser", payload);
-    setInput("");
-    setShowSetting(false);
-  }
-
-  const handleKick = () => {
-    let userId = findInDatabase(input);
-    if (userId == 0) {
-      alert("Utilisateur non trouvé. Veuillez réessayer.");
-      return;
-    }
-    const payload = {
-      roomName: props.roomName,
-      userId: userId,
-    }
-    console.log(payload);
-    props.socket.emit("kickUser", payload);
-    setInput("");
-    setShowSetting(false);
   }
 
   const handleInvited = useCallback((payload) => {
@@ -263,40 +184,13 @@ export default function RoomDetail(props: RoomDetailProps) {
                 </Popup>
 
                 <Popup isOpen={showSetting} isClose={() => setShowSetting(false)}>
-                    <div className="RoomCreate-screen-card">
-                        <div className="RoomCreate-screen-card-overlay"></div>
-                        <div className="RoomCreate-screen-card-content">
-						                <div className="RoomCreate-screen-card-content-body">
-                                <div className='Profile-screen-card-title'>Modération</div>
-                                    <div className="RoomDetail-screen-card-input-wrapper">
-                                        <input placeholder="Nom" className='RoomDetail-screen-card-input' required value={input} onChange={(e) => setInput(e.target.value)} ></input>
-                                        <div className="dropdown" id="drop-down">
-                                            <label>
-                                                <select
-                                                    name="data"
-                                                    className="RoomCreate-screen-card-select"
-                                                    value={moderation.data}
-                                                    onChange={handleInputChange}
-                                                >
-                                                    <option value="Muet" className='RoomCreate-screen-card-option'>Muet</option>
-                                                    <option value="Sortir" className='RoomCreate-screen-card-option'>Sortir</option>
-                                                    <option value="Bannir" className='RoomCreate-screen-card-option'>Bannir</option>
-                                                    <option value="Débannir" className='RoomCreate-screen-card-option'>Débannir</option>
-                                                </select>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div className="RoomCreate-button-wrapper">
-                                        <button onClick={() => setShowSetting(false)} className="Settings-button">
-                                            Annuler
-                                        </button>
-                                        <button className='Settings-button' onClick={handleModeration}>
-                                            {moderation.data}
-                                        </button>
-                                  </div>
-                                </div>
-                            </div>
-                        </div>
+                    <Moderation 
+                      isVisible={showSetting}
+                      socket={props.socket}
+                      onClose={() => setShowSetting(false)}
+                      roomName={props.roomName}
+                      onUpdate={props.onUpdate}
+                    />
                 </Popup>
 
                 <Popup isOpen={showConfirm} isClose={() => setShowConfirm(false)}>

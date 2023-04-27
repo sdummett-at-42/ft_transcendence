@@ -1,11 +1,11 @@
 import React, { useEffect, useCallback, useState, useContext } from 'react';
 import "./Room.css";
-import ProfilePopup from '../../Popup/ProfilePopup'
+import Popup from '../../../Popup/Popup';
+import SpecProfile from '../../../Profile/SpecProfile/SpecProfile';
 import { Socket } from "socket.io-client";
 import { DatabaseContext } from '../../ChatLogin'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faLock, faUnlock, faMessage, faTableTennis } from "@fortawesome/free-solid-svg-icons";
-import Popup from '../../../Popup/Popup';
+import { faLock, faUnlock, faMessage, faTableTennis } from "@fortawesome/free-solid-svg-icons";
 
 interface MemberListProps {
     socket: Socket,
@@ -17,7 +17,6 @@ interface MemberListProps {
 
 export default function MemberList(props: MemberListProps) {
     const database = useContext(DatabaseContext);
-    // const [item, setItem] = useState([]);
     const [members, setMembers] = useState({ owner: '', admins: [], members: [] });
     const [showRoom, setShowRoom] = useState(false);
     const [newblockList, setNewBlockList] = useState([]);
@@ -26,7 +25,6 @@ export default function MemberList(props: MemberListProps) {
     const hanldeDM = (id, name) => {
         console.log("handleDM", id, name)
         props.onListClick(name, id, true);
-        //   props.socket.emit("sendDM", )
     };
 
     const handleUnblock = (id, name) => {
@@ -57,33 +55,41 @@ export default function MemberList(props: MemberListProps) {
 
         }
     }
+
     const handleProfilePopup = (user) =>{
         setShowRoom(true);
         setPopUpId(user)
     };
+
     useEffect(()=>{
         console.log(props.blockList);
         setNewBlockList(props.blockList);
-    },[])
+    },[]);
+
     const handleMemberList = useCallback((payload) => {
         setMembers(payload.memberList);
-    }, [members])
+    }, [members]);
+
     const handleMemberUpdate = useCallback((payload) => {
         console.log("handleMemberUpdate", payload)
         setMembers(payload.memberList);
-    }, [members])
+    }, [members]);
+
     const handleBlockUpdate = useCallback((payload) => {
         if (newblockList.includes(payload.userId) ==  false)
             setNewBlockList(array =>[...array, payload.userId]);
-    }, [newblockList])
+    }, [newblockList]);
+
     const handleUnblockUpdate = useCallback((payload) => {
             setNewBlockList((prev) => {
                 return prev.filter((id) => id !== payload.userId);
             });
-    }, [newblockList])
+    }, [newblockList]);
+
     const handleAlertmessage = useCallback((payload) => {
         alert(payload.message);
-    }, [])
+    }, []);
+
     useEffect(() => {
         if (props.socket) {
             props.socket.on("roomMembers", handleMemberList);
@@ -110,7 +116,6 @@ export default function MemberList(props: MemberListProps) {
     return (
         <div>
             <div className='Profile-screen-card-text RoomList-header'>Liste des membres</div>
-            <div className="">
                 {members && members.members.map((each, index) => {
                     if (database) {
                         let user = database.find((user) => user.id === each);
@@ -155,10 +160,11 @@ export default function MemberList(props: MemberListProps) {
                         );
                     }
                 })}
-                <Popup isOpen={showRoom} isClose={() => setShowRoom(false)}>
-                    <ProfilePopup isVisible={showRoom}  onClose={() => setShowRoom(false)} user={popUpId}/>
-                </Popup>
-            </div>
+                {popUpId && (
+                    <Popup isOpen={showRoom} isClose={() => {setShowRoom(false); setPopUpId("")}}>
+                        <SpecProfile user={popUpId} handleUserClick={handleProfilePopup}/>
+                    </Popup>
+                )}
         </div>
     );
 };

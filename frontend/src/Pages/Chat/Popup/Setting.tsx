@@ -9,7 +9,6 @@ interface SettingProps {
   onClose: () => void,
   roomName: string,
   onUpdate: () => void;
-
 }
 
 export default function Setting(props: SettingProps) {
@@ -96,18 +95,15 @@ export default function Setting(props: SettingProps) {
                   <div className="RoomSettings-wrapper">
                       <label htmlFor="inputPassword" className='Profile-screen-card-text'>Mot de passe</label>
                       <input type="text" className="RoomCreate-screen-card-input" name="password" placeholder="Champ vide pour suppression" value={password} onChange={(e) => setPassword(e.target.value)} />
+                      <button className="Settings-button Settings-upload-button" onClick={handleAccessChange}>Modifier</button>
                   </div>
 
                   <div className="RoomSettings-wrapper">
                       <label htmlFor="inputAdmin" className='Profile-screen-card-text'>Nouvel administrateur</label>
                       <input type="text" className="RoomCreate-screen-card-input" name="Name" placeholder="Nom" value={admin} onChange={(e) => setAdmin(e.target.value)} />
-                      <div onClick={handleAddAdmin}> <button className='Settings-button'>Ajouter</button></div>
+                      <div onClick={handleAddAdmin}> <button className='Settings-button Settings-upload-button'>Ajouter</button></div>
                   </div>
 
-                  <div className='RoomCreate-button-wrapper'>
-                      <button className="Settings-button" onClick={props.onClose}>Fermer</button>
-                      <button className="Settings-button" onClick={handleAccessChange}>Modifier</button>
-                  </div>
               </div>
           </div>
       </div>

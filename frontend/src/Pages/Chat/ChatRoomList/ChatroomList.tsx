@@ -200,7 +200,7 @@ export default function ChatroomList(props: ChatroomListProps) {
                                       key={room.roomName}
                                       onClick={() => handleChatroomClick(room.roomName, 0, false)}
                                   >
-                                      <img src={group} className='ChatRoom-image'/>
+                                      <img src={group} className='ChatRoom-image' draggable={false} />
                                       <div>
                                           <div className="ChatRoom-screen-card-text">
                                               {room.roomName}
@@ -217,7 +217,7 @@ export default function ChatroomList(props: ChatroomListProps) {
                       <ul className="ChatRoom-list-ul">
                           {dms.map(room => (
                               <li className={`ChatRoom-list-li ${(selectedRoom === room.name) || (props.toDMID.name === room.name && props.ifDM) ? "ChatRoom-active" : ""}`} key={room.id} onClick={() => handleChatroomClick(room.name, room.id, true)}>
-                                  <img src={room.prof} className='ChatRoom-image' />
+                                  <img src={room.prof} className='ChatRoom-image' draggable={false} />
                                   <div className="ChatRoom-screen-card-text" >
                                       {room.name}
                                   </div>

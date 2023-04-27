@@ -47,37 +47,34 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
   }, [props.socket, handleCloseAfterRoomCreated, handleNotJoined]);
 
   return (
-    <div >
-      {!props.isVisible ? null : (
-        <div className="" onClick={props.onClose}>
-          <div className="" onClick={e => e.stopPropagation()}>
-            <div className="">
-              <h5 className="">{props.message}</h5>
-              <span className="" onClick={props.onClose}>
-                &times;
-              </span>
-            </div>
-            <div className="">
-              <div className="">
-                <h3>Voulez-vous rejoindre la salle de {props.RoomName} ? </h3>
-                <label htmlFor="password">Mot de pass</label>
-                <input
-                  type="password"
-                  id="password"
-                  placeholder="facultatif"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <div className="">
-                  <button onClick={handleJoinRoom}>Rejoindre</button>
-                  <button onClick={props.onClose}>Annuler</button>
+      <div>
+          {!props.isVisible ? null : (
+            <div className="RoomCreate-screen-card">
+                <div className="RoomCreate-screen-card-overlay"></div>
+                <div className="RoomCreate-screen-card-content">
+                    <div className="RoomCreate-screen-card-content-body">
+                        <div className='Profile-screen-card-title'>Voulez-vous rejoindre : </div>
+                        <div className='Profile-screen-card-title'>{props.RoomName}</div>
+                        <div className='Invited-screen'>
+                        <label htmlFor="password" className='Profile-screen-card-text'>Mot de passe</label>
+                        <input
+                            type="password"
+                            id="password"
+                            className="RoomCreate-screen-card-input"
+                            placeholder="Si la salle est privée"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            />
+                          </div>
+                        <div className="RoomCreate-button-wrapper">
+                            <button onClick={props.onClose} className='Settings-button'>Annuler</button>
+                            <button onClick={handleJoinRoom} className='Settings-button Settings-upload-button'>Rejoindre</button>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
-        </div>)}
-    </div>
-
+          )}
+      </div>
   );
 };
 

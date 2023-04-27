@@ -1,5 +1,4 @@
 import React, { useEffect, useCallback } from 'react';
-import "./Popup.css"
 
 interface ProfilePopupProps {
   isVisible: Boolean,

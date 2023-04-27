@@ -1194,7 +1194,7 @@ export class ChatService {
 		}
 
 		const members = await this.redis.getRoomMembers(dto.roomName);
-		if (members.includes(userId) === false) {
+		if (members.includes(dto.userId.toString()) === false) {
 			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
 			socket.emit(Event.roomAdminNotAdded, {
 				roomName: dto.roomName,
