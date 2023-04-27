@@ -6,13 +6,12 @@ import Message from './Message';
 import RoomDetail from "./RoomDetail";
 import "./chat.scss"
 import { createContext } from "react";
-export const DatabaseContext = createContext();
 import { io } from "socket.io-client";
 import Cookies from 'js-cookie';
 import { useParams } from "react-router-dom";
 import { UserContext } from "./../../context/UserContext"
 import { useNavigate } from "react-router-dom";
-
+export const DatabaseContext = createContext();
 
 
 
