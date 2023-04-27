@@ -24,6 +24,16 @@ export class LobbyService {
     // tab invite [sender, target, interval, queueInterval: NodeJS.Timeout;
     invits : {sender : number, socketSender : string, target : number, time : NodeJS.Timeout}[] = [];
 
+    // clear toutes les 120 secondes les parties finit
+    clearGames: NodeJS.Timeout = setInterval(() => {
+        for (let i = 0; i < this.games.length; i++) {
+          if (this.games[i].deleteBool) {
+            this.games.splice(i, 1);
+            i--;
+            }
+        }
+    }, 120000);
+
 
     // Add user [] 
     async lobbyJoinQueue(client : Socket, type : string) {
@@ -231,12 +241,6 @@ export class LobbyService {
     // take 2 player, delete user [], generate game
     // lobbyCreateGame(player1 : Player, player2 : Player, server : Server) {
     lobbyCreateGame(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) {
-        // kick player from users[]
-        // create game with p1 && p2, generate map && game
-        // when done
-         
-        //console.log("lobbyCreateGame:" , p1, p2);
-
         const p1Socket = p1.player.socket;
         const p2Socket = p2.player.socket;
             
@@ -258,31 +262,10 @@ export class LobbyService {
         this.initGame(this.gameGateway.server, game);
         this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
     }
-    // rediriger verls /game/:idGame
-    // controller check si game existe
-    //  1 = get Game
-    //  0 = 404
 
-
-
-
-
-
-
-
-    // TODO
-    // maybe pass user to get his skin ?
-    // need map too
-    // Add 2 player
     initGame(server : Server, game : Game) {
-        // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
-        // on count pour numberElement lors reset/scoring
-
         if (game.shapes.length != 0)
             return ;
-
-        // this.player1 = game.p1;
-        // this.player2 = game.p2;
 
         const distwall = 10;
         game.p1.racket = new Square(distwall , 200, 84, 5);
@@ -291,18 +274,12 @@ export class LobbyService {
         game.p1.racket = new Square(distwall , 200, 84, 5);
         game.p2.racket = new Square(game.field.width - distwall - 5 , 200, 84, 5);
 
-        
-
-
         game.shapes.push(game.p1.racket);
         game.shapes.push(game.p2.racket);
-        game.server = server;
+        game.server = this.gameGateway.server;
 
-        // TODO
-        // definir la map dans init map de service et pas in game
-        if (!game.boolRanked) { // map fun map perso
+        if (!game.boolRanked) // map fun map perso
             this.initMap(game);    
-        }
         game.numberElement = game.shapes.length;
     }
 
@@ -450,7 +427,7 @@ export class LobbyService {
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null || !JSON.parse(session).passport) {
+		if (session === null || !JSON.parse(session).passport || !JSON.parse(session).passport.user) {
 			// console.debug("User isn't logged in");
 			socket.emit(EventGame.NotConnected, { // Event to report here
 				timestamp: new Date().toISOString(),
@@ -490,11 +467,9 @@ export class LobbyService {
 
             // if in game at player pause his game
             if (game.p1.socket === socket.id) { // p1 deco
-                // this.g.offGameNotify(game.p1.id);
                 return {game : game, id :game.p1.id};
             }
             if (game.p2.socket === socket.id) { // p2 deco
-                // this.g.offGameNotify(game.p1.id);
                 return {game : game, id :game.p2.id};
             }
             // else spec
@@ -520,7 +495,7 @@ export class LobbyService {
 		// create an array of the friends id that are online by filtering the sockets array (the id is store in data.userId) without duplicates
 		const onlineFriends = [...new Set(sockets.filter(s => friendIds.includes(s.data.userId)).map(s => s.data.userId))];
 		for (const friendId of onlineFriends) {
-			socket.emit('friendConnected', { id: friendId });
+			socket.emit(EventGame.statusInGame, { id: friendId });
 		}
 		// if its the first connection of the user, we need to notify his friends that he is online
 		if (onlineFriends.length) {
@@ -529,7 +504,34 @@ export class LobbyService {
 				.map(([key, value]) => value.id);
 
 			if (friendSocketIds.length > 0)
-			 this.gameGateway.server.to(friendSocketIds).emit(EventGame.statusInGame, { id: +userId }); // Event to report here
+			    this.gameGateway.server.to(friendSocketIds).emit(EventGame.statusInGame, { id: +userId }); // Event to report here
+		}
+	}
+
+    private async offGameNotify(server : Server, userId: number) {
+        console.log("******************");
+        console.log("STATUS GAME: OFF");
+        console.log("******************");
+
+        const sockets = await server.fetchSockets();
+		const friendIds = await this.friends.findAll(userId);
+        const socket = sockets.find(sockets => sockets.data.userId === userId);
+
+		if (!friendIds || !socket)
+			return;
+
+        // create an array of the friends id that are online by filtering the sockets array (the id is store in data.userId) without duplicates
+		const onlineFriends = [...new Set(sockets.filter(s => friendIds.includes(s.data.userId)).map(s => s.data.userId))];
+		for (const friendId of onlineFriends)
+			socket.emit(EventGame.statusOffGame, { id: friendId });
+
+		// if its the first connection of the user, we need to notify his friends that he is online
+		if (onlineFriends.length) {
+			const friendSocketIds = Object.entries(sockets)
+				.filter(([key, value]) => friendIds.includes(value.data.userId))
+				.map(([key, value]) => value.id);
+			if (friendSocketIds.length > 0)
+			    server.to(friendSocketIds).emit(EventGame.statusOffGame, { id: +userId }); // Event to report here
 		}
 	}
 

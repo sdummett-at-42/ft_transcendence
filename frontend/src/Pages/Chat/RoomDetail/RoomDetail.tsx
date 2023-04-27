@@ -24,6 +24,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const [show, setShow] = useState(false);
   const [showSetting, setShowSetting] = useState(false);
   const [inputInvite, setInputInvite] = useState("");
+  const [errorMessage, setErrorMessage] = useState({});
   const [input, setInput] = useState("");
   const database = useContext(DatabaseContext);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -37,39 +38,49 @@ export default function RoomDetail(props: RoomDetailProps) {
   });
 
   const findInDatabase = (name) => {
-    let user = database.find((user) => user.name === name);
+    let user = database.find((us) => us.name === name);
+
     if (user === undefined) {
-      props.onUpdate();
-      const interval = setInterval(() => {
-        user = database.find((user) => user.name === name);
-        console.log(`find user ${user}`);
-        if (user !== undefined) {
-          clearInterval(interval);
-          setUserId(user.id);
-          // alert("Utilisateur non trouvé. Veuillez réessayer.");
-        }
-        else {
-          setUserId(user.id)
-        }
-      }, 1000);
+        props.onUpdate();
+        const interval = setInterval(() => {
+            user = database.find((user) => user.name === name);
+            if (user !== undefined) {
+                clearInterval(interval);
+                return user.id;
+            }
+            else {
+                setErrorMessage((prev) => ({
+                    ...prev,
+                    invite: "Utilisateur non trouvé.",
+                }));
+                return;
+            }
+        }, 1000);
     } else {
-      setUserId(user.id);
+        return user.id;
     }
-    return userId;
   };
 
   const handleInvite = () => {
-    let userId = findInDatabase(inputInvite);
-    if (userId == 0) {
-      alert("Utilisateur non trouvé. Veuillez réessayer.");
+    let user = findInDatabase(inputInvite);
+    if (user == 0) {
+      setErrorMessage((prev) => ({
+        ...prev,
+        invite: "Utilisateur non trouvé.",
+      }));
       return;
     }
     const payload = {
       roomName: props.roomName,
-      userId: userId,
+      userId: user,
     }
     props.socket.emit("inviteUser", payload);
     setInputInvite("");
+    setErrorMessage((prev) => ({
+      ...prev,
+      invite: "",
+    }));
+    return;
   }
 
   const handleInvited = useCallback((payload) => {
@@ -79,7 +90,10 @@ export default function RoomDetail(props: RoomDetailProps) {
   }, [])
 
   const handleNotInvite = useCallback((payload) => {
-    alert(payload.message);
+    setErrorMessage((prev) => ({
+      ...prev,
+      invite: payload.message,
+  }));
   }, [])
 
   const handleAdminList = useCallback((payload) => {
@@ -87,31 +101,31 @@ export default function RoomDetail(props: RoomDetailProps) {
   }, [props.UserId, adminList])
 
   const handleCheckIfAdmin = useCallback((payload) => {
-    console.log("handleCheckIfAdmin", payload)
     if (payload.roomName !== props.roomName) {
-      console.log("update not this room!");
       return;
     }
     setAdminList(payload.memberList.admins);
   }, [props.UserId, props.roomName, ifAdmin, adminList])
 
   const handleMessagAction = useCallback((payload)=>{
-    alert(payload.message);
+    // Popup d'alerte
+    // alert(payload.message);
     setInput("")
   },[])
 
   useEffect(()=>{
     if (!database){
-      console.log("databse does not exist!")
       props.onUpdate();
     }
   },[])
+
   useEffect(() => {
     if (adminList.includes(props.UserId))
       setIfAdmin(true);
     else
       setIfAdmin(false);
   }, [adminList]);
+
   useEffect(() => {
     if(props.socket){
       props.socket.on("invited", handleInvited);
@@ -168,6 +182,7 @@ export default function RoomDetail(props: RoomDetailProps) {
                                     <input placeholder="Nom" className='RoomDetail-screen-card-input' value={inputInvite} onChange={(e) => setInputInvite(e.target.value)} />
                                     <button onClick={handleInvite} className='RoomDetail-button-invite'><FontAwesomeIcon icon={faPlus} size='xl'/></button>
                                 </div>
+                                {errorMessage.invite && (<div className='Settings-error'>{errorMessage.invite}</div>)}
                             </div>
                             <MemberList socket={props.socket} onListClick={props.onListClick} roomName={props.roomName} UserId={props.UserId} blockList={props.blockList}/>
                         </div>

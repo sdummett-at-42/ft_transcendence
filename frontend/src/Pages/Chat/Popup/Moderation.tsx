@@ -14,6 +14,7 @@ interface ModerationProps {
 export default function Moderation(props: ModerationProps) {
     const [showSetting, setShowSetting] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
     const database = useContext(DatabaseContext);
     const [input, setInput] = useState("");
     const [moderation, setModeration] = useState({
@@ -29,7 +30,7 @@ export default function Moderation(props: ModerationProps) {
                 user = database.find((user) => user.name === name);
                 if (user !== undefined) {
                     clearInterval(interval);
-                    return user.id;
+                    return user;
                 }
                 else {
                     setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
@@ -37,10 +38,25 @@ export default function Moderation(props: ModerationProps) {
                 }
             }, 1000);
         } else {
-            return user.id;
+            return user;
         }
       };
 
+      const handleEnter = (event) => {
+        if (event.key === 'Enter') {
+            setErrorMessage("");
+            setSuccessMessage("");
+            event.preventDefault();
+            handleModeration();
+        }
+    };
+
+    const handleEscape = (event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            props.onClose();
+        }
+    };
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -51,6 +67,8 @@ export default function Moderation(props: ModerationProps) {
     };
     
     const handleModeration = () => {
+        setErrorMessage("");
+        setSuccessMessage("");
         if (!input) {
             setErrorMessage("Veuillez entrer un nom d'utilisateur.");
             return;
@@ -68,75 +86,85 @@ export default function Moderation(props: ModerationProps) {
     
     const handleBan = () => {
         let user = findInDatabase(input);
-        if (user == 0) {
+        if (user.id === 0 || user === undefined) {
             setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
             return;
+        } else {
+            const payload = {
+                roomName: props.roomName,
+                userId: user.id,
+            }
+            props.socket.emit("banUser", payload);
+            setSuccessMessage(`${user.name} banni avec succès.`);
+            setErrorMessage("");
+            setInput("");
         }
-        const payload = {
-            roomName: props.roomName,
-            userId: user,
-        }
-        props.socket.emit("banUser", payload);
-        setInput("");
-        setShowSetting(false);
     }
 
     const handleUnBan = () => {
-        let user = findInDatabase(input);
-        if (user == 0) {
+        const user = findInDatabase(input);
+        if (user.id === 0 || user === undefined) {
             setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
             return;
+        } else {
+
+            const payload = {
+                roomName: props.roomName,
+                userId: user.id,
+            }
+            props.socket.emit("unbanUser", payload);
+            setSuccessMessage(`${user.name} débanni avec succès.`);
+            setErrorMessage("");
+            setInput("");
         }
-        const payload = {
-            roomName: props.roomName,
-            userId: user,
-        }
-        props.socket.emit("unbanUser", payload);
-        setInput("");
-        setShowSetting(false);
     }
     
     const handleMute = () => {
-        let user = findInDatabase(input);
-        if (user == 0) {
+        const user = findInDatabase(input);
+
+        if (user.id === 0 || user === undefined) {
             setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
             return;
+        } else {
+
+            const payload = {
+                roomName: props.roomName,
+                userId: user.id,
+                timeout: 60,
+            }
+            props.socket.emit("muteUser", payload);
+            setSuccessMessage(`${user.name} muté avec succès.`);
+            setErrorMessage("");
+            setInput("");
         }
-        const payload = {
-            roomName: props.roomName,
-            userId: user,
-            timeout: 60,
-        }
-        props.socket.emit("muteUser", payload);
-        setInput("");
-        setShowSetting(false);
     }
     
     const handleKick = () => {
         let user = findInDatabase(input);
-        if (user == 0) {
+        if (user.id === 0 || user === undefined) {
             setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
             return;
+        } else {
+            const payload = {
+                roomName: props.roomName,
+                userId: user.id,
+            }
+            props.socket.emit("kickUser", payload);
+            setSuccessMessage(`${user.name} sorti avec succès.`);
+            setErrorMessage("");
+            setInput("");
         }
-        const payload = {
-            roomName: props.roomName,
-            userId: user,
-        }
-        console.log(payload);
-        props.socket.emit("kickUser", payload);
-        setInput("");
-        setShowSetting(false);
     }
 
 
     return (
-        <div className="RoomCreate-screen-card">
+        <div className="RoomCreate-screen-card" onKeyDown={handleEscape}>
             <div className="RoomCreate-screen-card-overlay"></div>
             <div className="RoomCreate-screen-card-content">
                 <div className="RoomCreate-screen-card-content-body">
                     <div className='Profile-screen-card-title'>Modération</div>
                     <div className="RoomDetail-screen-card-input-wrapper">
-                        <input placeholder="Nom" className='RoomDetail-screen-card-input' required value={input} onChange={(e) => setInput(e.target.value)} ></input>
+                        <input placeholder="Nom" className='RoomDetail-screen-card-input' onKeyDown={handleEnter} autoFocus={true} required value={input} onChange={(e) => setInput(e.target.value)} ></input>
                         <div className="dropdown" id="drop-down">
                             <label>
                                 <select
@@ -153,7 +181,8 @@ export default function Moderation(props: ModerationProps) {
                             </label>
                         </div>
                     </div>
-                    {errorMessage && <div className="RoomCreate-screen-card-error">{errorMessage}</div>}
+                    {errorMessage && <div className="Settings-error">{errorMessage}</div>}
+                    {successMessage && <div className="RoomCreate-success">{successMessage}</div>}
                     <div className="RoomCreate-button-wrapper">
                         <button onClick={() => setShowSetting(false)} className="Settings-button">
                             Annuler

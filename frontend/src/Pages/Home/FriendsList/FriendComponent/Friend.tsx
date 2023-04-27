@@ -14,19 +14,23 @@ interface Props {
         elo: number;
     };
     isConnected: boolean;
+    isInGame: boolean;
 }
 
 export default function Friend(props: Props) {
 
     const [friend, setFriend] = useState(props.props);
     const [active, setActive] = useState<boolean>(props.isConnected);
+    const [inGame, setInGame] = useState<boolean>(props.isInGame);
     const [isDuelOpen, setIsDuelOpen] = useState<boolean>(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState<boolean>(false);
     const { user, gameSocketRef } = useContext(UserContext);
 
+
     useEffect(() => {
         setFriend(props.props);
         setActive(props.isConnected);
+        setInGame(props.isInGame);
     }, [props]);
 
     const navigate = useNavigate();
@@ -82,8 +86,8 @@ export default function Friend(props: Props) {
                         </div>
                         <div className="Friend-name-status">
                             <h4 className="Friend-name">{friend.name}</h4>
-                            <div className={`Friend-message ${active ? "Friend-online" : "Friend-offline"}`}>
-                                {active ? "En ligne" : "Hors ligne"}
+                            <div className={`Friend-message ${active ? (inGame ? "Friend-Game" : "Friend-online") : "Friend-offline"}`}>
+                                {active ? (inGame ? "En Partie" : "En ligne") : "Hors ligne"}
                             </div>
                         </div>
                     </div>

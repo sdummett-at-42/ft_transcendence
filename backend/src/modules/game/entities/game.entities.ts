@@ -129,6 +129,7 @@ export class Game {
 
     startBool : Boolean = false;
     endBool : Boolean = false;
+    deleteBool : Boolean = false;
 
     timeoutJoin?: NodeJS.Timeout;
 

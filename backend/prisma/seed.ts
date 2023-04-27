@@ -20,6 +20,7 @@ async function main() {
 			id: 0,
 			email: "DUMMY EMAIL",
 			name: "DUMMY NAME",
+			minName: "DUMMY NAME".toLowerCase(),
 			loginMethod: LoginMethod.LOCAL,
 		}
 	})

@@ -14,18 +14,15 @@ export default function InvitedConfirm(props: InvitedConfirmProps) {
   const [password, setPassword] = useState("");
 
   const handleJoinRoom = () => {
-    console.log("Room", props.RoomName)
     const payload = {
       roomName: props.RoomName,
       password: password,
     }
-    console.log("handleJoinRoom", payload);
     props.socket.emit("joinRoom", payload);
     setPassword("");
   };
 
   const handleCloseAfterRoomCreated = useCallback((payload) => {
-    console.log("roomJoined", payload);
     props.onClose()
   }, [])
 

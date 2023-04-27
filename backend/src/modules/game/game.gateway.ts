@@ -25,7 +25,7 @@ export class GameGateway {
     else {
       if (res !== null) {
         const game = res.game;
-        game.server.to(socket.id).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser});
+        game.server.to(socket.id).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser, boolRanked : game.boolRanked});
       }
     }
   }

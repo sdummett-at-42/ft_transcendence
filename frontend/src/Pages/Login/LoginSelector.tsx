@@ -75,6 +75,11 @@ export default function LoginSelector() {
 				return;
 			} else if (res.status === 202) {
 				naviguate("/login/2fa");
+			} else if (res.status === 409) {
+				setErrorMessages((prevErrors) => ({
+					...prevErrors,
+					password: "Vous avez utilise un autre moyen de connexion",
+				}));
 			}
 		});
 	}
@@ -140,7 +145,6 @@ export default function LoginSelector() {
 									ref={passwordInputRef}
 									required
 									autoComplete="off"
-									onKeyDown={handleLoginForm}
 								/>
 								{errorMessages.password && (
 									<p className="LoginSelector-error">
@@ -156,7 +160,6 @@ export default function LoginSelector() {
 										handleLoginForm();
 									}}
 								/>
-								{/* {errorMessages.login && <Link to="/forgotMail" className="LoginSelector-error">{errorMessages.login}</Link>} */}
 							</form>
 							<div className="LoginSelector-card-subtitle">
 
