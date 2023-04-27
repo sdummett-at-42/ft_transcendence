@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMessage, faTableTennis, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from "./../../../../context/UserContext"
+import Popup from "../../../Popup/Popup";
 
 
 interface Props {
@@ -25,6 +26,7 @@ export default function Friend(props: Props) {
     const [inGame, setInGame] = useState<boolean>(props.isInGame);
     const [isDuelOpen, setIsDuelOpen] = useState<boolean>(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState<boolean>(false);
+    const [isRemoved, setIsRemoved] = useState<boolean>(false);
     const { user, gameSocketRef } = useContext(UserContext);
 
 
@@ -42,8 +44,11 @@ export default function Friend(props: Props) {
         }
     }
 
+    const openPopup = () => {
+        setIsRemoved(true);
+    }
+    
     const handleRemoveFriend = () => {
-        // TODO add confirmation
         props.isRemoved(friend);
     }
 
@@ -103,13 +108,29 @@ export default function Friend(props: Props) {
                     <div className="Friend-dropdown">
                         <button
                             className="PendingFriend-button"
-                            onClick={() => handleRemoveFriend()}
+                            onClick={() => openPopup()}
                         >
                             <FontAwesomeIcon icon={faXmark} size="lg" />
                         </button>
                     </div>
                 </div>
             )}
+        <Popup isOpen={isRemoved} isClose={() => setIsRemoved(false)}>
+            <div className="RoomCreate-screen-card" >
+                <div className="RoomCreate-screen-card-overlay"></div>
+                <div className="RoomCreate-screen-card-content">
+					<div className="RoomCreate-screen-card-content-body">
+                        <div className="Profile-screen-card-text">
+                            <h2>Voulez-vous suppimer {friend.name} de vos amis ?</h2>
+                        </div>
+                        <div className="RoomCreate-button-wrapper">
+                            <button className="Settings-button" onClick={() => setIsRemoved(false)}>Annuler</button>
+                            <button className="Settings-button" onClick={() => handleRemoveFriend()}>Supprimer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Popup>
         </div>
     );
 }

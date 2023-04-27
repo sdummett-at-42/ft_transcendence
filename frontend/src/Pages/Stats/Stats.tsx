@@ -3,6 +3,7 @@ import "./Stats.css";
 import Popup from "../Popup/Popup";
 import SpecProfile from "../Profile/SpecProfile/SpecProfile";
 import Invitaion from "../Invitaion/Invitaion";
+import FriendsList from "../Home/FriendsList/FriendsList";
 
 export default function InitStats({ user }) {
 	const [users, setUsers] = useState([]);
@@ -177,7 +178,8 @@ function UserList({ users, match }) {
 					</Popup>
 				)
 			)}
-			 <Invitaion />
+			<FriendsList />
+			<Invitaion />
 		</div>
 	);
 };
