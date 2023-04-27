@@ -31,6 +31,8 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		return '';
 	}
 
+
+
 	async handleConnection(@ConnectedSocket() socket) {
 		if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
@@ -116,6 +118,32 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 			if (friendSocketIds.length > 0)
 				this.server.to(friendSocketIds).emit('friendDisconnected', { id: +userId }); // Event to report here
 		}
+	}
+
+	async inGameNotify(userId: number) {
+		const sockets = await this.server.fetchSockets();
+		const friendIds = await this.friends.findAll(userId);
+		if (!friendIds)
+			return;
+		const friendSocketIds = Object.entries(sockets)
+			.filter(([key, value]) => friendIds.includes(value.data.userId))
+			.map(([key, value]) => value.id);
+
+		if (friendSocketIds.length > 0)
+			this.server.to(friendSocketIds).emit('inGame', { id: +userId }); // Event to report here
+	}
+
+	async offGameNotify(userId: number) {
+		const sockets = await this.server.fetchSockets();
+		const friendIds = await this.friends.findAll(userId);
+		if (!friendIds)
+			return;
+		const friendSocketIds = Object.entries(sockets)
+			.filter(([key, value]) => friendIds.includes(value.data.userId))
+			.map(([key, value]) => value.id);
+
+		if (friendSocketIds.length > 0)
+			this.server.to(friendSocketIds).emit('offGame', { id: +userId }); // Event to report here
 	}
 
 	async emitNewAchievement(userId: number, achievementName: string) {
