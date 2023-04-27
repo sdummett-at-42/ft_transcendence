@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Stats.css";
 import Popup from "../Popup/Popup";
 import SpecProfile from "../Profile/SpecProfile/SpecProfile";
+import Invitaion from "../Invitaion/Invitaion";
 
 export default function InitStats({ user }) {
 	const [users, setUsers] = useState([]);
@@ -176,6 +177,7 @@ function UserList({ users, match }) {
 					</Popup>
 				)
 			)}
+			 <Invitaion />
 		</div>
 	);
 };

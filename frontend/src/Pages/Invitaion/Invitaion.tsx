@@ -87,9 +87,16 @@ export default function  Invitaion(props:  InvitaionProps) {
 
   return (
     <Popup isOpen={isDelOpen} isClose={handleDelClose}>
-            <div> {user?.name} vous invite à jouer au Pong. Le rejoindre ?</div>
-			<button onClick={handleAccept}>Accepter</button>
-			<button onClick={handleRefuse}>Refuser</button>
+		    <div className="Profile-screen-card-popup">
+				<div className="Profile-screen-card-overlay"></div>
+            	<div className="Profile-screen-card-content">
+					<div className="Profile-screen-card-popup-content">
+            			<div> {user?.name} vous invite à jouer au Pong. Le rejoindre ?</div>
+						<button onClick={handleAccept}>Accepter</button>
+						<button onClick={handleRefuse}>Refuser</button>
+					</div>
+				</div>
+			</div>
     </Popup>
   );
 };

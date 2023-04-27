@@ -10,6 +10,7 @@ import { io } from "socket.io-client";
 import Cookies from 'js-cookie';
 import { useParams } from "react-router-dom";
 export const DatabaseContext = createContext();
+import Invitaion from "../Invitaion/Invitaion";
 
 let socket;
 
@@ -179,6 +180,7 @@ export default function ChatLogin() {
               <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={myUserId} onUpdate={handleChildComponentUpdate} />
               <RoomDetail socket={socket} onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId={myUserId} ifDM={ifDM} blockList={blockList}/>
             </DatabaseContext.Provider>
+            <Invitaion />
           </div>
         </div>
       </div>
