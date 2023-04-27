@@ -159,7 +159,6 @@ export default function FriendsList() {
     };
 
     const handleFriendConnected = (data) => {
-        console.log("connected");
 		if (onlineStatus.includes(data.id))
 			return;
 
@@ -167,7 +166,6 @@ export default function FriendsList() {
     };
 
     const handleFriendDisconnected = (data) => {
-        console.log("disconnected");
         setOnlineStatus(onlineStatus.filter(friend => friend !== data.id));
     };
 
@@ -348,6 +346,29 @@ export default function FriendsList() {
             });
     }
 
+    const RemoveFriend = (friend) => {
+        fetch("http://localhost:3001/friends", {
+            credentials: 'include',
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "friendId": friend.id
+            }),
+        })
+            .then(res => {
+                if (res.status == 401) {
+                    navigate("/unauthorized");
+                }
+                else if (res.status == 204) {
+                    setFriends(friends.filter((fr) => friend.id != fr.id));
+                }
+            });
+
+    }
+
+
     return (
         <div className="FriendsList">
             <div className="FriendsList-title">
@@ -363,6 +384,7 @@ export default function FriendsList() {
                             <div key={index}>
                                 <Friend
                                     props={friend}
+                                    isRemoved={RemoveFriend}
                                     isConnected={onlineStatus.some(online => online === friend.id)}
                                     isInGame={gameStatus.some((game) => game === friend.id)}
                                 />
@@ -396,9 +418,6 @@ export default function FriendsList() {
                         })}
                 </div>
             </div>
-            {/* <Link to="/chat" className="FriendsList-messages" style={{textDecoration: 'none', color: 'whitesmoke'}}>
-                <FontAwesomeIcon icon={faComments} size="2x" />
-            </Link> */}
         </div>
     );
 }

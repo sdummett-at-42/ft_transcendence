@@ -37,13 +37,9 @@ export default function Game() {
 				url: window.location.href,
 			},
 		});
-        console.log(io);
 
-        
-        console.log(`Socket connect to /game`);
         // peut etre emit join ici si pas fait
-        gameSocketTemp.current.emit("joinGame", id)
-        console.log(`Join /game/${id}`);
+        gameSocketTemp.current.emit("joinGame", id);
 
         setBoolSocket(true);
     }
@@ -53,7 +49,6 @@ export default function Game() {
     \* ****************** */
 
     const handleImage = (data : Shape[]) => {
-        //console.log("image:", data);
         setElements(data);
     }
 
@@ -113,7 +108,6 @@ export default function Game() {
         };
       }, [gameSocketTemp]);
 
-    // winner
     if (boolVictory) {
         return (
             <div>
@@ -133,7 +127,6 @@ export default function Game() {
                 </div>
                 <Canvas elements={elements} idGame={id} socketRef={gameSocketTemp} victory={victory}/>
             </div>
-            {/* <div id="Victory">Victory = {JSON.stringify(victory)}</div> */}
             <Invitaion />
         </div>
     )

@@ -90,7 +90,6 @@ export class Player {
 
     // constructor(id : number, name : string, elo : number, eloTab : number[]) {
     constructor(data : any) {
-        console.log("construcotr PLayer, data :", data);
         this.id = data.id;
         this.name = data.name;
         this.elo = data.elo;
@@ -107,9 +106,6 @@ export class Field {
         this.width = width;
     }
 }
-
-//TODO
-// check si tout utiliser
 export class Game {
     id : number;
     roomId : string;
@@ -196,7 +192,6 @@ export class Game {
 
         this.field = new Field(400, 800);
 
-        console.log(type);
         if (type === "ranked")
             this.boolRanked = true;
         else

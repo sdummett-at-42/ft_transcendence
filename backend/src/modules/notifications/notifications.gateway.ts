@@ -31,6 +31,8 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		return '';
 	}
 
+
+
 	async handleConnection(@ConnectedSocket() socket) {
 		if (socket.handshake.auth.token == undefined) {
 			console.debug("Session cookie wasn't provided. Disconnecting socket.");
@@ -67,14 +69,6 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		});
 
 		this.onlineNotify(socket, userId);
-
-		/* This is to test achivements notifications */
-		// setTimeout(function () {
-		// 	console.log("Emitting new achievement!");
-		// 	this.emitNewAchievement(userId, 'Achievement 1');
-		// 	this.emitNewAchievement(userId, 'Achievement 2');
-		// 	this.emitNewAchievement(userId, 'Achievement 3');
-		// }.bind(this), 2000);
 	}
 
 	async handleDisconnect(@ConnectedSocket() socket) {
@@ -126,6 +120,32 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		}
 	}
 
+	async inGameNotify(userId: number) {
+		const sockets = await this.server.fetchSockets();
+		const friendIds = await this.friends.findAll(userId);
+		if (!friendIds)
+			return;
+		const friendSocketIds = Object.entries(sockets)
+			.filter(([key, value]) => friendIds.includes(value.data.userId))
+			.map(([key, value]) => value.id);
+
+		if (friendSocketIds.length > 0)
+			this.server.to(friendSocketIds).emit('inGame', { id: +userId }); // Event to report here
+	}
+
+	async offGameNotify(userId: number) {
+		const sockets = await this.server.fetchSockets();
+		const friendIds = await this.friends.findAll(userId);
+		if (!friendIds)
+			return;
+		const friendSocketIds = Object.entries(sockets)
+			.filter(([key, value]) => friendIds.includes(value.data.userId))
+			.map(([key, value]) => value.id);
+
+		if (friendSocketIds.length > 0)
+			this.server.to(friendSocketIds).emit('offGame', { id: +userId }); // Event to report here
+	}
+
 	async emitNewAchievement(userId: number, achievementName: string) {
 		const sockets = await this.server.fetchSockets();
 		sockets.forEach(socket => {
@@ -137,12 +157,10 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 
 	async sendFriendRequest(requesterId: number, receiverId: number) {
 		const sockets = await this.server.fetchSockets();
-		console.log(`nb current sockets: ${sockets.length} `);
 		const receiverSocketIds = Object.entries(sockets)
-			.filter(([key, value]) => { console.log(`~ID: ${value.data.userId}`); return receiverId === value.data.userId })
-			.map(([key, value]) => { console.log(`ID: ${value.data.userId}`); return value.id });
+			.filter(([key, value]) => { return receiverId === value.data.userId })
+			.map(([key, value]) => { return value.id });
 
-		console.log(receiverSocketIds);
 
 		if (receiverSocketIds.length > 0)
 			this.server.to(receiverSocketIds).emit('friendRequestReceived', { id: requesterId }); // Event to report here

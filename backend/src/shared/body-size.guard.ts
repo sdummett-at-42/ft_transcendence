@@ -3,7 +3,6 @@ import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } 
 @Injectable()
 export class BodySizeGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean {
-		console.log("BodySizeGuard")
         const request = context.switchToHttp().getRequest();
 		const limit = 204800; // 200kb
         if (request.headers['content-length'] > limit) {

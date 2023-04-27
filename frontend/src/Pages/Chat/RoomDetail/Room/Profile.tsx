@@ -66,7 +66,7 @@ export default function Profile(props: ProfileProps) {
         }
     }
     const sendGameInvitationA = (friend) =>{
-        console.log("test1") // "ranked" | "custom"
+        // "ranked" | "custom"
         gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked" })
         // alert("you have sent an invitation!A");
         // isDuelOpen(false);

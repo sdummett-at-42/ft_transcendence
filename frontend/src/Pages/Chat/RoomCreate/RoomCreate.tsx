@@ -50,19 +50,11 @@ export default function RoomCreate(props: RoomCreatProps) {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        if (formData.roomName === "" || (formData.visibility === "private" && formData.password === "")) {
-            if (formData.roomName === "") {
+        if (formData.roomName === "") {
                 setErrorMessage((prevErrors) => ({
                     ...prevErrors,
                     roomName: "Le nom du salon ne peut pas être vide",
                 }));
-            }
-            if (formData.visibility === "private" && formData.password === "") {
-                setErrorMessage((prevErrors) => ({
-                    ...prevErrors,
-                    password: "Le mot de passe ne peut pas être vide",
-                }));
-            }
             return;
         };
         props.socket.emit("createRoom", formData);

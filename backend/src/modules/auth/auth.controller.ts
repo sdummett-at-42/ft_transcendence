@@ -40,16 +40,9 @@ export class AuthController {
 		}
 
 		req.logIn(req.user, (err) => {
-			if (err) {
-				console.log('Login Failed');
-			}
 			res.status(201).send(req.user);
 		});
 	}
-
-	// @Get('/local/forget')
-	// @UseGuards(AuthGuard('local'))
-	// localForget() {}
 
 	// After trying to log using oauth method if 2fa is enabled
 	// this endpoint will validate the otp needed
@@ -93,14 +86,6 @@ export class AuthController {
 			return this.handle2fa(userId, email, res);
 
 		req.logIn(req.user, (err) => {
-			if (err) {
-				console.log('Login Failed');
-			}
-			// res.send({
-			// 	message: "Logged successfully.",
-			// 	twofactorEnabled: false,
-			// 	twofactorValidated: false,
-			// })
 			res.status(200).redirect("http://localhost:5173/home")
 		});
 	}

@@ -82,8 +82,6 @@ function DisplayProfile({ user, match }) {
 					return { ...achievement, unlocked: isUnlocked };
 				});
 				setAchievements(achievements);
-			} else {
-				console.log(`Fetching achievements failed.`);
 			}
 		};
 		fetchAchievements(user.id);

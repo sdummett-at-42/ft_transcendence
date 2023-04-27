@@ -74,7 +74,6 @@ export default function Message(props: MessageProps) {
   };
 
   useEffect(() => {
-    // refersh context
     props.onUpdate();
   }, [messageList, dmList]);
 

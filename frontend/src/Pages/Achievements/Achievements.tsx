@@ -41,9 +41,6 @@ export default function InitAchievements({ userId, showLocked }) {
 					return { ...achievement, unlocked: isUnlocked };
 				});
 				setAchievements(achievements);
-			} else {
-				// console.log(`Achievements => response.status: ${response.status}.`);
-				console.log(`Fetching achievements failed.`);
 			}
 		}
 		fetchAchievements(userId);

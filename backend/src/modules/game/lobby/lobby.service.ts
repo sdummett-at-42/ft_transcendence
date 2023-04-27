@@ -76,11 +76,9 @@ export class LobbyService {
             return ;
         }
 
-        console.log("send a invitation 1:", idTarget, type)
         // Retirer Q + check inMatch
         this.lobbyLeaveQueue(client);
         if (this.inMatch(client.data.userId)) {// true -> match
-            console.log("case 1")
             this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, {idTarget, state : "indisponible"});
             return ;
         }
@@ -90,11 +88,9 @@ export class LobbyService {
 
         // check is player socket connect Or not ig
         if (!socketIds.length || this.inMatch(idTarget)){ // no socket || ig
-            console.log("case 2")
             this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, {idTarget, state : "indisponible"});
         }
         else { // socket && noig
-            console.log("case 3")
             this.invits.push({sender : client.data.userId, socketSender : client.id, target : idTarget, time: setTimeout(() => {
                 this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, {idTarget, state : "indisponible"});
                 this.lobbyLeaveInvit(client.data.userId, idTarget);
@@ -105,14 +101,15 @@ export class LobbyService {
 
     // target send to sender response -> gogame | refus
     async lobbyResponseInvitGame(client : Socket, data : {client : number, res : Boolean, type : string}) {
-        console.log("HERE I AM!", client)
         // check si p1 et p2 dispo
         const   target = client;
         const   sender = data.client;
         const   socketSender = this.invits.find(invits => invits.sender === sender && invits.target === target.data.userId).socketSender;
 
-        // TODO
-        // securite ?
+        if (socketSender === undefined || socketSender === null) {
+            this.gameGateway.server.to(socketSender).emit(EventGame.lobbyRefuseInvitGame, {idTarget : target.data.userId, state : "refus"});
+            return;
+        }
         
         
         // // Reponse -> invitation traiter retirer invite Q
@@ -196,11 +193,6 @@ export class LobbyService {
     }
     
     intervalQueueFunction() {
-        // console.log("queueInterval: check");
-        console.log("Player in Q :" ,this.users.length);
-        for (let i = 0; i < this.users.length; i++)
-            console.log(`id : ${this.users[i].player.name}`);
-        console.log();
 
         let gotMatch : Boolean = false;
         if (this.users.length === 0) { // if no player in Q
@@ -231,7 +223,6 @@ export class LobbyService {
 
     checkMatch(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) : Boolean{
         const diff : number = Math.abs(p1.player.elo - p2.player.elo);
-
         // check gap elo
         if (p1.type === p2.type && p1.threshold >= diff && p2.threshold >= diff)
             return true;
@@ -375,7 +366,6 @@ export class LobbyService {
         if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
             return null;
         } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
-            //TODO
             // check if game exist| ingame| finish
 
 
@@ -437,9 +427,6 @@ export class LobbyService {
 
         const userId = JSON.parse(session).passport.user.id;
 
-
-        // TODO
-        // kick by socket ?
         if (!socket.handshake.auth.url) {// lobby and leave Q if player in Q
             const index = this.users.findIndex(users => users.player.id === userId);
             if (index !== -1)
@@ -452,9 +439,6 @@ export class LobbyService {
         if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
             return null;
         } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
-            //TODO
-            // check if game exist| ingame| finish
-            // console.log("disconnect in game/:id");
 
             const gameId = getUrl.pop();
             const index = this.games.findIndex(games => games.id === Number(gameId));

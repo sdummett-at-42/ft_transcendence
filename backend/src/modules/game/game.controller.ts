@@ -18,7 +18,6 @@ export class GameController {
     @ApiResponse({ status: 200, description: `La partie a été trouvé avec succès.` })
     @ApiResponse({ status: 404, description: `La partie n'existe pas ou n'a pas été trouvé.` })
     async gameRoom(@Param('id')id :string, @Res() res:Response) {
-        console.log(`*** Controller game/:id`);
         const numId = Number(id);
         if (isNaN(numId) || numId >= this.lobbyService.nbGame || numId < 0) // unvalid id or unexistant game
             res.sendStatus(404);

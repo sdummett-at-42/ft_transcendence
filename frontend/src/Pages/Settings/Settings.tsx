@@ -279,7 +279,6 @@ export default function Settings() {
 
 	// Handle delete account
 	function handleAccountDeletion() {
-		console.log(`user login method is ${user.loginMethod}`);
 		if (password.length === 0 && user.loginMethod === "LOCAL") {
 			setErrorMessage((prevErrors) => ({
 				...prevErrors,
