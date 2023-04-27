@@ -66,18 +66,15 @@ function Achievements({ achievements, showLocked }) {
 								: "achievement-locked"
 							}`}
 						>
-							<div
-								className="achievement-badge"
-								style={{
-									backgroundImage: `url(${achievement.icon})`,
-								}}
-							></div>
-							<div className="achievement-details">
-								<div className="achievement-title">
-									{achievement.name}
-								</div>
-								<div className="achievement-description">
-									{achievement.description}
+							<div>
+								<img className="achievement-badge" src={achievement.icon} alt="achievement icon" />
+								<div className="achievement-details">
+									<div className="achievement-title">
+										{achievement.name}
+									</div>
+									<div className="achievement-description">
+										{achievement.description}
+									</div>
 								</div>
 							</div>
 						</div>

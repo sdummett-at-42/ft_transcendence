@@ -26,8 +26,6 @@ export default function ChatLogin() {
   const { userId, userName } = useParams();
   const { user, gameSocketRef } = useContext(UserContext);
   
-
-  
   const handleGetInvitationGame = (data : {player : number, you : number, type : string}) => {
 
     const senderId : number = data.player;
