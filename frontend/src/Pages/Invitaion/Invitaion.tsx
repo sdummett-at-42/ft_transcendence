@@ -17,31 +17,25 @@ export default function  Invitaion(props:  InvitaionProps) {
 	const [typeGame, setTypeGame] = useState("");
 
 
-	const handleGetInvitationGame = (data : {player : number, you : number, type : string}) => {
-		console.log('handleGetInvitationGame', data);
+	  const handleGetInvitationGame = (data : {player : number, you : number, type : string}) => {
+        console.log('handleGetInvitationGame', data);
         setDelIsOpen(true);
-		setFromId(data.player);
-		setTypeGame(data.type);
-	
-		// const senderId : number = data.player;
-		// const typeGame : string = data.type; // "ranked" | "custom"
-		// const yourId : number = data.you;
-		// const res : Boolean = false;
+        setFromId(data.player);
+        setTypeGame(data.type);
+      }
 
-		
-	  }
+		// gameSocketRef.current.emit('reponseInvitationGame', {client : fromSocket, res : true, type : typeGame});
 	  
 	  // after agree client go in game
-	  const handlegoInGame = (data : string) => {
-		console.log('handlegoInGame');
+	  const handlegoInGame = (data) => {
+		console.log('handlegoInGame',data);
 		navigate(`/game/${data}`);
 	  }
 	
 	  // send to initial sender if target doesn't accept
-	  const handleRefuseInvitationGame = (data : number) => {
+	  const handleRefuseInvitationGame = (data) => {
 		console.log('handleRefuseInvitationGame');
-		const userId = data;
-	
+		alert(data.state);
 		// userId a refuser ou n'est pas disponible pour une game
 	  }
 	

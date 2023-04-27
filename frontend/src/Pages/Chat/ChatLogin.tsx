@@ -8,6 +8,7 @@ import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import Invitaion from "../Invitaion/Invitaion";
 export const DatabaseContext = createContext();
+
 let socket;
 
 export default function ChatLogin() {

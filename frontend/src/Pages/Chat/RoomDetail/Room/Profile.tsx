@@ -4,6 +4,8 @@ import { Socket } from "socket.io-client";
 import { DatabaseContext } from '../../ChatLogin'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faUnlock, faTableTennis } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from "./../../../../context/UserContext"
 
 interface ProfileProps {
     socket: Socket,
@@ -16,6 +18,9 @@ export default function Profile(props: ProfileProps) {
     const database = useContext(DatabaseContext);
     const [user, setUser] = useState({});
     const [newblockList, setNewBlockList] = useState([]);
+    const [isDuelOpen, setIsDuelOpen] = useState<boolean>(false);
+    const [isOptionsOpen, setIsOptionsOpen] = useState<boolean>(false);
+    const {gameSocketRef } = useContext(UserContext);
 
     const handleUnblock = (id, name) => {
         const confirmed = window.confirm("Voulez-vous débloquer " + name + "?");
@@ -53,6 +58,28 @@ export default function Profile(props: ProfileProps) {
     const handleAlertmessage = useCallback((payload) => {
         alert(payload.message);
     }, [])
+    const navigate = useNavigate();
+    const handleDuel = () => {
+        setIsDuelOpen(!isDuelOpen);
+        if (isOptionsOpen) {
+            setIsOptionsOpen(false);
+        }
+    }
+    const sendGameInvitationA = (friend) =>{
+        console.log("test1") // "ranked" | "custom"
+        gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked" })
+        // alert("you have sent an invitation!A");
+        // isDuelOpen(false);
+        handleDuel()
+       
+    }
+
+    const sendGameInvitationB = (friend) =>{
+        gameSocketRef.current.emit('sendInvitationGame', { idTarget: friend.id, type: "custom"})   
+        // alert("you have sent an invitation!B");
+        // isDuelOpen(false);
+        handleDuel()
+    }
     
 
     const handleBlockUpdate = useCallback((payload) => {
@@ -108,7 +135,20 @@ export default function Profile(props: ProfileProps) {
                         <p>Niveau : {user.elo}</p>
                         <div className="RoomDetailProfile-button-container">
                             <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => handleProfile(user.id, user.name)} size="xl" /></button>
-                            <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} onClick={() => handlePlay(user.id, user.name)} size="xl" /></button>
+                            <div className="Friend-dropdown">
+                        <button
+                            className="PendingFriend-button"
+                            onClick={() => handleDuel()}
+                        >
+                            <FontAwesomeIcon icon={faTableTennis} size="lg" />
+                        </button>
+                        {isDuelOpen && (
+                            <div className="Friend-dropdown-content">
+                                <div onClick={()=> sendGameInvitationA(user)}>Partie classée</div>
+                                <div onClick={()=> sendGameInvitationB(user)}>Partie décontractée</div>
+                            </div>
+                        )}
+                    </div>
                             {newblockList.includes(user.id) ? (
                                 <div>
                                     <button onClick={() => handleUnblock(user.id, user.name)} className='PendingFriend-button'><FontAwesomeIcon icon={faUnlock} size="xl" /></button>
