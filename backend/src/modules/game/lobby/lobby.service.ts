@@ -19,32 +19,10 @@ export class LobbyService {
     users : { player : Player, threshold : number, type : string}[] = [];
     games : Game[] = [];
     queueInterval: NodeJS.Timeout;
-    // Todo liste des user et de leurs socket activer
-
-
-    // TODO
-    // inutile
-    // Send html
-    async lobbyRoom(res : Response) {
-        // console.log("Lobby.service : Controller('game')  lobbyRoom");
-        // const data = await fs.promises.readFile('src/modules/game/Dir/lobby.html', 'utf8');
-        // res.send(data);
-        //  console.log("USERS:", this.users);
-    }
 
     // Add user [] 
     async lobbyJoinQueue(client : Socket, type : string) {
-        // console.log("lobby join Queue:", client.data);
-        //TODO check if in game (boolean)
-
-        console.log(`type: ${type}`);
-
-        // const socketIds = Object.entries(sockets)
-        //     .filter(([key, value]) => { userId === value.data.userId })
-        //     .map(([key, value]) => { return value.id });
-
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
-
         if (index === -1 && !this.inMatch(client.data.userId)) { // Check if player already in Q and not in game
             const prismData = await this.prisma.user.findUnique({
                 where: { id : client.data.userId },
@@ -55,7 +33,6 @@ export class LobbyService {
             });
             //id, name, elo, socket
             const data = {id : client.data.userId, name : prismData.name, elo : prismData.elo , socket : client.data.socket}
-
             const player = new Player(data);
             this.users.push({ player, threshold : this.BaseThreshold, type});
             if (this.queueInterval === undefined)
@@ -145,23 +122,10 @@ export class LobbyService {
 
         const dataP1 = {id : client.data.userId, name : prismDataPlayer1.name, elo : prismDataPlayer1.elo , socket : client.data.socket}
         const p1 = new Player(data);
-
         const dataP2 = {id : client.data.userId, name : prismDataPlayer2.name, elo : prismDataPlayer2.elo , socket : client.data.socket}
-
         const p2 = new Player(data);
-
-
-
-
         this.lobbyCreateGame({player : p1, threshold : 0, type : data.type}, {player : p2, threshold : 0, type : data.type} )
-
-
-
-        
-
     }
-
-
 
     
     /* *************** *\
@@ -171,15 +135,9 @@ export class LobbyService {
     inMatch(id : number) : Boolean {
         const foundGame = this.games.find(
             game => !game.endBool && ( game.p1.id === id || game.p2.id === id ));
-
-        if (foundGame === undefined) {
+        if (foundGame === undefined)
             return false;
-        }
-        else {
-            return true;
-        }
-
-        // return !!foundGame; // retourne true si foundGame n'est pas null
+        return true;
     }
     
     intervalQueueFunction() {
@@ -208,29 +166,12 @@ export class LobbyService {
                     j++;
                 }
                 // if not match found augment treshold to this.users[i]
-                if (gotMatch === true) {
+                if (gotMatch === true)
                     gotMatch = false;
-                } else {
+                else
                     this.users[i].threshold += 5;
-                }
-                //i++;
             }
         }
-        // Test solo player
-
-        // else {
-        //     console.log("---------TEST");
-        //     const player = new Player(this.users[0]);
-        //     player.id = this.users[0].id;
-        //     console.log("player1:", this.users[0]);
-        //     console.log("player2:", player);
-        //     console.log("---------ENDTEST");
-
-
-
-        //     this.lobbyCreateGame(this.users[0], player);
-
-        // }
     }
 
     checkMatch(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) : Boolean{
