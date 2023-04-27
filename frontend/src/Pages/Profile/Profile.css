@@ -249,7 +249,6 @@
     padding-bottom: 6rem;
     border: 1px solid rgb(var(--secondary-rgb) / 50%);
     border-radius: 0.6rem;
-    height: 60vh;
     overflow-y: scroll;
 }
 
@@ -398,7 +397,6 @@
 
 .Profile-screen-match-content {
     flex-grow: 1;
-    height: 60vh;
     gap: 4rem;
     position: relative;
     z-index: 3;

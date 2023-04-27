@@ -15,14 +15,15 @@ export class LobbyService {
 
     BaseThreshold = 1000 / 100;
 
-    // TODO
-    // Ajouter liste player en jeu
-
     nbGame : number = 0;
-    users : { player : Player, threshold : number}[] = [];
+    users : { player : Player, threshold : number, type : string}[] = [];
     games : Game[] = [];
     queueInterval: NodeJS.Timeout;
+    // Todo liste des user et de leurs socket activer
 
+
+    // TODO
+    // inutile
     // Send html
     async lobbyRoom(res : Response) {
         // console.log("Lobby.service : Controller('game')  lobbyRoom");
@@ -32,13 +33,19 @@ export class LobbyService {
     }
 
     // Add user [] 
-    async lobbyJoinQueue(client : Socket) {
+    async lobbyJoinQueue(client : Socket, type : string) {
         // console.log("lobby join Queue:", client.data);
         //TODO check if in game (boolean)
 
+        console.log(`type: ${type}`);
+
+        // const socketIds = Object.entries(sockets)
+        //     .filter(([key, value]) => { userId === value.data.userId })
+        //     .map(([key, value]) => { return value.id });
+
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
 
-        if (index === -1) { // Check if player already in Q
+        if (index === -1 && !this.inMatch(client.data.userId)) { // Check if player already in Q and not in game
             const prismData = await this.prisma.user.findUnique({
                 where: { id : client.data.userId },
                 select: {
@@ -46,12 +53,11 @@ export class LobbyService {
                     elo: true,
                 },
             });
-
             //id, name, elo, socket
             const data = {id : client.data.userId, name : prismData.name, elo : prismData.elo , socket : client.data.socket}
 
             const player = new Player(data);
-            this.users.push({ player, threshold : this.BaseThreshold});
+            this.users.push({ player, threshold : this.BaseThreshold, type});
             if (this.queueInterval === undefined)
                 this.queueInterval = setInterval(this.intervalQueueFunction.bind(this), 500);
         }
@@ -62,11 +68,119 @@ export class LobbyService {
         const suppr = this.users.findIndex(users => users.player.id === client.data.userId); // check if in users first element us.id == cl.id
         if (suppr !== -1)
             this.users.splice(suppr, 1);
-    }    
+    }
+
+    /* ****************** *\
+    |* Invitation functon *|
+    \* ****************** */
+
+    // envoyer ad target emit getInvite
+    async lobbySendInvitGame(client: Socket, idTarget : number, type : string) {
+
+        // Retirer Q + check inMatch
+        this.lobbyLeaveQueue(client);
+        if (this.inMatch(client.data.userId)) {// true -> match
+            this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, idTarget);
+            return ;
+        }
+        // check si idtarget dispo
+        const sockets = await this.gameGateway.server.fetchSockets();
+        const socketIds = sockets.filter(socket => socket.data.userId === idTarget).map(socket => socket.id);
+
+        // check is player socket connect Or not ig
+        if (!socketIds.length || this.inMatch(idTarget)) // no socket || ig
+            this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, idTarget);
+        else { // socket && noig
+            this.gameGateway.server.to(socketIds).emit(EventGame.lobbyGetInvitGame, {player : client.data.userId, you : idTarget, type : type}); 
+        }
+    }
+
+    // target send to sender response -> gogame | refus
+    async lobbyResponseInvitGame(client : Socket, data : {client : Socket, res : Boolean, type : string}) {
+        // check si p1 et p2 dispo
+        const   player2 = client;
+        const   player1 = data.client;
+
+        if (!data.res) { // refus
+            this.gameGateway.server.to(player1.id).emit(EventGame.lobbyRefuseInvitGame, player2.data.userId);
+            return ;
+        }
+
+        // retirer Q
+        let suppr = this.users.findIndex(users => users.player.id === player2.data.userId); // check if in users first element us.id == cl.id
+        if (suppr !== -1)
+            this.users.splice(suppr, 1);
+        suppr = this.users.findIndex(users => users.player.id === player1.data.userId); // check if in users first element us.id == cl.id
+        if (suppr !== -1)
+            this.users.splice(suppr, 1);
+
+        // check no ingame
+        if (this.inMatch(player1.data.userId) || this.inMatch(player2.data.userId)) {// true -> P1 match
+            this.gameGateway.server.to(player1.id).emit(EventGame.lobbyRefuseInvitGame, player2.data.userId);
+            return ;
+        }
+
+
+        // socket valide ? client -> ok sender original ? tant pis ?
+        const sockets = await this.gameGateway.server.fetchSockets();
+        const socketIds = sockets.filter(socket => socket.data.userId === player1.data.userId).map(socket => socket.id);
+        if (!socketIds.includes(player1.id))
+            return ;
+        
+        // set Player
+        const prismDataPlayer1 = await this.prisma.user.findUnique({
+            where: { id : player1.data.userId },
+            select: {
+                name: true,
+                elo: true,
+            },
+        });
+        const prismDataPlayer2 = await this.prisma.user.findUnique({
+            where: { id : player2.data.userId },
+            select: {
+                name: true,
+                elo: true,
+            },
+        });
+
+        const dataP1 = {id : client.data.userId, name : prismDataPlayer1.name, elo : prismDataPlayer1.elo , socket : client.data.socket}
+        const p1 = new Player(data);
+
+        const dataP2 = {id : client.data.userId, name : prismDataPlayer2.name, elo : prismDataPlayer2.elo , socket : client.data.socket}
+
+        const p2 = new Player(data);
+
+
+
+
+        this.lobbyCreateGame({player : p1, threshold : 0, type : data.type}, {player : p2, threshold : 0, type : data.type} )
+
+
+
+        
+
+    }
+
+
+
     
     /* *************** *\
     |* Interne functon *|
     \* *************** */
+
+    inMatch(id : number) : Boolean {
+        const foundGame = this.games.find(
+            game => !game.endBool && ( game.p1.id === id || game.p2.id === id ));
+
+        if (foundGame === undefined) {
+            return false;
+        }
+        else {
+            return true;
+        }
+
+        // return !!foundGame; // retourne true si foundGame n'est pas null
+    }
     
     intervalQueueFunction() {
         // console.log("queueInterval: check");
@@ -119,62 +233,49 @@ export class LobbyService {
         // }
     }
 
-    checkMatch(p1 : {player : Player, threshold : number}, p2 : {player : Player, threshold : number}) : Boolean{
+    checkMatch(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) : Boolean{
         const diff : number = Math.abs(p1.player.elo - p2.player.elo);
+
+        console.log(`p2.type: ${p2.type}`);
+        console.log(`p1.type: ${p1.type}`);
         
         // check gap elo
-        if (p1.threshold >= diff && p2.threshold >= diff) {
+        if (p1.type === p2.type && p1.threshold >= diff && p2.threshold >= diff)
             return true;
-        }
         return (false)
     }
     
     // take 2 player, delete user [], generate game
     // lobbyCreateGame(player1 : Player, player2 : Player, server : Server) {
-        lobbyCreateGame(p1 : {player : Player, threshold : number}, p2 : {player : Player, threshold : number}) {
-            // kick player from users[]
-            // create game with p1 && p2, generate map && game
-            // when done
+    lobbyCreateGame(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) {
+        // kick player from users[]
+        // create game with p1 && p2, generate map && game
+        // when done
+         
+        //console.log("lobbyCreateGame:" , p1, p2);
+
+        const p1Socket = p1.player.socket;
+        const p2Socket = p2.player.socket;
             
-            //console.log("lobbyCreateGame:" , p1, p2);
+        p1.player.socket = undefined;
+        p2.player.socket = undefined;
 
-
-            // Create game and push in games[]
-            const game = new Game(this.nbGame++, p1.player, p2.player);
-            this.games.push(game);
+        // Create game and push in games[]
+        const game = new Game(this.nbGame++, p1.player, p2.player, p1.type);
+        this.games.push(game);
             
-            // remove player from Users[]
-            const remP1 = this.users.findIndex(users => users.player.id === p1.player.id);
-            if (remP1 != -1)
-                this.users.splice(remP1, 1);
-            const remP2 = this.users.findIndex(users => users.player.id === p2.player.id);
-            if (remP2 != -1)
-                this.users.splice(remP2, 1);
-
-            // console.log("Users after lobbycreate:", this.users.length);
-
-            // console.log("Player 1:", p1);
-            // console.log("Player 2:", p2);
+        // remove player from Users[]
+        const remP1 = this.users.findIndex(users => users.player.id === p1.player.id);
+        if (remP1 != -1)
+            this.users.splice(remP1, 1);
+        const remP2 = this.users.findIndex(users => users.player.id === p2.player.id);
+        if (remP2 != -1)
+            this.users.splice(remP2, 1);
             
-            this.initGame(this.gameGateway.server, game);
-            // send to player join game's url
-            //this.gameGateway.server
+        this.initGame(this.gameGateway.server, game);
 
-            const p1Socket = p1.player.socket;
-            const p2Socket = p2.player.socket;
 
-            // TODO
-            // retirer car new front ne se deco pas
-            
-            p1.player.socket = undefined;
-            p2.player.socket = undefined;
-
-            this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
-
-    // const redirect = `${this.req.protocol}://${this.req.hostname}/game/${game.id}`;
-    //const redirect = "http://localhost:3001/game/" + game.id;
-    //console.log(redirect);
-    //this.response.redirect(redirect);
+        this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
     }
     // rediriger verls /game/:idGame
     // controller check si game existe
@@ -206,6 +307,11 @@ export class LobbyService {
         game.p1.racket = new Square(distwall , 200, 84, 5);
         game.p2.racket = new Square(game.field.width - distwall , 200, 84, 5);
 
+        game.p1.racket = new Square(distwall , 200, 84, 5);
+        game.p2.racket = new Square(game.field.width - distwall - 5 , 200, 84, 5);
+
+        
+
 
         game.shapes.push(game.p1.racket);
         game.shapes.push(game.p2.racket);
@@ -213,32 +319,35 @@ export class LobbyService {
 
         // TODO
         // definir la map dans init map de service et pas in game
-
-        // Creation Circle : x, y, r
-        const circle_01 = new Circle(200, 100, 30);
-        game.shapes.push(circle_01);
-
-        // // Creation square : x, y, l, w
-        // const square_01 = new Square(400, 240, 50, 100);
-        // game.shapes.push(square_01);
-
-        // // Creation square : x, y, l, w
-        // const square_02 = new Square(250, 50, 250, 200);
-        // game.shapes.push(square_02);
-
-        // // Creation square : x, y, l, w
-        // const square_03 = new Square(600, 25, 20, 10);
-        // game.shapes.push(square_03);
-
-        // // Creation square : x, y, l, w
-        // const square_04 = new Square(50, 120, 50, 100);
-        // game.shapes.push(square_04);
-
-        // Creation BlackHole : x, y, l, w
-        const BlackHole_01 = new BlackHole(200, 300, 45);
-        game.shapes.push(BlackHole_01);
-
+        if (!game.boolRanked) { // map fun map perso
+            this.initMap(game);    
+        }
         game.numberElement = game.shapes.length;
+    }
+
+    initMap(game : Game) : void {
+        let idMap : number;
+        const width = game.field.width;
+        const height = game.field.height
+
+        if (!game.boolMap) // pas de map choisit -> aleatoire
+            idMap = game.id % 3;
+        else
+            idMap = game.map;
+
+        if (idMap === 0) { // blackhole
+            const BlackHole_01 = new BlackHole(width / 2, height / 2, 45);
+            game.shapes.push(BlackHole_01);
+        } else if (idMap === 1) {
+            // Creation Circle : x, y, r
+            const c_01 = new Circle(width / 4, height / 4, 30);
+            const c_02 = new Circle(width / 4, height * 0.75, 30);
+            const c_03 = new Circle(width / 2, height / 2, 30);
+            const c_04 = new Circle(width * 0.75 , height / 4, 30);
+            const c_05 = new Circle(width * 0.75, height * 0.75, 30);
+
+            game.shapes.push(c_01, c_02, c_03, c_04, c_05);
+        }
     }
 
 
@@ -306,42 +415,24 @@ export class LobbyService {
         socket.data.name = prismData.name;
         socket.data.elo = prismData.elo;
 
-
-        // TODO
-        // check si avec https j'ai encore acces a headers.referer
-
-        // console.log("user : ", JSON.parse(session).passport.user);
-        // console.log("socket:", socket.handshake.headers.referer);
-
-        console.log(socket.handshake.auth);
         if (!socket.handshake.auth.url) // lobby nothing to do
             return null;
 
         const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
 
-        console.log("getUrl = ", getUrl);
 
-        console.log("getUrl size = ", getUrl.length);
 
         if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
-            console.log("lobby service connect: not /game or /game/:id");
             return null;
         } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
             //TODO
             // check if game exist| ingame| finish
 
-            console.log("socket in: /game/:id");
 
             const gameId = getUrl.pop();
             
             const index = this.games.findIndex(games => games.id === Number(gameId));
             const game : Game = this.games[index];
-
-            //console.log("game:", game);
-            if (game) {
-                console.log("p1 id:", game.p1.id);
-                console.log("p2 id:", game.p2.id);
-            }
 
             if (game === undefined || game.p1.id === undefined || game.p2.id === undefined)
                 return null;
@@ -388,8 +479,7 @@ export class LobbyService {
 
 
         // TODO
-        // check si avec https j'ai encore acces a headers.referer
-
+        // kick by socket ?
         if (!socket.handshake.auth.url) {// lobby and leave Q if player in Q
             const index = this.users.findIndex(users => users.player.id === userId);
             if (index !== -1)
@@ -400,7 +490,6 @@ export class LobbyService {
         const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
 
         if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
-            console.log("lobby service disconnect: not /game or /game/:id");
             return null;
         } else if (getUrl.length === 4 && getUrl[2] === "game") { // in game
             //TODO
@@ -425,5 +514,7 @@ export class LobbyService {
         }
         return null;
     }
+
+    
 
 }

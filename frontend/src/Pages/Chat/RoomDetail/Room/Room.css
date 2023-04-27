@@ -1,0 +1,30 @@
+.RoomSettings-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3vh;
+}
+
+.RoomList-header {
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    padding-bottom: 1vh;
+    padding-top: 1vh;
+    width: 100%;
+    background-color: rgb(var(--primary-rgb) / 25%);
+    border: 1px solid rgb(var(--primary-rgb) / 50%);
+}
+
+.MemberList-button {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+}
+
+.MemberList-screen-card-text {  
+    font-size: 1.5rem;
+    text-shadow: 0px 0px 0.5rem white;
+    text-decoration: none;
+}

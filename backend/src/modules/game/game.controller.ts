@@ -16,6 +16,8 @@ export class GameController {
     // recherche game
     // match = envoit html game
 
+    // TODO
+    // inutile
     @Get()
     async lobbyRoom(@Res() res : Response) {
         console.log("controller /game")

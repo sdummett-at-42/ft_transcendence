@@ -1,8 +1,4 @@
-import React from 'react';
-import { useRef, useEffect, useCallback } from "react";
-import { useState } from 'react';
-import "./chat.scss"
-import { Socket } from "socket.io-client";
+import React, { useEffect, useCallback } from 'react';
 
 interface ProfilePopupProps {
   isVisible: Boolean,
@@ -27,13 +23,6 @@ export default function ProfilePopup(props: ProfilePopupProps) {
   },[props]);
 
   return props.isVisible == false? null: (
-    <div className="modal" onClick={props.onClose}>
-      <div className="modal-dialog" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <span className="modal-close" onClick={props.onClose}>
-            &times;
-          </span>
-        </div>
         <div className="modal-body">
           <div className="modal-content customized_row">
             <div className="customised_column">
@@ -43,14 +32,12 @@ export default function ProfilePopup(props: ProfilePopupProps) {
                 <p>Perdu: {props.user.matchLost.length}</p>
               </div>
               <div className="customised_column">
-                <img className="img-profile" src={props.user.profilePicture} />
+                <img className="ChatRoom-image" src={props.user.profilePicture} />
                 </div>
     </div>
                 <button>Plus d'info..</button>
                 <button onClick={props.onClose}>Fermer</button>
 
         </div>
-      </div>
-    </div>
   );
 };

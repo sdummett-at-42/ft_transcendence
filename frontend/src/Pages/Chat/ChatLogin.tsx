@@ -1,21 +1,21 @@
-// import 'bootstrap/dist/css/bootstrap.min.css';
-import React from "react";
-import { useState, useEffect,useCallback } from 'react';
-import ChatroomList from "./ChatroomList";
-import Message from './Message';
-import RoomDetail from "./RoomDetail";
+import React, { useState, useEffect, useCallback, createContext, useContext } from "react";
 import "./chat.scss"
-// import { socket } from "./Socket";
-import { createContext } from "react";
+import ChatroomList from "./ChatRoomList/ChatroomList";
+import Message from './Message/Message';
+import RoomDetail from "./RoomDetail/RoomDetail";
+import Cookies from 'js-cookie';
 export const DatabaseContext = createContext();
 import { io } from "socket.io-client";
-import Cookies from 'js-cookie';
+import { useParams } from "react-router-dom";
+import { UserContext } from "./../../context/UserContext"
+import { useNavigate } from "react-router-dom";
 
 let socket;
 
 export default function ChatLogin() {
+  const navigate = useNavigate();
   const [roomName, setRoomName] = useState(null);
-  const [userId, setUserId] = useState(0);
+  const [myUserId, setMyUserId] = useState(0);
   const [database, setDatabase] = useState([]);
   const [shouldUpdateDatabase, setShouldUpdateDatabase] = useState(false);
   const [ifsocket, setIfSocket] = useState(false);
@@ -23,6 +23,66 @@ export default function ChatLogin() {
   const [toDMID, setToDMID] = useState({ id: 0, name: "" });
   const [ifDataReady, setifDataReady] = useState(false);
   const [blockList, setBlockList] = useState([]);
+  const { userId, userName } = useParams();
+  const { user, gameSocketRef } = useContext(UserContext);
+  
+
+  
+  const handleGetInvitationGame = (data : {player : number, you : number, type : string}) => {
+    console.log('handleGetInvitationGame');
+
+    const senderId : number = data.player;
+    const typeGame : string = data.type; // "ranked" | "custom"
+    const yourId : number = data.you;
+
+    const res : Boolean = false;
+
+    // refuse :
+    // if ()
+      gameSocketRef.current.emit('reponseInvitationGame', {p1 : senderId, p2 : yourId, res : false});
+
+    // accepte
+    // if () 
+      gameSocketRef.current.emit('reponseInvitationGame', {p1 : senderId, p2 : yourId, res : false});
+    
+  }
+
+  // after agree client go in game
+  const handlegoInGame = (data : string) => {
+    console.log('handlegoInGame');
+    navigate(`/game/${data}`);
+  }
+
+  // send to initial sender if target doesn't accept
+  const handleRefuseInvitationGame = (data : number) => {
+    console.log('handleRefuseInvitationGame');
+    const userId = data;
+
+    // userId a refuser ou n'est pas disponible pour une game
+  }
+
+  // when client click en button to send invitation use:
+  // gameSocketRef.current.emit('sendInvitationGame', idTarget : number);
+
+
+  // Handle the socket events
+  useEffect(() => {
+
+    gameSocketRef.current.on('getInvitationGame', handleGetInvitationGame);
+    gameSocketRef.current.on('goInGame', handlegoInGame);
+    gameSocketRef.current.on('refuseInvitationGame', handleRefuseInvitationGame);
+    return () => {
+      gameSocketRef.current.off('getInvitationGame', handleGetInvitationGame);
+      gameSocketRef.current.off('goInGame', handlegoInGame);
+      gameSocketRef.current.off('refuseInvitationGame', handleRefuseInvitationGame);
+
+    };
+   }, [
+    handleGetInvitationGame,
+    handlegoInGame,
+    handleRefuseInvitationGame,
+    gameSocketRef
+  ]);
 
   const handleUpdateDatabase = async () => {
     await fetch("http://localhost:3001/users/", {
@@ -36,8 +96,7 @@ export default function ChatLogin() {
   };
 
   const handleListClick = (name, id, ifDM) => {
-    // console.log("here? ifdm", ifDM)
-    // console.log("List:",name, id);
+    console.log("List:",name, id, ifDM);
     setToDMID({ id: id, name: name });
     setRoomName(name);
     if (ifDM == true)
@@ -84,20 +143,19 @@ export default function ChatLogin() {
   }, [shouldUpdateDatabase]);
 
   useEffect(() => {
-    const fetchData = async () => {
+      const fetchData = async () => {
+          await fetch("http://localhost:3001/users/", {
+              method: "GET",
+              credentials: "include"
+          })
+          .then((response) => response.json())
+          .then(json => {
+              setDatabase(json);
+              setifDataReady(true);
+          });
+      };
 
-      await fetch("http://localhost:3001/users/", {
-        method: "GET",
-        credentials: "include"
-      })
-        .then((response) => response.json())
-        .then(json => {
-          setDatabase(json);
-          setifDataReady(true);
-        });
-    };
     fetchData();
-    // console.log("fetch database 1", database);
   }, []);
 
   useEffect(() => {
@@ -109,7 +167,7 @@ export default function ChatLogin() {
       })
         .then((response) => response.json())
         .then(json => {
-          setUserId(json.id);
+          setMyUserId(json.id);
         });
     };
     fetchData();
@@ -125,6 +183,14 @@ export default function ChatLogin() {
       }
     };
   }, [socket, handleUpdateDatabase]);
+
+  useEffect(() =>{
+    console.log("outside", typeof(userId), userName);
+    setRoomName(userName);
+    setIfDM(true);
+    setToDMID({id :Number(userId), name: userName});
+
+  },[])
 
   useEffect(() => {
     socket = io("http://localhost:3001", {
@@ -164,15 +230,13 @@ export default function ChatLogin() {
   } else {
     return (
       <div className="Chat-body">
-        <div className="containerhere containerhere clearfix">
-          <div className="row">
+          <div className="Chat-container">
             <DatabaseContext.Provider value={database}>
               <ChatroomList socket={socket} onListClick={handleListClick} onUpdate={handleChildComponentUpdate} ifDM={ifDM} toDMID={toDMID} ifDataReady={ifDataReady} />
-              <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={userId} onUpdate={handleChildComponentUpdate} />
-              <RoomDetail socket={socket} onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId={userId} ifDM={ifDM} blockList={blockList}/>
+              <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={myUserId} onUpdate={handleChildComponentUpdate} />
+              <RoomDetail socket={socket} onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId={myUserId} ifDM={ifDM} blockList={blockList}/>
             </DatabaseContext.Provider>
           </div>
-        </div>
       </div>
     );
   }

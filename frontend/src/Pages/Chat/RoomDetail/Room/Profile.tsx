@@ -1,12 +1,9 @@
-import React from 'react';
-import { useRef, useEffect, useCallback } from "react";
-import { useState } from 'react';
+import React, { useEffect, useCallback, useState, useContext } from 'react';
+import "../RoomDetail.css";
 import { Socket } from "socket.io-client";
-import { DatabaseContext } from './ChatLogin'
-import { createContext, useContext } from "react";
+import { DatabaseContext } from '../../ChatLogin'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faLock, faUnlock, faMessage, faTableTennis, faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-import "./chat.scss"
+import { faUser, faLock, faUnlock, faTableTennis } from "@fortawesome/free-solid-svg-icons";
 
 interface ProfileProps {
     socket: Socket,
@@ -74,8 +71,9 @@ export default function Profile(props: ProfileProps) {
     },[])
     
     useEffect(() => {
+        console.log("databse exists!")
         if (database) {
-            // console.log("databse exists!")
+            console.log("profile databse exists!")
             setUser(database.find((user) => user.name === props.roomName));
             console.log("find", database.find((user) => user.name === props.roomName))
         }
@@ -98,20 +96,32 @@ export default function Profile(props: ProfileProps) {
                 // props.socket.off("userBlockList", handleBlockList);
             }
         };
-    }, [props.socket, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate]);
-    return (
-        user? 
-        <div className="chatinfo">
-            <div className="chat-info-header clearfix">
-            <div className='chat-info-title'>Profil : {user.name} </div>
-            <img src={user.profilePicture} />
-            <p>Niveau : {user.elo}</p>
-            <p>Gagné:  {user.matchWon ? user.matchWon.length : 0}</p>
-            <p>Perdu:  {user.matchWon ? user.matchWon.length : 0}</p>
-            { newblockList.includes(user.id) ? 
-                                <><button onClick={() => handleUnblock(user.id, user.name)} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button> </> : 
-                                <><button  onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button></>}
-            <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => handleProfile(user.id, user.name)} size="lg" /></button>
-            <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} onClick={() => handlePlay(user.id, user.name)} size="lg" /></button>
-            </div></div> : null)
+    }, [props.socket, handleAlertmessage,handleBlockUpdate, handleUnblockUpdate, user]);
+    return (user ? (
+        <div className="RoomDetail Profile-screen-card-text">
+            <div className="RoomDetail-screen-card">
+				<div className="RoomDetail-screen-card-overlay"></div>
+                <div className="RoomDetail-screen-card-content">
+					<div className="RoomDetailProfile-screen-card-content-body">
+                        <div>{user.name}</div>
+                        <img src={user.profilePicture} className='ChatRoom-image' />
+                        <p>Niveau : {user.elo}</p>
+                        <div className="RoomDetailProfile-button-container">
+                            <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => handleProfile(user.id, user.name)} size="xl" /></button>
+                            <button className="PendingFriend-button"><FontAwesomeIcon icon={faTableTennis} onClick={() => handlePlay(user.id, user.name)} size="xl" /></button>
+                            {newblockList.includes(user.id) ? (
+                                <div>
+                                    <button onClick={() => handleUnblock(user.id, user.name)} className='PendingFriend-button'><FontAwesomeIcon icon={faUnlock} size="xl" /></button>
+                                </div> 
+                            ) : ( 
+                                <div>
+                                    <button  onClick={() => handleblock(user.id, user.name)} className='PendingFriend-button'><FontAwesomeIcon icon={faLock} size="xl" /></button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    ) : null)
 };

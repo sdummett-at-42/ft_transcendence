@@ -224,6 +224,11 @@ export class ChatService {
 			timestamp: new Date().toISOString(),
 			message: ` a quitté la salle ${dto.roomName}.`
 		});
+
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList: await this.getMemberList(dto.roomName),
+		});
 	}
 
 	async joinRoom(socket, dto: JoinRoomDto, server) {
@@ -313,7 +318,7 @@ export class ChatService {
 			if (value.data.userId === socket.data.userId) {
 				console.log(value.data.userId);
 				value.join(dto.roomName)
-				console.log("Je passe ici2", vis);
+				// console.log("Je passe ici2", vis);
 				socket.emit(Event.roomJoined, {
 					roomName: dto.roomName,
 					timestamp: new Date().toISOString(),
@@ -416,8 +421,13 @@ export class ChatService {
 		}
 		console.debug(`User ${socket.data.userId} is kicking user ${dto.userId} from room ${dto.roomName}`);
 
-		await this.redis.unsetRoomAdmin(dto.roomName, dto.userId);
+		// await this.redis.unsetRoomAdmin(dto.roomName, dto.userId);
 		await this.redis.unsetRoomMember(dto.roomName, dto.userId);
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList: await this.getMemberList(dto.roomName),
+		});
+
 		await this.redis.unsetUserRoom(dto.userId, dto.roomName);
 
 		const sockets = await server.in(dto.roomName).fetchSockets();
@@ -542,9 +552,13 @@ export class ChatService {
 
 		console.debug(`User ${socket.data.userId} is banning user ${dto.userId} from room ${dto.roomName}`);
 
-		await this.redis.unsetRoomAdmin(dto.roomName, dto.userId);
+		// await this.redis.unsetRoomAdmin(dto.roomName, dto.userId);
 		await this.redis.unsetRoomMember(dto.roomName, dto.userId);
 		await this.redis.setRoomBanned(dto.roomName, dto.userId);
+		server.to(dto.roomName).emit(Event.memberListUpdated, {
+			roomName: dto.roomName,
+			memberList: await this.getMemberList(dto.roomName),
+		});
 		await this.redis.unsetUserRoom(dto.userId, dto.roomName);
 
 		// Notify user being banned
@@ -1180,7 +1194,7 @@ export class ChatService {
 		}
 
 		const members = await this.redis.getRoomMembers(dto.roomName);
-		if (members.includes(userId) === false) {
+		if (members.includes(dto.userId.toString()) === false) {
 			console.debug(`User ${userId} is not member in room ${dto.roomName}`);
 			socket.emit(Event.roomAdminNotAdded, {
 				roomName: dto.roomName,
