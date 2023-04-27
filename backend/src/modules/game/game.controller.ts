@@ -16,15 +16,6 @@ export class GameController {
     // recherche game
     // match = envoit html game
 
-    // TODO
-    // inutile
-    @Get()
-    async lobbyRoom(@Res() res : Response) {
-        console.log("controller /game")
-        // create lobby/ matchmaking here
-        // if match create unic gameroom with these 2 client at player
-        //this.lobbyService.lobbyRoom(res);
-    }
 
     // suppri plus tard et transferer dans lobby-service quand match found poru charger la map
     // une fois charger (les deux client auront dis que c'est bon ou l'un des joueurs manque)

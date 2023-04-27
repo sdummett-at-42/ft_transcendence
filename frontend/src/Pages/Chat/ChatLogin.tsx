@@ -7,13 +7,12 @@ import Cookies from 'js-cookie';
 export const DatabaseContext = createContext();
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
-import { UserContext } from "./../../context/UserContext"
-import { useNavigate } from "react-router-dom";
+import Invitaion from "../Invitaion/Invitaion";
+
 
 let socket;
 
 export default function ChatLogin() {
-  const navigate = useNavigate();
   const [roomName, setRoomName] = useState(null);
   const [myUserId, setMyUserId] = useState(0);
   const [database, setDatabase] = useState([]);
@@ -24,65 +23,6 @@ export default function ChatLogin() {
   const [ifDataReady, setifDataReady] = useState(false);
   const [blockList, setBlockList] = useState([]);
   const { userId, userName } = useParams();
-  const { user, gameSocketRef } = useContext(UserContext);
-  
-
-  
-  const handleGetInvitationGame = (data : {player : number, you : number, type : string}) => {
-    console.log('handleGetInvitationGame');
-
-    const senderId : number = data.player;
-    const typeGame : string = data.type; // "ranked" | "custom"
-    const yourId : number = data.you;
-
-    const res : Boolean = false;
-
-    // refuse :
-    // if ()
-      gameSocketRef.current.emit('reponseInvitationGame', {p1 : senderId, p2 : yourId, res : false});
-
-    // accepte
-    // if () 
-      gameSocketRef.current.emit('reponseInvitationGame', {p1 : senderId, p2 : yourId, res : false});
-    
-  }
-
-  // after agree client go in game
-  const handlegoInGame = (data : string) => {
-    console.log('handlegoInGame');
-    navigate(`/game/${data}`);
-  }
-
-  // send to initial sender if target doesn't accept
-  const handleRefuseInvitationGame = (data : number) => {
-    console.log('handleRefuseInvitationGame');
-    const userId = data;
-
-    // userId a refuser ou n'est pas disponible pour une game
-  }
-
-  // when client click en button to send invitation use:
-  // gameSocketRef.current.emit('sendInvitationGame', idTarget : number);
-
-
-  // Handle the socket events
-  useEffect(() => {
-
-    gameSocketRef.current.on('getInvitationGame', handleGetInvitationGame);
-    gameSocketRef.current.on('goInGame', handlegoInGame);
-    gameSocketRef.current.on('refuseInvitationGame', handleRefuseInvitationGame);
-    return () => {
-      gameSocketRef.current.off('getInvitationGame', handleGetInvitationGame);
-      gameSocketRef.current.off('goInGame', handlegoInGame);
-      gameSocketRef.current.off('refuseInvitationGame', handleRefuseInvitationGame);
-
-    };
-   }, [
-    handleGetInvitationGame,
-    handlegoInGame,
-    handleRefuseInvitationGame,
-    gameSocketRef
-  ]);
 
   const handleUpdateDatabase = async () => {
     await fetch("http://localhost:3001/users/", {
@@ -236,6 +176,7 @@ export default function ChatLogin() {
               <Message socket={socket} roomName={roomName} ifDM={ifDM} toDMID={toDMID} onQuit={handleLeaveRoom} UserId={myUserId} onUpdate={handleChildComponentUpdate} />
               <RoomDetail socket={socket} onListClick={handleListClick} roomName={roomName} onUpdate={handleChildComponentUpdate} UserId={myUserId} ifDM={ifDM} blockList={blockList}/>
             </DatabaseContext.Provider>
+            <Invitaion />
           </div>
       </div>
     );
