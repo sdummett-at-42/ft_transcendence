@@ -5,6 +5,7 @@ import Popup from "../Popup/Popup.tsx";
 import { UserContext } from "../../context/UserContext";
 import { useContext } from "react";
 import { SHA256 } from "crypto-js";
+import Invitaion from "../Invitaion/Invitaion";
 
 export default function Settings() {
 	const { user, setLastUpdate } = useContext(UserContext);
@@ -522,6 +523,7 @@ export default function Settings() {
 							</div>
 						</div>
 					</Popup>
+					<Invitaion />
 				</div>
 			</div>
 		</div>

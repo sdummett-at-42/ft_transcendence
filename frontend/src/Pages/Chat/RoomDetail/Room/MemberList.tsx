@@ -6,6 +6,8 @@ import { Socket } from "socket.io-client";
 import { DatabaseContext } from '../../ChatLogin'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faUnlock, faMessage, faTableTennis } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from "./../../../../context/UserContext"
 
 interface MemberListProps {
     socket: Socket,
@@ -21,6 +23,9 @@ export default function MemberList(props: MemberListProps) {
     const [showRoom, setShowRoom] = useState(false);
     const [newblockList, setNewBlockList] = useState([]);
     const [popUpId, setPopUpId] = useState({});
+    const [isDuelOpen, setIsDuelOpen] = useState<boolean>(false);
+    const [isOptionsOpen, setIsOptionsOpen] = useState<boolean>(false);
+    const { gameSocketRef } = useContext(UserContext);
 
     const hanldeDM = (id, name) => {
         props.onListClick(name, id, true);
@@ -53,6 +58,35 @@ export default function MemberList(props: MemberListProps) {
         if (confirmed) {
 
         }
+    }
+    const navigate = useNavigate();
+    const handleDuel = () => {
+        setIsDuelOpen(!isDuelOpen);
+        if (isOptionsOpen) {
+            setIsOptionsOpen(false);
+        }
+    }
+
+    const handleOptions = () => {
+        setIsOptionsOpen(!isOptionsOpen);
+        if (isDuelOpen) {
+            setIsDuelOpen(false);
+        }
+    }
+    const sendGameInvitationA = (friend) =>{
+        console.log("test1") // "ranked" | "custom"
+        gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked" })
+        // alert("you have sent an invitation!A");
+        // isDuelOpen(false);
+        handleDuel()
+       
+    }
+
+    const sendGameInvitationB = (friend) =>{
+        gameSocketRef.current.emit('sendInvitationGame', { idTarget: friend.id, type: "custom"})   
+        // alert("you have sent an invitation!B");
+        // isDuelOpen(false);
+        handleDuel()
     }
 
     const handleProfilePopup = (user) =>{
@@ -113,55 +147,58 @@ export default function MemberList(props: MemberListProps) {
     return (
         <div>
             <div className='Profile-screen-card-text RoomList-header'>Liste des membres</div>
-                {members && members.members.map((each, index) => {
-                    if (database) {
-                        let user = database.find((user) => user.id === each);
-                        let role = "Membre";
-                        if (members.owner.includes(each) == true) {
-                            role = "Propriétaire";
-                        }
-                        else if (members.admins.includes(each) == true) {
-                            role = "Administateur";
-                        }
-                        return (
-                            <div>
-                                <li className="ChatRoom-list-li" key={each} onClick={() => handleProfilePopup(user)}>
-                                    <img className="ChatRoom-image" src={user?.profilePicture} alt="avatar" />
-                                    <div className="about">
-                                        <div className="MemberList-screen-card-text">{user?.name}</div>
-                                        <div className="ChatRoom-screen-card-type">
-                                            {role}
-                                        </div>
-                                    </div>
-
-                                    {user?.id === props?.UserId ?
-                                        <div></div> :
-                                        (
-                                            <div className="MemberList-button">
-                                                <button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
-                                                <button className="PendingFriend-button" onClick={() => handlePlay(user.id, user.name)} ><FontAwesomeIcon icon={faTableTennis}  size="lg" /></button>
-                                                { newblockList.includes(user.id) ? (
-                                                    <div>
-                                                        <button className="PendingFriend-button" onClick={() => handleUnblock(user.id, user.name)} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button>
-                                                    </div>
-                                                ) : ( 
-                                                    <div>
-                                                        <button className="PendingFriend-button" onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )
-                                    }
-                                </li>
-                            </div>
-                        );
+            {members && members.members.map((each, index) => {
+                if (database) {
+                    let user = database.find((user) => user.id === each);
+                    let role = "Membre";
+                    if (members.owner.includes(each) == true) {
+                        role = "Propriétaire";
                     }
-                })}
-                {popUpId && (
-                    <Popup isOpen={showRoom} isClose={() => {setShowRoom(false); setPopUpId("")}}>
-                        <SpecProfile user={popUpId} handleUserClick={handleProfilePopup}/>
-                    </Popup>
-                )}
+                    else if (members.admins.includes(each) == true) {
+                        role = "Administateur";
+                    }
+                    return (
+                        <li className="ChatRoom-list-li" key={each} onClick={() => handleProfilePopup(user)}>
+                            <img className="ChatRoom-image" src={user?.profilePicture} alt="avatar" />
+                            <div className="about">
+                                <div className="MemberList-screen-card-text">{user?.name}</div>
+                                <div className="ChatRoom-screen-card-type">
+                                    {role}
+                                </div>
+                            </div>
+                            {user?.id === props?.UserId ?
+                                <div></div> :
+                                (
+                                    <div className="MemberList-button">
+                                        <button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
+                                        <button className="PendingFriend-button" onClick={() => handleDuel()}><FontAwesomeIcon icon={faTableTennis} size="lg" /></button>
+                                        {isDuelOpen && (
+                                            <div className="Friend-dropdown-content">
+                                                <div onClick={()=> sendGameInvitationA(user)}>Partie classée</div>
+                                                <div onClick={()=> sendGameInvitationB(user)}>Partie décontractée</div>
+                                            </div>
+                                        )}
+                                        {newblockList.includes(user.id) ? (
+                                            <div>
+                                                <button className="PendingFriend-button" onClick={() => handleUnblock(user.id, user.name)} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button>
+                                            </div>
+                                        ) : ( 
+                                            <div>
+                                                <button className="PendingFriend-button" onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            }
+                        </li>
+                    );
+                }
+            })}
+            {popUpId && (
+                <Popup isOpen={showRoom} isClose={() => {setShowRoom(false); setPopUpId("")}}>
+                    <SpecProfile user={popUpId} handleUserClick={handleProfilePopup}/>
+                </Popup>
+            )}
         </div>
     );
 };

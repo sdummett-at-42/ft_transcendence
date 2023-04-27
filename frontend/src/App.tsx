@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect} from "react";
 import { Routes, Route } from "react-router-dom";
 import LoginSelector from "./Pages/Login/LoginSelector";
 import CreateAccount from "./Pages/Login/CreateAccount/CreateAccount";
@@ -16,10 +16,11 @@ import ChatLogin from "./Pages/Chat/ChatLogin";
 import TwoFactor from "./Pages/Login/TwoFactor/TwoFactor";
 import Loading from "./Pages/Loading/Loading";
 import { UserContext } from "./context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 function App() {
 	const { user } = useContext(UserContext);
-
+	
 	return (
 		<div className="App">
 			<Routes>
