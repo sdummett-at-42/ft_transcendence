@@ -6,12 +6,14 @@ import { Player, Game, Square, Circle, BlackHole } from '../entities/game.entiti
 import { GameGateway } from '../game.gateway'
 import { EventGame } from '../game-event.enum';
 import { PrismaService } from 'nestjs-prisma';
+import { FriendsService } from "../../friends/friends.service";
 
 @Injectable()
 export class LobbyService {
     constructor(private readonly gameGateway: GameGateway,
                 private readonly redis: RedisService,
-                private readonly prisma: PrismaService ){}
+                private readonly prisma: PrismaService,
+                private readonly friends: FriendsService, ){}
 
     BaseThreshold = 1000 / 100;
 
@@ -22,11 +24,23 @@ export class LobbyService {
     // tab invite [sender, target, interval, queueInterval: NodeJS.Timeout;
     invits : {sender : number, socketSender : string, target : number, time : NodeJS.Timeout}[] = [];
 
+    // clear toutes les 120 secondes les parties finit
+    clearGames: NodeJS.Timeout = setInterval(() => {
+        for (let i = 0; i < this.games.length; i++) {
+          if (this.games[i].deleteBool) {
+            this.games.splice(i, 1);
+            i--;
+            }
+        }
+    }, 120000);
+
 
     // Add user [] 
     async lobbyJoinQueue(client : Socket, type : string) {
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
         if (index === -1 && !this.inMatch(client.data.userId)) { // Check if player already in Q and not in game
+            // TODO
+            // si cancel invitation here
             const prismData = await this.prisma.user.findUnique({
                 where: { id : client.data.userId },
                 select: {
@@ -209,7 +223,6 @@ export class LobbyService {
 
     checkMatch(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) : Boolean{
         const diff : number = Math.abs(p1.player.elo - p2.player.elo);
-        
         // check gap elo
         if (p1.type === p2.type && p1.threshold >= diff && p2.threshold >= diff)
             return true;
@@ -219,11 +232,6 @@ export class LobbyService {
     // take 2 player, delete user [], generate game
     // lobbyCreateGame(player1 : Player, player2 : Player, server : Server) {
     lobbyCreateGame(p1 : {player : Player, threshold : number, type : string}, p2 : {player : Player, threshold : number, type : string}) {
-        // kick player from users[]
-        // create game with p1 && p2, generate map && game
-        // when done
-         
-
         const p1Socket = p1.player.socket;
         const p2Socket = p2.player.socket;
             
@@ -243,24 +251,12 @@ export class LobbyService {
             this.users.splice(remP2, 1);
             
         this.initGame(this.gameGateway.server, game);
-
         this.gameGateway.server.to(p1Socket).to(p2Socket).emit(EventGame.lobbyGoGame , game.id);
     }
-    // rediriger verls /game/:idGame
-    // controller check si game existe
-    //  1 = get Game
-    //  0 = 404
 
-    // Add 2 player
     initGame(server : Server, game : Game) {
-        // declarer ici tous les elements de la carte dans shapes et mettre le count dans numberElement
-        // on count pour numberElement lors reset/scoring
-
         if (game.shapes.length != 0)
             return ;
-
-        // this.player1 = game.p1;
-        // this.player2 = game.p2;
 
         const distwall = 10;
         game.p1.racket = new Square(distwall , 200, 84, 5);
@@ -269,16 +265,12 @@ export class LobbyService {
         game.p1.racket = new Square(distwall , 200, 84, 5);
         game.p2.racket = new Square(game.field.width - distwall - 5 , 200, 84, 5);
 
-        
-
-
         game.shapes.push(game.p1.racket);
         game.shapes.push(game.p2.racket);
-        game.server = server;
+        game.server = this.gameGateway.server;
 
-        if (!game.boolRanked) { // map fun map perso
+        if (!game.boolRanked) // map fun map perso
             this.initMap(game);    
-        }
         game.numberElement = game.shapes.length;
     }
 
@@ -329,7 +321,6 @@ export class LobbyService {
 
     async handleConnection(socket : Socket) : Promise<null | { game: Game; id : number }> {
 		if (socket.handshake.auth.token == undefined) {
-			// console.debug("Session cookie wasn't provided. Disconnecting socket.");
 			socket.emit(EventGame.NotConnected, {
 				timestamp: new Date().toISOString(),
 				message: `No session cookie provided`,
@@ -339,8 +330,7 @@ export class LobbyService {
 		}
 		const sessionHash = this.extractString(socket.handshake.auth.token);
 		const session = await this.redis.getSession(sessionHash);
-		if (session === null || !JSON.parse(session).passport || !JSON.parse(session).passport.user) {
-			// console.debug("User isn't logged in");
+		if (session === null || !JSON.parse(session).passport) {
 			socket.emit(EventGame.NotConnected, { // Event to report here
 				timestamp: new Date().toISOString(),
 				message: `User isn't logged in.`,
@@ -359,7 +349,6 @@ export class LobbyService {
 		socket.data.userId = userId;
         socket.data.socket = socket.id;
         
-        // get via prisma
         const prismData = await this.prisma.user.findUnique({
 			where: { id : userId },
 			select: {
@@ -372,10 +361,7 @@ export class LobbyService {
 
         if (!socket.handshake.auth.url) // lobby nothing to do
             return null;
-
         const getUrl = socket.handshake.auth.url.split('/').filter((item) => item !== "");
-
-
 
         if (getUrl.length < 3 || getUrl.length > 4) { // no game no lobby
             return null;
@@ -392,10 +378,22 @@ export class LobbyService {
                 return null;
 
             // if in game at player resume his game
-            if (game.p1.id === userId) // p1 connec
+            if (game.p1.id === userId) { // p1 connec
+                // si game pas fini : status in game
+                if (game.endBool === false) {
+                    game.p1socket = socket;
+                    this.inGameNotify(socket, userId);
+                }
                 return {game : game, id : game.p1.id};
-            if (game.p2.id === userId) // p2 connect
+            }
+            if (game.p2.id === userId) { // p2 connect
+                // si game pas fini : status in game
+                if (game.endBool === false) {
+                    game.p2socket = socket;
+                    this.inGameNotify(socket, userId);
+                }
                 return {game : game, id : game.p2.id};
+            }
             return {game : game, id : userId}; // spec connect
         }
         return null;
@@ -462,6 +460,65 @@ export class LobbyService {
         }
         return null;
     }
+
+    /* ********************* *\
+    |* notify ingame functon *|
+    \* ********************* */
+
+    async inGameNotify(socket : Socket, userId: number) {
+        console.log("******************");
+        console.log("STATUS GAME: ON");
+        console.log("******************");
+		// sleep 1sec to wait for the socket to be added to the server
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		const sockets = await this.gameGateway.server.fetchSockets();
+		const friendIds = await this.friends.findAll(userId);
+		if (!friendIds)
+			return;
+
+		// create an array of the friends id that are online by filtering the sockets array (the id is store in data.userId) without duplicates
+		const onlineFriends = [...new Set(sockets.filter(s => friendIds.includes(s.data.userId)).map(s => s.data.userId))];
+		for (const friendId of onlineFriends) {
+			socket.emit(EventGame.statusInGame, { id: friendId });
+		}
+		// if its the first connection of the user, we need to notify his friends that he is online
+		if (onlineFriends.length) {
+			const friendSocketIds = Object.entries(sockets)
+				.filter(([key, value]) => friendIds.includes(value.data.userId))
+				.map(([key, value]) => value.id);
+
+			if (friendSocketIds.length > 0)
+			    this.gameGateway.server.to(friendSocketIds).emit(EventGame.statusInGame, { id: +userId }); // Event to report here
+		}
+	}
+
+    private async offGameNotify(server : Server, userId: number) {
+        console.log("******************");
+        console.log("STATUS GAME: OFF");
+        console.log("******************");
+
+        const sockets = await server.fetchSockets();
+		const friendIds = await this.friends.findAll(userId);
+        const socket = sockets.find(sockets => sockets.data.userId === userId);
+
+		if (!friendIds || !socket)
+			return;
+
+        // create an array of the friends id that are online by filtering the sockets array (the id is store in data.userId) without duplicates
+		const onlineFriends = [...new Set(sockets.filter(s => friendIds.includes(s.data.userId)).map(s => s.data.userId))];
+		for (const friendId of onlineFriends)
+			socket.emit(EventGame.statusOffGame, { id: friendId });
+
+		// if its the first connection of the user, we need to notify his friends that he is online
+		if (onlineFriends.length) {
+			const friendSocketIds = Object.entries(sockets)
+				.filter(([key, value]) => friendIds.includes(value.data.userId))
+				.map(([key, value]) => value.id);
+			if (friendSocketIds.length > 0)
+			    server.to(friendSocketIds).emit(EventGame.statusOffGame, { id: +userId }); // Event to report here
+		}
+	}
+
 
     
 

@@ -3,7 +3,7 @@ import { Player } from "../../../../../../backend/src/modules/game/entities/game
 import "./Result.css" 
 
 interface ResultProps {
-    data: [Boolean, Player, Player];
+    data: [Boolean, Player, Player, Boolean];
   };
   
 const Result = ({data} : ResultProps) => {
@@ -11,6 +11,9 @@ const Result = ({data} : ResultProps) => {
     const victory : string = data[0] === true ? "abandon" : "score";
     const winner : Player = data[1];
     const loser : Player = data[2];
+	const ranked : Boolean = data[3];
+
+	console.log("ranked:", ranked);
 
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let winnerinterval = null;
@@ -30,13 +33,13 @@ const Result = ({data} : ResultProps) => {
 				.split("")
 				.map((letter, index) => {
 					if(index < iteration) {
-						return winnerRef.current?.dataset.value[index];
+						return winnerRef.current.dataset.value[index];
 					}
 					return letters[Math.floor(Math.random() * 26)]
 				})
 				.join("");
 					
-			if(iteration >= winnerRef.current.dataset.value.length) { 
+			if(iteration >= winnerRef.current.dataset.value?.length) { 
 				clearInterval(winnerinterval);
 			}
 					
@@ -81,17 +84,30 @@ const Result = ({data} : ResultProps) => {
                         <h2 className='Profile-screen-card-title'>{winner.score} - {loser.score}</h2>
                     </div>
                     <div className="winner-loser-info Profile-screen-card-text">
-                        <div className="winner-info" onMouseOver={WinnerCascade}>
+							<div className="winner-info" onMouseOver={WinnerCascade}>
                             <h3 className='winner-title'>Gagnant</h3>
                             <p>{winner.name}</p>
-                            <p data-value={winner.elo + winner.eloChange} ref={winnerRef}>{winner.elo}</p>
-                            <p id="winner-elo">{winner.eloChange}</p>
+							{ranked ? (
+								<div>
+									<p data-value={winner.elo + winner.eloChange} ref={winnerRef}>{winner.elo}</p>
+									<p id="winner-elo">{winner.eloChange}</p>
+								</div>
+							) : (
+								<div></div>
+							)}
                         </div>
-                        <div className="loser-info" onMouseOver={LoserCascade}>
+
+							<div className="loser-info" onMouseOver={LoserCascade}>
                             <h3 className='loser-title'>Perdant</h3>
                             <p>{loser.name}</p>
-                            <p data-value={loser.elo - loser.eloChange} ref={loserRef}>{loser.elo}</p>
-                            <p id="loser-elo">{loser.eloChange}</p>
+							{ranked ? (
+								<div>
+									<p data-value={loser.elo - loser.eloChange} ref={loserRef}>{loser.elo}</p>
+									<p id="loser-elo">{loser.eloChange}</p>
+								</div>
+							) : (
+								<div></div>
+							)}
                         </div>
                     </div>
                 </div>

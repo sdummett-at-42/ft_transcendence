@@ -19,7 +19,7 @@ export default function FriendsList() {
     }
 
     const navigate = useNavigate();
-    const { user, notificationSocketRef } = useContext(UserContext);
+    const { user, notificationSocketRef, gameSocketRef } = useContext(UserContext);
 
     // Store all friends of the user
     const [friends, setFriends] = useState([] as any);
@@ -29,6 +29,9 @@ export default function FriendsList() {
     const [sendRequests, setSendRequests] = useState([] as any);
     // Store the online status
     const [onlineStatus, setOnlineStatus] = useState([] as any);
+
+    // Store the in gane status
+    const [gameStatus, setGameStatus] = useState([] as any);
 
     // Fetch all friends of the user
     useEffect(() => {
@@ -170,6 +173,16 @@ export default function FriendsList() {
         setOnlineStatus((prevState) => [...prevState, data]);
     };
 
+    const handleFriendInGame = (data) => {
+        console.log("inGame");
+        setGameStatus((prevState) => [...prevState, data]);
+    }
+
+    const handleFriendLeaveGame = (data) => {
+        console.log("OffGame");
+        setGameStatus(gameStatus.filter((friend) => friend !== data.id));
+    }
+
     // Handle the socket events
     useEffect(() => {
 
@@ -196,6 +209,19 @@ export default function FriendsList() {
         handleFriendDisconnected,
         handleAllConnected,
         notificationSocketRef]);
+
+    useEffect(() => {
+        gameSocketRef.current.on("friendInGame", handleFriendInGame);
+        gameSocketRef.current.on("friendOffGame", handleFriendLeaveGame);
+
+        return () => {
+            gameSocketRef.current.off("friendInGame", handleFriendInGame);
+            gameSocketRef.current.off("friendOffGame", handleFriendLeaveGame);
+        };
+    }, [
+        handleFriendInGame,
+        handleFriendLeaveGame,
+        gameSocketRef]);
 
     const [isShaking, setIsShaking] = useState(false);
 
@@ -320,6 +346,29 @@ export default function FriendsList() {
             });
     }
 
+    const RemoveFriend = (friend) => {
+        fetch("http://localhost:3001/friends", {
+            credentials: 'include',
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "friendId": friend.id
+            }),
+        })
+            .then(res => {
+                if (res.status == 401) {
+                    navigate("/unauthorized");
+                }
+                else if (res.status == 200) {
+                    setFriends(friends.filter((friend) => friend.id != id));
+                }
+            });
+
+    }
+
+
     return (
         <div className="FriendsList">
             <div className="FriendsList-title">
@@ -335,7 +384,9 @@ export default function FriendsList() {
                             <div key={index}>
                                 <Friend
                                     props={friend}
+                                    isRemoved={RemoveFriend}
                                     isConnected={onlineStatus.some(online => online === friend.id)}
+                                    isInGame={gameStatus.some((game) => game === friend.id)}
                                 />
                             </div>
                             );

@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import Invitaion from "../../Invitaion/Invitaion";
 
 export default function Game() {
-    //const navigate = useNavigate();
+    const navigate = useNavigate();
     const id = window.location.pathname.split('/')[2];
     // const room = "game" + id;
 
@@ -22,9 +22,14 @@ export default function Game() {
     const [timer, setTimer] = useState<number>(0);
     const [elements, setElements] = useState<Shape[]>([]);
     const [boolVictory, setBoolVictory] = useState(false);
-    const [victory, setVictory] = useState<[boolean, Player, Player]>([false, null, null]);
+    const [victory, setVictory] = useState<[boolean, Player, Player, boolean]>([false, null, null, false]);
 
     const gameSocketTemp = useRef({});
+
+    // TODO
+    // si id change tout remettre comme au debut ou recharger la map
+    // deconnecter socket
+
     if (!boolSocket) {
         gameSocketTemp.current = io("http://localhost:3001/game", {
 			auth: {
@@ -54,10 +59,11 @@ export default function Game() {
             setScoreP2(data.score);
     }
 
-    const handleVictory = (data : {type : Boolean, winner : Player, loser : Player} ) => {
+    const handleVictory = (data : {type : Boolean, winner : Player, loser : Player, boolRanked : Boolean} ) => {
         // data= {Bollean, p1, p2}
         // false = score  true = abandon
-        setVictory([data.type , data.winner, data.loser]);
+        setVictory([data.type , data.winner, data.loser, data.boolRanked]);
+        console.log("handle victory:", data);
         setBoolVictory(true);
         setLastUpdate(Date.now());
     }
@@ -105,13 +111,12 @@ export default function Game() {
     if (boolVictory) {
         return (
             <div>
-                <Result data={[victory[0], victory[1], victory[2]]}/>
+                <Result data={[victory[0], victory[1], victory[2], victory[3]]}/>
                 <Invitaion />
             </div>
         )
     }
 
-    // Cas not end ?
     return (
         <div className="game-container">
             <div className="Game-info Profile-screen-card-text">

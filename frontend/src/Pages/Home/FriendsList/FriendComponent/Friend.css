@@ -44,6 +44,10 @@
   border-radius: 50%;
 }
 
+.Friend-circle-status.Friend-Game {
+  background-color: dodgerblue;
+}
+
 .Friend-circle-status.Friend-online {
   background-color: green;
 }

@@ -1,22 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { Shape, Square , Bullet, Circle, BlackHole, Game } from './entities/game.entities';
-import { GameGateway } from './game.gateway';
-import { RedisService } from 'src/modules/redis/redis.service';
 import { EventGame } from './game-event.enum';
 import { PrismaService } from 'nestjs-prisma';
+import { FriendsService } from "../friends/friends.service";
 
 @Injectable()
 export class GameService {
-    constructor(private readonly redis: RedisService,
-        private readonly prisma: PrismaService
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly friends: FriendsService,
     ) { }
-
-    //field = new Field(400, 800);
-    //shapes : Shape[] = [];
-    //bulletInterval: NodeJS.Timeout; // stocker ID de l'intervalle de la partie
-    //frequencyInterval: NodeJS.Timeout; // stocker ID de l'intervalle f bullet
-
 
     /* ******************* *\
     |* input/entry functon *|
@@ -31,30 +25,25 @@ export class GameService {
         return true;
     }
 
+    // join room game + set up player
     joinGame(server: Server, game : Game, client : Socket, roomId : string) {
         client.join(roomId);
 
-        if (client.data.userId === game.p1.id) { // c'est le joueur 1
+        if (client.data.userId === game.p1.id) // player 1
             game.p1.socket = client.data.socket;
-        }
-
-        if (client.data.userId === game.p2.id) { // c'est le joueur 2
+        if (client.data.userId === game.p2.id) // player 2
             game.p2.socket = client.data.socket;
-        }
+
         server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
         // When 1 player are in game, laucnh timer if Player 2 doesn't join
         // 15 sec to join
         if (game.p1.socket != undefined || game.p2.socket != undefined) {
             clearTimeout(game.timeoutJoin);
             game.timeoutJoin = setTimeout(() => {
-                if (game.p1.socket === undefined) {
-                    // player 2 win abandon
+                if (game.p1.socket === undefined) // player 2 win abandon
                     this.victoryByGiveUpLimitMax(game, 2);
-                }
-                if (game.p2.socket === undefined) {
-                    // player 1 win abandon
+                if (game.p2.socket === undefined) // player 1 win abandon
                     this.victoryByGiveUpLimitMax(game, 1);
-                }
             }, 15000)
         }
 
@@ -68,43 +57,40 @@ export class GameService {
     }
 
     startingGame(server : Server, game : Game) : void {
-            game.startBool = true;
+        // Set game Start
+        game.startBool = true;
 
-            // Bullet start side player 1
-            this.startNewBullet(game, 1);
+        // Bullet start side player 1
+        this.startNewBullet(game, 1);
 
-            // temp max atteint = fin game
-            game.dateStart =  new Date();
-            let elapsedTime : number;
-            const delay = 1000 / 60 // 60 emit sec
+        // Set date start game
+        game.dateStart =  new Date();
+        let elapsedTime : number;
+        const delay = 1000 / 60 // ~60 emit sec
 
-            game.gameInterval = setInterval(() => {
-                if (game.pause === true) { // game in pause
-                    // if player 1 pause
-                    const dateActual = new Date().getTime();
-
-//
-                    // je veux check si un joueur a consommer sa duree total de pause
-                    // stocker duree total pause joueur dans resume
-
-                    // si p1Pause && limit pause depasser = victoire forfait
-                    if (game.pauseP1 === true) {
-                        const check : number = game.pauseP1Time + dateActual - game.pauseP1Start.getTime();
-                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
-                            game.pauseP1Max >= game.pauseTotalMax) {
-                            this.victoryByGiveUpLimitMax(game, 2);
-                            return ;
-                        }
+        // Start game interval
+        game.gameInterval = setInterval(() => {
+            if (game.pause === true) { // game in pause
+                const dateActual = new Date().getTime();
+                
+                // si p1Pause && limit pause depasser = victoire forfait
+                if (game.pauseP1 === true) {
+                    const check : number = game.pauseP1Time + dateActual - game.pauseP1Start.getTime();
+                    if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
+                        game.pauseP1Max >= game.pauseTotalMax) {
+                        this.victoryByGiveUpLimitMax(game, 2);
+                         return ;
                     }
-                    // if player 2 pause
-                    if (game.pauseP2 === true) {
-                        const check : number = game.pauseP2Time + dateActual - game.pauseP2Start.getTime();;
-                        if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
-                            game.pauseP2Max >= game.pauseTotalMax) {
-                            this.victoryByGiveUpLimitMax(game, 1);
-                            return ;
-                        }
+                }
+                // if player 2 pause
+                if (game.pauseP2 === true) {
+                    const check : number = game.pauseP2Time + dateActual - game.pauseP2Start.getTime();;
+                    if (game.limitPauseTimerBool && check >= game.limitPauseTimer ||
+                        game.pauseP2Max >= game.pauseTotalMax) {
+                        this.victoryByGiveUpLimitMax(game, 1);
+                        return ;
                     }
+                }
 
                 } else { // game not in pause
                     // check game timer end
@@ -121,11 +107,6 @@ export class GameService {
     }
 
     pauseGame(game : Game, idPause : number) : void {
-        // cas deco : socket undefine
-        // cas pause manuel : socket define but action emit
-
-        // manual and deco
-        // 2 if if player game alone ?
         if (idPause === game.p1.id) {
             game.pauseP1 = true;
             game.pauseP1Max ++;
@@ -223,8 +204,17 @@ export class GameService {
             
         // Bool endgame true
         game.endBool = true;
-
+        
         server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
+
+        game.frequencyInterval = undefined;
+        // Delete game in 60 sec
+        game.frequencyInterval = setTimeout(() => {
+            game.deleteBool = true;
+        console.log("delete this game");
+    }, 60000);
+
+
     }
 
     mouvementGame(server : Server, game : Game, client : Socket, x : number, y : number) : void { // faire pour joueur 1 et 2
@@ -462,7 +452,7 @@ export class GameService {
         // this.newElo(game, scoreP1, scoreP2)
 
         // send to front type of victory
-        game.server.to(game.roomId).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser})
+        game.server.to(game.roomId).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser, boolRanked : game.boolRanked})
         return -1;
     }
 
@@ -487,7 +477,7 @@ export class GameService {
             game.loser = game.p1 ;
         }
 
-        game.server.to(game.roomId).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser});
+        game.server.to(game.roomId).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser, boolRanked : game.boolRanked});
     }
 
     private async newElo(game : Game, scoreP1 : number, scoreP2 : number) {

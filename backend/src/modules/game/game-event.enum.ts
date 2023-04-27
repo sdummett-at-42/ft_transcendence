@@ -25,15 +25,19 @@ export enum EventGame {
     // Lobby Emit (Client)
     playerJoinQueue = "joinQueue",      // Player join Q
     playerLeaveQueue = "leaveQueue",    // Player leave Q
+    lobbySendInvitGame = "sendInvitationGame",          // Player invite other Player
+    lobbyResponseInvitGame = "reponseInvitationGame",   // Reponse Player to Invite
 
-    lobbySendInvitGame = "sendInvitationGame",
-    lobbyGetInvitGame = "getInvitationGame",
-    lobbyResponseInvitGame = "reponseInvitationGame",
-    lobbyRefuseInvitGame = "refuseInvitationGame",
+    statusInGame = "friendInGame",      // Player statut in game
+    statusOffGame = "friendOffGame",    // Player status off game
+
+
     
     
     // Lobby recv (srv)
     lobbyGoGame = "goInGame", // send id game to join /game/:id
+    lobbyGetInvitGame = "getInvitationGame",        // Player get invitation
+    lobbyRefuseInvitGame = "refuseInvitationGame",  // Player refuse Invite
 
 
     /* ************* *\

@@ -13,25 +13,25 @@ interface Props {
         profilePicture: string;
         elo: number;
     };
+    isRemoved: (data) => void;
     isConnected: boolean;
+    isInGame: boolean;
 }
 
 export default function Friend(props: Props) {
 
     const [friend, setFriend] = useState(props.props);
     const [active, setActive] = useState<boolean>(props.isConnected);
+    const [inGame, setInGame] = useState<boolean>(props.isInGame);
     const [isDuelOpen, setIsDuelOpen] = useState<boolean>(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState<boolean>(false);
-    const [date, setDate] = useState(Date.now());
     const { user, gameSocketRef } = useContext(UserContext);
 
-    useEffect(() => {
-        
-    }, [date]);
 
     useEffect(() => {
         setFriend(props.props);
         setActive(props.isConnected);
+        setInGame(props.isInGame);
     }, [props]);
 
     const navigate = useNavigate();
@@ -43,26 +43,7 @@ export default function Friend(props: Props) {
     }
 
     const handleRemoveFriend = () => {
-        fetch("http://localhost:3001/friends", {
-            credentials: 'include',
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "friendId": friend.id
-            }),
-        })
-            .then(res => {
-                if (res.status == 401) {
-                    navigate("/unauthorized");
-                }
-                else if (res.status == 200) {
-                    setFriend(friends.filter((friend) => friend.id != id));
-                    setDate(Date.now());
-                }
-            })
-
+        props.isRemoved(friend);
     }
 
     const navigateToChat = (friend) => {
@@ -92,8 +73,8 @@ export default function Friend(props: Props) {
                         </div>
                         <div className="Friend-name-status">
                             <h4 className="Friend-name">{friend.name}</h4>
-                            <div className={`Friend-message ${active ? "Friend-online" : "Friend-offline"}`}>
-                                {active ? "En ligne" : "Hors ligne"}
+                            <div className={`Friend-message ${active ? (inGame ? "Friend-Game" : "Friend-online") : "Friend-offline"}`}>
+                                {active ? (inGame ? "En Partie" : "En ligne") : "Hors ligne"}
                             </div>
                         </div>
                     </div>
