@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import "../RoomCreate/RoomCreate.css"
 import { Socket } from "socket.io-client";
+import PublicRooms from '../PublicRooms/PublicRooms';
 
 interface RoomJoinProps {
     socket: Socket;
@@ -82,6 +83,7 @@ export default function RoomJoin(props: RoomJoinProps) {
           <div className="RoomCreate-screen-card-content">
 						  <div className="RoomCreate-screen-card-content-body">
                   <h3 className="Profile-screen-card-title">Rejoindre un salon</h3>
+				  <PublicRooms socket={props.socket} onClose={props.onClose} />
                   <div className="RoomCreate-screen-card-form-wrapper">
                   <div className="RoomCreate-screen-card-input-wrapper">
                       <label htmlFor="roomName" className="Profile-screen-card-text">Nom du salon</label>
