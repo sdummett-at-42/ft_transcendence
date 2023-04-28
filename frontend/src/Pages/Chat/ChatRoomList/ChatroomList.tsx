@@ -60,9 +60,9 @@ export default function ChatroomList(props: ChatroomListProps) {
       return;
     if (database) {
       const filteredObjects = database.find(obj => obj.id === payload.userId);
+      if(filteredObjects){
       if (!payload.fromId)
         alert(filteredObjects.name + " vous avait envoyé un message !");
-    if(filteredObjects){
       setdms((prevdms) => [...prevdms, {
         id: filteredObjects.id,
         name: filteredObjects.name,
@@ -70,7 +70,7 @@ export default function ChatroomList(props: ChatroomListProps) {
       }]);
     }
     }
-  }, [dms]);
+  }, [dms,database]);
 
   const handleRoomDeleted = useCallback((payload) => {
     setChatrooms((prevChatrooms) => {
@@ -207,9 +207,9 @@ export default function ChatroomList(props: ChatroomListProps) {
                       <ul className="ChatRoom-list-ul">
                           {dms.map(room => (
                               <li className={`ChatRoom-list-li ${(selectedRoom === room.name) || (props.toDMID.name === room.name && props.ifDM) ? "ChatRoom-active" : ""}`} key={room.id} onClick={() => handleChatroomClick(room.name, room.id, true)}>
-                                  <img src={room.prof} className='ChatRoom-image' draggable={false} />
+                                  <img src={room?.prof} className='ChatRoom-image' draggable={false} />
                                   <div className="ChatRoom-screen-card-text" >
-                                      {room.name}
+                                      {room?.name}
                                   </div>
                               </li>
                           ))}
