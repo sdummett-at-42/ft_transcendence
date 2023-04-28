@@ -3,10 +3,13 @@ import "./Stats.css";
 import Popup from "../Popup/Popup";
 import SpecProfile from "../Profile/SpecProfile/SpecProfile";
 import Invitaion from "../Invitaion/Invitaion";
+import FriendsList from "../Home/FriendsList/FriendsList";
 
 export default function InitStats({ user }) {
 	const [users, setUsers] = useState([]);
 	const [matchData, setMatchData] = useState(null);
+	// Sort users by elo
+	const sortedUsers = [...users].sort((a, b) => b.elo - a.elo);
  
 	// Fetch match data
 	useEffect(() => {
@@ -33,10 +36,7 @@ export default function InitStats({ user }) {
 		fetchUsers();
 	}, []);
 
-	// Sort users by elo
-	const sortedUsers = [...users].sort((a, b) => b.elo - a.elo);
-
-	if (!matchData) return <div>Loading...</div>;
+	if (!matchData) return <div>Chargement...</div>;
 
 	return <UserList users={sortedUsers} match={matchData} />;
 }
@@ -101,13 +101,6 @@ function UserList({ users, match }) {
 		
 		fetchUsers();
 	}, []);
-
-	// Return opponent of (me) from (match)
-	const Opponent = (match, me) => {
-		const opponentId = match.winnerId === me.id ? match.looserId : match.winnerId;
-		const opponent = allUsers.find((user) => user.id === opponentId);
-		return opponent;
-	};
 
 	// Handle user click
 	const handleUserClick = (user) => {
@@ -177,7 +170,7 @@ function UserList({ users, match }) {
 					</Popup>
 				)
 			)}
-			 <Invitaion />
+			<Invitaion />
 		</div>
 	);
 };

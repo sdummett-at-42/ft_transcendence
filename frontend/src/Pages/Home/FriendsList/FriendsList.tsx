@@ -346,8 +346,8 @@ export default function FriendsList() {
             });
     }
 
-    const RemoveFriend = (friend) => {
-        fetch("http://localhost:3001/friends", {
+    const RemoveFriend = async (friend:UserData) => {
+        await fetch("http://localhost:3001/friends", {
             credentials: 'include',
             method: 'DELETE',
             headers: {

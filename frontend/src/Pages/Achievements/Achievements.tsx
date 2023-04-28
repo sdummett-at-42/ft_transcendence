@@ -63,7 +63,7 @@ function Achievements({ achievements, showLocked }) {
 					achievement.unlocked ? "achievement-unlocked" : "achievement-locked"
 				}`}
 				style={{ background: gradient }}
-			>
+				>
 				<div>
 					<div className="achievement-details">
 						<div className="achievement-title">{achievement.name}</div>
@@ -75,5 +75,8 @@ function Achievements({ achievements, showLocked }) {
 		);
 	});
 
-	return <div className="achievements">{itemsWithGradient}</div>;
+	return (
+		<div className="achievements">
+			{itemsWithGradient}
+		</div>);
 }

@@ -362,7 +362,7 @@ function DisplayProfile({ user, match }) {
     								</div>
   								</div>
 								<div className="Profile-screen-achivement-user">
-									<InitAchievements userId={user.id} showLocked={showLocked} />
+									<InitAchievements userId={user.id} showLocked={showLocked}/>
 								</div>
 							</div>
 						</div>
