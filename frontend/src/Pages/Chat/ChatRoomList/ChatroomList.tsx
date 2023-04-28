@@ -10,6 +10,7 @@ import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { DatabaseContext } from '../ChatLogin';
 
 interface ChatroomListProps {
+<<<<<<< HEAD
     socket: Socket,
     onListClick: (list: string, id: number, ifDM: boolean) => void,
     onUpdate: () => void,
@@ -17,6 +18,109 @@ interface ChatroomListProps {
     toDMID: {
         id: number;
         name: string;
+=======
+  socket: Socket,
+  onListClick: (list: string, id: number, ifDM: boolean) => void,
+  onUpdate: () => void,
+  ifDM: boolean,
+  toDMID: {
+    id: number;
+    name: string;
+  };
+  ifDataReady: boolean,
+}
+export default function ChatroomList(props: ChatroomListProps) {
+  // States
+  const [chatrooms, setChatrooms] = useState([]);
+  const [dms, setdms] = useState([]);
+  const [showAddRoom, setShowAddRoom] = useState(false);
+  const [showJoinRoom, setShowJoinRoom] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState("");
+  const database = useContext(DatabaseContext);
+
+  // Event handlers
+  const handleRoomCreated = useCallback((payload) => {
+  }, [chatrooms]);
+
+  const handleRoomJoined = useCallback((payload) => {
+    if (chatrooms.find(obj => obj.roomName === payload.roomName))
+      return;
+    setChatrooms((prevChatrooms) => [...prevChatrooms, {
+      roomName: payload.roomName,
+      public: payload.public,
+      protected: payload.protected
+    }]);
+    props.onUpdate(); //update database!
+  }, [chatrooms]);
+
+  const handleRoomsListReceived = useCallback((payload) => {
+    setChatrooms(payload.roomsList);
+  }, [chatrooms]);
+  const handleDMRoomsListReceived = useCallback((payload) => {
+    setdms(payload.dms);
+    if (database) {
+      const filteredObjects = database.filter(obj => payload.dms.includes(obj.id));
+      const newDms = filteredObjects.map(obj => ({ id: obj.id, name: obj.name, prof: obj.profilePicture }));
+      setdms(newDms);
+    }
+  }, [setdms, database]);
+  const handlDMlistupdated = useCallback((payload) => {
+    if (dms.find(obj => obj.id === payload.userId))
+      return;
+    if (database) {
+      const filteredObjects = database.find(obj => obj.id === payload.userId);
+      if(filteredObjects){
+      if (!payload.fromId)
+        alert(filteredObjects.name + " vous avez envoyé un message !");
+      setdms((prevdms) => [...prevdms, {
+        id: filteredObjects.id,
+        name: filteredObjects.name,
+        prof: filteredObjects.profilePicture
+      }]);
+    }
+    }
+  }, [dms,database]);
+
+  const handleRoomDeleted = useCallback((payload) => {
+    setChatrooms((prevChatrooms) => {
+      return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
+    });
+    if (selectedRoom == payload.roomName){
+      setSelectedRoom("");
+      props.onListClick("", 0, false);
+    }
+  }, [chatrooms]);
+
+  const handleBanEvent = useCallback((payload) => {
+    alert(payload.message);
+    setChatrooms((prevChatrooms) => {
+      return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
+    });
+    // if (selectedRoom == payload.roomName){
+      setSelectedRoom("");
+      props.onListClick("", 0, false);
+  }, [chatrooms]);
+
+  const handleKickEvent = useCallback((payload) => {
+    alert(payload.message);
+    setChatrooms((prevChatrooms) => {
+      return prevChatrooms.filter((room) => room.roomName !== payload.roomName);
+    });
+  
+      setSelectedRoom("");
+      props.onListClick("", 0, false);
+  }, [chatrooms]);
+
+  const handleRoomsUpdate = useCallback((payload) => {
+    const chatroomIndex = chatrooms.findIndex(room => room.roomName === payload.roomName);
+    if (chatroomIndex === -1) {
+      return;
+    }
+    const updatedChatroom = {
+      ...chatrooms[chatroomIndex],
+      public: payload.public,
+      protected: payload.protected
+>>>>>>> origin/main
     };
     ifDataReady: boolean,
 }
@@ -30,6 +134,7 @@ export default function ChatroomList(props: ChatroomListProps) {
     const [selectedRoom, setSelectedRoom] = useState("");
     const database = useContext(DatabaseContext);
 
+<<<<<<< HEAD
     // Event handlers
     const handleRoomCreated = useCallback((payload) => {
     }, [chatrooms]);
@@ -231,6 +336,62 @@ export default function ChatroomList(props: ChatroomListProps) {
                             ))}
                         </ul>
                     </div>
+=======
+  // Render
+  return (
+      <div className="ChatRoomList">
+          <div className="ChatRoom-screen-card">
+						  <div className="ChatRoom-screen-card-overlay"></div>
+                  <div className="ChatRoom-screen-card-content">
+							        <div className="ChatRoom-screen-card-content-body">
+                          <div className="ChatRoom-screen-card-user">
+                              <button
+                                  className='Settings-button'
+                                  onClick={() => setShowAddRoom(true)}
+                              >
+                                  Nouveau Salon
+                              </button>
+                              <button
+                                  className='Settings-button'
+                                  onClick={() => setShowJoinRoom(true)}
+                             >
+                                  Rejoindre un salon
+                              </button>
+                          </div>
+                          <ul className='ChatRoom-list-ul'>
+                              {chatrooms.map(room => (
+                                  <li
+                                      className={`ChatRoom-list-li ${selectedRoom === room.roomName && !props.ifDM ? "ChatRoom-active" : ""}`}
+                                      key={room.roomName}
+                                      onClick={() => handleChatroomClick(room.roomName, 0, false)}
+                                  >
+                                      <img src={group} className='ChatRoom-image' draggable={false} />
+                                      <div>
+                                          <div className="ChatRoom-screen-card-text">
+                                              {room.roomName}
+                                          </div>
+                                          <div className="ChatRoom-screen-card-type">
+                                              <i className="" />
+                                              {room.public === "public" ? "Public " : "Privé"}
+                                              {room.protected ? <FontAwesomeIcon icon={faLock} /> : null}
+                                          </div>
+                                      </div>
+                                  </li>
+                              ))}
+                          </ul>
+                      <ul className="ChatRoom-list-ul">
+                          {dms.map(room => (
+                              <li className={`ChatRoom-list-li ${(selectedRoom === room.name) || (props.toDMID.name === room.name && props.ifDM) ? "ChatRoom-active" : ""}`} key={room.id} onClick={() => handleChatroomClick(room.name, room.id, true)}>
+                                  <img src={room?.prof} className='ChatRoom-image' draggable={false} />
+                                  <div className="ChatRoom-screen-card-text" >
+                                      {room?.name}
+                                  </div>
+                              </li>
+                          ))}
+                      </ul>
+                          </div>
+                  </div>
+>>>>>>> origin/main
               </div>
           </div>
           {/* Popup */}
