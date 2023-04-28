@@ -59,7 +59,9 @@ export default function Message(props: MessageProps) {
   };
 
   const handleMessages = useCallback((payload) => {
-    setMessageList((prevme) => [...prevme, payload]);
+    if (payload.roomName === props.roomName){
+      setMessageList((prevme) => [...prevme, payload]);
+    }
   }, [messageList]);
 
   const handleDMupdate = useCallback((payload) => {
