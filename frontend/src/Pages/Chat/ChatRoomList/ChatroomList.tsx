@@ -61,12 +61,14 @@ export default function ChatroomList(props: ChatroomListProps) {
     if (database) {
       const filteredObjects = database.find(obj => obj.id === payload.userId);
       if (!payload.fromId)
-        alert(filteredObjects.name + " had seent you a message!");
+        alert(filteredObjects.name + " vous avait envoyé un message !");
+    if(filteredObjects){
       setdms((prevdms) => [...prevdms, {
         id: filteredObjects.id,
         name: filteredObjects.name,
         prof: filteredObjects.profilePicture
       }]);
+    }
     }
   }, [dms]);
 
