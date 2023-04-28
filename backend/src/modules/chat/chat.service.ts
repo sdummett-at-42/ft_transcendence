@@ -188,8 +188,10 @@ export class ChatService {
 				await this.redis.setRoomOwner(dto.roomName, +admins[0]);
 			else {
 				const members = await this.redis.getRoomMembers(dto.roomName);
-				if (members.length > 0)
+				if (members.length > 0){
 					await this.redis.setRoomOwner(dto.roomName, +members[0])
+					await this.redis.setRoomAdmin(dto.roomName, +members[0])
+				}
 				else {
 					this.redis.unsetRoom(dto.roomName);
 					this.redis.unsetRoomName(dto.roomName);
