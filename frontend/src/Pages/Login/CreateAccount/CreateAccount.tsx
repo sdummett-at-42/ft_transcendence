@@ -96,7 +96,8 @@ export default function CreateAccount() {
 		}).then((res) => {
 			if (res.status == 201) {
 				setLastUpdate(Date.now());
-				naviguate("/home");
+				// naviguate("/home");
+				window.location.href = '/home';
 				return;
 			} else if (res.status == 409) {
 				// Conflict

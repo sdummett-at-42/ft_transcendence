@@ -58,7 +58,8 @@ export default function LoginSelector() {
 		}).then((res) => {
 			if (res.status == 201) {
 				setLastUpdate(Date.now());
-				naviguate("/home");
+				// naviguate("/home");
+				window.location.href = '/home';
 				return;
 			} else if (res.status == 400) {
 				setErrorMessages((prevErrors) => ({

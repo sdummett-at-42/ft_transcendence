@@ -39,8 +39,7 @@ export class LobbyService {
     async lobbyJoinQueue(client : Socket, type : string) {
         const index = this.users.findIndex(users => users.player.id === client.data.userId);
         if (index === -1 && !this.inMatch(client.data.userId)) { // Check if player already in Q and not in game
-            // TODO
-            // si cancel invitation here
+
             const prismData = await this.prisma.user.findUnique({
                 where: { id : client.data.userId },
                 select: {
@@ -191,8 +190,12 @@ export class LobbyService {
             return false;
         return true;
     }
-    
+
     intervalQueueFunction() {
+        console.log("Player in Q :" ,this.users.length);
+        for (let i = 0; i < this.users.length; i++)
+            console.log(`id : ${this.users[i].player.name}`);
+        console.log();
 
         let gotMatch : Boolean = false;
         if (this.users.length === 0) { // if no player in Q
