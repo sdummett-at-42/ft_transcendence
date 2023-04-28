@@ -67,6 +67,10 @@
   margin-bottom: 5px;
 }
 
+.Friend-message.Friend-Game {
+  color: dodgerblue;
+}
+
 .Friend-message.Friend-online {
   color: green;
 }

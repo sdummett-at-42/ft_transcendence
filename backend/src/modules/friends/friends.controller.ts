@@ -9,6 +9,7 @@ import { CreateFriendRequestDto } from "./dto/friends.dto";
 import { NotificationsGateway } from "../notifications/notifications.gateway";
 import { AchievementService } from "../achievements/achievements.service"
 
+
 @ApiTags('friends')
 @Controller('friends')
 @UseGuards(AuthenticatedGuard)

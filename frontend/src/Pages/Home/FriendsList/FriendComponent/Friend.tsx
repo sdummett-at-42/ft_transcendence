@@ -69,7 +69,7 @@ export default function Friend(props: Props) {
                     <div className="Friend-profile">
                         <div className="Friend-wrapper-profile-picture">
                             <img src={friend.profilePicture} alt={`Image de profile de ${friend.name}`} className="Friend-profile-picture" />
-                            <div className={`Friend-circle-status ${active ? "Friend-online" : "Friend-offline"}`}></div>
+                            <div className={`Friend-circle-status ${active ? (inGame ? "Friend-Game" : "Friend-online") : "Friend-offline"}`}></div>
                         </div>
                         <div className="Friend-name-status">
                             <h4 className="Friend-name">{friend.name}</h4>

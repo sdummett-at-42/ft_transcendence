@@ -175,12 +175,18 @@ export default function FriendsList() {
 
     const handleFriendInGame = (data) => {
         console.log("inGame");
-        setGameStatus((prevState) => [...prevState, data]);
+        console.log(`game in pre:`, JSON.stringify(gameStatus))
+        setGameStatus([...gameStatus, data.id])
+        console.log(`game in sub:`, JSON.stringify(gameStatus))
+
     }
 
     const handleFriendLeaveGame = (data) => {
         console.log("OffGame");
-        setGameStatus(gameStatus.filter((friend) => friend !== data.id));
+        console.log(`game in pre:`, JSON.stringify(gameStatus))
+        setGameStatus(gameStatus.filter((friend) => {console.log(`FRIEND => ${friend}`); return friend !== data.id}));
+        console.log(`game in pre:`, JSON.stringify(gameStatus))
+
     }
 
     // Handle the socket events
