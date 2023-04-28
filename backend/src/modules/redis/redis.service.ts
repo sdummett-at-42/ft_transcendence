@@ -499,4 +499,37 @@ export class RedisService {
 			});
 		});
 	}
+
+	async setInGames(userId: number) {
+		this.client.hset(`inGame`, userId, 1);
+	}
+
+	async unsetInGames(userId: number) {
+		this.client.hdel(`inGame`, userId, 1);
+	}
+
+	async getInGames(): Promise<number[]> {
+		return new Promise((resolve, reject) => {
+			this.client.hkeys(`inGame`, (err, banned) => {
+				resolve(banned.map(Number));
+			})
+		})
+	}
+
+	private async getInGamesKeys(): Promise<string[]> {
+		return new Promise((resolve, reject) => {
+			this.client.hkeys(`inGame:*`, (err, keys) => {
+				resolve(keys);
+			});
+		});
+	}
+
+	async unsetInGamesKeys() {
+		console.log(`UNSSSSETTTT`)
+		const keys = await this.getInGamesKeys();
+		keys.forEach(key => {
+			console.log(`KEYS: ${key}`)
+			this.client.hdel(key);
+		})
+	}
 }

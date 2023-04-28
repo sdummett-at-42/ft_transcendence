@@ -8,5 +8,5 @@
   .canvas {
     background-image: url('../../../../assets/Background.png');
     background-size: cover;
-    border: 2px solid red;
+    border: 2px solid grey;
 }

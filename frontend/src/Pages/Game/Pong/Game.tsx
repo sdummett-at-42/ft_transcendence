@@ -14,11 +14,11 @@ export default function Game() {
     const id = window.location.pathname.split('/')[2];
     // const room = "game" + id;
 
-    const { user, gameSocketRef, setLastUpdate } = useContext(UserContext);
+    const { setLastUpdate } = useContext(UserContext);
     const [boolSocket, setBoolSocket] = useState(false);
 
-    const [scoreP1, setScoreP1] = useState<number>(0);
-    const [scoreP2, setScoreP2] = useState<number>(0);
+    const [player1, setPlayer1] = useState<Player>(0);
+    const [player2, setPlayer2] = useState<Player>(0);
     const [timer, setTimer] = useState<number>(0);
     const [elements, setElements] = useState<Shape[]>([]);
     const [boolVictory, setBoolVictory] = useState(false);
@@ -54,9 +54,9 @@ export default function Game() {
 
     const handleScore = (data) => {
         if (data.side === 1)
-            setScoreP1(data.score);
+            setPlayer1(data);
         else 
-            setScoreP2(data.score);
+            setPlayer2(data);
     }
 
     const handleVictory = (data : {type : Boolean, winner : Player, loser : Player, boolRanked : Boolean} ) => {
@@ -108,6 +108,31 @@ export default function Game() {
         };
       }, [gameSocketTemp]);
 
+    const [allUsers, setAllUsers] = useState([]);
+
+    // Fetch all users
+    useEffect(() => {
+        async function GetAllUsers() {
+            const response = await fetch("http://localhost:3001/users", {
+                method: "GET",
+                credentials: "include",
+            });
+            const data = await response.json();
+            setAllUsers(data);
+        }
+
+        GetAllUsers();
+    },[]);
+
+    // const [p1, setP1] = useState();
+    // const [p2, setP2] = useState();
+
+    // useEffect(() => {
+    //     setP1(allUsers.filter((user) => user.id === player1?.id));
+    //     setP2(allUsers.filter((user) => user.id === player2?.id));
+
+    // }, [allUsers]);
+    
     if (boolVictory) {
         return (
             <div>
@@ -122,8 +147,14 @@ export default function Game() {
             <div className="Game-info Profile-screen-card-text">
                 <p>Time = {(timer/1000).toFixed(3)}</p>
                 <div className="Game-player-info">
-                    <div className="Game-Player1">Player 1 = {scoreP1}</div>
-                    <div className="Game-Player2">Player 2 = {scoreP2}</div>
+                    <div className="Game-Player1">
+                        {/* <img scr={p1?.profilePicture} alt="p1" className="ChatRoom-image" /> */}
+                        {player1?.name} = {player1?.score}
+                    </div>
+                    <div className="Game-Player2">
+                        {/* <img scr={p2?.profilePicture} alt="p2" className="ChatRoom-image" /> */}
+                        {player2?.name} = {player2?.score}
+                    </div>
                 </div>
                 <Canvas elements={elements} idGame={id} socketRef={gameSocketTemp} victory={victory}/>
             </div>

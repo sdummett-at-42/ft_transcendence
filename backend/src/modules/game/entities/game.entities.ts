@@ -131,7 +131,7 @@ export class Game {
 
     // gameInterval
     gameInterval?: NodeJS.Timeout;
-    launchBulletTimer?: NodeJS.Timeout;
+    launchBulletTimer
 
     // Game is paused
     pause : Boolean = false;

@@ -107,6 +107,9 @@ export class GameService {
                 }
                 server.to(game.roomId).emit(EventGame.gameImage, game.shapes);
                 server.to(game.roomId).emit(EventGame.gameTimer, elapsedTime);
+                game.server.to(game.roomId).emit(EventGame.gameScore, game.p1);
+                game.server.to(game.roomId).emit(EventGame.gameScore, game.p2);
+
             }, delay);
     }
 

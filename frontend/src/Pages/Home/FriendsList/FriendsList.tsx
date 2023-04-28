@@ -30,8 +30,8 @@ export default function FriendsList() {
     // Store the online status
     const [onlineStatus, setOnlineStatus] = useState([] as any);
 
-    // Store the in gane status
-    const [gameStatus, setGameStatus] = useState([] as any);
+    // Store the in game status
+    const [gameStatus, setGameStatus] = useState([] as number[]);
 
     // Fetch all friends of the user
     useEffect(() => {
@@ -149,7 +149,6 @@ export default function FriendsList() {
             setFriends(friendsList);
             setSendRequests(sendRequests.filter(friend => friend.receiver.id != data.id));
 			notificationSocketRef.current.emit("getOnlineFriends");
-
         }
         getFriends();
     };
@@ -163,6 +162,8 @@ export default function FriendsList() {
 			return;
 
         setOnlineStatus([...onlineStatus, data.id]);
+        console.log("data:", data.tab);
+        setGameStatus(data.tab);
     };
 
     const handleFriendDisconnected = (data) => {
@@ -173,20 +174,22 @@ export default function FriendsList() {
         setOnlineStatus((prevState) => [...prevState, data]);
     };
 
-    const handleFriendInGame = (data) => {
-        console.log("inGame");
-        console.log(`game in pre:`, JSON.stringify(gameStatus))
-        setGameStatus([...gameStatus, data.id])
-        console.log(`game in sub:`, JSON.stringify(gameStatus))
+    // setGameStatus([...gameStatus, data.id])
+    // setGameStatus(gameStatus.filter((friend) => {console.log(`FRIEND => ${friend}`); return friend !== data.id}));
 
+    const handleFriendInGame = (data) => {
+        console.log("inGame:", data.tab);
+
+        // setGameStatus(gameStatus.concat([data.id]));
+        setGameStatus(data.tab);
     }
 
     const handleFriendLeaveGame = (data) => {
-        console.log("OffGame");
-        console.log(`game in pre:`, JSON.stringify(gameStatus))
-        setGameStatus(gameStatus.filter((friend) => {console.log(`FRIEND => ${friend}`); return friend !== data.id}));
-        console.log(`game in pre:`, JSON.stringify(gameStatus))
+        console.log("OffGame:", data.tab);
 
+        // gameStatus.
+        // setGameStatus(gameStatus.filter((id) => id !== data.id));
+        setGameStatus(data.tab);
     }
 
     // Handle the socket events

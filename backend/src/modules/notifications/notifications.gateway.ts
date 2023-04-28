@@ -10,10 +10,16 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 	constructor(
 		private readonly redis: RedisService,
 		private readonly friends: FriendsService,
-	) { }
+	) {this.del() }
+	async del() {
+		await this.redis.unsetInGamesKeys();
+		console.log(`CHECKK: ${JSON.stringify(await this.redis.getInGames())}`)
+	}
 
 	@WebSocketServer()
 	server: Server;
+
+	inGames : number[] = [];
 
 	async afterInit(server: any) { }
 
@@ -67,7 +73,6 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 			timestamp: new Date().toISOString(),
 			message: `Socket successfully connected.`
 		});
-
 		this.onlineNotify(socket, userId);
 	}
 
@@ -81,6 +86,8 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 	}
 
 	async onlineNotify(socket, userId: number) {
+		// console.log(userId,":QWERTYUI:", inGames);
+		console.log(socket.id);
 		// sleep 1sec to wait for the socket to be added to the server
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const sockets = await this.server.fetchSockets();
@@ -90,8 +97,10 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 
 		// create an array of the friends id that are online by filtering the sockets array (the id is store in data.userId) without duplicates
 		const onlineFriends = [...new Set(sockets.filter(s => friendIds.includes(s.data.userId)).map(s => s.data.userId))];
+		const inGames = await this.redis.getInGames()
+		console.log(`IN GAMES :: ${JSON.stringify(inGames)}`)
 		for (const friendId of onlineFriends) {
-			socket.emit('friendConnected', { id: friendId });
+			socket.emit('friendConnected', { id: friendId, tab : inGames});
 		}
 		// if its the first connection of the user, we need to notify his friends that he is online
 		if (onlineFriends.length) {
@@ -100,7 +109,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 				.map(([key, value]) => value.id);
 
 			if (friendSocketIds.length > 0)
-				this.server.to(friendSocketIds).emit('friendConnected', { id: +userId }); // Event to report here
+				this.server.to(friendSocketIds).emit('friendConnected', { id: +userId, tab : inGames}); // Event to report here
 		}
 	}
 
@@ -123,6 +132,20 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 	async inGameNotify(userId: number) {
 		const sockets = await this.server.fetchSockets();
 		const friendIds = await this.friends.findAll(userId);
+
+		
+		// await this.redis.setInGames(userId)
+		await this.redis.setInGames(userId);
+		const inGames = await this.redis.getInGames();
+		console.log(`IN GAMES NOTIFY :: ${JSON.stringify(inGames)}`)
+
+		// if (!inGames.includes(userId)) {
+		// }
+		// const checkInGamesRedis = await this.redis.getInGames();
+		// console.log(`InGames 2 : ${JSON.stringify(checkInGamesRedis)}`);
+		// if (!inGames.includes(userId))
+		// 	inGames.push(userId);
+
 		if (!friendIds)
 			return;
 		const friendSocketIds = Object.entries(sockets)
@@ -130,12 +153,22 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 			.map(([key, value]) => value.id);
 
 		if (friendSocketIds.length > 0)
-			this.server.to(friendSocketIds).emit('friendInGame', { id: +userId }); // Event to report here
+			this.server.to(friendSocketIds).emit('friendInGame', { tab : inGames }); // Event to report here
 	}
 
-	async offGameNotify(userId: number) {
+	async offGameNotify(userId : number) {
 		const sockets = await this.server.fetchSockets();
 		const friendIds = await this.friends.findAll(userId);
+
+
+		// const index = inGames.indexOf(userId);
+		// const index = inGames.indexOf(userId);
+		// if (index !== -1) {
+			// inGames.splice(index, 1);
+		await this.redis.unsetInGames(userId)
+		const inGames = await this.redis.getInGames();
+		// }
+		
 		if (!friendIds)
 			return;
 		const friendSocketIds = Object.entries(sockets)
@@ -143,8 +176,9 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 			.map(([key, value]) => value.id);
 
 		if (friendSocketIds.length > 0)
-			this.server.to(friendSocketIds).emit('friendOffGame', { id: +userId }); // Event to report here
+			this.server.to(friendSocketIds).emit('friendOffGame', { tab : inGames }); // Event to report here
 	}
+
 
 	async emitNewAchievement(userId: number, achievementName: string) {
 		const sockets = await this.server.fetchSockets();
