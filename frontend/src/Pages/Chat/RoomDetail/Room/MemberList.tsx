@@ -177,7 +177,7 @@ export default function MemberList(props: MemberListProps) {
                                                 <div onClick={()=> sendGameInvitationB(user)}>Partie décontractée</div>
                                             </div>
                                         )}
-                                        {newblockList.includes(user.id) ? (
+                                        {newblockList.includes(user?.id) ? (
                                             <div>
                                                 <button className="PendingFriend-button" onClick={() => handleUnblock(user.id, user.name)} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button>
                                             </div>

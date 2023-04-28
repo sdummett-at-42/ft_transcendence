@@ -102,7 +102,7 @@ export default function RoomJoin(props: RoomJoinProps) {
                       <input
                           type="password"
                           className="RoomCreate-screen-card-input"
-                          placeholder="Si le salon est privé"
+                          placeholder="Si le salon est protégé"
                           onKeyDown={handleEnter}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
