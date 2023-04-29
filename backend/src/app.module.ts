@@ -22,7 +22,7 @@ import { AchievementModule } from './modules/achievements/achievements.module';
 				POSTGRES_USER: Joi.string().required(),
 				POSTGRES_PASSWORD: Joi.string().required(),
 				SESSION_SECRET: Joi.string().required(),
-				APP_PORT: Joi.number().required(),
+				BACKENDPORT: Joi.number().required(),
 				THROTTLER_TTL: Joi.number().required(),
 				THROTTLER_LIMIT: Joi.number().required(),
 				REDIS_URL: Joi.string().required(),

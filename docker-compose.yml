@@ -29,7 +29,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - REDIS_URL=${REDIS_URL}
       - SESSION_SECRET=${SESSION_SECRET}
-      - APP_PORT=${APP_PORT}
+      - BACKENDPORT=${BACKENDPORT}
       - THROTTLER_TTL=${THROTTLER_TTL}
       - THROTTLER_LIMIT=${THROTTLER_LIMIT}
       - DATABASE_URL=${DATABASE_URL}
@@ -42,7 +42,7 @@ services:
     volumes:
       - ./backend/src:/app/src
     ports:
-      - 3001:3001
+      - ${BACKENDPORT}:${BACKENDPORT}
     networks:
       - backend
 
@@ -62,10 +62,11 @@ services:
     environment:
       - VITE_BACKENDURL=${VITE_BACKENDURL}
       - VITE_FRONTENDURL=${VITE_FRONTENDURL}
+      - FRONTENDPORT=${FRONTENDPORT}
     volumes:
       - ./frontend/src:/app/src
     ports:
-      - "5173:5173"
+      - ${FRONTENDPORT}:${FRONTENDPORT}
 
 volumes:
   postgres:

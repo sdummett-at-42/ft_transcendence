@@ -56,6 +56,6 @@ async function bootstrap() {
 	app.use(passport.initialize());
 	app.use(passport.session());
 
-	await app.listen(config.get('APP_PORT'));
+	await app.listen(config.get('BACKENDPORT'));
 }
 bootstrap();

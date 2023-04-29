@@ -190,7 +190,7 @@ export default function ChatroomList(props: ChatroomListProps) {
                                 className='Settings-button'
                                 onClick={() => setShowAddRoom(true)}
                             >
-                                Nouveau Salon
+                                Creer un salon
                             </button>
                             <button
                                 className='Settings-button'
