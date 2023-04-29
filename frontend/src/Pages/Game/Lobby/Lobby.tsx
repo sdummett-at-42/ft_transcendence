@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import ModeSelector from "./ModeSelector/ModeSelector";
 import Custom from "./Custom/Custom";
 import Ranked from "./Ranked/Ranked";
-import Invitaion from "../../Invitaion/Invitaion";
+import Invitation from "../../Invitation/Invitation";
 import Blob from "../../Blob/Blob";
 
 export default function Lobby() {
@@ -49,7 +49,7 @@ export default function Lobby() {
                 )}
             </div>
             <FriendsList />
-            <Invitaion />
+            <Invitation />
         </div>
     )
 }

@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useContext} from "react";
-import { UserContext } from "./../../context/UserContext";
+import { UserContext } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import Popup from "./../Popup/Popup";
+import Popup from "../Popup/Popup";
 import {Socket } from 'socket.io';
 
 
-interface InvitaionProps{
+interface InvitationProps{
  
 }
-export default function  Invitaion(props:  InvitaionProps) {
+export default function  Invitation(props:  InvitationProps) {
 
     const { user, gameSocketRef } = useContext(UserContext);
 	const navigate = useNavigate();

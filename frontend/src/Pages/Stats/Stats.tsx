@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Stats.css";
 import Popup from "../Popup/Popup";
 import SpecProfile from "../Profile/SpecProfile/SpecProfile";
-import Invitaion from "../Invitaion/Invitaion";
+import Invitation from "../Invitation/Invitation";
 import Blob from "../Blob/Blob";
 import FriendsList from "../Home/FriendsList/FriendsList";
 
@@ -172,7 +172,7 @@ function UserList({ users, match }) {
 					</Popup>
 				)
 			)}
-			<Invitaion />
+			<Invitation />
 		</div>
 	);
 };

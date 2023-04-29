@@ -3,7 +3,7 @@ import "./Profile.css";
 import InitAchievements from "../Achievements/Achievements";
 import Popup from "../Popup/Popup";
 import SpecProfile from "./SpecProfile/SpecProfile";
-import Invitaion from "../Invitaion/Invitaion";
+import Invitation from "../Invitation/Invitation";
 import Blob from "../Blob/Blob";
 
 export default function Profile({ user }) {
@@ -415,7 +415,7 @@ function DisplayProfile({ user, match }) {
 						<SpecProfile user={selectedUser} handleUserClick={handleUserClick} />
 					</Popup>
 				)}
-				<Invitaion />
+				<Invitation />
 			</div>
 		</div>
 	);

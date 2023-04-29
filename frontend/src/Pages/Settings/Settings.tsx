@@ -5,7 +5,7 @@ import Popup from "../Popup/Popup.tsx";
 import { UserContext } from "../../context/UserContext";
 import { useContext } from "react";
 import { SHA256 } from "crypto-js";
-import Invitaion from "../Invitaion/Invitaion";
+import Invitation from "../Invitation/Invitation";
 import Blob from "../Blob/Blob";
 
 export default function Settings() {
@@ -522,7 +522,7 @@ export default function Settings() {
 							</div>
 						</div>
 					</Popup>
-					<Invitaion />
+					<Invitation />
 				</div>
 			</div>
 		</div>

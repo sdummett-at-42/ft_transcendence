@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Achievements.css";
 import Blob from "../Blob/Blob";
-import Invitaion from "../Invitaion/Invitaion";
+import Invitation from "../Invitation/Invitation";
 
 export default function InitAchievements({ userId, showLocked, showBlob }) {
 	const [achievements, setAchievements] = useState([]);

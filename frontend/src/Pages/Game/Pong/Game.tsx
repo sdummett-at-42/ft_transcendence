@@ -7,7 +7,7 @@ import Result from "./Result/Result";
 import { UserContext } from "../../../context/UserContext"
 import { Shape, Player } from "../../../../../backend/src/modules/game/entities/game.entities"
 import { useNavigate } from "react-router-dom";
-import Invitaion from "../../Invitaion/Invitaion";
+import Invitation from "../../Invitation/Invitation";
 
 export default function Game() {
     const navigate = useNavigate();
@@ -137,7 +137,7 @@ export default function Game() {
         return (
             <div>
                 <Result data={[victory[0], victory[1], victory[2], victory[3]]}/>
-                <Invitaion />
+                <Invitation />
             </div>
         )
     }
@@ -158,7 +158,7 @@ export default function Game() {
                 </div>
                 <Canvas elements={elements} idGame={id} socketRef={gameSocketTemp} victory={victory}/>
             </div>
-            <Invitaion />
+            <Invitation />
         </div>
     )
 }
