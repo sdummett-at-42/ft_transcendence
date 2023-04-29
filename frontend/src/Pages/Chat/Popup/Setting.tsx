@@ -106,7 +106,7 @@ const handleEscape = (event) => {
               <div className="RoomCreate-screen-card-content-body">
                   <h3 className="Profile-screen-card-title">Paramètre {props.roomName}</h3>
                   <div className="RoomSettings-wrapper">
-                      <label htmlFor="inputAccess" className='Profile-screen-card-text'>Accessibilité</label>
+                      <label htmlFor="inputAccess" className='Profile-screen-card-text'>Visibilité</label>
                       <select name="visibility" className="RoomCreate-screen-card-select" onKeyDown={handleEnter} value={access} onChange={(e) => setAccess(e.target.value)}>
                           <option value="public" className='RoomCreate-screen-card-option'>Public</option>
                           <option value="private" className='RoomCreate-screen-card-option'>Privé</option>

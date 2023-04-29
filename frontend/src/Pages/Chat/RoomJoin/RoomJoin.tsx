@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import "../RoomCreate/RoomCreate.css"
 import { Socket } from "socket.io-client";
-import PublicRooms from '../PublicRooms/PublicRooms';
+import PublicRooms from './PublicRooms/PublicRooms';
 
 interface RoomJoinProps {
     socket: Socket;

@@ -110,7 +110,7 @@ export default function RoomCreate(props: RoomCreatProps) {
                       {errorMessage.roomName && (<div className='Settings-error'>{errorMessage.roomName}</div>)}
                       <div className="RoomCreate-screen-card-input-wrapper">
                           <label htmlFor="inputAccess" className="Profile-screen-card-text"> 
-                              Accessibilité
+                              Visibilité
                           </label>
                           <select
                               name="visibility"

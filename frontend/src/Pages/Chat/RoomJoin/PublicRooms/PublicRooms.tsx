@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "./PublicRooms.css";
 // the component will emit joinRoom event to the server
 
 export default function PublicRooms({ socket }) {
@@ -6,7 +7,6 @@ export default function PublicRooms({ socket }) {
 
 	// emit via the socket the event "getRoomsList"
 	useEffect(() => {
-		console.log(`EMITTING getRoomsList`);
 		socket.emit("getRoomsList");
 	}, [socket]);
 
@@ -19,12 +19,7 @@ export default function PublicRooms({ socket }) {
 
 	const handleRoomsList = ({ roomsList }) => {
 		// {"roomsList":[{"roomName":"PUBLICCC","protected":false}]}}
-		console.log(`ROOMS: ${JSON.stringify(roomsList)}}`);
 		setRooms(roomsList);
-	};
-
-	const handleJoinRoom = (roomName) => {
-		socket.emit("joinRoom", roomName);
 	};
 
 	return (
@@ -38,13 +33,7 @@ export default function PublicRooms({ socket }) {
 					<div key={i} className="room">
 						<div className="room-name">{room.roomName}</div>
 						<div className="room-visibility">
-							{room.protected ? "Privé" : "Public"}
-						</div>
-						<div
-							className="room-join"
-							onClick={() => handleJoinRoom(room.roomName)}
-						>
-							Rejoindre
+							{room.protected ? "Protege" : "Public"}
 						</div>
 					</div>
 				))}

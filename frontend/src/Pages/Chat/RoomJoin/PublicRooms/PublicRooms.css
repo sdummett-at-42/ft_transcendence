@@ -1,0 +1,35 @@
+.rooms {
+	display: flex;
+	flex-wrap: wrap;
+  }
+  
+  .room {
+	margin: 10px;
+	padding: 10px;
+	border: 1px solid #2163f3; /* updated border color */
+	border-radius: 5px;
+	background-color: transparent; /* updated background */
+  }
+  
+  .room-name {
+	font-weight: bold;
+  }
+  
+  .room-visibility {
+	margin-top: 5px;
+	font-style: italic;
+  }
+  
+  .room-join {
+	margin-top: 5px;
+	padding: 5px;
+	background-color: #007bff;
+	color: #fff;
+	border-radius: 5px;
+	cursor: pointer;
+  }
+  
+  .room-join:hover {
+	background-color: #0069d9;
+  }
+  
