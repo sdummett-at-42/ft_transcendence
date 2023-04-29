@@ -94,7 +94,12 @@ export default function LoginSelector() {
 			}
 		}
 	};
-
+	const handlePasswordKeyDown = (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault(); // Prevent form submission on Enter key press
+			handleLoginForm();
+		}
+	}
 	useEffect(() => {
 		if (!isLoading && user)
 			naviguate("/home");
@@ -146,6 +151,7 @@ export default function LoginSelector() {
 									ref={passwordInputRef}
 									required
 									autoComplete="off"
+									onKeyDown={handlePasswordKeyDown}
 								/>
 								{errorMessages.password && (
 									<p className="LoginSelector-error">

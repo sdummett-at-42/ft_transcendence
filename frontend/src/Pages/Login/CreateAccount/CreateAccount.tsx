@@ -119,6 +119,15 @@ export default function CreateAccount() {
 		});
 	}
 
+	const handlePasswordKeyDown = (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault(); // Prevent form submission on Enter key press
+			handleLoginForm();
+		}
+	}
+
+
+
 	useEffect(() => {
 		if (!isLoading && user) naviguate("/home");
 	}, [user, naviguate, isLoading]);
@@ -198,6 +207,7 @@ export default function CreateAccount() {
 									type="password"
 									minLength={8}
 									ref={checkpasswordInputRef}
+									onKeyDown={handlePasswordKeyDown}
 									placeholder="Confirmer le mot de passe"
 									required
 								/>
