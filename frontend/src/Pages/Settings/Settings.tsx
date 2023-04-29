@@ -45,12 +45,12 @@ export default function Settings() {
 
 	// Handle user logout
 	function handleLogout() {
-		fetch("http://localhost:3001/auth/logout", {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/auth/logout`, {
 			method: "DELETE",
 			credentials: "include",
 		})
 			.then(() => {
-				window.location.href = "http://localhost:5173/";
+				window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
 			})
 			.catch((error) => {
 				console.error("Logout failed: ", error);
@@ -90,7 +90,7 @@ export default function Settings() {
 		formData.append("image", selectedFile);
 		try {
 			const response = await fetch(
-				`http://localhost:3001/images/${user.id}`,
+				`${import.meta.env.VITE_BACKENDURL}/images/${user.id}`,
 				{
 					method: "PATCH",
 					credentials: "include",
@@ -156,7 +156,7 @@ export default function Settings() {
 			}));
 			return;
 		}
-		fetch("http://localhost:3001/users/me", {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -184,7 +184,7 @@ export default function Settings() {
 	async function handle2faToggle() {
 		if (!user.twofactorIsEnabled) {
 			const response = await fetch(
-				"http://localhost:3001/auth/2fa/generate",
+				`${import.meta.env.VITE_BACKENDURL}/auth/2fa/generate`,
 				{
 					method: "GET",
 					credentials: "include",
@@ -196,7 +196,7 @@ export default function Settings() {
 			setDfaIsOpen(true);
 		} else {
 			const response = await fetch(
-				"http://localhost:3001/auth/2fa/disable",
+				`${import.meta.env.VITE_BACKENDURL}/auth/2fa/disable`,
 				{
 					method: "PATCH",
 					credentials: "include",
@@ -233,7 +233,7 @@ export default function Settings() {
 		}
 		try {
 			const response = await fetch(
-				"http://localhost:3001/auth/2fa/verify",
+				`${import.meta.env.VITE_BACKENDURL}/auth/2fa/verify`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -287,7 +287,7 @@ export default function Settings() {
 			return;
 		}
 
-		fetch("http://localhost:3001/users/me", {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
 			method: "DELETE",
 			credentials: "include",
 			body: JSON.stringify({ password: SHA256(password).toString() }),
@@ -295,7 +295,7 @@ export default function Settings() {
 		}).then((response) => {
 			if (response.status === 204) {
 				handleDelClose();
-				window.location.href = "http://localhost:5173/";
+				window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
 			} else {	
 				setErrorMessage((prevErrors) => ({
 					...prevErrors,

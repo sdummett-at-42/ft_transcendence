@@ -13,7 +13,7 @@ export default function InitStats({ user }) {
  
 	// Fetch match data
 	useEffect(() => {
-		fetch(`http://localhost:3001/users/${user.id}/matchs`, {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/users/${user.id}/matchs`, {
 			method: "GET",
 			credentials: "include",
 		})
@@ -25,7 +25,7 @@ export default function InitStats({ user }) {
 	// Fetch users
 	useEffect(() => {
 		async function fetchUsers() {
-			const response = await fetch("http://localhost:3001/users/", {
+			const response = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/`, {
 				method: "GET",
 				credentials: "include",
 			});
@@ -63,13 +63,13 @@ function UserList({ users, match }) {
 		
 			// Fetch user data for each winner and loser
 			const matchData = await Promise.all(allMatches.map(async (match) => {
-				const winnerRes = await fetch(`http://localhost:3001/users/${match.winnerId}`, {
+				const winnerRes = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/${match.winnerId}`, {
 					method: "GET",
 					credentials: "include",
 				});
 				const winnerData = await winnerRes.json();
 			
-				const loserRes = await fetch(`http://localhost:3001/users/${match.looserId}`, {
+				const loserRes = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/${match.looserId}`, {
 					method: "GET",
 					credentials: "include",
 				});
@@ -91,7 +91,7 @@ function UserList({ users, match }) {
 	// Fetch all users
 	useEffect(() => {
 		const fetchUsers = async () => {
-			const res = await fetch("http://localhost:3001/users", {
+			const res = await fetch(`${import.meta.env.VITE_BACKENDURL}/users`, {
 				method: "GET",
 				credentials: "include",
 			});

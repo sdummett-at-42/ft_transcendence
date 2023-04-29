@@ -21,7 +21,7 @@ export default function SearchBar(props) {
 
     // fetch user database
     const fetchData = async (value) => {
-        await fetch("http://localhost:3001/users", {
+        await fetch(`${import.meta.env.VITE_BACKENDURL}/users`, {
             method: "GET",
             credentials: "include"
         })

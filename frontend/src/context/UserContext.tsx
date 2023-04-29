@@ -20,7 +20,7 @@ const UserContextProvider = ({ children }: any) => {
 	const gameSocketRef = useRef({});
 	if (!rendered) {
 		notificationSocketRef.current = io(
-			"http://localhost:3001/notifications",
+			`${import.meta.env.VITE_BACKENDURL}/notifications`,
 			{
 				auth: {
 					token: Cookies.get("connect.sid"),
@@ -28,7 +28,7 @@ const UserContextProvider = ({ children }: any) => {
 			}
 		);
 
-		gameSocketRef.current = io("http://localhost:3001/game", {
+		gameSocketRef.current = io(`${import.meta.env.VITE_BACKENDURL}/game`, {
 			auth: {
 				token: Cookies.get("connect.sid"),
 				//url: window.location.href,
@@ -39,7 +39,7 @@ const UserContextProvider = ({ children }: any) => {
 
 	useEffect(() => {
 		const fetchUserData = async () => {
-			const response = await fetch("http://localhost:3001/users/me", {
+			const response = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
 				credentials: "include",
 				method: "GET",
 			});

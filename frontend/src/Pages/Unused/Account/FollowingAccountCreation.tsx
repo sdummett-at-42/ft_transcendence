@@ -19,7 +19,7 @@ export default function FollowingAccountCreation() {
 
 	useEffect(() => {
 		async function fetchData() {
-			const res = await fetch(`http://localhost:3001/users/me`, {
+			const res = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
 				method: "GET",
 				headers: { "Content-Type": "application/json" },
 				credentials: "include",
@@ -76,7 +76,7 @@ export default function FollowingAccountCreation() {
 			return;
 		}
 
-		fetch(`http://localhost:3001/images/${myUser.id}`, {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/images/${myUser.id}`, {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -94,7 +94,7 @@ export default function FollowingAccountCreation() {
 			});
 
 
-		fetch("http://localhost:3001/users/me", {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",

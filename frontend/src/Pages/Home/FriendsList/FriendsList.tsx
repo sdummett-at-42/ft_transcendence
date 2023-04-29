@@ -37,7 +37,7 @@ export default function FriendsList() {
     useEffect(() => {
         async function getFriends() {
             // Get all friends of the user from the database and set the state
-            const ListOfFriends = await fetch("http://localhost:3001/friends", {
+            const ListOfFriends = await fetch(`${import.meta.env.VITE_BACKENDURL}/friends`, {
                 credentials: 'include',
                 method: 'GET'
             })
@@ -48,7 +48,7 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-            const ListOfUsers = await fetch("http://localhost:3001/users", {
+            const ListOfUsers = await fetch(`${import.meta.env.VITE_BACKENDURL}/users`, {
                 credentials: 'include',
                 method: 'GET'
                 })
@@ -65,7 +65,7 @@ export default function FriendsList() {
 
         async function getPendingFriends() {
             // Get all received friend requests of the user from the database and set the state
-            const ReceivedPendingFriends = await fetch("http://localhost:3001/friends/requests/received", {
+            const ReceivedPendingFriends = await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests/received`, {
                 credentials: 'include',
                 method: 'GET'
             })
@@ -81,7 +81,7 @@ export default function FriendsList() {
 
         async function getRequestFriends() {
             // Get all sended friend requests of the user from the database and set the state
-            const SentPendingFriends = await fetch("http://localhost:3001/friends/requests/sended", {
+            const SentPendingFriends = await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests/sended`, {
                 credentials: 'include',
                 method: 'GET'
             })
@@ -104,7 +104,7 @@ export default function FriendsList() {
     const handleFriendRequest = (data) => {
         async function getPendingFriends() {
             // Get all received friend requests of the user from the database and set the state
-            const ReceivedPendingFriends = await fetch("http://localhost:3001/friends/requests/received", {
+            const ReceivedPendingFriends = await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests/received`, {
                 credentials: 'include',
                 method: 'GET'
             })
@@ -123,7 +123,7 @@ export default function FriendsList() {
     const handleFriendRequestAccepted = (data) => {
         async function getFriends() {
             // Get all friends of the user from the database and set the state
-            const ListOfFriends = await fetch("http://localhost:3001/friends", {
+            const ListOfFriends = await fetch(`${import.meta.env.VITE_BACKENDURL}/friends`, {
                 credentials: 'include',
                 method: 'GET'
             })
@@ -134,7 +134,7 @@ export default function FriendsList() {
                     else if (res.status == 200) {
                         return res.json();
                 }});
-            const ListOfUsers = await fetch("http://localhost:3001/users", {
+            const ListOfUsers = await fetch(`${import.meta.env.VITE_BACKENDURL}/users`, {
                 credentials: 'include',
                 method: 'GET'
             })
@@ -231,7 +231,7 @@ export default function FriendsList() {
     // Handle the search bar input
     const addFriend = async (friend:string) => {
         // Fetch the user list from the database and filter the user that matches the input
-        const getUser = await fetch("http://localhost:3001/users", {
+        const getUser = await fetch(`${import.meta.env.VITE_BACKENDURL}/users`, {
             credentials: 'include',
             method: 'GET'
         })
@@ -262,7 +262,7 @@ export default function FriendsList() {
         }
 
         // Send friend request
-        await fetch("http://localhost:3001/friends/requests", {
+        await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -286,7 +286,7 @@ export default function FriendsList() {
     }
 
     const AcceptFriend = async (friend:UserData) => {
-        await fetch("http://localhost:3001/friends/requests", {
+        await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests`, {
             credentials: 'include',
             method: 'PATCH',
             headers: {
@@ -308,7 +308,7 @@ export default function FriendsList() {
     }
 
     const RefusedFriend = async (friend:UserData) => {
-        await fetch("http://localhost:3001/friends/requests/received", {
+        await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests/received`, {
             credentials: 'include',
             method: 'DELETE',
             headers: {
@@ -329,7 +329,7 @@ export default function FriendsList() {
     }
 
     const CancelRequest = async (friend:UserData) => {
-        await fetch("http://localhost:3001/friends/requests/sended", {
+        await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests/sended`, {
             credentials: 'include',
             method: 'DELETE',
             headers: {
@@ -350,7 +350,7 @@ export default function FriendsList() {
     }
 
     const RemoveFriend = async (friend:UserData) => {
-        await fetch("http://localhost:3001/friends", {
+        await fetch(`${import.meta.env.VITE_BACKENDURL}/friends`, {
             credentials: 'include',
             method: 'DELETE',
             headers: {

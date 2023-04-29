@@ -13,7 +13,7 @@ export default function TwoFactor() {
 
 	const handleSubmit = (event) => {
 		event.preventDefault();
-		fetch("http://localhost:3001/auth/2fa/validate", {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/auth/2fa/validate`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ otp }),

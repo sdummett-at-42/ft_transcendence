@@ -31,7 +31,7 @@ export default function Game() {
     // deconnecter socket
 
     if (!boolSocket) {
-        gameSocketTemp.current = io("http://localhost:3001/game", {
+        gameSocketTemp.current = io(`${import.meta.env.VITE_BACKENDURL}/game`, {
 			auth: {
 				token: Cookies.get("connect.sid"),
 				url: window.location.href,
@@ -113,7 +113,7 @@ export default function Game() {
     // Fetch all users
     useEffect(() => {
         async function GetAllUsers() {
-            const response = await fetch("http://localhost:3001/users", {
+            const response = await fetch(`${import.meta.env.VITE_BACKENDURL}/users`, {
                 method: "GET",
                 credentials: "include",
             });

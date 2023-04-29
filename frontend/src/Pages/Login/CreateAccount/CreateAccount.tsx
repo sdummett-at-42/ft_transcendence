@@ -83,7 +83,7 @@ export default function CreateAccount() {
 		// Hash password
 		const hashedPassword = SHA256(password).toString();
 
-		fetch("http://localhost:3001/auth/local", {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/auth/local`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",

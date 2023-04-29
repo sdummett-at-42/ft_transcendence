@@ -29,7 +29,7 @@ export default function LoginFortyTwo() {
 
                         <div className="LoginSelector-card-subtitle">
 
-                            <a href="http://localhost:3001/auth/42/login" className="FortyTwoLogin-button">
+                            <a href={`${import.meta.env.VITE_BACKENDURL}/auth/42/login`} className="FortyTwoLogin-button">
                                 <div className="FortyTwoLogin-button-content">
                                     Se connecter
                                 </div>

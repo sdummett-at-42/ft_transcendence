@@ -24,7 +24,7 @@ export default function ChatLogin() {
   const { userId, userName } = useParams();
 
   const handleUpdateDatabase = async () => {
-    await fetch("http://localhost:3001/users/", {
+    await fetch(`${import.meta.env.VITE_BACKENDURL}/users/`, {
       method: "GET",
       credentials: "include"
     })
@@ -81,7 +81,7 @@ export default function ChatLogin() {
 
   useEffect(() => {
       const fetchData = async () => {
-          await fetch("http://localhost:3001/users/", {
+          await fetch(`${import.meta.env.VITE_BACKENDURL}/users/`, {
               method: "GET",
               credentials: "include"
           })
@@ -98,7 +98,7 @@ export default function ChatLogin() {
   useEffect(() => {
     const fetchData = async () => {
 
-      await fetch("http://localhost:3001/users/me", {
+      await fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
         method: "GET",
         credentials: "include"
       })
@@ -129,7 +129,7 @@ export default function ChatLogin() {
   },[])
 
   useEffect(() => {
-    socket = io("http://localhost:3001", {
+    socket = io(`${import.meta.env.VITE_BACKENDURL}`, {
       auth: {
         token: Cookies.get('connect.sid')
       }

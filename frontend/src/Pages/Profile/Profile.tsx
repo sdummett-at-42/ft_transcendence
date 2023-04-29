@@ -9,7 +9,7 @@ export default function Profile({ user }) {
 	
 	useEffect(() => {
 		// Fetch match data
-		fetch(`http://localhost:3001/users/${user.id}/matchs`, {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/users/${user.id}/matchs`, {
 			method: "GET",
 			credentials: "include",
 		})
@@ -62,12 +62,12 @@ function DisplayProfile({ user, match }) {
 	useEffect(() => {
 		async function fetchAchievements(userId: number) {
 			const [userAchievementsRes, allAchievementsRes] = await Promise.all([
-				fetch(`http://localhost:3001/users/${userId}/achievements`, {
+				fetch(`${import.meta.env.VITE_BACKENDURL}/users/${userId}/achievements`, {
 					method: "GET",
 					headers: { "Content-Type": "application/json" },
 					credentials: "include",
 				}),
-				fetch("http://localhost:3001/achievements", {
+				fetch(`${import.meta.env.VITE_BACKENDURL}/achievements`, {
 					method: "GET",
 					headers: { "Content-Type": "application/json" },
 					credentials: "include",
@@ -98,13 +98,13 @@ function DisplayProfile({ user, match }) {
 			
 			// Fetch user data for each winner and loser
 			const matchData = await Promise.all(allMatches.map(async (match) => {
-				const winnerRes = await fetch(`http://localhost:3001/users/${match.winnerId}`, {
+				const winnerRes = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/${match.winnerId}`, {
 					method: "GET",
 					credentials: "include",
 				});
 				const winnerData = await winnerRes.json();
 				
-				const loserRes = await fetch(`http://localhost:3001/users/${match.looserId}`, {
+				const loserRes = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/${match.looserId}`, {
 					method: "GET",
 					credentials: "include",
 				});
@@ -126,7 +126,7 @@ function DisplayProfile({ user, match }) {
 	// Fetch all users
 	useEffect(() => {
 		const fetchUsers = async () => {
-			const res = await fetch("http://localhost:3001/users", {
+			const res = await fetch(`${import.meta.env.VITE_BACKENDURL}/users`, {
 				method: "GET",
 				credentials: "include",
 			});

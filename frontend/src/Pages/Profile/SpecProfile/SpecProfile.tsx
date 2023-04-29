@@ -10,7 +10,7 @@ export default function SpecProfile({ user, handleUserClick }) {
     // fetch all users
     useEffect(() => {
         async function GetAllUsers() {
-            const response = await fetch("http://localhost:3001/users", {
+            const response = await fetch(`${import.meta.env.VITE_BACKENDURL}/users`, {
                 method: "GET",
                 credentials: "include",
             });
@@ -27,7 +27,7 @@ export default function SpecProfile({ user, handleUserClick }) {
         setAllMatches([]);
 
         async function GetAllMatches() {
-            const response = await fetch(`http://localhost:3001/users/${user.id}/matchs`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/${user.id}/matchs`, {
 				method: "GET",
 				credentials: "include",
 			});

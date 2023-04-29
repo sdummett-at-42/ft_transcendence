@@ -59,6 +59,9 @@ services:
     build: ./frontend
     restart: always
     container_name: frontend
+    environment:
+      - VITE_BACKENDURL=${VITE_BACKENDURL}
+      - VITE_FRONTENDURL=${VITE_FRONTENDURL}
     volumes:
       - ./frontend/src:/app/src
     ports:

@@ -46,7 +46,7 @@ export default function LoginSelector() {
 
 		const hashedPassword = SHA256(password).toString();
 
-		fetch("http://localhost:3001/auth/local", {
+		fetch(`${import.meta.env.VITE_BACKENDURL}/auth/local`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -165,7 +165,7 @@ export default function LoginSelector() {
 							<div className="LoginSelector-card-subtitle">
 
 								<a
-									href="http://localhost:3001/auth/42/login"
+									href={`${import.meta.env.VITE_BACKENDURL}/auth/42/login`}
 									className="FortyTwoLogin-button"
 									>
 										<div className="FortyTwoLogin-button-content">

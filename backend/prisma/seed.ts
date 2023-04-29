@@ -27,7 +27,7 @@ async function main() {
 	await prisma.user.update({
 		where: { id: 0 },
 		data: {
-			profilePicture: `http://localhost:3001/api/images/${defaultUser.id}`
+			profilePicture: `${process.env.BACKENDURL}/api/images/${defaultUser.id}`
 		}
 	})
 	const defaultImage = await prisma.image.upsert({

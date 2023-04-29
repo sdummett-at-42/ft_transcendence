@@ -10,14 +10,14 @@ export default function InitAchievements({ userId, showLocked }) {
 			const [userAchievementsRes, allAchievementsRes] = await Promise.all(
 				[
 					fetch(
-						`http://localhost:3001/users/${userId}/achievements`,
+						`${import.meta.env.VITE_BACKENDURL}/users/${userId}/achievements`,
 						{
 							method: "GET",
 							headers: { "Content-Type": "application/json" },
 							credentials: "include",
 						}
 					),
-					fetch("http://localhost:3001/achievements", {
+					fetch(`${import.meta.env.VITE_BACKENDURL}/achievements`, {
 						method: "GET",
 						headers: { "Content-Type": "application/json" },
 						credentials: "include",
