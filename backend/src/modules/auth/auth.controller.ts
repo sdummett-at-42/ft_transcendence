@@ -10,6 +10,7 @@ import { AuthService } from "./auth.service";
 import { SecretQrCodeEntity } from "./utils/2fa.entity";
 import { LocalDto } from "./dto/local.dto";
 import { AchievementService } from '../achievements/achievements.service';
+import { ConfigService } from "@nestjs/config";
 
 
 
@@ -20,7 +21,8 @@ export class AuthController {
 
 	constructor(
 		private readonly achievement : AchievementService,
-		private readonly auth: AuthService) { }
+		private readonly auth: AuthService,
+		private readonly config: ConfigService) { }
 
 	@Post('/local')
 	@HttpCode(201)
@@ -90,7 +92,7 @@ export class AuthController {
 			return this.handle2fa(userId, email, res);
 
 		req.logIn(req.user, (err) => {
-			res.status(200).redirect("http://localhost:5173/home")
+			res.status(200).redirect(`${this.config.get("FRONTENDURL")}/home`)
 		});
 	}
 
@@ -198,6 +200,6 @@ export class AuthController {
 	private async handle2fa(userId: number, email: string, res) {
 		const cookie = await this.set2faCookie(userId, email);
 		res.setHeader('Set-Cookie', cookie);
-		res.status(302).redirect("http://localhost:5173/login/2fa")
+		res.status(302).redirect(`${this.config.get("FRONTENDURL")}/login/2fa`)
 	}
 }

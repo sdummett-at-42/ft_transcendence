@@ -30,6 +30,8 @@ import { AchievementModule } from './modules/achievements/achievements.module';
 				FORTYTWO_CLIENT_SECRET: Joi.string().required(),
 				FORTYTWO_CALLBACK_URL: Joi.string().required(),
 				ISSUER: Joi.string().required(),
+				FRONTENDURL: Joi.string().required(),
+				BACKENDURL: Joi.string().required(),
 			})
 		}),
 		AuthModule,

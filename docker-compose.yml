@@ -37,6 +37,8 @@ services:
       - FORTYTWO_CLIENT_SECRET=${FORTYTWO_CLIENT_SECRET}
       - FORTYTWO_CALLBACK_URL=${FORTYTWO_CALLBACK_URL}
       - ISSUER=${ISSUER}
+      - BACKENDURL=${BACKENDURL}
+      - FRONTENDURL=${FRONTENDURL}
     volumes:
       - ./backend/src:/app/src
     ports:

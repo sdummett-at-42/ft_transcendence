@@ -4,12 +4,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { randomBytes } from 'crypto';
 import { ImagesService } from '../images/images.service';
 import { LoginMethod } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly images: ImagesService,
+		private readonly config: ConfigService,
 	) { }
 
 	async create(loginMethod: LoginMethod, email: string, username: string, image: { base64: string, mimeType: string }) {
@@ -33,7 +35,7 @@ export class UsersService {
 		return this.prisma.user.update({
 			where: { id: user.id },
 			data: {
-				profilePicture: `http://localhost:3001/images/${user.id}`,
+				profilePicture: `${this.config.get("BACKENDURL")}/images/${user.id}`,
 			},
 			select: {
 				id: true,
@@ -64,7 +66,7 @@ export class UsersService {
 		return this.prisma.user.update({
 			where: { id: user.id },
 			data: {
-				profilePicture: `http://localhost:3001/images/${user.id}`,
+				profilePicture: `${this.config.get("BACKENDURL")}/images/${user.id}`,
 			},
 			select: {
 				id: true,

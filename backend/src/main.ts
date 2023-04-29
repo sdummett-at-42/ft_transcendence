@@ -14,7 +14,7 @@ async function bootstrap() {
 	const config = app.get(ConfigService);
 
 	// Enable cors
-	app.enableCors({origin: 'http://localhost:5173', credentials: true});
+	app.enableCors({origin: `${config.get("FRONTENDURL")}`, credentials: true});
 
 	// Session
 	const RedisStore = connectRedis(session);
