@@ -7,6 +7,8 @@ import Cookies from 'js-cookie';
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import Invitaion from "../Invitaion/Invitaion";
+import Blob from "../Blob/Blob";
+
 export const DatabaseContext = createContext();
 
 let socket;
@@ -164,6 +166,7 @@ export default function ChatLogin() {
   } else {
     return (
       <div className="Chat-body">
+			<Blob />
           <div className="Chat-container">
             <DatabaseContext.Provider value={database}>
               <ChatroomList socket={socket} onListClick={handleListClick} onUpdate={handleChildComponentUpdate} ifDM={ifDM} toDMID={toDMID} ifDataReady={ifDataReady} />

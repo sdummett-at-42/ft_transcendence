@@ -4,6 +4,8 @@ import InitAchievements from "../Achievements/Achievements";
 import Popup from "../Popup/Popup";
 import SpecProfile from "./SpecProfile/SpecProfile";
 import Invitaion from "../Invitaion/Invitaion";
+import Blob from "../Blob/Blob";
+
 export default function Profile({ user }) {
 	const [matchData, setMatchData] = useState(null);
 	
@@ -154,19 +156,6 @@ function DisplayProfile({ user, match }) {
 			match2Ref.current.style.strokeDashoffset = offset.toString();
 		};
 	}, [matchLost, matchWon]);
-	
-	// Handle blob movement
-	useEffect(() => {
-		const blob = document.getElementById("blob");
-		
-		window.onpointermove = (event: PointerEvent) => {
-			const { clientX, clientY } = event;
-			blob?.animate({
-				left: `${clientX}px`,
-				top: `${clientY}px`,
-			}, { duration: 3000, fill: "forwards" });
-		};
-	}, []);
 
 	// Return the percentage of unlocked achievements
 	const SuccesResult = () => {
@@ -317,8 +306,7 @@ function DisplayProfile({ user, match }) {
 
 	return (
 		<div>
-			<div id="blob"></div>
-			<div id="blur"></div>
+			<Blob/>
 			<div className="Profile">
 
 				<div className="Profile-header">
@@ -362,7 +350,7 @@ function DisplayProfile({ user, match }) {
     								</div>
   								</div>
 								<div className="Profile-screen-achivement-user">
-									<InitAchievements userId={user.id} showLocked={showLocked}/>
+									<InitAchievements userId={user.id} showLocked={showLocked} showBlob={false}/>
 								</div>
 							</div>
 						</div>

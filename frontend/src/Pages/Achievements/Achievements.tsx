@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./Achievements.css";
+import Blob from "../Blob/Blob";
 import Invitaion from "../Invitaion/Invitaion";
 
-export default function InitAchievements({ userId, showLocked }) {
+export default function InitAchievements({ userId, showLocked, showBlob }) {
 	const [achievements, setAchievements] = useState([]);
 
 	useEffect(() => {
@@ -47,10 +48,12 @@ export default function InitAchievements({ userId, showLocked }) {
 	}, [userId]);
 	
 	
-	return <Achievements achievements={achievements} showLocked={showLocked} />;
+	return (
+			<Achievements achievements={achievements} showLocked={showLocked} showBlob={showBlob} />
+	);
 }
 
-function Achievements({ achievements, showLocked }) {	
+function Achievements({ achievements, showLocked, showBlob }) {
 	const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#800080', '#FFA500', '#008080', '#FFC0CB', '#000080', '#008000', '#800000', '#808000', '#808080', '#C0C0C0', '#FF6347'];
 
 	const itemsWithGradient = achievements.map((achievement, index) => {
@@ -76,7 +79,10 @@ function Achievements({ achievements, showLocked }) {
 	});
 
 	return (
-		<div className="achievements">
-			{itemsWithGradient}
+		<div>
+			{showBlob ? <Blob/> : null}
+			<div className="achievements">
+				{itemsWithGradient}
+			</div>
 		</div>);
 }

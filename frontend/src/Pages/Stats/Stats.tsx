@@ -3,6 +3,7 @@ import "./Stats.css";
 import Popup from "../Popup/Popup";
 import SpecProfile from "../Profile/SpecProfile/SpecProfile";
 import Invitaion from "../Invitaion/Invitaion";
+import Blob from "../Blob/Blob";
 import FriendsList from "../Home/FriendsList/FriendsList";
 
 export default function InitStats({ user }) {
@@ -121,6 +122,7 @@ function UserList({ users, match }) {
 
 	return (
 		<div>
+			<Blob/>
 			<div className="Stats">
 				<h1>Classement</h1>
 				<div className={`${filteredUsers.length === 0 ? "Stats-table-empty" : "Stats-table-container"}`}>

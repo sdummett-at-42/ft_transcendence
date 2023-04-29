@@ -7,6 +7,7 @@ import ModeSelector from "./ModeSelector/ModeSelector";
 import Custom from "./Custom/Custom";
 import Ranked from "./Ranked/Ranked";
 import Invitaion from "../../Invitaion/Invitaion";
+import Blob from "../../Blob/Blob";
 
 export default function Lobby() {
 
@@ -35,6 +36,7 @@ export default function Lobby() {
 
     return (
         <div className="Lobby">
+			<Blob />
             <div className="Lobby-content">
                 {dispSelector && (
                     <ModeSelector setDispSelector={setDispSelector} setRanked={setRanked} setCustom={setCustom} />

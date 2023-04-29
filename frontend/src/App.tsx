@@ -49,6 +49,7 @@ function App() {
 									<InitAchievements
 										userId={user.id}
 										showLocked={true}
+										showBlob={true}
 									/>
 								}
 							/>
