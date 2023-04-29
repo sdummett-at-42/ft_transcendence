@@ -333,23 +333,23 @@ function DisplayProfile({ user, match }) {
 
 				<div className="Profile-body">
 
-					<div className="Profile-screen-achivement">
-						<div className="Profile-screen-achivement-overlay"></div>
-						<div className="Profile-screen-achivement-content">
-							<div className="Profile-screen-achivement-content-body">
-								<span className="Profile-screen-card-title Profile-achivement-button" data-value="Succès" onMouseOver={SuccesCascade} ref={succesRef} onClick={toggleUnlock}>Succès</span>
-								<div className="Profile-achivement-progress">
-    								<div className="Profile-achivement-progress-bar">
-      									<svg className="Profile-achivement-svg">
+					<div className="Profile-screen-achievement">
+						<div className="Profile-screen-achievement-overlay"></div>
+						<div className="Profile-screen-achievement-content">
+							<div className="Profile-screen-achievement-content-body">
+								<span className="Profile-screen-card-title Profile-achievement-button" data-value="Succès" onMouseOver={SuccesCascade} ref={succesRef} onClick={toggleUnlock}>Succès</span>
+								<div className="Profile-achievement-progress">
+    								<div className="Profile-achievement-progress-bar">
+      									<svg className="Profile-achievement-svg">
         									<circle cx="50" cy="50" r="50" ref={succes1Ref}></circle>
         									<circle cx="50" cy="50" r="50" ref={succes2Ref}></circle>
       									</svg>
-      									<div className="Profile-achivement-progress-number">
+      									<div className="Profile-achievement-progress-number">
        										<h2>{SuccesResult()}<span>%</span></h2>
       									</div>
     								</div>
   								</div>
-								<div className="Profile-screen-achivement-user">
+								<div className="Profile-screen-achievement-user">
 									<InitAchievements userId={user.id} showLocked={showLocked} showBlob={false}/>
 								</div>
 							</div>

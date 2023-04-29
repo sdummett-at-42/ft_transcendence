@@ -34,7 +34,7 @@ export default function Navbar() {
 					<Link
 						to="/achievements"
 						style={{ textDecoration: "none", color: "whitesmoke" }}
-						id="Navbar-achivement"
+						id="Navbar-achievement"
 					>
 						Succès
 					</Link>
