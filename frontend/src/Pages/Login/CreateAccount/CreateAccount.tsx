@@ -27,7 +27,7 @@ export default function CreateAccount() {
 	const passwordInputRef = useRef(null);
 	const checkpasswordInputRef = useRef(null);
 	const [errorMessages, setErrorMessages] = useState({});
-	const naviguate = useNavigate();
+	const navigate = useNavigate();
 
 	function handleLoginForm() {
 		const username = usernameInputRef.current.value;
@@ -96,7 +96,7 @@ export default function CreateAccount() {
 		}).then((res) => {
 			if (res.status == 201) {
 				setLastUpdate(Date.now());
-				// naviguate("/home");
+				// navigate("/home");
 				window.location.href = '/home';
 				return;
 			} else if (res.status == 409) {
@@ -129,8 +129,8 @@ export default function CreateAccount() {
 
 
 	useEffect(() => {
-		if (!isLoading && user) naviguate("/home");
-	}, [user, naviguate, isLoading]);
+		if (!isLoading && user) navigate("/home");
+	}, [user, navigate, isLoading]);
 
 	if (isLoading || user) {
 		return <Loading />;

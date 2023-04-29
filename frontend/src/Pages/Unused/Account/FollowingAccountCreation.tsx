@@ -11,7 +11,7 @@ export default function FollowingAccountCreation() {
 	const [image, setImage] = useState("");
 	const [loading, setLoading] = useState(true);
 	const usernameInputRef = useRef(null);
-	const naviguate = useNavigate();
+	const navigate = useNavigate();
 	const location = useLocation();
 	const myProps = location.state;
 	const [myUser, setMyUser] = useState({});
@@ -106,15 +106,15 @@ export default function FollowingAccountCreation() {
 		}).then((res) => {
 			if (res.status == 200) {
 				setLastUpdate(Date.now());
-				naviguate("/home");
+				navigate("/home");
 				return;
 			}
 		});
 	}
 
 	useEffect(() => {
-		if (!isLoading && user) naviguate("/home");
-	}, [user, naviguate, isLoading]);
+		if (!isLoading && user) navigate("/home");
+	}, [user, navigate, isLoading]);
 
 	if (isLoading || user) {
 		return <Loading />;

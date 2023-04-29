@@ -9,7 +9,7 @@ import { SHA256 } from "crypto-js";
 
 export default function LoginSelector() {
 	const { user, isLoading, setLastUpdate } = useContext(UserContext);
-	const naviguate = useNavigate();
+	const navigate = useNavigate();
 
 	const usernameInputRef = useRef();
 	const passwordInputRef = useRef();
@@ -58,7 +58,7 @@ export default function LoginSelector() {
 		}).then((res) => {
 			if (res.status == 201) {
 				setLastUpdate(Date.now());
-				// naviguate("/home");
+				// navigate("/home");
 				window.location.href = '/home';
 				return;
 			} else if (res.status == 400) {
@@ -75,7 +75,7 @@ export default function LoginSelector() {
 				}));
 				return;
 			} else if (res.status === 202) {
-				naviguate("/login/2fa");
+				navigate("/login/2fa");
 			} else if (res.status === 409) {
 				setErrorMessages((prevErrors) => ({
 					...prevErrors,
@@ -102,8 +102,8 @@ export default function LoginSelector() {
 	}
 	useEffect(() => {
 		if (!isLoading && user)
-			naviguate("/home");
-	}, [user, naviguate, isLoading]);
+			navigate("/home");
+	}, [user, navigate, isLoading]);
 
 	if (isLoading || user) {
 		return <Loading />;
