@@ -171,6 +171,8 @@
     font-weight: 400;
     letter-spacing: 0.3rem;
     text-decoration: none;
+    position: relative;
+    z-index: 12;
 }
   
 /*** -----Profile-body----- ***/

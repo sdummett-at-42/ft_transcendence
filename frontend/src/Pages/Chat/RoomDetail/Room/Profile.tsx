@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faUnlock, faTableTennis } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from "./../../../../context/UserContext"
+import Popup from '../../../Popup/Popup';
+import SpecProfile from '../../../Profile/SpecProfile/SpecProfile';
 
 interface ProfileProps {
     socket: Socket,
@@ -21,6 +23,8 @@ export default function Profile(props: ProfileProps) {
     const [isDuelOpen, setIsDuelOpen] = useState<boolean>(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState<boolean>(false);
     const {gameSocketRef } = useContext(UserContext);
+    const [popUpId, setPopUpId] = useState({});
+    const [showRoom, setShowRoom] = useState(false);
 
     const handleUnblock = (id, name) => {
         const confirmed = window.confirm("Voulez-vous débloquer " + name + "?");
@@ -92,6 +96,11 @@ export default function Profile(props: ProfileProps) {
             });
     }, [newblockList])
 
+    const handleProfilePopup = (user) =>{
+        setShowRoom(true);
+        setPopUpId(user)
+    };
+
     useEffect(()=>{
         setNewBlockList(props.blockList);
     },[])
@@ -131,7 +140,7 @@ export default function Profile(props: ProfileProps) {
                         <img src={user.profilePicture} className='ChatRoom-image' />
                         <p>Niveau : {user.elo}</p>
                         <div className="RoomDetailProfile-button-container">
-                            <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => handleProfile(user.id, user.name)} size="xl" /></button>
+                            <button className="PendingFriend-button"><FontAwesomeIcon icon={faUser} onClick={() => handleProfilePopup(user)} size="xl" /></button>
                             <div className="Friend-dropdown">
                         <button
                             className="PendingFriend-button"
@@ -155,6 +164,11 @@ export default function Profile(props: ProfileProps) {
                                     <button  onClick={() => handleblock(user.id, user.name)} className='PendingFriend-button'><FontAwesomeIcon icon={faLock} size="xl" /></button>
                                 </div>
                             )}
+                      {  popUpId && (
+                    <Popup isOpen={showRoom} isClose={() => {setShowRoom(false); setPopUpId("")}}>
+                        <SpecProfile user={popUpId} handleUserClick={handleProfilePopup}/>
+                    </Popup>
+            )}
                         </div>
                     </div>
                 </div>

@@ -9,7 +9,7 @@
     background-color: rgb(var(--primary-rgb) / 15%);
     overflow: hidden;
     position: relative;
-    z-index: 10;
+    z-index: 30;
 }
 
 .Profile-screen-card-popup:after, .Profile-screen-card-popup:before {
