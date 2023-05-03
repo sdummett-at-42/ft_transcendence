@@ -1650,7 +1650,8 @@ export class ChatService {
 	}
 
 	async getDmHist(socket, dto: GetDmHistDto, server) {
-		const userId: string = socket.data.userId.toString();
+		const userId: number = socket.data.userId;
+		// const userId: string = socket.data.userId.toString();
 
 		const dms = await this.redis.getDm(+userId, dto.userId);
 		socket.emit(Event.dmHist, {

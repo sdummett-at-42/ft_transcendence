@@ -8,6 +8,7 @@ import { Socket } from "socket.io-client";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { DatabaseContext } from '../ChatLogin';
+import InvitedConfirm from '../Popup/InvitedConfirm';
 
 interface ChatroomListProps {
     socket: Socket,
@@ -29,6 +30,9 @@ export default function ChatroomList(props: ChatroomListProps) {
     const [showJoinRoom, setShowJoinRoom] = useState(false);
     const [selectedRoom, setSelectedRoom] = useState("");
     const database = useContext(DatabaseContext);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [message, setMessage] = useState("");
+    const [roomNameInvite, setRoomNameInvite] = useState("");
 
     // Event handlers
     const handleRoomCreated = useCallback((payload) => {
@@ -133,6 +137,11 @@ export default function ChatroomList(props: ChatroomListProps) {
             setSelectedRoom(roomName);
         }
     };
+    const handleInvited = useCallback((payload) => {
+        setMessage(payload.message);
+        setRoomNameInvite(payload.roomName);
+        setShowConfirm(true);
+      }, [])
 
     useEffect(() => {
         if (!database) {
@@ -151,6 +160,7 @@ export default function ChatroomList(props: ChatroomListProps) {
             props.socket.on("dmUpdated", handlDMlistupdated);
             props.socket.on("banned", handleBanEvent);
             props.socket.on("kicked", handleKickEvent);
+            props.socket.on("invited", handleInvited);
         }
         return () => {
             if (props.socket) {
@@ -164,6 +174,7 @@ export default function ChatroomList(props: ChatroomListProps) {
                 props.socket.off("dmUpdated", handlDMlistupdated);
                 props.socket.off("banned", handleBanEvent);
                 props.socket.off("kicked", handleKickEvent);
+                props.socket.off("invited", handleInvited);
             }
         }
     }, [
@@ -176,7 +187,9 @@ export default function ChatroomList(props: ChatroomListProps) {
         handleRoomsUpdate,
         handlDMlistupdated,
         handleBanEvent,
-        handleKickEvent]);
+        handleKickEvent,
+        handleInvited
+    ]);
 
     // Render
     return (
@@ -253,6 +266,15 @@ export default function ChatroomList(props: ChatroomListProps) {
                   />
               </Popup>
           )}
+            <Popup isOpen={showConfirm} isClose={() => setShowConfirm(false)}>
+                    <InvitedConfirm
+                        isVisible={showConfirm}
+                        RoomName={roomNameInvite}
+                        onClose={() => setShowConfirm(false)}
+                        socket={props.socket}
+                        message={message}
+                    />
+            </Popup>
       </div>
     );
 }

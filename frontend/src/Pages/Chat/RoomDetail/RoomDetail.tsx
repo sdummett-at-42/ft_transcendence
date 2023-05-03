@@ -27,9 +27,9 @@ export default function RoomDetail(props: RoomDetailProps) {
   const [errorMessage, setErrorMessage] = useState({});
   const [input, setInput] = useState("");
   const database = useContext(DatabaseContext);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [message, setMessage] = useState("");
-  const [roomNameInvite, setRoomNameInvite] = useState("");
+  // const [showConfirm, setShowConfirm] = useState(false);
+  // const [message, setMessage] = useState("");
+  // const [roomNameInvite, setRoomNameInvite] = useState("");
   const [ifAdmin, setIfAdmin] = useState(false);
   const [adminList, setAdminList] = useState([]);
 
@@ -79,11 +79,11 @@ export default function RoomDetail(props: RoomDetailProps) {
     return;
   }
 
-  const handleInvited = useCallback((payload) => {
-    setMessage(payload.message);
-    setRoomNameInvite(payload.roomName);
-    setShowConfirm(true);
-  }, [])
+  // const handleInvited = useCallback((payload) => {
+  //   setMessage(payload.message);
+  //   setRoomNameInvite(payload.roomName);
+  //   setShowConfirm(true);
+  // }, [])
 
   const handleNotInvite = useCallback((payload) => {
     setErrorMessage((prev) => ({
@@ -124,7 +124,7 @@ export default function RoomDetail(props: RoomDetailProps) {
 
   useEffect(() => {
     if(props.socket){
-      props.socket.on("invited", handleInvited);
+      // props.socket.on("invited", handleInvited);
       props.socket.on("userNotInvited", handleNotInvite);
       props.socket.on("memberListUpdated", handleCheckIfAdmin);
       props.socket.on("roomMembers", handleAdminList);
@@ -139,7 +139,7 @@ export default function RoomDetail(props: RoomDetailProps) {
     }
     return () => {
       if(props.socket){
-        props.socket.off("invited", handleInvited);
+        // props.socket.off("invited", handleInvited);
         props.socket.off("userNotInvited", handleNotInvite);
         props.socket.off("memberListUpdated", handleCheckIfAdmin);
         props.socket.off("roomMembers", handleAdminList);
@@ -153,7 +153,7 @@ export default function RoomDetail(props: RoomDetailProps) {
         props.socket.off("userKicked", handleMessagAction);
       }
     };
-  }, [props.socket,database, handleInvited, handleNotInvite, handleCheckIfAdmin,handleAdminList, handleMessagAction]);
+  }, [props.socket,database, handleNotInvite, handleCheckIfAdmin,handleAdminList, handleMessagAction]);
 
   return (
     (!props.ifDM) && props.roomName ? (
@@ -201,16 +201,6 @@ export default function RoomDetail(props: RoomDetailProps) {
                       onClose={() => setShowSetting(false)}
                       roomName={props.roomName}
                       onUpdate={props.onUpdate}
-                    />
-                </Popup>
-
-                <Popup isOpen={showConfirm} isClose={() => setShowConfirm(false)}>
-                    <InvitedConfirm
-                        isVisible={showConfirm}
-                        RoomName={roomNameInvite}
-                        onClose={() => setShowConfirm(false)}
-                        socket={props.socket}
-                        message={message}
                     />
                 </Popup>
             </div>
