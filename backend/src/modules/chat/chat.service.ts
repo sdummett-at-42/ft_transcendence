@@ -1614,7 +1614,7 @@ export class ChatService {
 		const sockets = await server.fetchSockets();
 
 		const currentTimestamp = Date.now();
-		socket.emit(Event.DMReceived, {
+		socket.emit(Event.DMReceived1, {
 			userId: +userId,
 			timestamp: new Date(currentTimestamp).toISOString(),
 			message: dto.message,
@@ -1636,7 +1636,7 @@ export class ChatService {
 		}
 		receiverSockets.forEach(socket => {
 			// console.debug("socket",socket);
-			socket.emit(Event.DMReceived, {
+			socket.emit(Event.DMReceived2, {
 				userId: +userId,
 				timestamp: new Date(currentTimestamp).toISOString(),
 				message: dto.message,

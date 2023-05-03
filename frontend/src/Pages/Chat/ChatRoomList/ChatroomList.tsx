@@ -68,9 +68,9 @@ export default function ChatroomList(props: ChatroomListProps) {
         if (database) {
             const filteredObjects = database.find(obj => obj.id === payload.userId);
             if (!payload.fromId) {
-                alert(filteredObjects.name + " vous avait envoyé un message !");
+                alert(filteredObjects.name + " vous avez envoyé un message !");
             }
-            if (filteredObjects) {
+            if(filteredObjects){
                 setdms((prevdms) => [...prevdms, {
                     id: filteredObjects?.id,
                     name: filteredObjects.name,
@@ -78,7 +78,7 @@ export default function ChatroomList(props: ChatroomListProps) {
                 }]);
             }
         }
-    }, [dms]);
+    }, [database, dms]);
 
     const handleRoomDeleted = useCallback((payload) => {
         setChatrooms((prevChatrooms) => {

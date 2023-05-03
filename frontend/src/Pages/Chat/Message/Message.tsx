@@ -64,8 +64,19 @@ export default function Message(props: MessageProps) {
     }
   }, [messageList]);
 
-  const handleDMupdate = useCallback((payload) => {
-    setDmList((prevme) => [...prevme, payload]);
+  const handleDMupdate1 = useCallback((payload) => {
+    console.log("dmupdate1", payload);
+    if(props.UserId === payload.userId){
+      setDmList((prevme) => [...prevme, payload]);
+    }
+  }, [dmList]);
+  const handleDMupdate2 = useCallback((payload) => {
+    console.log("dmupdate2", payload);
+    const userName = database.find((user) => user.id === payload.userId);
+    console.log("dmupdate2", userName , props.roomName);
+    if(userName && userName.name === props.roomName){
+      setDmList((prevme) => [...prevme, payload]);
+    }
   }, [dmList]);
 
   const handleEnter = (event) => {
@@ -198,7 +209,6 @@ export default function Message(props: MessageProps) {
   }, [dmList])
 
   const handleMessagesReceived = useCallback((payload) => {
-
     setMessageList(payload.msgHist);
   }, [messageList])
   const handleAlertmessage = useCallback((payload) => {
@@ -213,7 +223,8 @@ export default function Message(props: MessageProps) {
       props.socket.on("roomMsgHistReceived", handleMessagesReceived);
       props.socket.on("roomMsgReceived", handleMessages);
       props.socket.on("dmHist", handleDMReceived);
-      props.socket.on("DMReceived", handleDMupdate);
+      props.socket.on("DMReceived1", handleDMupdate1);
+      props.socket.on("DMReceived2", handleDMupdate2);
       props.socket.on("DMNotSended", handleAlertmessage);
       props.socket.on("userInvited", handleAlertmessage);
       props.socket.on("roomMsgNotSended", handleAlertmessage);
@@ -225,7 +236,8 @@ export default function Message(props: MessageProps) {
         props.socket.off("roomMsgHistReceived", handleMessagesReceived);
         props.socket.off("roomMsgReceived", handleMessages);
         props.socket.off("dmHist", handleDMReceived);
-        props.socket.off("DMReceived", handleDMupdate);
+        props.socket.off("DMReceived1", handleDMupdate1);
+        props.socket.off("DMReceived2", handleDMupdate2);
         props.socket.off("userInvited",handleAlertmessage);
         props.socket.off("DMNotSended", handleAlertmessage);
         props.socket.off("roomMsgNotSended", handleAlertmessage);
@@ -233,7 +245,7 @@ export default function Message(props: MessageProps) {
         props.socket.off("kicked", handleRemoveRoom);
       }
     };
-  }, [props.socket, props.roomName, handleMessagesReceived, handleMessages, handleDMReceived, handleDMupdate, handleAlertmessage]);
+  }, [props.socket, props.roomName, handleMessagesReceived, handleMessages, handleDMReceived, handleDMupdate1,handleDMupdate2, handleAlertmessage]);
 
   return (
     <div className="Message-screen">
