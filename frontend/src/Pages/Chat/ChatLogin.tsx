@@ -123,12 +123,6 @@ export default function ChatLogin() {
     };
   }, [socket, handleUpdateDatabase]);
 
-  useEffect(() =>{
-    setRoomName(userName);
-    setIfDM(true);
-    setToDMID({id :Number(userId), name: userName});
-
-  },[])
 
   useEffect(() => {
     socket = io(`${import.meta.env.VITE_BACKENDURL}`, {
@@ -142,6 +136,15 @@ export default function ChatLogin() {
       socket.emit("getDmsList");
       socket.emit("getBlockList");
     });
+    if (userName){
+      setRoomName(userName);
+      setIfDM(true);
+      setToDMID({id :Number(userId), name: userName});
+      const payload = {
+        userId: Number(userId), // if i use state of roomName, the emit will delay
+      }
+      socket.emit("getDmHist", payload);
+    }
     socket.on('disconnect', () => {
       setIfSocket(false)
     });
