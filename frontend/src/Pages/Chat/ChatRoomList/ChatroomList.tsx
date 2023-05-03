@@ -63,13 +63,14 @@ export default function ChatroomList(props: ChatroomListProps) {
     }, [setdms, database]);
 
     const handlDMlistupdated = useCallback((payload) => {
-        if (dms.find(obj => obj.id === payload.userId))
-            return;
         if (database) {
             const filteredObjects = database.find(obj => obj.id === payload.userId);
-            if (!payload.fromId) {
+            // console.log("selectedRoom", selectedRoom);
+            if (!payload.fromId && (filteredObjects && selectedRoom !== filteredObjects.name)) {
                 alert(filteredObjects.name + " vous avez envoyé un message !");
             }
+            if (dms.find(obj => obj.id === payload.userId))
+              return;
             if(filteredObjects){
                 setdms((prevdms) => [...prevdms, {
                     id: filteredObjects?.id,
@@ -78,7 +79,7 @@ export default function ChatroomList(props: ChatroomListProps) {
                 }]);
             }
         }
-    }, [database, dms]);
+    }, [database, dms, setSelectedRoom, selectedRoom]);
 
     const handleRoomDeleted = useCallback((payload) => {
         setChatrooms((prevChatrooms) => {
@@ -130,11 +131,14 @@ export default function ChatroomList(props: ChatroomListProps) {
         if (ifDM == false) {
             props.onListClick(roomName, 0, false);
             props.socket.emit("getRoomMembers", { roomName: roomName });
+            // console.log("notdm",roomName);
             setSelectedRoom(roomName);
         } else {
             props.onListClick(roomName, userID, true);
             props.socket.emit("getDmHist", { userId: userID });
+            // console.log("dm",roomName);
             setSelectedRoom(roomName);
+
         }
     };
     const handleInvited = useCallback((payload) => {
@@ -188,7 +192,8 @@ export default function ChatroomList(props: ChatroomListProps) {
         handlDMlistupdated,
         handleBanEvent,
         handleKickEvent,
-        handleInvited
+        handleInvited,
+        selectedRoom
     ]);
 
     // Render

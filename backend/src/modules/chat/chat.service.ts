@@ -1190,7 +1190,7 @@ export class ChatService {
 			socket.emit(Event.roomAdminNotAdded, {
 				roomName: dto.roomName,
 				timestamp: new Date().toISOString(),
-				message: `Vous n'êtes pas membre du salon ${dto.roomName}.`,
+				message: `L'utilisateur n'êtes pas membre du salon ${dto.roomName}.`,
 			});
 			return;
 		}
