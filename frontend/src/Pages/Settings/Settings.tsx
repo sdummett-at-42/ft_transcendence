@@ -10,6 +10,9 @@ import Blob from "../Blob/Blob";
 
 export default function Settings() {
 	const { user, setLastUpdate } = useContext(UserContext);
+	if (!user)
+		window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
+
 
 	// Handle name change
 	const [nameInput, setNameInput] = useState("");
@@ -324,9 +327,6 @@ export default function Settings() {
 		}));
 	};
 
-	if (!user) {
-		return <p>Loading...</p>;
-	};
 
 	return (
 		<div>

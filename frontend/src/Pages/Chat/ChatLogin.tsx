@@ -8,6 +8,7 @@ import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import Invitation from "../Invitation/Invitation";
 import Blob from "../Blob/Blob";
+import { UserContext } from "../../context/UserContext";
 
 export const DatabaseContext = createContext();
 
@@ -24,6 +25,10 @@ export default function ChatLogin() {
   const [ifDataReady, setifDataReady] = useState(false);
   const [blockList, setBlockList] = useState([]);
   const { userId, userName } = useParams();
+  const { user } = useContext(UserContext);
+  if (!user)
+	  window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
+
 
   const handleUpdateDatabase = async () => {
     await fetch(`${import.meta.env.VITE_BACKENDURL}/users/`, {
@@ -91,7 +96,8 @@ export default function ChatLogin() {
           .then(json => {
               setDatabase(json);
               setifDataReady(true);
-          });
+          })
+		  .catch((err) => undefined);
       };
 
     fetchData();
@@ -107,7 +113,9 @@ export default function ChatLogin() {
         .then((response) => response.json())
         .then(json => {
           setMyUserId(json.id);
-        });
+        })
+		.catch((err) => undefined);
+
     };
     fetchData();
   }, []);

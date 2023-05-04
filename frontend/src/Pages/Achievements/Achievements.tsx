@@ -2,8 +2,14 @@ import React, { useState, useEffect } from "react";
 import "./Achievements.css";
 import Blob from "../Blob/Blob";
 import Invitation from "../Invitation/Invitation";
+import { useContext } from "react";
+import { UserContext } from "../../context/UserContext";
 
 export default function InitAchievements({ userId, showLocked, showBlob }) {
+	const { user } = useContext(UserContext);
+	if (!user)
+		window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
+
 	const [achievements, setAchievements] = useState([]);
 
 	useEffect(() => {

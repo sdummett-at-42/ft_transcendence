@@ -39,19 +39,22 @@ const UserContextProvider = ({ children }: any) => {
 
 	useEffect(() => {
 		const fetchUserData = async () => {
-			const response = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
-				credentials: "include",
-				method: "GET",
-			});
-			const data = await response.json();
-			if (response.status === 401) {
-				setUser(undefined);
-			} else {
-				// Append timestamp as query parameter to profile picture URL
-				data.profilePicture = `${data.profilePicture}?ts=${Date.now()}`;
-				setUser(data);
+			try {
+				const response = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
+					credentials: "include",
+					method: "GET",
+				});
+				const data = await response.json();
+				if (response.status === 401) {
+					setUser(undefined);
+				} else {
+					// Append timestamp as query parameter to profile picture URL
+					data.profilePicture = `${data.profilePicture}?ts=${Date.now()}`;
+					setUser(data);
+				}
+				setIsLoading(false);
 			}
-			setIsLoading(false);
+			catch(err) {}
 		};
 		fetchUserData();
 	}, [lastUpdate]);

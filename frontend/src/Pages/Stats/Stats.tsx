@@ -7,7 +7,10 @@ import Blob from "../Blob/Blob";
 import FriendsList from "../Home/FriendsList/FriendsList";
 
 export default function InitStats({ user }) {
+	if (!user)
+		window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
 	const [users, setUsers] = useState([]);
+
 	const [matchData, setMatchData] = useState(null);
 	// Sort users by elo
 	const sortedUsers = [...users].sort((a, b) => b.elo - a.elo);

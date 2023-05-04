@@ -20,6 +20,8 @@ export default function FriendsList() {
 
     const navigate = useNavigate();
     const { user, notificationSocketRef, gameSocketRef } = useContext(UserContext);
+	if (!user)
+		window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
 
     // Store all friends of the user
     const [friends, setFriends] = useState([] as any);
