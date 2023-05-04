@@ -12,6 +12,9 @@ import Blob from "../../Blob/Blob";
 export default function Lobby() {
 
     const { user, gameSocketRef } = useContext(UserContext);
+	if (!user)
+		window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
+
     const navigate = useNavigate();
     const [dispSelector, setDispSelector] = useState(true);
     const [ranked, setRanked] = useState(false);
