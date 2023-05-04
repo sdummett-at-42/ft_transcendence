@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import "./Popup.css";
 import { Socket } from "socket.io-client";
 import { DatabaseContext } from "../ChatLogin";
@@ -33,7 +33,9 @@ export default function Moderation(props: ModerationProps) {
                     return user;
                 }
                 else {
-                    setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
+            
+                    setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.1");
+                    clearInterval(interval);
                     return;
                 }
             }, 1000);
@@ -70,7 +72,7 @@ export default function Moderation(props: ModerationProps) {
         setErrorMessage("");
         setSuccessMessage("");
         if (!input) {
-            setErrorMessage("Veuillez entrer un nom d'utilisateur.");
+            setErrorMessage("Veuillez entrer un nom d'utilisateur.2");
             return;
         }
         if (moderation.data === "Muet") {
@@ -85,9 +87,10 @@ export default function Moderation(props: ModerationProps) {
     }
     
     const handleBan = () => {
+        setErrorMessage("");
         let user = findInDatabase(input);
-        if (user.id === 0 || user === undefined) {
-            setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
+        if (user === undefined || user.id === 0) {
+            setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.3");
             return;
         } else {
             const payload = {
@@ -95,54 +98,55 @@ export default function Moderation(props: ModerationProps) {
                 userId: user.id,
             }
             props.socket.emit("banUser", payload);
-            setSuccessMessage(`${user.name} banni avec succès.`);
+            // setSuccessMessage(`${user.name} banni avec succès.`);
             setErrorMessage("");
             setInput("");
         }
     }
 
     const handleUnBan = () => {
+        setErrorMessage("");
         const user = findInDatabase(input);
-        if (user.id === 0 || user === undefined) {
-            setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
+        if (user === undefined || user.id === 0) {
+            setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.4");
             return;
         } else {
-
             const payload = {
                 roomName: props.roomName,
                 userId: user.id,
             }
             props.socket.emit("unbanUser", payload);
-            setSuccessMessage(`${user.name} débanni avec succès.`);
+            // setSuccessMessage(`${user.name} débanni avec succès.`);
             setErrorMessage("");
             setInput("");
         }
     }
     
     const handleMute = () => {
+        setErrorMessage("");
         const user = findInDatabase(input);
 
-        if (user.id === 0 || user === undefined) {
-            setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
+        if ( user === undefined || user.id === 0) {
+            setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.5");
             return;
         } else {
-
             const payload = {
                 roomName: props.roomName,
                 userId: user.id,
                 timeout: 60,
             }
             props.socket.emit("muteUser", payload);
-            setSuccessMessage(`${user.name} muté avec succès.`);
+            // setSuccessMessage(`${user.name} muté avec succès.`);
             setErrorMessage("");
             setInput("");
         }
     }
     
     const handleKick = () => {
+        setErrorMessage("");
         let user = findInDatabase(input);
-        if (user.id === 0 || user === undefined) {
-            setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
+        if (user === undefined || user.id === 0) {
+            setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.6");
             return;
         } else {
             const payload = {
@@ -150,12 +154,32 @@ export default function Moderation(props: ModerationProps) {
                 userId: user.id,
             }
             props.socket.emit("kickUser", payload);
-            setSuccessMessage(`${user.name} sorti avec succès.`);
+            // setSuccessMessage(`${user.name} sorti avec succès.`);
             setErrorMessage("");
             setInput("");
         }
     }
+    const handleMessagAction = useCallback((payload)=>{
+        setErrorMessage("");
+        setSuccessMessage(payload.message);
+    },[successMessage, errorMessage])
 
+    useEffect(() => {
+        if(props.socket){
+          props.socket.on("userBanned", handleMessagAction);
+          props.socket.on("unbanned", handleMessagAction);
+          props.socket.on("userMuted", handleMessagAction);
+          props.socket.on("userKicked", handleMessagAction);
+        }
+        return () => {
+          if(props.socket){
+            props.socket.off("userBanned", handleMessagAction);;
+            props.socket.off("unbanned", handleMessagAction);
+            props.socket.off("userMuted", handleMessagAction);
+            props.socket.off("userKicked", handleMessagAction);
+          }
+        };
+      }, [props.socket,handleMessagAction, successMessage, errorMessage]);
 
     return (
         <div className="RoomCreate-screen-card" onKeyDown={handleEscape}>

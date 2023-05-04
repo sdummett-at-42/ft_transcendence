@@ -49,6 +49,7 @@ export default function RoomDetail(props: RoomDetailProps) {
                     ...prev,
                     invite: "Utilisateur non trouvé.",
                 }));
+                clearInterval(interval);
                 return;
             }
         }, 1000);

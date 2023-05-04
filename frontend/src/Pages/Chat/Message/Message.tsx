@@ -116,6 +116,9 @@ export default function Message(props: MessageProps) {
                 if (user !== undefined) {
                   clearInterval(interval);
                 }
+                else{
+                  clearInterval(interval);
+                }
               }, 1000);
             } else {
               username = user.name
@@ -174,6 +177,8 @@ export default function Message(props: MessageProps) {
               const interval = setInterval(() => {
                 user = database.find((user) => user.id === each.userId);
                 if (user !== undefined) {
+                  clearInterval(interval);
+                } else{
                   clearInterval(interval);
                 }
               }, 1000);
