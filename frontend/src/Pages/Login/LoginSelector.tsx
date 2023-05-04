@@ -58,7 +58,6 @@ export default function LoginSelector() {
 		}).then((res) => {
 			if (res.status == 201) {
 				setLastUpdate(Date.now());
-				// navigate("/home");
 				window.location.href = '/home';
 				return;
 			} else if (res.status == 400) {
@@ -66,7 +65,6 @@ export default function LoginSelector() {
 					...prevErrors,
 					password: "Mot de passe incorrect",
 				}));
-				// setErrorMessages(prevErrors => ({...prevErrors, login: "Mot de passe oublié ?"}));
 				return;
 			} else if (res.status == 404) {
 				setErrorMessages((prevErrors) => ({
