@@ -70,7 +70,7 @@ export class LobbyService {
     \* ****************** */
 
     // envoyer ad target emit getInvite
-    async lobbySendInvitGame(client: Socket, idTarget : number, type : string) {
+    async lobbySendInvitGame(client: Socket, idTarget : number, type : string, nameTarget : string) {
         // check invitation deja en cours
         if (this.lobbyAlreadyInvit(client.data.userId, idTarget)) {
             this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, {idTarget, state : "une invitation est en cours"});
@@ -96,7 +96,7 @@ export class LobbyService {
                 this.gameGateway.server.to(client.id).emit(EventGame.lobbyRefuseInvitGame, {idTarget, state : "indisponible"});
                 this.lobbyLeaveInvit(client.data.userId, idTarget);
             }, 30000)});
-            this.gameGateway.server.to(socketIds).emit(EventGame.lobbyGetInvitGame, {player : client.data.userId, you : idTarget, type : type}); 
+            this.gameGateway.server.to(socketIds).emit(EventGame.lobbyGetInvitGame, {player : client.data.userId, you : idTarget, type : type, nameTarget: nameTarget}); 
         }
     }
 

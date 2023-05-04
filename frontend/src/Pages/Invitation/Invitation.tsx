@@ -15,12 +15,14 @@ export default function  Invitation(props:  InvitationProps) {
     const [isDelOpen, setDelIsOpen] = useState(false);
 	const [fromId, setFromId] = useState(0);
 	const [typeGame, setTypeGame] = useState("");
+	const [nameTarget, setNameTarget] = useState("");
 
 
-	  const handleGetInvitationGame = (data : {player : number, you : number, type : string}) => {
+	  const handleGetInvitationGame = (data : {player : number, you : number, type : string, nameTarget : string}) => {
         setDelIsOpen(true);
         setFromId(data.player);
         setTypeGame(data.type);
+		setNameTarget(data.nameTarget);
       }
 
 		// gameSocketRef.current.emit('reponseInvitationGame', {client : fromSocket, res : true, type : typeGame});
@@ -84,7 +86,7 @@ export default function  Invitation(props:  InvitationProps) {
 						  <div className="RoomCreate-screen-card-content-body">
 						<div className="Invite-margin-top">
 
-            			<div className="Profile-screen-card-text"> {user?.name} vous invite à jouer au Pong. Le rejoindre ?</div>
+            			<div className="Profile-screen-card-text"> {nameTarget} vous invite à jouer au Pong. Le rejoindre ?</div>
 						<div className="RoomCreate-button-wrapper">
 							<button onClick={handleRefuse} className="Settings-button Settings-delete-account-button">Refuser</button>
 							<button onClick={handleAccept} className="Settings-button Settings-upload-button">Accepter</button>

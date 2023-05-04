@@ -57,13 +57,13 @@ export default function Friend(props: Props) {
     };
 
     const sendGameInvitationA = (friend) =>{
-        gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked" });
+        gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked", nameTarget: user?.name });
         handleDuel();
        
     }
 
     const sendGameInvitationB = (friend) =>{
-        gameSocketRef.current.emit('sendInvitationGame', { idTarget: friend.id, type: "custom"});
+        gameSocketRef.current.emit('sendInvitationGame', { idTarget: friend.id, type: "custom", nameTarget: user?.name});
         handleDuel();
     }
 

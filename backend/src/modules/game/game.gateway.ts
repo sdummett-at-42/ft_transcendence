@@ -93,8 +93,8 @@ export class GameGateway {
 
   // invitation Game
   @SubscribeMessage(EventGame.lobbySendInvitGame)
-  lobbySendInvitGame(client: any, data : {idTarget : number, type : string}) : void {
-    this.lobbyService.lobbySendInvitGame(client, data.idTarget, data.type);
+  lobbySendInvitGame(client: any, data : {idTarget : number, type : string, nameTarget: string}) : void {
+    this.lobbyService.lobbySendInvitGame(client, data.idTarget, data.type, data.nameTarget);
   }
 
   @SubscribeMessage(EventGame.lobbyResponseInvitGame)
