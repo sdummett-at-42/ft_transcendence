@@ -47,6 +47,8 @@ export class LobbyService {
                     elo: true,
                 },
             });
+            if (prismData === null)
+                return ;
             //id, name, elo, socket
             const data = {id : client.data.userId, name : prismData.name, elo : prismData.elo , socket : client.data.socket}
             const player = new Player(data);
@@ -156,6 +158,12 @@ export class LobbyService {
                 elo: true,
             },
         });
+        if (prismDataPlayer1 === null || prismDataPlayer2 === null) {
+            this.gameGateway.server.to(socketSender).emit(EventGame.lobbyRefuseInvitGame, {idTarget : target.data.userId, state : "l'utilisateur n'existe plus"});
+            return ;
+        }
+
+
         const dataP1 = {id : sender, name : prismDataPlayer1.name, elo : prismDataPlayer1.elo , socket : socketSender}
         const p1 = new Player(dataP1);
         const dataP2 = {id : target.data.userId, name : prismDataPlayer2.name, elo : prismDataPlayer2.elo , socket : target.id}
@@ -192,11 +200,6 @@ export class LobbyService {
     }
 
     intervalQueueFunction() {
-        console.log("Player in Q :" ,this.users.length);
-        for (let i = 0; i < this.users.length; i++)
-            console.log(`id : ${this.users[i].player.name}`);
-        console.log();
-
         let gotMatch : Boolean = false;
         if (this.users.length === 0) { // if no player in Q
             clearInterval(this.queueInterval);

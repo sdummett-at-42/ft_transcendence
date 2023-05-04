@@ -13,7 +13,6 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 	) {this.del() }
 	async del() {
 		await this.redis.unsetInGamesKeys();
-		console.log(`CHECKK: ${JSON.stringify(await this.redis.getInGames())}`)
 	}
 
 	@WebSocketServer()
@@ -86,8 +85,6 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 	}
 
 	async onlineNotify(socket, userId: number) {
-		// console.log(userId,":QWERTYUI:", inGames);
-		console.log(socket.id);
 		// sleep 1sec to wait for the socket to be added to the server
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		const sockets = await this.server.fetchSockets();
@@ -98,7 +95,6 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		// create an array of the friends id that are online by filtering the sockets array (the id is store in data.userId) without duplicates
 		const onlineFriends = [...new Set(sockets.filter(s => friendIds.includes(s.data.userId)).map(s => s.data.userId))];
 		const inGames = await this.redis.getInGames()
-		console.log(`IN GAMES :: ${JSON.stringify(inGames)}`)
 		for (const friendId of onlineFriends) {
 			socket.emit('friendConnected', { id: friendId, tab : inGames});
 		}
@@ -137,15 +133,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection,
 		// await this.redis.setInGames(userId)
 		await this.redis.setInGames(userId);
 		const inGames = await this.redis.getInGames();
-		console.log(`IN GAMES NOTIFY :: ${JSON.stringify(inGames)}`)
-
-		// if (!inGames.includes(userId)) {
-		// }
-		// const checkInGamesRedis = await this.redis.getInGames();
-		// console.log(`InGames 2 : ${JSON.stringify(checkInGamesRedis)}`);
-		// if (!inGames.includes(userId))
-		// 	inGames.push(userId);
-
+		
 		if (!friendIds)
 			return;
 		const friendSocketIds = Object.entries(sockets)

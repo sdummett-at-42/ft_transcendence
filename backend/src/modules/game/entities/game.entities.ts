@@ -86,7 +86,7 @@ export class Player {
     relaunchBulletBool = false;
     
     // End game set elo win/lose
-    eloChange?: number;
+    eloChange : number = 0;
 
     // constructor(id : number, name : string, elo : number, eloTab : number[]) {
     constructor(data : any) {

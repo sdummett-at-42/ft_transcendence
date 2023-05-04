@@ -13,8 +13,6 @@ const Result = ({data} : ResultProps) => {
     const loser : Player = data[2];
 	const ranked : Boolean = data[3];
 
-	console.log("ranked:", ranked);
-
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let winnerinterval = null;
     const winnerRef = useRef<HTMLHeadingElement>(null);

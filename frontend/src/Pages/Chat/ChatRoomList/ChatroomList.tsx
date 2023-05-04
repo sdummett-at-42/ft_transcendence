@@ -65,7 +65,6 @@ export default function ChatroomList(props: ChatroomListProps) {
     const handlDMlistupdated = useCallback((payload) => {
         if (database) {
             const filteredObjects = database.find(obj => obj.id === payload.userId);
-            // console.log("selectedRoom", selectedRoom);
             if (!payload.fromId && (filteredObjects && selectedRoom !== filteredObjects.name)) {
                 alert(filteredObjects.name + " vous avez envoyé un message !");
             }
@@ -131,12 +130,10 @@ export default function ChatroomList(props: ChatroomListProps) {
         if (ifDM == false) {
             props.onListClick(roomName, 0, false);
             props.socket.emit("getRoomMembers", { roomName: roomName });
-            // console.log("notdm",roomName);
             setSelectedRoom(roomName);
         } else {
             props.onListClick(roomName, userID, true);
             props.socket.emit("getDmHist", { userId: userID });
-            // console.log("dm",roomName);
             setSelectedRoom(roomName);
 
         }

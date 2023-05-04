@@ -98,7 +98,6 @@ export default function RoomDetail(props: RoomDetailProps) {
   }, [props.UserId, adminList])
 
   const handleCheckIfAdmin = useCallback((payload) => {
-    console.log("memberlist", payload)
     if (payload.roomName !== props.roomName) {
       return;
     }

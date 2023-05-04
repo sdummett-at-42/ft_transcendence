@@ -34,7 +34,7 @@ export default function Moderation(props: ModerationProps) {
                 }
                 else {
             
-                    setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.1");
+                    setErrorMessage("Utilisateur non trouvé. Veuillez réessayer.");
                     clearInterval(interval);
                     return;
                 }
@@ -58,6 +58,10 @@ export default function Moderation(props: ModerationProps) {
             event.preventDefault();
             props.onClose();
         }
+    };
+
+    const handleClose = (e) => {
+        props.onClose();
     };
 
     const handleInputChange = (event) => {
@@ -208,7 +212,7 @@ export default function Moderation(props: ModerationProps) {
                     {errorMessage && <div className="Settings-error">{errorMessage}</div>}
                     {successMessage && <div className="RoomCreate-success">{successMessage}</div>}
                     <div className="RoomCreate-button-wrapper">
-                        <button onClick={() => setShowSetting(false)} className="Settings-button">
+                        <button onClick={handleClose} className="Settings-button">
                             Annuler
                         </button>
                         <button className='Settings-button Settings-upload-button' onClick={handleModeration}>
