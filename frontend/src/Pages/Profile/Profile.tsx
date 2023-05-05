@@ -15,7 +15,13 @@ export default function Profile({ user }) {
 			method: "GET",
 			credentials: "include",
 		})
-		.then((response) => response.json())
+		.then((response) => {
+			if (response.status === 401) {
+				window.location.href = "/";
+				return null;
+			}
+			return response.json()
+		})
 		.then((data) => setMatchData(data))
 		.catch((error) => console.error(error));
 	}, [user]);
@@ -85,6 +91,9 @@ function DisplayProfile({ user, match }) {
 				});
 				setAchievements(achievements);
 			}
+			else if (userAchievementsRes.status === 401 || allAchievementsRes.status === 401) {
+				window.location.href = "/";
+			}
 		};
 		fetchAchievements(user.id);
 	}, [user.id]);
@@ -104,12 +113,21 @@ function DisplayProfile({ user, match }) {
 					method: "GET",
 					credentials: "include",
 				});
+				if (winnerRes.status === 401){
+					window.location.href = "/";
+					return null;
+				}
 				const winnerData = await winnerRes.json();
 				
 				const loserRes = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/${match.looserId}`, {
 					method: "GET",
 					credentials: "include",
 				});
+
+				if (loserRes.status === 401){
+					window.location.href = "/";
+					return null;
+				}
 				const loserData = await loserRes.json();
 				
 				return {
@@ -132,6 +150,10 @@ function DisplayProfile({ user, match }) {
 				method: "GET",
 				credentials: "include",
 			});
+			if (res.status === 401){
+				window.location.href = "/";
+				return null;
+			}
 			const data = await res.json();
 			setAllUsers(data);
 		};

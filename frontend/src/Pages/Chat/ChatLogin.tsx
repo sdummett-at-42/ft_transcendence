@@ -30,7 +30,13 @@ export default function ChatLogin() {
       method: "GET",
       credentials: "include"
     })
-      .then((response) => response.json())
+      .then((response) => {
+		if (response.status == 401) {
+			window.location.href = "/";
+			return null;
+		}
+		return response.json()
+	})
       .then(json => {
         setDatabase(json);
       });
@@ -87,7 +93,13 @@ export default function ChatLogin() {
               method: "GET",
               credentials: "include"
           })
-          .then((response) => response.json())
+          .then((response) => {
+			if (response.status == 401) {
+				window.location.href = "/";
+				return null;
+			}
+			return response.json()
+		})
           .then(json => {
               setDatabase(json);
               setifDataReady(true);
@@ -99,15 +111,24 @@ export default function ChatLogin() {
 
   useEffect(() => {
     const fetchData = async () => {
+		try {
+			await fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
+			  method: "GET",
+			  credentials: "include"
+			})
+			  .then((response) => {
+				  if (response.status == 401) {
+					  window.location.href = "/";
+					  return null;
+				  }
+				  return response.json()
+			  })
+			  .then(json => {
+				setMyUserId(json.id);
+			  });
 
-      await fetch(`${import.meta.env.VITE_BACKENDURL}/users/me`, {
-        method: "GET",
-        credentials: "include"
-      })
-        .then((response) => response.json())
-        .then(json => {
-          setMyUserId(json.id);
-        });
+		} catch (error) {}
+
     };
     fetchData();
   }, []);

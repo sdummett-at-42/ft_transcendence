@@ -18,7 +18,13 @@ export default function InitStats({ user }) {
 			method: "GET",
 			credentials: "include",
 		})
-		.then((response) => response.json())
+		.then((response) => {
+			if (response.status === 401) {
+				window.location.href = "/";
+				return null;
+			}
+			return response.json()
+		})
 		.then((data) => setMatchData(data))
 		.catch((error) => console.error(error));
 	}, [user]);
@@ -26,12 +32,18 @@ export default function InitStats({ user }) {
 	// Fetch users
 	useEffect(() => {
 		async function fetchUsers() {
-			const response = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/`, {
-				method: "GET",
-				credentials: "include",
-			});
-			const data = await response.json();
-			setUsers(data);
+			try {
+				const response = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/`, {
+					method: "GET",
+					credentials: "include",
+				});
+				if (response.status === 401) {
+					window.location.href = "/";
+					return null;
+				}
+				const data = await response.json();
+				setUsers(data);
+			} catch (error) {}
 		}
 
 		fetchUsers();
@@ -68,12 +80,20 @@ function UserList({ users, match }) {
 					method: "GET",
 					credentials: "include",
 				});
+				if (winnerRes.status === 401) {
+					window.location.href = "/";
+					return null;
+				}
 				const winnerData = await winnerRes.json();
 			
 				const loserRes = await fetch(`${import.meta.env.VITE_BACKENDURL}/users/${match.looserId}`, {
 					method: "GET",
 					credentials: "include",
 				});
+				if (loserRes.status === 401) {
+					window.location.href = "/";
+					return null;
+				}
 				const loserData = await loserRes.json();
 			
 				return {
@@ -96,6 +116,10 @@ function UserList({ users, match }) {
 				method: "GET",
 				credentials: "include",
 			});
+			if (res.status === 401) {
+				window.location.href = "/";
+				return null;
+			}
 			const data = await res.json();
 			setAllUsers(data);
 		};

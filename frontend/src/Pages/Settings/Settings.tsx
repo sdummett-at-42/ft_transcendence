@@ -102,12 +102,15 @@ export default function Settings() {
 				setLastUpdate(Date.now());
 				setImage("");
 				setLoading(true);
-			} else {
+			}
+			else if (response.status === 401) {
+				window.location.href = "/"
+				return null;
+			} 
+			else {
 				throw new Error("Failed to upload image");
 			}
-		} catch (error) {
-			console.error(error);
-		}
+		} catch (error) {}
 	};
 
 	// Return true if str is alphanumeric
@@ -175,6 +178,10 @@ export default function Settings() {
 						username: "Le nom d'utilisateur est déjà pris",
 					}));
 				}
+				else if (response.status === 401) {
+					window.location.href = "/"
+					return null;
+				}
 			})
 			.catch((error) => {
 				console.error(error);
@@ -191,6 +198,10 @@ export default function Settings() {
 					credentials: "include",
 				}
 			);
+			if (response.status === 401) {
+				window.location.href = "/"
+				return null;
+			}
 			const qrCodeData = await response.json();
 			setQrCode(qrCodeData);
 			setOtpCode("");
@@ -203,6 +214,10 @@ export default function Settings() {
 					credentials: "include",
 				}
 			);
+			if (response.status === 401) {
+				window.location.href = "/"
+				return null;
+			}
 			setQrCode(null);
 			setLastUpdate(Date.now());
 		}
@@ -247,6 +262,10 @@ export default function Settings() {
 
 			if (!response.ok) {
 				throw new Error("Failed to verify OTP code");
+			}
+			else if (response.status === 401) {
+				window.location.href = "/"
+				return null;
 			}
 
 			const { secretVerified } = await response.json();
@@ -297,7 +316,12 @@ export default function Settings() {
 			if (response.status === 204) {
 				handleDelClose();
 				window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
-			} else {	
+			} 
+			else if (response.status === 401) {
+				window.location.href = "/"
+				return null;
+			}
+			else {	
 				setErrorMessage((prevErrors) => ({
 					...prevErrors,
 					password: "Mot de passe incorrect",

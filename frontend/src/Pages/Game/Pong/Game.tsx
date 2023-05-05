@@ -117,7 +117,11 @@ export default function Game() {
                 method: "GET",
                 credentials: "include",
             });
-            const data = await response.json();
+			if (response.status === 401) {
+				window.location.href = "/";
+				return null;
+			}
+			const data = await response.json();
             setAllUsers(data);
         }
 

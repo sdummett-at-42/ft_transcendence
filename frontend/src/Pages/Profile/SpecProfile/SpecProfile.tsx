@@ -14,6 +14,10 @@ export default function SpecProfile({ user, handleUserClick }) {
                 method: "GET",
                 credentials: "include",
             });
+			if (response.status === 401) {
+				window.location.href = "/";
+				return null;
+			}
             const data = await response.json();
             setAllUsers(data);
         }
@@ -31,6 +35,10 @@ export default function SpecProfile({ user, handleUserClick }) {
 				method: "GET",
 				credentials: "include",
 			});
+			if (response.status === 401) {
+				window.location.href = "/";
+				return null;
+			}
 			const data = await response.json();
             data.matchLost.forEach((match) => {
                 setAllMatches((prev) => [...prev, match]);
