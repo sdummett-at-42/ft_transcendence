@@ -27,6 +27,10 @@ export default function FollowingAccountCreation() {
 					if (response.status == 200) {
 						return (response.json());
 					}
+					else if (response.status == 401) {
+						window.location.href = "/";
+						return null;
+					}
 			});
 			setMyUser(res);
 		}
@@ -85,6 +89,10 @@ export default function FollowingAccountCreation() {
 			}),
 		})
 			.then((response) => {
+				if (response.status == 401) {
+					window.location.href = "/";
+					return null;
+				}
 				if (!response.ok) {
 					throw new Error("Failed to update image");
 				}
@@ -108,6 +116,10 @@ export default function FollowingAccountCreation() {
 				setLastUpdate(Date.now());
 				navigate("/home");
 				return;
+			}
+			else if (res.status == 401) {
+				window.location.href = "/";
+				return null;
 			}
 		});
 	}
