@@ -71,6 +71,9 @@ const Result = ({data} : ResultProps) => {
 		}, 30);
 	};
 
+	const handleMenu = () => {
+		window.location.href = "/home";
+	};
 
     return (
         <div className="RoomCreate-screen-card">
@@ -108,6 +111,9 @@ const Result = ({data} : ResultProps) => {
 							)}
                         </div>
                     </div>
+					<div className="RoomCreate-screen-card-content-body-buttons">
+						<button className="Settings-button" id="margin-bottom" onClick={() => handleMenu()}>Retour au menu</button>
+					</div>
                 </div>
             </div>
         </div>

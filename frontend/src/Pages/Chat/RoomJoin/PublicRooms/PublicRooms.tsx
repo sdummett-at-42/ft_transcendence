@@ -18,7 +18,6 @@ export default function PublicRooms({ socket }) {
 	}, [socket]);
 
 	const handleRoomsList = ({ roomsList }) => {
-		// {"roomsList":[{"roomName":"PUBLICCC","protected":false}]}}
 		setRooms(roomsList);
 	};
 
@@ -27,13 +26,12 @@ export default function PublicRooms({ socket }) {
 			<div className="rooms-list-header">
 				<h3>Salons publics</h3>
 			</div>
-			{/*/ create a div that iterate through rooms and print each room name and visibilty*/}
 			<div className="rooms">
 				{rooms.map((room, i) => (
 					<div key={i} className="room">
 						<div className="room-name">{room.roomName}</div>
 						<div className="room-visibility">
-							{room.protected ? "Protege" : "Public"}
+							{room.protected ? "Protégé" : "Public"}
 						</div>
 					</div>
 				))}
