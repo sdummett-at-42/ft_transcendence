@@ -115,7 +115,7 @@ export class LobbyService {
 
 
         if (socketSender === undefined || socketSender === null) {
-            // this.gameGateway.server.to(socketSender).emit(EventGame.lobbyRefuseInvitGame, {idTarget : target.data.userId, state : "refus"});
+            this.gameGateway.server.to(socketSender).emit(EventGame.lobbyRefuseInvitGame, {idTarget : target.data.userId, state : "refus"});
             return;
         }
         
