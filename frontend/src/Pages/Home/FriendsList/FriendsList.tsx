@@ -45,7 +45,8 @@ export default function FriendsList() {
             })
                 .then(res => {
                     if (res.status == 401) {
-                        navigate("/unauthorized");
+                        window.location.href = "/";
+						return null;
                     }
                     else if (res.status == 200) {
                         return res.json();
@@ -56,8 +57,9 @@ export default function FriendsList() {
                 })
                 .then(res => {
                     if (res.status == 401) {
-                        navigate("/unauthorized");
-                    }
+						window.location.href = "/";
+						return null;
+					}
                     else if (res.status == 200) {
                         return res.json();
                 }});
@@ -67,40 +69,47 @@ export default function FriendsList() {
 
         async function getPendingFriends() {
             // Get all received friend requests of the user from the database and set the state
-            const ReceivedPendingFriends = await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests/received`, {
-                credentials: 'include',
-                method: 'GET'
-            })
-                .then(res => {
-                    if (res.status == 401) {
-                        navigate("/unauthorized");
-                    }
-                    else if (res.status == 200) {
-                        return res.json();
-                }});
-                setReceivedRequests(ReceivedPendingFriends);
+			try {
+				const ReceivedPendingFriends = await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests/received`, {
+					credentials: 'include',
+					method: 'GET'
+				})
+					.then(res => {
+						if (res.status == 401) {
+							window.location.href = "/";
+							return null;
+						}
+						else if (res.status == 200) {
+							return res.json();
+					}});
+					setReceivedRequests(ReceivedPendingFriends);
+
+			} catch (error) {}
             }
 
         async function getRequestFriends() {
             // Get all sended friend requests of the user from the database and set the state
-            const SentPendingFriends = await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests/sended`, {
-                credentials: 'include',
-                method: 'GET'
-            })
-                .then(res => {
-                    if (res.status == 401) {
-                        navigate("/unauthorized");
-                    }
-                    else if (res.status == 200) {
-                        return res.json();
-                }});
-                setSendRequests(SentPendingFriends);
-        }
+			try {
+				const SentPendingFriends = await fetch(`${import.meta.env.VITE_BACKENDURL}/friends/requests/sended`, {
+					credentials: 'include',
+					method: 'GET'
+				})
+					.then(res => {
+						if (res.status == 401) {
+							window.location.href = "/";
+							return null;
+						}
+						else if (res.status == 200) {
+							return res.json();
+					}})
+					setSendRequests(SentPendingFriends);
+			} catch (error) {}
+		}
 
-        getFriends();
-        getPendingFriends();
-        getRequestFriends();
-        notificationSocketRef.current.emit("getOnlineFriends");
+		getFriends();
+		getPendingFriends();
+		getRequestFriends();
+		notificationSocketRef.current.emit("getOnlineFriends");
     }, []);
 
     const handleFriendRequest = (data) => {
@@ -112,8 +121,9 @@ export default function FriendsList() {
             })
                 .then(res => {
                     if (res.status == 401) {
-                        navigate("/unauthorized");
-                    }
+						window.location.href = "/";
+						return null;
+					}
                     else if (res.status == 200) {
                         return res.json();
                 }});
@@ -131,7 +141,8 @@ export default function FriendsList() {
             })
                 .then(res => {
                     if (res.status == 401) {
-                        navigate("/unauthorized");
+                        window.location.href = "/";
+						return null;
                     }
                     else if (res.status == 200) {
                         return res.json();
@@ -142,7 +153,8 @@ export default function FriendsList() {
             })
                 .then(res => {
                     if (res.status == 401) {
-                        navigate("/unauthorized");
+                        window.location.href = "/";
+						return null;
                     }
                     else if (res.status == 200) {
                         return res.json();
@@ -229,7 +241,8 @@ export default function FriendsList() {
         })
             .then(res => {
                 if (res.status == 401) {
-                    navigate("/unauthorized");
+                    window.location.href = "/";
+					return null;
                 }
                 else if (res.status == 200) {
                     return res.json();
@@ -266,7 +279,8 @@ export default function FriendsList() {
         })
             .then(res => {
                 if (res.status == 401) {
-                    navigate("/unauthorized");
+                    window.location.href = "/";
+					return null;
                 }
                 else if (res.status == 201) {
                     return res.json();
@@ -290,7 +304,8 @@ export default function FriendsList() {
         })
             .then(res => {
                 if (res.status == 401) {
-                    navigate("/unauthorized");
+                    window.location.href = "/";
+					return null;
                 }
                 else if (res.status == 200) {
                     setFriends([...friends, friend]);
@@ -312,7 +327,8 @@ export default function FriendsList() {
         })
             .then(res => {
                 if (res.status == 401) {
-                    navigate("/unauthorized");
+                    window.location.href = "/";
+					return null;
                 }
                 else if (res.status == 204) {
                     setReceivedRequests(receivedRequests.filter(receivedRequest => receivedRequest.sender.id !== friend.id));
@@ -333,7 +349,8 @@ export default function FriendsList() {
         })
             .then(res => {
                 if (res.status == 401) {
-                    navigate("/unauthorized");
+                    window.location.href = "/";
+					return null;
                 }
                 else if (res.status == 204) {
                     setSendRequests(sendRequests.filter(sendRequest => sendRequest.receiver.id !== friend.id));
@@ -354,7 +371,8 @@ export default function FriendsList() {
         })
             .then(res => {
                 if (res.status == 401) {
-                    navigate("/unauthorized");
+                    window.location.href = "/";
+					return null;
                 }
                 else if (res.status == 204) {
                     setFriends(friends.filter((fr) => friend.id != fr.id));

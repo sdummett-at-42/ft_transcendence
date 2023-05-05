@@ -27,7 +27,8 @@ export default function SearchBar(props) {
         })
             .then (response => {
                 if (response.status == 401) {
-                    navigate("/unauthorized");
+                    window.location.href = "/";
+					return null;
                 }
                 else if (response.status == 200) {
                     return response;
