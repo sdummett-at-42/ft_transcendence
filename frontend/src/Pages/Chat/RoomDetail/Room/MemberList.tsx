@@ -5,8 +5,7 @@ import SpecProfile from '../../../Profile/SpecProfile/SpecProfile';
 import { Socket } from "socket.io-client";
 import { DatabaseContext } from '../../ChatLogin'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLock, faUnlock, faMessage, faTableTennis } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from 'react-router-dom';
+import { faLock, faUnlock, faMessage, faTableTennis, faUser } from "@fortawesome/free-solid-svg-icons";
 import { UserContext } from "./../../../../context/UserContext"
 
 interface MemberListProps {
@@ -59,7 +58,7 @@ export default function MemberList(props: MemberListProps) {
 
         }
     }
-    const navigate = useNavigate();
+
     const handleDuel = () => {
         setIsDuelOpen(!isDuelOpen);
         if (isOptionsOpen) {
@@ -67,24 +66,14 @@ export default function MemberList(props: MemberListProps) {
         }
     }
 
-    const handleOptions = () => {
-        setIsOptionsOpen(!isOptionsOpen);
-        if (isDuelOpen) {
-            setIsDuelOpen(false);
-        }
-    }
     const sendGameInvitationA = (friend) =>{
         gameSocketRef.current.emit('sendInvitationGame',  { idTarget: friend.id, type: "ranked" })
-        // alert("you have sent an invitation!A");
-        // isDuelOpen(false);
         handleDuel()
        
     }
 
     const sendGameInvitationB = (friend) =>{
         gameSocketRef.current.emit('sendInvitationGame', { idTarget: friend.id, type: "custom"})   
-        // alert("you have sent an invitation!B");
-        // isDuelOpen(false);
         handleDuel()
     }
 
@@ -157,7 +146,7 @@ export default function MemberList(props: MemberListProps) {
                         role = "Administateur";
                     }
                     return (
-                        <li className="ChatRoom-list-li" key={each} onClick={() => handleProfilePopup(user)}>
+                        <li className="ChatRoom-list-li no-pointer" key={each}>
                             <img className="ChatRoom-image" src={user?.profilePicture} alt="avatar" />
                             <div className="about">
                                 <div className="MemberList-screen-card-text">{user?.name}</div>
@@ -169,8 +158,9 @@ export default function MemberList(props: MemberListProps) {
                                 <div></div> :
                                 (
                                     <div className="MemberList-button">
-                                        <button className="PendingFriend-button" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
-                                        <button className="PendingFriend-button" onClick={() => handleDuel()}><FontAwesomeIcon icon={faTableTennis} size="lg" /></button>
+                                        <button className="PendingFriend-button pointer" onClick={() => handleProfilePopup(user)}><FontAwesomeIcon icon={faUser} size="lg" /></button>
+                                        <button className="PendingFriend-button pointer" onClick={() => hanldeDM(user.id, user.name)}><FontAwesomeIcon icon={faMessage} size="lg" /></button>
+                                        <button className="PendingFriend-button pointer" onClick={() => handleDuel()}><FontAwesomeIcon icon={faTableTennis} size="lg" /></button>
                                         {isDuelOpen && (
                                             <div className="Friend-dropdown-content">
                                                 <div onClick={()=> sendGameInvitationA(user)}>Partie classée</div>
@@ -179,11 +169,11 @@ export default function MemberList(props: MemberListProps) {
                                         )}
                                         {newblockList.includes(user?.id) ? (
                                             <div>
-                                                <button className="PendingFriend-button" onClick={() => handleUnblock(user.id, user.name)} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button>
+                                                <button className="PendingFriend-button pointer" onClick={() => handleUnblock(user.id, user.name)} ><FontAwesomeIcon icon={faUnlock}  size="lg" /></button>
                                             </div>
                                         ) : ( 
                                             <div>
-                                                <button className="PendingFriend-button" onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button>
+                                                <button className="PendingFriend-button pointer" onClick={() => handleblock(user.id, user.name)} ><FontAwesomeIcon icon={faLock} size="lg" /></button>
                                             </div>
                                         )}
                                     </div>

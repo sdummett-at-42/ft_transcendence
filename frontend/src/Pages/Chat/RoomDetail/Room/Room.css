@@ -28,3 +28,11 @@
     text-shadow: 0px 0px 0.5rem white;
     text-decoration: none;
 }
+
+.no-pointer {
+    cursor: default;
+}
+
+.pointer {
+    cursor: pointer;
+}

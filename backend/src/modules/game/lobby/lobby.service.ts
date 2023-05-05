@@ -105,7 +105,14 @@ export class LobbyService {
         // check si p1 et p2 dispo
         const   target = client;
         const   sender = data.client;
-        const   socketSender = this.invits.find(invits => invits.sender === sender && invits.target === target.data.userId).socketSender;
+        const   senderInvite = this.invits.find(invits => invits.sender === sender && invits.target === target.data.userId);
+
+        if (senderInvite === undefined || senderInvite === null || senderInvite.socketSender === undefined || senderInvite.socketSender === null) {
+            return;
+        }
+
+        const socketSender = senderInvite.socketSender;
+
 
         if (socketSender === undefined || socketSender === null) {
             this.gameGateway.server.to(socketSender).emit(EventGame.lobbyRefuseInvitGame, {idTarget : target.data.userId, state : "refus"});

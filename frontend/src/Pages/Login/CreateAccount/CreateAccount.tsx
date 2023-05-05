@@ -18,8 +18,8 @@ export default function CreateAccount() {
 		email: Joi.string()
 			.email({ tlds: { allow: validEmail } })
 			.required(),
-		password: Joi.string().min(8).required(),
-		checkPassword: Joi.string().min(8).required(),
+		password: Joi.string().min(8).required().regex(/^\S+$/),
+		checkPassword: Joi.string().min(8).required().regex(/^\S+$/),
 	});
 
 	const usernameInputRef = useRef(null);
@@ -96,7 +96,6 @@ export default function CreateAccount() {
 		}).then((res) => {
 			if (res.status == 201) {
 				setLastUpdate(Date.now());
-				// navigate("/home");
 				window.location.href = '/home';
 				return;
 			} else if (res.status == 409) {
@@ -125,8 +124,6 @@ export default function CreateAccount() {
 			handleLoginForm();
 		}
 	}
-
-
 
 	useEffect(() => {
 		if (!isLoading && user) navigate("/home");
