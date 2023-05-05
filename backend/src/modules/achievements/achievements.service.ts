@@ -147,8 +147,6 @@ export class AchievementService {
 				elo: "desc"
 			}
 		});
-		console.log("user:", users);
-		console.log(`rank: ${rank}, id: ${userId}`);
 		return users[rank - 1].id === userId;
 	}
 

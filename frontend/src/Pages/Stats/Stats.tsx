@@ -7,14 +7,14 @@ import Blob from "../Blob/Blob";
 import FriendsList from "../Home/FriendsList/FriendsList";
 
 export default function InitStats({ user }) {
-	if (!user)
-		window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
+	// if (!user) {
+	// 	window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
+	// 	return null;
+	// }
 	const [users, setUsers] = useState([]);
 
 	const [matchData, setMatchData] = useState(null);
-	// Sort users by elo
-	const sortedUsers = [...users].sort((a, b) => b.elo - a.elo);
- 
+	
 	// Fetch match data
 	useEffect(() => {
 		fetch(`${import.meta.env.VITE_BACKENDURL}/users/${user.id}/matchs`, {
@@ -25,7 +25,7 @@ export default function InitStats({ user }) {
 		.then((data) => setMatchData(data))
 		.catch((error) => console.error(error));
 	}, [user]);
-
+	
 	// Fetch users
 	useEffect(() => {
 		async function fetchUsers() {
@@ -36,11 +36,13 @@ export default function InitStats({ user }) {
 			const data = await response.json();
 			setUsers(data);
 		}
-
+		
 		fetchUsers();
 	}, []);
-
+	
 	if (!matchData) return <div>Chargement...</div>;
+	// Sort users by elo
+	const sortedUsers = [...users].sort((a, b) => b.elo - a.elo);
 
 	return <UserList users={sortedUsers} match={matchData} />;
 }

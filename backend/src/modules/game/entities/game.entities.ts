@@ -86,7 +86,7 @@ export class Player {
     relaunchBulletBool = false;
     
     // End game set elo win/lose
-    eloChange?: number;
+    eloChange : number = 0;
 
     // constructor(id : number, name : string, elo : number, eloTab : number[]) {
     constructor(data : any) {
@@ -163,15 +163,15 @@ export class Game {
 
     // Limit score:
     limitScoreBool: Boolean = true; // true == limit
-    limitScore: number = 3; 
+    limitScore: number = 5; 
 
     // Limit pause time:
     limitPauseTimerBool: Boolean = true; // true == limit
-    limitPauseTimer: number = 10 * 1000; // droit a x ms de pause
+    limitPauseTimer: number = 30 * 1000; // droit a x ms de pause
 
     // Limit game timer:
     limitTimerBool: Boolean = true ; // true == limit
-    limitTimer: number = 4 * 60 * 1000;// 4 min
+    limitTimer: number = 5 * 60 * 1000;// 5 min
     //limitTimer: number = 5000;// 5 sec
 
     // Game end

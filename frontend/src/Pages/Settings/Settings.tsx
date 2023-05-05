@@ -109,7 +109,10 @@ export default function Settings() {
 				throw new Error("Failed to upload image");
 			}
 		} catch (error) {
-			console.error(error);
+			setErrorMessage((prevErrors) => ({
+				...prevErrors,
+				image: "Mauvais fichier",
+			}));
 		}
 	};
 

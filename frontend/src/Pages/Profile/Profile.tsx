@@ -8,7 +8,6 @@ import Blob from "../Blob/Blob";
 
 export default function Profile({ user }) {
 	if (!user) {
-		console.log(`user is null`);
 		window.location.href = `${import.meta.env.VITE_FRONTENDURL}/`;
 	}
 

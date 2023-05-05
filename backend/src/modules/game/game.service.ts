@@ -222,7 +222,6 @@ export class GameService {
         // Delete game in 60 sec
         game.frequencyInterval = setTimeout(() => {
             game.deleteBool = true;
-        console.log("delete this game");
         }, 60000);
     }
 
@@ -457,9 +456,6 @@ export class GameService {
             scoreP2 = 0.5;
         }
 
-        // calcul new elo
-        // this.newElo(game, scoreP1, scoreP2)
-
         // send to front type of victory
         game.server.to(game.roomId).emit(EventGame.gameVictory, {type : game.typewin, winner : game.winner, loser : game.loser, boolRanked : game.boolRanked})
         return -1;
@@ -501,13 +497,18 @@ export class GameService {
 
         // Check if ranked game
         if (game.boolRanked) {
-            this.updateElo(game.p1.id, game.p1.elo, game.p1.eloChange = this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
-            this.updateElo(game.p2.id, game.p2.elo, game.p2.eloChange = this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
+            if (p1Prisma !== null)
+                this.updateElo(game.p1.id, game.p1.elo, game.p1.eloChange = this.calculateElo(game.p1.elo, game.p2.elo, scoreP1, p1Prisma.eloHistory.length)); // last = nb game jouer
+            if (p2Prisma !== null)
+                this.updateElo(game.p2.id, game.p2.elo, game.p2.eloChange = this.calculateElo(game.p2.elo, game.p1.elo, scoreP2, p2Prisma.eloHistory.length));
         }
         
-        await this.updatePrisma(game, scoreP1, p1Prisma, p2Prisma);
-        this.achievement.checker(game.p1.id);
-        this.achievement.checker(game.p2.id);
+        if (p1Prisma !== null && p2Prisma !== null) 
+            await this.updatePrisma(game, scoreP1);
+        if (p1Prisma !== null)
+            this.achievement.checker(game.p1.id);
+        if (p2Prisma !== null)
+            this.achievement.checker(game.p2.id);
     }
 
     private calculateElo(oldElo: number, opponentElo: number, score: number, gamesPlayed: number): number {
@@ -540,20 +541,20 @@ export class GameService {
           });
     }
 
-    private async updatePrisma(game : Game, scoreP1 : number,  p1Prisma, p2Prisma) {
+    private async updatePrisma(game : Game, scoreP1 : number) {
         let winnerId;
         let looserId;
         let winnerScore;
         let looserScore;
 
         if (scoreP1 === 1) {
-            winnerId = p1Prisma.id;
-            looserId = p2Prisma.id;
+            winnerId = game.p1.id;
+            looserId = game.p2.id;
             winnerScore = game.p1.score;
             looserScore = game.p2.score;
         } else {
-            winnerId = p2Prisma.id;
-            looserId = p1Prisma.id;
+            winnerId = game.p2.id;
+            looserId = game.p1.id;
             winnerScore = game.p2.score;
             looserScore = game.p1.score;
         }

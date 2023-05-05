@@ -63,7 +63,6 @@ export default function Game() {
         // data= {Bollean, p1, p2}
         // false = score  true = abandon
         setVictory([data.type , data.winner, data.loser, data.boolRanked]);
-        console.log("handle victory:", data);
         setBoolVictory(true);
         setLastUpdate(Date.now());
     }

@@ -525,10 +525,8 @@ export class RedisService {
 	}
 
 	async unsetInGamesKeys() {
-		console.log(`UNSSSSETTTT`)
 		const keys = await this.getInGamesKeys();
 		keys.forEach(key => {
-			console.log(`KEYS: ${key}`)
 			this.client.hdel(key);
 		})
 	}

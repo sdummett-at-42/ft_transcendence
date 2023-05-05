@@ -5,10 +5,14 @@ import "./Unauthorized.css"
 export default function Unauthorized() {
     return (
         <div id="Unauthorized">
-            <h1 id="Unauthorized-title">You have been disconnected</h1>
+            <h1 id="Unauthorized-title">
+                Vous avez été deconnécté
+            </h1>
 
             <Link to="/" id="Unauthorized-link">
-                <h3>Clic here to be redirect to the login page</h3>
+                <h3>
+                    Cliquez ici pour revenir à la page d'accueil
+                </h3>
             </Link>
         </div>
     );

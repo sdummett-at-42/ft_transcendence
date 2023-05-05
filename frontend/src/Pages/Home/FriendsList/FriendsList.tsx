@@ -164,7 +164,6 @@ export default function FriendsList() {
 			return;
 
         setOnlineStatus([...onlineStatus, data.id]);
-        console.log("data:", data.tab);
         setGameStatus(data.tab);
     };
 
@@ -176,21 +175,12 @@ export default function FriendsList() {
         setOnlineStatus((prevState) => [...prevState, data]);
     };
 
-    // setGameStatus([...gameStatus, data.id])
-    // setGameStatus(gameStatus.filter((friend) => {console.log(`FRIEND => ${friend}`); return friend !== data.id}));
 
     const handleFriendInGame = (data) => {
-        console.log("inGame:", data.tab);
-
-        // setGameStatus(gameStatus.concat([data.id]));
         setGameStatus(data.tab);
     }
 
     const handleFriendLeaveGame = (data) => {
-        console.log("OffGame:", data.tab);
-
-        // gameStatus.
-        // setGameStatus(gameStatus.filter((id) => id !== data.id));
         setGameStatus(data.tab);
     }
 

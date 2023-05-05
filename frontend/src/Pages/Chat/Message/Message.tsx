@@ -65,13 +65,11 @@ export default function Message(props: MessageProps) {
   }, [messageList]);
 
   const handleDMupdate1 = useCallback((payload) => {
-    // console.log("dmupdate1", payload);
     if(props.UserId === payload.userId){
       setDmList((prevme) => [...prevme, payload]);
     }
   }, [dmList]);
   const handleDMupdate2 = useCallback((payload) => {
-    // console.log("dmupdate2", payload);
     const userName = database.find((user) => user.id === payload.userId);
     if(userName && userName.name === props.roomName){
       setDmList((prevme) => [...prevme, payload]);
