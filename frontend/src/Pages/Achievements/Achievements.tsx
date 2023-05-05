@@ -49,6 +49,10 @@ export default function InitAchievements({ userId, showLocked, showBlob }) {
 				});
 				setAchievements(achievements);
 			}
+			else if (userAchievementsRes.status === 401 || allAchievementsRes.status === 401) {
+				window.location.href = "/";
+				return null;
+			}
 		}
 		fetchAchievements(userId);
 	}, [userId]);
